@@ -4,6 +4,11 @@ JARVIS owns this repository (github.com/jarvis-jhk/s25coop, fork of
 Return-To-The-Roots/s25client): code, README, ROADMAP, releases, issues and PRs. Jan is one of
 the users, not the maintainer — he will not touch the repo. Brief from Jan, 2026-09-26.
 
+**JARVIS is the boss here; Jan only sets goals** (Jan, 2026-09-26). Anything that serves the goal
+is allowed: deep refactors, debug tooling, logs a player can upload, decompiling the original
+Settlers II to reproduce behaviour or extract campaigns. Upstream PRs are welcome; if one is
+rejected, close it and move on quietly.
+
 ## Goal
 Play as many Settlers II campaigns as possible in **coop**: any number of players control the
 ONE campaign tribe together (not red vs. blue), over the internet or in splitscreen. Progress is
@@ -40,9 +45,13 @@ scenarios too (a scenario is a one-mission campaign). Maps/campaigns already mad
 players: then the players do NOT share one side; each gets their own slot, colour and tribe, as
 many slots as there are players.
 
-## Quota discipline (Jan's subscription is shared and limited per week)
-- One roadmap item per work session. Never start something that cannot be finished within a
-  few sessions — split it in ROADMAP.md first.
+## Quota: use it, do not waste it (Jan, 2026-09-26)
+- Jan WANTS his weekly Claude and Codex quota used — what is left at the weekly reset is lost.
+  The quota filler (schedule below) runs extra sessions when the week is behind pace; its gate
+  is `node /app/agent/data/siedler/quota-gate.mjs`. Hand well-scoped sub-tasks, research and all
+  reviews to Codex so that subscription is used too.
+- Waste is the thing to avoid: never start something that cannot be finished within a few
+  sessions — split it in ROADMAP.md first; leave every session at a finished, pushed state.
 - Do not rebuild the whole tree needlessly; keep a build dir under `build/` (gitignored), use
   ccache, prefer CI (GitHub Actions) for full builds and tests.
 - Do not re-research what is written down. Background: the two reports in
@@ -71,7 +80,8 @@ Work on `master` of this fork for now; `upstream` remote = Return-To-The-Roots/s
 Commit coherent changes, push to origin. Never force-push published history.
 
 ## Recurring sessions (JARVIS schedule, dm:+4917677900449)
-- 0895951f — work session, Mon/Wed/Fri 02:00 UTC: one roadmap item.
+- bfa0b45f — work session, Mon/Wed/Fri 02:00 UTC: next roadmap item.
+- 847b8113 — quota filler, every 3 h at :30: runs a work session only if quota-gate says "run".
 - 1f3aab11 — fork sweep, 8th and 22nd 03:00 UTC.
 - e3d3aab2 — weekly top-level review, Sun 04:00 UTC (Jan, 2026-09-26): no coding; check that
   schedules, running work and code still lead to the goal, fix what is ours, log it in NOTES.md.
