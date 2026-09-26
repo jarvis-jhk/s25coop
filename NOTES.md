@@ -26,3 +26,15 @@ Written into CLAUDE.md (Codex review, test before merge, target experience) and 
 (new M0.5 test harness, couch join + campaign overview in M3, M5 multi-player campaigns).
 Next session: M0 feedback first; then M0.5 headless runner (check how upstream's tests/ already
 run a GameWorld without video before inventing anything).
+
+## 2026-09-26 — fault reports (Jan, voice: "everything you ship reports back to you, but none of my domains anywhere")
+install.sh + s25coop.sh `report()` → public ntfy.sh topic `s25coop-reports-ko3knuxwigscapljz76yjk5z`
+→ `.github/workflows/fault-reports.yml` (every 15 min, cursor in actions/cache) → issue labelled
+`fault-report` (same open title = comment) → new issues forwarded to the siedler lane via repo
+secret `JARVIS_REPORT_URL` (set with data/scratch/sodium/setsecret.cjs). NEVER put one of Jan's domains
+into the repo or a release (see CLAUDE.md). Opt-out: S25COOP_NO_REPORTS / no-reports file.
+Tested end to end (fake crashing binary → issue #1 → queue task). v0.1.1 tagged to ship the new
+launcher. Not covered yet: Windows (no wrapper; would need a hook in handleException in
+libs/s25client/s25client.cpp — RttR's own DebugInfo sends to upstream's server, consider rerouting).
+Codex review: `codex exec` cannot run its sandbox here (no userns) — pipe the diff on stdin:
+`git diff … | codex exec -m gpt-6-sol "Review this diff (on stdin)…"`.

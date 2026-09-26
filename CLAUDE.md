@@ -24,7 +24,8 @@ to the original as possible. First target: the official campaign already in RttR
 ## How changes get in (Jan, 2026-09-26)
 - Code is written on Opus 5.5. Every non-trivial change is then reviewed by Codex (GPT-6 Sol):
   `codex exec -m gpt-6-sol "Review the diff of <range> in this repo for bugs ..."` in the repo
-  (codex is logged in on Jan's ChatGPT subscription). Address or consciously reject each point.
+  (codex is logged in on Jan's ChatGPT subscription). Its sandbox cannot start in this container, so pipe
+  the diff in: `git diff <range> | codex exec -m gpt-6-sol "Review this diff (on stdin) ..."`. Address or consciously reject each point.
 - Nothing is merged to master (and no fork branch is taken over) until JARVIS has tested it
   itself, by running it, not just "it compiles". Where that is not possible yet, the first job
   is to build the tooling that makes it possible (M0.5 in ROADMAP.md): a headless runner that
@@ -49,6 +50,17 @@ many slots as there are players.
   /app/agent/data/www/r/t_mui4xhql5n4fd-* (all S2 campaigns and their RttR status).
 - End every session by updating ROADMAP.md status and `NOTES.md` (what was done, what is next,
   what is blocked) so the next session starts cold without searching.
+
+## Fault reports (Jan, 2026-09-26)
+Everything shipped reports its own faults: ntfy.sh topic → GitHub Action → `fault-report` issue →
+this lane. None of Jan's own domains (see JARVIS memory `s25coop`) or their subdomains may ever
+appear in the repo, its history, a release or a log — the forward URL lives only in the repo secret `JARVIS_REPORT_URL`.
+Wire new components (Windows, in-game crash handler) into the same path. Details: NOTES.md.
+
+## CHANGELOG.md is for players (Jan, 2026-09-26)
+Player language, only what a player cares about: new features, noticeable fixes. No technical
+or internal changes, no test tooling. Those go to Jan in the chat (briefly), not the changelog.
+The release notes and the in-game changelog are made from it.
 
 ## Talking to Jan
 Only when there is something for him to test, a decision only he can make, or a failure.
