@@ -11,4 +11,4 @@ and the game will show the new sections after an update.
   and to the menu, and every start updates to the newest release by itself.
 - The original Settlers II Gold folders
   `DATA` and `GFX` go into `~/.local/share/s25coop/S2/`, so updates never touch them.
-- Coop campaigns, Steam Deck installer and auto-update are coming next — see ROADMAP.md.
+- Coop campaigns, controller support and the in-game changelog are coming next — see ROADMAP.md.
