@@ -5,17 +5,17 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 
 ## M0 — A version you can install and keep updated (first!)
 
-- ☐ CI: GitHub Actions builds Linux x86_64 (portable tarball/AppImage) and Windows on every
+- ◐ CI: GitHub Actions builds Linux x86_64 (portable tarball/AppImage) and Windows on every
   tag, publishes a GitHub Release with notes.
-- ☐ Versioning + `CHANGELOG.md`, written for players, one entry per release.
+- ☑ Versioning + `CHANGELOG.md`, written for players, one entry per release.
 - ☐ In-game changelog: after an update the game shows what changed since the last run
   (menu entry to show it again).
-- ☐ Auto-update: the installed game checks the GitHub releases of this repo and updates itself
+- ◐ Auto-update (launcher-level done in install.sh; in-game later): the installed game checks the GitHub releases of this repo and updates itself
   (reuse/adapt RttR's `s25update` where possible).
-- ☐ Steam Deck installer: one `.desktop` file to open in Desktop Mode (pattern:
+- ◐ Steam Deck installer (written, untested on a Deck; no grid artwork yet): one `.desktop` file to open in Desktop Mode (pattern:
   ArnoldSmith86/minecraft-splitscreen) — downloads the release, asks for / finds the S2 Gold
   `DATA`+`GFX`, adds a Game Mode shortcut with artwork.
-- ☐ Linux (Mint) install path: same release, simple install script / AppImage.
+- ◐ Linux (Mint) install path (same installer): same release, simple install script / AppImage.
 
 ## M1 — The official campaign, done properly (single group)
 
