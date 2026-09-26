@@ -38,3 +38,5 @@ launcher. Not covered yet: Windows (no wrapper; would need a hook in handleExcep
 libs/s25client/s25client.cpp — RttR's own DebugInfo sends to upstream's server, consider rerouting).
 Codex review: `codex exec` cannot run its sandbox here (no userns) — pipe the diff on stdin:
 `git diff … | codex exec -m gpt-6-sol "Review this diff (on stdin)…"`.
+History rewritten the same day (Jan: "bitte nuken"): the domain in the first fork commit's CLAUDE.md
+and its author e-mail are gone; master, v0.1.0 and v0.1.1 force-pushed, releases and assets intact.
