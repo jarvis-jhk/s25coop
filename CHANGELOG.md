@@ -7,6 +7,8 @@ and the game will show the new sections after an update.
 
 - First s25coop build: Return to the Roots as of September 2026, packaged for Linux
   (Steam Deck, Linux Mint) and Windows.
-- Linux: unpack anywhere and start `s25coop.sh`. The original Settlers II Gold folders
+- Steam Deck / Linux: `Install-s25coop.desktop` installs the game, adds it to Steam (Game Mode)
+  and to the menu, and every start updates to the newest release by itself.
+- The original Settlers II Gold folders
   `DATA` and `GFX` go into `~/.local/share/s25coop/S2/`, so updates never touch them.
 - Coop campaigns, Steam Deck installer and auto-update are coming next — see ROADMAP.md.

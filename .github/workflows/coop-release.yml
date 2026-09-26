@@ -66,8 +66,10 @@ jobs:
       - name: Install and bundle
         run: |
           cmake --install build
-          install -m755 tools/coop/s25coop.sh s25coop/s25coop.sh
+          install -m755 tools/coop/s25coop.sh tools/coop/install.sh tools/coop/add-to-steam.py s25coop/
+          cp tools/release/debian/s25rttr.png s25coop/s25coop.png
           cp CHANGELOG.md README.md LICENSE s25coop/
+          echo "$VERSION" > s25coop/VERSION
           tools/coop/bundle-linux.sh s25coop
           # Smoke test: every binary resolves all its libraries from the bundle or the host.
           LD_LIBRARY_PATH=s25coop/lib ldd s25coop/bin/s25client | tee /dev/stderr | { ! grep -q 'not found'; }
@@ -140,4 +142,5 @@ jobs:
           files: |
             s25coop-*-linux-x86_64.tar.gz
             s25coop-*-windows-x64.zip
+            tools/coop/Install-s25coop.desktop
           fail_on_unmatched_files: true

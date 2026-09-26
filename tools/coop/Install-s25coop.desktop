@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=Install s25coop (Settlers II coop)
+Comment=Downloads s25coop, finds your Settlers II Gold files and adds the game to Steam and the menu
+Exec=sh -c 'f="$HOME/.cache/s25coop-install.sh"; mkdir -p "${f%/*}"; rm -f "$f"; curl -fsL https://raw.githubusercontent.com/jarvis-jhk/s25coop/master/tools/coop/install.sh -o "$f" && grep -q "END OF FILE" "$f" && bash "$f" || { zenity --error --text="Downloading the installer failed. Please try again." || kdialog --error "Downloading the installer failed."; }'
+Icon=steamdeck-gaming-return
+Terminal=true
+Type=Application
+StartupNotify=false

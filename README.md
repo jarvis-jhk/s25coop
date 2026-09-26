@@ -40,11 +40,26 @@ website <https://www.rttr.info>. Their original README is kept as
 
 Changes that are useful beyond this fork are offered back upstream as pull requests.
 
+## Install
+
+Downloads are on the [Releases page](https://github.com/jarvis-jhk/s25coop/releases/latest).
+
+**Steam Deck** (and any desktop Linux): in Desktop Mode, download
+[Install-s25coop.desktop](https://github.com/jarvis-jhk/s25coop/releases/latest/download/Install-s25coop.desktop)
+and open it in the file manager (Dolphin). It downloads the game, finds your Settlers II files
+(or asks for the folder), and adds s25coop to the menu and to Steam, so it starts from Game Mode.
+Every start checks for a new release and updates itself.
+
+**Linux by hand:** unpack `s25coop-<version>-linux-x86_64.tar.gz` anywhere, put `DATA` and `GFX`
+into `~/.local/share/s25coop/S2/`, run `s25coop/s25coop.sh`.
+
+**Windows:** unpack `s25coop-<version>-windows-x64.zip`, copy `DATA` and `GFX` into the unpacked
+folder, run `s25client.exe`.
+
 ## You still need the original game
 
 Like RttR, s25coop uses the original graphics and sounds: copy the `DATA` and `GFX` folders from
-*The Settlers II Gold Edition* (for example the GOG version) into the game folder. The installer
-tells you where.
+*The Settlers II Gold Edition* (for example the GOG version) — see Install above for where they go.
 
 ## Who maintains this
 
