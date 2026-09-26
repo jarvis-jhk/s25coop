@@ -1,0 +1,143 @@
+# s25coop release: builds a portable Linux x86_64 tarball (SteamOS, Mint, other distros with
+# glibc >= 2.35) and a Windows x64 zip, then publishes them as a GitHub Release whose notes
+# are this version's section of CHANGELOG.md.
+#
+# Release: add a "## <version>" section to CHANGELOG.md, then push a tag "v<version>".
+# workflow_dispatch builds the same artifacts without releasing (for testing CI changes).
+name: s25coop release
+permissions:
+  contents: write
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: coop-release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BOOST_VERSION: 1.81.0
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF#refs/tags/v}"; else v="0.0.0"; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: version
+    # Oldest supported runner = oldest glibc we link against (2.35); SteamOS 3 and Mint 21+ are newer.
+    runs-on: ubuntu-22.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+      - name: Install packages
+        run: |
+          sudo apt-get -o Acquire::Retries=5 update
+          sudo apt-get -o Acquire::Retries=5 -y -q --no-install-recommends install \
+            gettext libsdl2-dev libsdl2-mixer-dev libcurl4-openssl-dev libbz2-dev libminiupnpc-dev \
+            liblua5.2-dev libboost-filesystem-dev libboost-iostreams-dev libboost-locale-dev \
+            libboost-program-options-dev libboost-nowide-dev g++-11 || \
+          sudo apt-get -o Acquire::Retries=5 -y -q --no-install-recommends install \
+            gettext libsdl2-dev libsdl2-mixer-dev libcurl4-openssl-dev libbz2-dev libminiupnpc-dev \
+            liblua5.2-dev libboost-filesystem-dev libboost-iostreams-dev libboost-locale-dev \
+            libboost-program-options-dev g++-11
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
+        with:
+          key: coop-linux-release
+          max-size: 300M
+      - name: Configure
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRTTR_VERSION="$VERSION" \
+            -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11 \
+            -DCMAKE_INSTALL_PREFIX="$PWD/s25coop" -DBUILD_TESTING=OFF
+      - name: Build
+        run: cmake --build build --parallel 4
+      - name: Install and bundle
+        run: |
+          cmake --install build
+          install -m755 tools/coop/s25coop.sh s25coop/s25coop.sh
+          cp CHANGELOG.md README.md LICENSE s25coop/
+          tools/coop/bundle-linux.sh s25coop
+          # Smoke test: every binary resolves all its libraries from the bundle or the host.
+          LD_LIBRARY_PATH=s25coop/lib ldd s25coop/bin/s25client | tee /dev/stderr | { ! grep -q 'not found'; }
+          tar -czf "s25coop-${VERSION}-linux-x86_64.tar.gz" s25coop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: s25coop-*-linux-x86_64.tar.gz
+
+  windows:
+    needs: version
+    runs-on: windows-2022
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+      - name: Install boost
+        uses: MarkusJx/install-boost@8ba8b2fac59ef3d91a838bb4aa53ceabd33d1aa3 # v2.5.1
+        id: install-boost
+        with:
+          boost_version: ${{ env.BOOST_VERSION }}
+          platform_version: 2022
+          toolset: msvc
+      - name: Configure
+        env:
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+        shell: cmd
+        run: |
+          cmake -G "Visual Studio 17 2022" -A x64 -S . -B build -DRTTR_VERSION=%VERSION% ^
+            -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\s25coop -DBUILD_TESTING=OFF ^
+            -DCMAKE_EXE_LINKER_FLAGS=/LTCG -DCMAKE_SHARED_LINKER_FLAGS=/LTCG
+      - name: Build
+        run: cmake --build build --config Release --parallel 4
+      - name: Install and bundle
+        shell: bash
+        run: |
+          cmake --install build --config Release
+          # Runtime DLLs: SDL, curl, gettext etc. from the dev-tools bundle, boost from the build.
+          cp external/dev-tools/msvc/bin/x64/*.dll s25coop/
+          find build -path '*/Release/*.dll' -not -path '*/tests/*' -exec cp -n {} s25coop/ \;
+          cp CHANGELOG.md README.md LICENSE s25coop/
+          ls s25coop
+          7z a "s25coop-${VERSION}-windows-x64.zip" s25coop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: s25coop-*-windows-x64.zip
+
+  release:
+    needs: [version, linux, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - name: Release notes from CHANGELOG.md
+        run: |
+          v="${{ needs.version.outputs.version }}"
+          awk -v v="$v" '/^## /{p = ($2 == v)} p && !/^## /' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "CHANGELOG.md has no section '## $v'"; exit 1; }
+          cat notes.md
+      - uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          name: s25coop ${{ needs.version.outputs.version }}
+          body_path: notes.md
+          files: |
+            s25coop-*-linux-x86_64.tar.gz
+            s25coop-*-windows-x64.zip
+          fail_on_unmatched_files: true
