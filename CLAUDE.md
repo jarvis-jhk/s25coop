@@ -57,3 +57,9 @@ Short, German, no markdown. Releases are announced with the download link.
 ## Git
 Work on `master` of this fork for now; `upstream` remote = Return-To-The-Roots/s25client.
 Commit coherent changes, push to origin. Never force-push published history.
+
+## Recurring sessions (JARVIS schedule, dm:+4917677900449)
+- 0895951f — work session, Mon/Wed/Fri 02:00 UTC: one roadmap item.
+- 1f3aab11 — fork sweep, 8th and 22nd 03:00 UTC.
+- e3d3aab2 — weekly top-level review, Sun 04:00 UTC (Jan, 2026-09-26): no coding; check that
+  schedules, running work and code still lead to the goal, fix what is ours, log it in NOTES.md.
