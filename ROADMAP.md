@@ -17,6 +17,18 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   `DATA`+`GFX`, adds a Game Mode shortcut with artwork.
 - ◐ Linux (Mint) install path (same installer): same release, simple install script / AppImage.
 
+## M0.5 — Test harness (before merging anything big)
+
+- ☐ Headless mode: run a map/campaign mission without a window (null video/audio driver), at
+  maximum game speed, with a fixed seed; exit code = result.
+- ☐ Scripted input: a test script issues player commands (build, attack, ...) at given game
+  frames, through the same command path as network players.
+- ☐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers
+  (onGameFrame, onOccupied, victory/defeat, message boxes) fired. One smoke test per campaign
+  mission: loads, scripting runs N minutes without Lua errors.
+- ☐ Run it in CI on every push; failures reported to the JARVIS lane.
+- ☐ Replay-based regression: record a short replay, assert it still replays in sync.
+
 ## M1 — The official campaign, done properly (single group)
 
 - ☐ Campaign status: remember finished missions, unlock the next, mark conquered continents
@@ -38,6 +50,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☐ Merge derneuere's `splitscreen-gamepad` (local 1–4 players, gamepads, radial build menu,
   couch lobby), adapted so local players can share the one campaign player.
 - ☐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+- ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
+  players (and which controller is who). That count drives everything after it.
+- ☐ Campaign overview with artwork of every working campaign and single scenario.
 - ☐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
 
 ## M4 — More campaigns
@@ -46,6 +61,12 @@ In order: Die Rückkehr der Wikinger (complete, Spikeone/RttR_Campaigns), Roman 
 (needs a `campaign.lua`), Oktavianus' Reise, Tyrann, then FANpaign and 2NDpaign (need one-sided
 alliances PR #1680 and RTX start positions PR #1683). Licenses/permission are checked before
 anything is bundled.
+
+## M5 — Multi-player campaigns and scenarios
+
+- ☐ Maps/campaigns made for several players: one slot per real player, own colour and tribe;
+  only when the map has a single human side does everyone share one tribe.
+- ☐ Long-term goal: every campaign and scenario ever released for S2 or RttR playable here.
 
 ## Continuous
 

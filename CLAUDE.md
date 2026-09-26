@@ -21,6 +21,24 @@ to the original as possible. First target: the official campaign already in RttR
 - Every few weeks: sweep all RttR forks/branches, merge what will not cause problems. Taking
   over and finishing other people's work is explicitly allowed.
 
+## How changes get in (Jan, 2026-09-26)
+- Code is written on Opus 5.5. Every non-trivial change is then reviewed by Codex (GPT-6 Sol):
+  `codex exec -m gpt-6-sol "Review the diff of <range> in this repo for bugs ..."` in the repo
+  (codex is logged in on Jan's ChatGPT subscription). Address or consciously reject each point.
+- Nothing is merged to master (and no fork branch is taken over) until JARVIS has tested it
+  itself, by running it, not just "it compiles". Where that is not possible yet, the first job
+  is to build the tooling that makes it possible (M0.5 in ROADMAP.md): a headless runner that
+  plays campaigns at high speed, injects inputs, and asserts on game state and Lua triggers.
+- Each PR/merge notes in its description how it was tested and what the review found.
+
+## Target experience (Jan, 2026-09-26)
+Main menu, e.g. Deck on a TV with four controllers: every player presses A once, the menu shows
+four players joined. "Campaign" opens a nice overview with pictures of every campaign that works;
+pick one, play together. Eventually EVERY campaign ever built for S2 or RttR, and single
+scenarios too (a scenario is a one-mission campaign). Maps/campaigns already made for several
+players: then the players do NOT share one side; each gets their own slot, colour and tribe, as
+many slots as there are players.
+
 ## Quota discipline (Jan's subscription is shared and limited per week)
 - One roadmap item per work session. Never start something that cannot be finished within a
   few sessions — split it in ROADMAP.md first.

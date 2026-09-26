@@ -20,3 +20,9 @@ Next: wait for Jan's test feedback; then M0 in-game changelog (show CHANGELOG se
 than the last-run version), Steam grid artwork, Deck controller basics.
 Watch: the bundle excludes host libs (glib, sndfile, pulse…) — if sound or start fails on a
 host, the exclude list in bundle-linux.sh is the first suspect.
+
+## 2026-09-26 — Jan's process and goal brief (voice)
+Written into CLAUDE.md (Codex review, test before merge, target experience) and ROADMAP.md
+(new M0.5 test harness, couch join + campaign overview in M3, M5 multi-player campaigns).
+Next session: M0 feedback first; then M0.5 headless runner (check how upstream's tests/ already
+run a GameWorld without video before inventing anything).
