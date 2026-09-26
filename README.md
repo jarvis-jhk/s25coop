@@ -56,6 +56,14 @@ into `~/.local/share/s25coop/S2/`, run `s25coop/s25coop.sh`.
 **Windows:** unpack `s25coop-<version>-windows-x64.zip`, copy `DATA` and `GFX` into the unpacked
 folder, run `s25client.exe`.
 
+**Fault reports.** On Linux, when the installer, an update or the game fails, s25coop sends an
+anonymous report (version, OS name, exit code, the last lines of output and of the game log, with
+your home folder replaced by `~`) to a public [ntfy.sh](https://ntfy.sh) topic; a GitHub Action
+turns it into an issue labelled
+[`fault-report`](https://github.com/jarvis-jhk/s25coop/issues?q=label%3Afault-report), so bugs get
+fixed without anyone having to write them up. To switch it off, set `S25COOP_NO_REPORTS=1` or
+create an empty file `~/.local/share/s25coop/no-reports`.
+
 ## You still need the original game
 
 Like RttR, s25coop uses the original graphics and sounds: copy the `DATA` and `GFX` folders from

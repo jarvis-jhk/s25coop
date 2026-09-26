@@ -3,6 +3,11 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.1
+
+- When the installer, an update or the game fails on Linux, an anonymous fault report is sent so
+  it can be fixed (details and how to switch it off: README, "Fault reports").
+
 ## 0.1.0
 
 - First s25coop build: Return to the Roots as of September 2026, packaged for Linux

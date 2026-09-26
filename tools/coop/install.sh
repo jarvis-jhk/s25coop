@@ -16,8 +16,26 @@ GAME="$BASE/game"
 S2="$BASE/S2"
 SELF="$BASE/install.sh"
 
+# Faults are reported anonymously to a public ntfy.sh topic; a GitHub Action in this repo
+# (.github/workflows/fault-reports.yml) turns them into issues. Opt out: S25COOP_NO_REPORTS=1
+# or an empty file $BASE/no-reports. Keep this function identical in s25coop.sh.
+REPORT_TOPIC=s25coop-reports-ko3knuxwigscapljz76yjk5z
+report() { # report <title> <detail>: fire-and-forget, at most a few seconds, never fails the caller
+    { [ -n "${S25COOP_NO_REPORTS:-}" ] || [ -e "$BASE/no-reports" ]; } && return 0
+    local os ver t="${1//$HOME/\~}"
+    t=$(printf "%s" "${t//$'\n'/ }" | sed "s#[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}#x.x.x.x#g")
+    os=$(. /etc/os-release 2>/dev/null && echo "${PRETTY_NAME:-${NAME:-linux}}")
+    ver=$(cat "$GAME/VERSION" 2>/dev/null || echo none)
+    printf 'source: s25coop %s, %s, %s\n\n%s\n' "$ver" "${REPORT_PART:-installer}" "${os:-linux}" "$(printf "%s" "$2" | tail -c 3500)" |
+        sed "s#$HOME#~#g; s#[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}#x.x.x.x#g" |
+        curl -fsS --max-time 8 -o /dev/null -H "Title: ${t:0:120}" -H "Tags: s25coop" \
+             --data-binary @- "https://ntfy.sh/$REPORT_TOPIC" 2>/dev/null
+    return 0
+}
+
 say()  { echo -e "$*"; }
-fail() { say "❌ $*"; dialog error "$*"; exit 1; }
+fail() { say "❌ $*"; report "installer: ${1%%\\n*}" "$*"; dialog error "$*"; exit 1; }
+fail_user() { say "❌ $*"; dialog error "$*"; exit 1; } # the user's own mistake, not a fault
 dialog() { # dialog error|info|question <text>
     local kind=$1 text=$2
     if command -v zenity >/dev/null; then
@@ -72,7 +90,7 @@ setup_s2() {
         elif command -v kdialog >/dev/null; then src=$(kdialog --getexistingdirectory "$HOME" 2>/dev/null)
         else read -rp "Folder with DATA and GFX: " src; fi
     fi
-    have_s2 "$src" || fail "No DATA and GFX folders in '$src'.\nCopy them to $S2 yourself, then start the game."
+    have_s2 "$src" || fail_user "No DATA and GFX folders in '$src'.\nCopy them to $S2 yourself, then start the game."
     mkdir -p "$S2" && cp -r "$src/DATA" "$src/GFX" "$S2/" || fail "Copying the Settlers II files failed."
     say "✅ Settlers II files copied to $S2"
 }
@@ -103,10 +121,10 @@ add_to_steam() {
     for f in "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf; do
         [ -f "$f" ] && cp -n "$f" "$f.s25coop-backup"
     done
-    if python3 "$GAME/add-to-steam.py" "s25coop" "$SELF" "$BASE" "run" "$GAME/s25coop.png"; then
+    if python3 "$GAME/add-to-steam.py" "s25coop" "$SELF" "$BASE" "run" "$GAME/s25coop.png" 2>"$BASE/add-to-steam.log"; then
         say "✅ Added to Steam"
     else
-        say "⚠️ Adding to Steam failed (backup of the old shortcuts: shortcuts.vdf.s25coop-backup)"
+        report "adding to Steam failed" "$(tail -n 40 "$BASE/add-to-steam.log" 2>&1; ls -la "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf 2>&1)"; say "⚠️ Adding to Steam failed (backup of the old shortcuts: shortcuts.vdf.s25coop-backup)"
     fi
     nohup steam >/dev/null 2>&1 &
 }
@@ -117,7 +135,7 @@ run_game() {
     tag=${rel%% *}; url=${rel#* }
     if [ -n "$tag" ] && [ -n "$url" ] && [ "$url" != "$tag" ] && [ "${tag#v}" != "$(installed_version)" ]; then
         say "⏳ Updating s25coop $(installed_version) → ${tag#v}"
-        download_game "$url" || say "⚠️ Update failed, starting the installed version"
+        download_game "$url" || { say "⚠️ Update failed, starting the installed version"; report "update failed" "$(installed_version) -> ${tag#v} from $url"; }
     fi
     [ -x "$GAME/s25coop.sh" ] || fail "s25coop is not installed. Run the installer again."
     S25COOP_S2_DIR="$S2" exec "$GAME/s25coop.sh" "$@"
