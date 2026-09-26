@@ -5,7 +5,7 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 
 ## M0 — A version you can install and keep updated (first!)
 
-- ◐ CI: GitHub Actions builds Linux x86_64 (portable tarball/AppImage) and Windows on every
+- ☑ CI: GitHub Actions builds Linux x86_64 (portable tarball/AppImage) and Windows on every
   tag, publishes a GitHub Release with notes.
 - ☑ Versioning + `CHANGELOG.md`, written for players, one entry per release.
 - ☐ In-game changelog: after an update the game shows what changed since the last run
