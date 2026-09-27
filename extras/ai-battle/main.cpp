@@ -89,7 +89,7 @@ int main(int argc, char** argv)
         ("help,h", "Show help")
         ("map,m", po::value<std::string>()->required(),"Map to load")
         ("ai", po::value<std::vector<std::string>>()->required(),"AI player(s) to add (aijh | dummy)")
-        ("objective", po::value<std::string>()->default_value("domination"),"domination(default) | conquer")
+        ("objective", po::value<std::string>()->default_value("domination"),"domination(default) | conquer | none (campaign missions: the script decides)")
         ("wares", po::value<std::string>()->default_value("normal"),"Starting wares: vlow | low | normal (default) | alot")
         ("settings", po::value(&settings_path),"INI file with an [addons] section to configure addon settings (optional)")
         ("replay", po::value(&replay_path),"Filename to write replay to (optional)")
@@ -171,6 +171,8 @@ int main(int argc, char** argv)
             ggs.objective = GameObjective::TotalDomination;
         else if(objective == "conquer")
             ggs.objective = GameObjective::Conquer3_4;
+        else if(objective == "none")
+            ggs.objective = GameObjective::None;
         else
         {
             bnw::cerr << "unknown objective: " << objective << std::endl;

@@ -50,7 +50,9 @@ private:
 
     struct LocalState : ILocalGameState
     {
-        unsigned GetPlayerId() const override { return 0; }
+        // No local player: every player is an AI, and a campaign script's mission statement for player 0 would
+        // otherwise open a window, which headless has no graphics for (crashed on MISS200)
+        unsigned GetPlayerId() const override { return 0xFFFFFFFF; }
         bool IsHost() const override { return true; }
         std::string FormatGFTime(unsigned) const override { return ""; }
         void SystemChat(const std::string&) override {}
