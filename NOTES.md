@@ -112,12 +112,17 @@ Found:
   `RTTR_GAME_DIR=<S2 dir> ai-battle --test --map <S2>/DATA/MAPS/MISS200.WLD --lua data/RTTR/campaigns/roman/MISS200.lua
   --test-script tests/coop/headless/missionSmoke.lua --ai aijh [--ai … per map player] --maxGF N`
   (RTTR_GAME_DIR confirmed in RttrConfig.cpp; how many --ai a mission map needs is untested).
-- S2 data: Jan said yes and "in ~/Gaming, symlinked where s25coop expects it" (= ~/.local/share/s25coop/S2 on
-  the laptop). Every `laptop (root)` gateway command fails with "request is not valid JSON" (reported to the self
-  lane, t_mujgl5wh14qv0z); non-root cannot read /home/mint. So Jan got a one-liner to run himself:
-  tar DATA+GFX | split 40M | curl to the one-off app `s2-intake` (data/apps/s2-intake, registered in
-  data/apps.json, secret path in data/apps/s2-intake/secret; nginx caps uploads between 50 and 100 MB).
-  Parts land in data/siedler/s2-incoming/s2.tgz.000, .001 … — when they are there: `cat s2.tgz.* | tar xz`
-  into data/siedler/S2 (never into the repo), then UNREGISTER s2-intake (remove it from data/apps.json and
-  delete data/apps/s2-intake) and run the mission smoke tests.
-Next: M0.5b once the data is in; else scripted input (M0.5 item 2).
+- S2 data: the laptop root gateway runner fails ("request is not valid JSON", reported to the self lane
+  t_mujgl5wh14qv0z). Jan then said: get it from archive.org (he owns the game). Source: archive.org item
+  `the-settlers-ii-gold_202311` (zip with a MODE1/2352 .bin/.cue; data track → ISO by stripping sectors to 2048
+  bytes, extracted with pycdlib from data/siedler/pylib). The disc's /S2 folder is now in
+  /app/agent/data/siedler/S2 (58 MB, DATA+GFX+VIDEO, local only). Upload app s2-intake removed again.
+- M0.5b done (2a9ddee48): all 19 official missions run 30000 GF headless without a Lua error. Fixes needed:
+  headless local player → observer (mission statements opened a GUI window → segfault), null guard in
+  GamePlayer::IsBuildingEnabled (upstream bug, worth a PR), `--objective none`. Local run:
+  `cmake -DRTTR_COOP_S2_DIR=/app/agent/data/siedler/S2 .` in build/dev, then `ctest -R Coop` (22 tests, 16 s).
+  data/siedler/run-missions.sh does the same and finds each map's player count.
+  Note: most missions have no onGameFrame; their triggers are onOccupied/onExplored etc. The smoke test
+  only proves "loads and runs"; asserting that triggers fire needs scripted input (next).
+Next: scripted input (M0.5 item 2) so a test can drive a mission to its triggers; offer the two upstream fixes
+(ai-battle log dir, IsBuildingEnabled null guard) as PRs to Return-To-The-Roots.

@@ -27,9 +27,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ☑ a) `ai-battle --test --map … --lua test.lua`: fixed seed, N game frames at full speed without
     video/audio; the script's `onTestEnd(gf)` asserts, exit 2 on any Lua error. ctest `CoopHeadless_*`
     (tests/coop/), runs in CI with the unit tests. Since 2026-09-27.
-  - ☐ b) load a campaign mission (campaign.lua + mission Lua) the same way. ⚠ The campaign maps
-    (MISS2xx.WLD) are original S2 data: not in the repo, not in public CI. Runs locally only,
-    once S2 data is in the container (asked Jan 2026-09-27; path kept out of the repo).
+  - ☑ b) every official campaign mission (roman 200–209, world 9 maps) loads with its script and runs
+    30000 frames without a Lua error: ctest `CoopMission_*`, local only (`RTTR_COOP_S2_DIR`, original S2
+    data never in the repo or public CI). Since 2026-09-27.
 - ☐ Scripted input: a test script issues player commands (build, attack, ...) at given game
   frames, through the same command path as network players.
 - ☐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers
