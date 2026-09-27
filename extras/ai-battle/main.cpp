@@ -13,7 +13,9 @@
 #include "addons/const_addons.h"
 #include "ai/random.h"
 #include "files.h"
+#include "lua/LuaInterfaceBase.h"
 #include "random/Random.h"
+#include "s25util/Log.h"
 #include "s25util/StringConversion.h"
 #include "s25util/System.h"
 
@@ -95,6 +97,7 @@ int main(int argc, char** argv)
         ("random_init", po::value(&random_init),"Seed value for the random number generator (optional)")
         ("random_ai_init", po::value(&random_ai_init),"Seed value for the AI random number generator (optional)")
         ("maxGF", po::value<unsigned>()->default_value(std::numeric_limits<unsigned>::max()),"Maximum number of game frames to run (optional)")
+        ("test", "Test mode: needs --lua; the script's onTestEnd(gf) asserts on the final state. Exit code 2 on any Lua error or failed assertion")
         ("version", "Show version information and exit")
         ;
     // clang-format on
@@ -149,6 +152,11 @@ int main(int argc, char** argv)
         bnw::cout << std::endl;
 
         RTTRCONFIG.Init();
+        // Lua errors and the AI log to file; without this that is ./logs, and a missing folder there turned
+        // every Lua error into "Could not open logs/... for writing"
+        const bfs::path logDir = RTTRCONFIG.ExpandPath(s25::folders::logs);
+        bfs::create_directories(logDir);
+        LOG.setLogFilepath(logDir);
         RANDOM.Init(random_init);
         AI::getRandomGenerator().seed(random_ai_init);
 
@@ -211,10 +219,31 @@ int main(int argc, char** argv)
         if(replay_path)
             game.RecordReplay(RTTRCONFIG.ExpandPath(*replay_path), random_init);
 
+        const bool testMode = options.count("test") > 0;
+        if(testMode)
+        {
+            if(!lua_path)
+            {
+                bnw::cerr << "--test needs --lua" << std::endl;
+                return 1;
+            }
+            game.ShowLuaOutput();
+        }
+
         game.Run(options["maxGF"].as<unsigned>());
+        if(testMode)
+        {
+            game.CheckTestEnd();
+            bnw::cout << "TEST PASSED" << std::endl;
+        }
         game.Close();
         if(savegame_path)
             game.SaveGame(RTTRCONFIG.ExpandPath(*savegame_path));
+    } catch(const LuaExecutionError& e)
+    {
+        // Also while the script starts (onStart, onSettingsReady ...): a test must never pass on that
+        bnw::cerr << "Lua error: " << e.what() << std::endl;
+        return 2;
     } catch(const std::exception& e)
     {
         bnw::cerr << e.what() << std::endl;

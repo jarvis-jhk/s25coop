@@ -8,6 +8,7 @@
 #include "PlayerInfo.h"
 #include "Savegame.h"
 #include "factories/AIFactory.h"
+#include "lua/LuaInterfaceGame.h"
 #include "network/PlayerGameCommands.h"
 #include "world/GameWorld.h"
 #include "world/MapLoader.h"
@@ -137,6 +138,22 @@ void HeadlessGame::Close()
     }
 
     replay_.Close();
+}
+
+void HeadlessGame::ShowLuaOutput()
+{
+    if(world_.HasLua())
+        world_.GetLua().setSuppressStdout(false);
+}
+
+void HeadlessGame::CheckTestEnd()
+{
+    if(!world_.HasLua())
+        throw std::runtime_error("Test mode needs a Lua script (--lua)");
+    kaguya::LuaRef onTestEnd = world_.GetLua().getState()["onTestEnd"];
+    if(onTestEnd.type() != LUA_TFUNCTION)
+        throw std::runtime_error("Test script has no onTestEnd() function");
+    onTestEnd.call<void>(em_.GetCurrentGF());
 }
 
 void HeadlessGame::RecordReplay(const bfs::path& path, unsigned random_init)

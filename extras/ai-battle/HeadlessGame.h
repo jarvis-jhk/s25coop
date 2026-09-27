@@ -29,6 +29,12 @@ public:
     void Run(unsigned maxGF = std::numeric_limits<unsigned>::max());
     void Close();
 
+    /// s25coop test mode: show the script's rttr:Log output
+    void ShowLuaOutput();
+    /// s25coop test mode: call the script's onTestEnd(), which asserts on the final game state.
+    /// Throws LuaExecutionError on a failed assertion, std::runtime_error if there is no such function.
+    void CheckTestEnd();
+
     void RecordReplay(const boost::filesystem::path& path, unsigned random_init);
     void SaveGame(const boost::filesystem::path& path) const;
 

@@ -14,3 +14,7 @@ add_subdirectory(rttrConfig)
 add_subdirectory(s25client)
 add_subdirectory(s25Main)
 add_subdirectory(testHelpers)
+
+if(TARGET ai-battle)
+    add_subdirectory(coop)
+endif()
