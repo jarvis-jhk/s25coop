@@ -6,16 +6,19 @@
 #include "CollisionDetection.h"
 #include "GlobalVars.h"
 #include "Loader.h"
+#include "RTTR_Version.h"
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
 #include "controls/ctrlTimer.h"
+#include "coop/Changelog.h"
 #include "desktops/dskCredits.h"
 #include "desktops/dskIntro.h"
 #include "desktops/dskMultiPlayer.h"
 #include "desktops/dskOptions.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTest.h"
+#include "ingameWindows/iwChangelog.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "ingameWindows/iwTextfile.h"
 
@@ -27,9 +30,11 @@ enum
     ID_btIntro,
     ID_btReadme,
     ID_btCredits,
+    ID_btChangelog,
     ID_btQuit,
     ID_logo,
-    ID_tmrDebugData
+    ID_tmrDebugData,
+    ID_tmrChangelog
 };
 
 dskMainMenu::dskMainMenu()
@@ -44,14 +49,22 @@ dskMainMenu::dskMainMenu()
     AddTextButton(ID_btIntro, DrawPoint(115, 280), Extent(220, 22), TextureColor::Green2, _("Intro"), NormalFont)
       ->SetEnabled(false);
     AddTextButton(ID_btReadme, DrawPoint(115, 310), Extent(220, 22), TextureColor::Green2, _("Readme"), NormalFont);
-    AddTextButton(ID_btCredits, DrawPoint(115, 340), Extent(220, 22), TextureColor::Green2, _("Credits"), NormalFont);
-    AddTextButton(ID_btQuit, DrawPoint(115, 390), Extent(220, 22), TextureColor::Red1, _("Quit program"), NormalFont);
+    AddTextButton(ID_btChangelog, DrawPoint(115, 340), Extent(220, 22), TextureColor::Green2, _("What's new"),
+                  NormalFont);
+    AddTextButton(ID_btCredits, DrawPoint(115, 370), Extent(220, 22), TextureColor::Green2, _("Credits"), NormalFont);
+    AddTextButton(ID_btQuit, DrawPoint(115, 410), Extent(220, 22), TextureColor::Red1, _("Quit program"), NormalFont);
 
     AddImage(ID_logo, DrawPoint(20, 20), LOADER.GetImageN("logo", 0));
 
     using namespace std::chrono_literals;
     if(SETTINGS.global.submitDebugData == SubmitDebugData::AskAtStart)
         AddTimer(ID_tmrDebugData, 250ms);
+
+    // Returning to the main menu later finds nothing new, because showing it marks the version as seen
+    pendingChangelog_ = coop::changelog::newSince(coop::changelog::loadInstalled(), SETTINGS.global.coopChangelogSeen,
+                                                  rttr::version::GetVersion());
+    if(!pendingChangelog_.empty())
+        AddTimer(ID_tmrChangelog, 100ms); // a window shown now would be closed by the desktop switch
 
     /*AddText(20, DrawPoint(50, 450), _("Font Test"), COLOR_YELLOW, FontStyle::LEFT, SmallFont);
     AddText(21, DrawPoint(50, 470), _("Font Test"), COLOR_YELLOW, FontStyle::LEFT, NormalFont);
@@ -62,6 +75,15 @@ dskMainMenu::dskMainMenu()
 void dskMainMenu::Msg_Timer(const unsigned ctrl_id)
 {
     GetCtrl<ctrlTimer>(ctrl_id)->Stop();
+    if(ctrl_id == ID_tmrChangelog)
+    {
+        WINDOWMANAGER.Show(std::make_unique<iwChangelog>(pendingChangelog_));
+        // Only once it was really shown: a missing file or a quit before the timer must not swallow the news.
+        // newSince() never returns anything for a downgrade, so this only ever moves forward.
+        SETTINGS.global.coopChangelogSeen = rttr::version::GetVersion();
+        SETTINGS.Save();
+        return;
+    }
     WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
       _("Submit debug data?"),
       _("RttR now supports sending debug data. Would you like to help us improving this game by sending debug data?"),
@@ -114,6 +136,7 @@ void dskMainMenu::Msg_ButtonClick(const unsigned ctrl_id)
         case ID_btQuit: // "Quit"
             GLOBALVARS.notdone = false;
             break;
+        case ID_btChangelog: WINDOWMANAGER.ToggleWindow(std::make_unique<iwChangelog>()); break;
         case ID_btReadme: // "Readme"
             WINDOWMANAGER.ToggleWindow(std::make_unique<iwTextfile>("readme.txt", _("Readme!")));
             break;

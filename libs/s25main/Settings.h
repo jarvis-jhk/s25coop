@@ -73,6 +73,8 @@ public:
     {
         SubmitDebugData submitDebugData;
         bool useUPNP, smartCursor, debugMode, showGFInfo;
+        /// s25coop: newest version whose changelog the player has seen (shown again after an update)
+        std::string coopChangelogSeen;
     } global;
 
     struct

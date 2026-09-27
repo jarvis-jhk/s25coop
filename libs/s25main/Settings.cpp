@@ -89,6 +89,7 @@ void Settings::LoadDefaults()
     global.smartCursor = true;
     global.debugMode = false;
     global.showGFInfo = false;
+    global.coopChangelogSeen.clear();
     // }
 
     // video
@@ -239,6 +240,7 @@ void Settings::Load()
         global.smartCursor = iniGlobal->getValue("smartCursor", true);
         global.debugMode = iniGlobal->getValue("debugMode", false);
         global.showGFInfo = iniGlobal->getValue("showGFInfo", false);
+        global.coopChangelogSeen = iniGlobal->getValue("coop_changelog_seen", "");
         // };
 
         // video
@@ -450,6 +452,7 @@ void Settings::Save()
     iniGlobal->setValue("smartCursor", global.smartCursor);
     iniGlobal->setValue("debugMode", global.debugMode);
     iniGlobal->setValue("showGFInfo", global.showGFInfo);
+    iniGlobal->setValue("coop_changelog_seen", global.coopChangelogSeen);
     // };
 
     // video

@@ -363,6 +363,8 @@ endif()
 install(DIRECTORY "data/RTTR" DESTINATION "${RTTR_DATADIR}"
         PATTERN ".*" EXCLUDE
 )
+# s25coop: the player changelog, shown in-game after an update
+install(FILES "CHANGELOG.md" DESTINATION "${RTTR_DATADIR}/RTTR/texte")
 
 # Documentation. TODO: Avoid recursive entries?
 if(NOT WIN32)

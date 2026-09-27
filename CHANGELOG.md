@@ -3,6 +3,11 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.2
+
+- After an update the game shows what is new, once, right in the main menu. The new "What's new"
+  button in the main menu shows the whole list again at any time.
+
 ## 0.1.1
 
 - When the installer, an update or the game fails on Linux, an anonymous fault report is sent so
