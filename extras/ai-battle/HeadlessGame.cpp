@@ -92,12 +92,19 @@ void HeadlessGame::Run(unsigned maxGF)
         {
             if(replay_.IsRecording())
                 checksum = AsyncChecksum::create(game_);
+            if(testInput_)
+                CallTestFrame();
             for(unsigned playerId = 0; playerId < world_.GetNumPlayers(); ++playerId)
             {
                 world_.GetPlayer(playerId);
                 AIPlayer* player = players_[playerId].get();
                 PlayerGameCommands cmds;
                 cmds.gcs = player->FetchGameCommands();
+                if(testInput_)
+                {
+                    for(gc::GameCommandPtr& gc : testInput_->FetchGameCommands(playerId))
+                        cmds.gcs.push_back(std::move(gc));
+                }
 
                 if(replay_.IsRecording() && !cmds.gcs.empty())
                 {
@@ -153,6 +160,23 @@ void HeadlessGame::LoadTestScript(const bfs::path& path)
     if(!world_.GetLua().getState().dofile(path.string()))
         throw std::runtime_error("Failed to load test script: " + path.string());
     bnw::cout << "Test script loaded: " << path << '\n';
+}
+
+void HeadlessGame::EnableTestInput()
+{
+    if(!world_.HasLua())
+        throw std::runtime_error("Test input needs a Lua script (--lua)");
+    kaguya::State& state = world_.GetLua().getState();
+    TestInput::Register(state);
+    testInput_ = std::make_unique<TestInput>(world_);
+    state["test"] = testInput_.get();
+}
+
+void HeadlessGame::CallTestFrame()
+{
+    kaguya::LuaRef onTestFrame = world_.GetLua().getState()["onTestFrame"];
+    if(onTestFrame.type() == LUA_TFUNCTION)
+        onTestFrame.call<void>(em_.GetCurrentGF());
 }
 
 void HeadlessGame::CheckTestEnd()

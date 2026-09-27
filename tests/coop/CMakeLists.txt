@@ -6,19 +6,27 @@
 # and a Lua script asserts on the game state. Exit code 2 = Lua error or failed assertion.
 set(coopTestMap ${PROJECT_SOURCE_DIR}/tests/testData/maps/LuaFunctions.SWD)
 
+# Optional further arguments: the AI of each player (default: two aijh)
 function(coop_headless_args out script maxGF)
+    set(ais ${ARGN})
+    if(NOT ais)
+        set(ais aijh aijh)
+    endif()
+    list(TRANSFORM ais PREPEND "--ai;")
     set(${out}
-        --test --map ${coopTestMap} --lua ${CMAKE_CURRENT_SOURCE_DIR}/headless/${script} --ai aijh --ai aijh
+        --test --map ${coopTestMap} --lua ${CMAKE_CURRENT_SOURCE_DIR}/headless/${script} ${ais}
         --random_init 1 --random_ai_init 1 --maxGF ${maxGF}
         PARENT_SCOPE)
 endfunction()
 
 function(add_coop_headless_test name script maxGF)
-    coop_headless_args(args ${script} ${maxGF})
+    coop_headless_args(args ${script} ${maxGF} ${ARGN})
     add_test(NAME ${name} COMMAND ai-battle ${args} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 add_coop_headless_test(CoopHeadless_Smoke smoke.lua 6000)
+# Scripted input: player 0 does nothing on its own, the script builds for it
+add_coop_headless_test(CoopHeadless_ScriptedInput scriptedInput.lua 6000 dummy aijh)
 # The harness must notice a failing script, or a green run proves nothing. Matching the message rather than
 # WILL_FAIL: a run that fails for another reason (map not found) must not count as a pass.
 add_coop_headless_test(CoopHeadless_FailingScriptFails mustFail.lua 100)

@@ -127,3 +127,16 @@ Found:
 - CI: master green on every job at 59463b52a (Clang-Tidy, macOS, Windows, all Linux), 2026-09-27 08:07 UTC.
 Next: scripted input (M0.5 item 2) so a test can drive a mission to its triggers; offer the two upstream fixes
 (ai-battle log dir, IsBuildingEnabled null guard) as PRs to Return-To-The-Roots.
+
+## 2026-09-27 — quota filler: scripted input (M0.5)
+- `ai-battle --test` now gives the scripts a global `test` (extras/ai-battle/TestInput.*) and calls `onTestFrame(gf)` at
+  every network frame (every 20 GF) before commands are collected. Queued commands run with the AI's commands of that
+  player, and are recorded in a --replay. API: SetBuildingSite, DestroyBuilding, SetFlag, DestroyFlag, BuildRoad (route
+  as digits 0-5 = W NW NE E SE SW), ConnectFlags (path found at call time — connect a new site one frame later),
+  Attack, GetFlagPos, FindBuildingSpot (-1,-1 if none). Use `--ai dummy` for a player the script controls alone.
+- ctest `CoopHeadless_ScriptedInput` (dummy player 0 builds a woodcutter + road, asserted built by 6000 GF); checked
+  that it fails when the road is left out. Codex review: no findings.
+- `coop_headless_args`/`add_coop_headless_test` take the per-player AIs as extra arguments (default aijh aijh).
+Next: M0.5 "assertions on game state" — drive one campaign mission (MISS200) to a real trigger (onOccupied/
+onExplored or a won mission) with scripted input; needs more of the API (military buildings, maybe a Lua hook to
+know which trigger fired). Still open: the two upstream PRs (ai-battle log dir, IsBuildingEnabled null guard).

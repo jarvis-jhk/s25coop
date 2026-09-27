@@ -8,6 +8,7 @@
 #include "Game.h"
 #include "ILocalGameState.h"
 #include "Replay.h"
+#include "TestInput.h"
 #include "ai/AIPlayer.h"
 #include "gameTypes/AIInfo.h"
 #include <boost/filesystem.hpp>
@@ -35,6 +36,9 @@ public:
     /// s25coop test mode: run a second script in the same Lua state as the map's script (--lua), e.g. to wrap
     /// a campaign mission's event handlers with checks and to add onTestEnd
     void LoadTestScript(const boost::filesystem::path& path);
+    /// s25coop test mode: give the scripts the global `test` (see TestInput) and call their onTestFrame(gf) at
+    /// every network frame, before the commands of that frame are collected
+    void EnableTestInput();
     /// s25coop test mode: call the script's onTestEnd(), which asserts on the final game state.
     /// Throws LuaExecutionError on a failed assertion, std::runtime_error if there is no such function.
     void CheckTestEnd();
@@ -47,6 +51,7 @@ public:
 
 private:
     void PrintState();
+    void CallTestFrame();
 
     struct LocalState : ILocalGameState
     {
@@ -68,6 +73,7 @@ private:
     Replay replay_;
     boost::filesystem::path replayPath_;
     boost::filesystem::path luaPath_;
+    std::unique_ptr<TestInput> testInput_;
 
     unsigned lastReportGf_ = 0;
     std::chrono::steady_clock::time_point gameStartTime_;

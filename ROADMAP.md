@@ -30,8 +30,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ☑ b) every official campaign mission (roman 200–209, world 9 maps) loads with its script and runs
     30000 frames without a Lua error: ctest `CoopMission_*`, local only (`RTTR_COOP_S2_DIR`, original S2
     data never in the repo or public CI). Since 2026-09-27.
-- ☐ Scripted input: a test script issues player commands (build, attack, ...) at given game
-  frames, through the same command path as network players.
+- ☑ Scripted input: a test script issues player commands (build, attack, ...) at given game
+  frames, through the same command path as network players. `onTestFrame(gf)` + global `test`
+  (extras/ai-battle/TestInput.h), ctest `CoopHeadless_ScriptedInput`. Since 2026-09-27.
 - ☐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers
   (onGameFrame, onOccupied, victory/defeat, message boxes) fired. One smoke test per campaign
   mission: loads, scripting runs N minutes without Lua errors.

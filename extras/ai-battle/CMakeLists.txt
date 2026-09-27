@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-add_executable(ai-battle main.cpp HeadlessGame.cpp)
+add_executable(ai-battle main.cpp HeadlessGame.cpp TestInput.cpp)
 target_link_libraries(ai-battle PRIVATE s25Main Boost::program_options Boost::nowide)
 
 if(WIN32)
