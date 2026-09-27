@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "AsyncChecksum.h"
 #include "Game.h"
 #include "ILocalGameState.h"
 #include "Replay.h"
@@ -34,6 +35,9 @@ public:
     /// s25coop test mode: call the script's onTestEnd(), which asserts on the final game state.
     /// Throws LuaExecutionError on a failed assertion, std::runtime_error if there is no such function.
     void CheckTestEnd();
+
+    /// s25coop test mode: the state checksum as used for async detection, to compare two runs
+    AsyncChecksum GetChecksum() const { return AsyncChecksum::create(game_); }
 
     void RecordReplay(const boost::filesystem::path& path, unsigned random_init);
     void SaveGame(const boost::filesystem::path& path) const;

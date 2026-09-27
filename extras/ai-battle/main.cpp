@@ -234,6 +234,8 @@ int main(int argc, char** argv)
         if(testMode)
         {
             game.CheckTestEnd();
+            // Same map, seeds and GF must give the same line: tests/coop/checkDeterminism.cmake compares two runs
+            bnw::cout << "Final state: " << game.GetChecksum() << std::endl;
             bnw::cout << "TEST PASSED" << std::endl;
         }
         game.Close();
