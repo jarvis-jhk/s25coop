@@ -56,7 +56,8 @@ enum GUI_ID : unsigned
     CGI_TOOLS,
     CGI_TRANSPORT,
     CGI_VICTORY,
-    CGI_CHANGELOG, /// s25coop: what changed since the last update
+    /// s25coop: what changed since the last update
+    CGI_CHANGELOG,
     CGI_BUILDING, /// Building windows use this as the base ID and add a unique number for each building
     CGI_NEXT = CGI_BUILDING + MAX_MAP_SIZE * MAX_MAP_SIZE
 };
