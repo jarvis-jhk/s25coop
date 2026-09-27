@@ -40,3 +40,21 @@ Codex review: `codex exec` cannot run its sandbox here (no userns) — pipe the 
 `git diff … | codex exec -m gpt-6-sol "Review this diff (on stdin)…"`.
 History rewritten the same day (Jan: "bitte nuken"): the domain in the first fork commit's CLAUDE.md
 and its author e-mail are gone; master, v0.1.0 and v0.1.1 force-pushed, releases and assets intact.
+
+## 2026-09-27 — quota filler: in-game changelog (0.1.2)
+No open issues, no feedback from Jan yet. Built the in-game changelog: `libs/s25main/coop/Changelog.*`
+(parse CHANGELOG.md, compare versions, `newSince`), `ingameWindows/iwChangelog.*`, main-menu button
+"What's new" + one-time pop-up via a 100 ms timer (a window shown in a desktop constructor is closed
+by the switch). Settings key `coop_changelog_seen`, written only after the window was shown.
+CHANGELOG.md is installed to `RTTR/texte/` (CMake install + copyDepsToBuildDir). Tests:
+tests/s25Main/simple/testCoopChangelog.cpp, tests/s25Main/UI/testCoopChangelogWindow.cpp (drives
+the real dskMainMenu). Codex review found 2 real bugs, fixed before commit.
+Local build environment now exists: Debian dev packages installed with apt in the JARVIS container
+(lost on container recreate — reinstall with the package list in coop-release.yml plus
+libboost-test-dev ccache ninja-build clang-format), build dir `build/dev` (Ninja, ccache,
+RTTR_VERSION=0.1.2, CXX_FLAGS=-Wno-array-bounds because GCC 12 + Boost 1.74 trips -Werror in
+upstream's test mocks). Tests need `USER=root HOME=<dir>` or they fail with "Could not get username".
+No S2 game data here, so the real client cannot be started locally; UI tests with mock drivers are
+the closest thing — that is also the entry point for M0.5.
+Next: M0 leftovers (Steam grid artwork, Deck controller basics) or M0.5 headless runner
+(extras/ai-battle/HeadlessGame.cpp already runs a game headless — start from there).

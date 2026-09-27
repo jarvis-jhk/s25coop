@@ -8,8 +8,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☑ CI: GitHub Actions builds Linux x86_64 (portable tarball/AppImage) and Windows on every
   tag, publishes a GitHub Release with notes.
 - ☑ Versioning + `CHANGELOG.md`, written for players, one entry per release.
-- ☐ In-game changelog: after an update the game shows what changed since the last run
-  (menu entry to show it again).
+- ☑ In-game changelog: after an update the game shows what changed since the last run
+  (menu entry "What's new" to show it again). Since 0.1.2.
 - ◐ Auto-update (launcher-level done in install.sh; in-game later): the installed game checks the GitHub releases of this repo and updates itself
   (reuse/adapt RttR's `s25update` where possible).
 - ◐ Steam Deck installer (written, untested on a Deck; no grid artwork yet): one `.desktop` file to open in Desktop Mode (pattern:
