@@ -51,9 +51,9 @@ HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, 
     : HeadlessGame(ggs, map, GeneratePlayerInfo(ais), luaPath)
 {}
 
-HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, std::vector<PlayerInfo> players,
+HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, const std::vector<PlayerInfo>& players,
                            const bfs::path& luaPath)
-    : map_(map), game_(ggs, std::make_unique<EventManager>(0), std::move(players)), world_(game_.world_),
+    : map_(map), game_(ggs, std::make_unique<EventManager>(0), players), world_(game_.world_),
       em_(*static_cast<EventManager*>(game_.em_.get()))
 {
     MapLoader loader(world_);

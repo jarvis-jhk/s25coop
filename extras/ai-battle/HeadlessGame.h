@@ -27,8 +27,8 @@ public:
     HeadlessGame(const GlobalGameSettings& ggs, const boost::filesystem::path& map, const std::vector<AI::Info>& ais,
                  const boost::filesystem::path& luaPath = {});
     /// s25coop: the players as stored in a replay
-    HeadlessGame(const GlobalGameSettings& ggs, const boost::filesystem::path& map, std::vector<PlayerInfo> players,
-                 const boost::filesystem::path& luaPath);
+    HeadlessGame(const GlobalGameSettings& ggs, const boost::filesystem::path& map,
+                 const std::vector<PlayerInfo>& players, const boost::filesystem::path& luaPath);
     ~HeadlessGame();
 
     void Run(unsigned maxGF = std::numeric_limits<unsigned>::max());
