@@ -4,11 +4,16 @@
 
 #include "TestInput.h"
 #include "GamePlayer.h"
+#include "buildings/nobBaseWarehouse.h"
+#include "helpers/EnumRange.h"
 #include "lua/LuaHelpers.h"
 #include "pathfinding/FindPathForRoad.h"
 #include "world/GameWorld.h"
+#include "nodeObjs/noFlag.h"
 #include "gameData/BuildingConsts.h"
 #include <kaguya/kaguya.hpp>
+#include <algorithm>
+#include <set>
 
 TestInput::TestInput(const GameWorld& world) : world_(world), queues_(world.GetNumPlayers()) {}
 
@@ -21,7 +26,9 @@ void TestInput::Register(kaguya::State& state)
                                   .addFunction("DestroyFlag", &TestInput::DestroyFlag)
                                   .addFunction("BuildRoad", &TestInput::BuildRoad)
                                   .addFunction("ConnectFlags", &TestInput::ConnectFlags)
+                                  .addFunction("ConnectToNetwork", &TestInput::ConnectToNetwork)
                                   .addFunction("Attack", &TestInput::Attack)
+                                  .addFunction("CallSpecialist", &TestInput::CallSpecialist)
                                   .addFunction("GetFlagPos", &TestInput::GetFlagPos)
                                   .addFunction("FindBuildingSpot", &TestInput::FindBuildingSpot));
 }
@@ -91,9 +98,56 @@ bool TestInput::ConnectFlags(unsigned player, unsigned x1, unsigned y1, unsigned
     return queue.BuildRoad(start, false, route);
 }
 
+std::tuple<int, int> TestInput::ConnectToNetwork(unsigned player, unsigned x, unsigned y, unsigned radius)
+{
+    Queue& queue = queueFor(player);
+    const MapPoint start = toPoint(x, y);
+    // Only flags a warehouse reaches by road count: joining two loose flags would leave both cut off
+    std::set<const noRoadNode*> connected;
+    std::vector<const noRoadNode*> todo;
+    for(const nobBaseWarehouse* wh : world_.GetPlayer(player).GetBuildingRegister().GetStorehouses())
+        todo.push_back(wh);
+    while(!todo.empty())
+    {
+        const noRoadNode* node = todo.back();
+        todo.pop_back();
+        if(!connected.insert(node).second)
+            continue;
+        for(const Direction dir : helpers::EnumRange<Direction>{})
+        {
+            if(const noRoadNode* next = node->GetNeighbour(dir))
+                todo.push_back(next);
+        }
+    }
+    std::vector<MapPoint> flags;
+    for(const MapPoint pt : world_.GetPointsInRadius(start, radius))
+    {
+        const auto* flag = world_.GetSpecObj<noFlag>(pt);
+        if(flag && flag->GetPlayer() == player && connected.count(flag))
+            flags.push_back(pt);
+    }
+    // Nearest first; stable, so a map always gives the same road
+    std::stable_sort(flags.begin(), flags.end(), [&](MapPoint a, MapPoint b) {
+        return world_.CalcDistance(start, a) < world_.CalcDistance(start, b);
+    });
+    for(const MapPoint target : flags)
+    {
+        const std::vector<Direction> route = FindPathForRoad(world_, start, target, false);
+        if(!route.empty() && queue.BuildRoad(start, false, route))
+            return {target.x, target.y};
+    }
+    return {-1, -1};
+}
+
 bool TestInput::Attack(unsigned player, unsigned x, unsigned y, unsigned soldiers, bool strong)
 {
     return queueFor(player).Attack(toPoint(x, y), soldiers, strong);
+}
+
+bool TestInput::CallSpecialist(unsigned player, unsigned x, unsigned y, lua::SafeEnum<Job> job)
+{
+    lua::assertTrue(job == Job::Geologist || job == Job::Scout, "test: only geologists and scouts can be called");
+    return queueFor(player).CallSpecialist(toPoint(x, y), job);
 }
 
 std::tuple<unsigned, unsigned> TestInput::GetFlagPos(unsigned x, unsigned y) const

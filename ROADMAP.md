@@ -33,9 +33,12 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☑ Scripted input: a test script issues player commands (build, attack, ...) at given game
   frames, through the same command path as network players. `onTestFrame(gf)` + global `test`
   (extras/ai-battle/TestInput.h), ctest `CoopHeadless_ScriptedInput`. Since 2026-09-27.
-- ☐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers
-  (onGameFrame, onOccupied, victory/defeat, message boxes) fired. One smoke test per campaign
-  mission: loads, scripting runs N minutes without Lua errors.
+- ◐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers
+  (onGameFrame, onOccupied, victory/defeat, message boxes) fired. Done: smoke test per mission (M0.5b);
+  MISS200 walkthrough — a script plays mission 1 and asserts events 1–8 fire in order (buildings,
+  occupied spots, geologist finds; ctest `CoopWalkthrough_roman_MISS200`, local). Open: the mission's
+  final event (99, the arc at 14,8) and victory; walkthroughs for further missions only where a coop
+  change needs them.
 - ☐ Run it in CI on every push; failures reported to the JARVIS lane.
 - ◐ Replay-based regression: record a short replay, assert it still replays in sync. First part done:
   same seed twice → same final checksum (ctest `CoopHeadless_Deterministic`).

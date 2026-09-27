@@ -69,4 +69,14 @@ if(RTTR_COOP_S2_DIR)
                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
         set_tests_properties(CoopMission_${campaign}_${map} PROPERTIES ENVIRONMENT "RTTR_GAME_DIR=${RTTR_COOP_S2_DIR}")
     endforeach()
+
+    # Mission walkthroughs: a script plays the mission as player 0 (a dummy AI) and asserts that the mission's own
+    # triggers fire in order (buildings, occupied spots, geologist finds)
+    add_test(NAME CoopWalkthrough_roman_MISS200
+             COMMAND ai-battle --test --objective none --map ${RTTR_COOP_S2_DIR}/DATA/MAPS/MISS200.WLD
+                     --lua ${PROJECT_SOURCE_DIR}/data/RTTR/campaigns/roman/MISS200.lua
+                     --test-script ${CMAKE_CURRENT_SOURCE_DIR}/headless/miss200Walkthrough.lua --ai dummy
+                     --random_init 1 --random_ai_init 1 --maxGF 20000
+             WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    set_tests_properties(CoopWalkthrough_roman_MISS200 PROPERTIES ENVIRONMENT "RTTR_GAME_DIR=${RTTR_COOP_S2_DIR}")
 endif()

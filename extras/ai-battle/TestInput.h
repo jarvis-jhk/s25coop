@@ -7,6 +7,7 @@
 #include "factories/GameCommandFactory.h"
 #include "lua/SafeEnum.h"
 #include "gameTypes/BuildingType.h"
+#include "gameTypes/JobTypes.h"
 #include <string>
 #include <tuple>
 #include <vector>
@@ -41,7 +42,13 @@ public:
     /// Road between two flags along a path found now, on the current map; false if there is none.
     /// A flag or building site queued in the same frame does not exist yet: connect it one frame later.
     bool ConnectFlags(unsigned player, unsigned x1, unsigned y1, unsigned x2, unsigned y2);
+    /// Road from the flag at x,y to the nearest flag of the player (within radius) that is already connected to a
+    /// warehouse and that a road can reach now; returns that flag's position, or -1, -1 if there is none. Same
+    /// one-frame rule as ConnectFlags.
+    std::tuple<int, int> ConnectToNetwork(unsigned player, unsigned x, unsigned y, unsigned radius);
     bool Attack(unsigned player, unsigned x, unsigned y, unsigned soldiers, bool strong);
+    /// Send a geologist or scout (JOB_GEOLOGIST, JOB_SCOUT) to the player's flag at x,y
+    bool CallSpecialist(unsigned player, unsigned x, unsigned y, lua::SafeEnum<Job> job);
 
     // Queries that commands need, answered from the current map
     /// Map position of the flag in front of a building spot

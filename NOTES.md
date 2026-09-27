@@ -141,3 +141,20 @@ Next: M0.5 "assertions on game state" — drive one campaign mission (MISS200) t
 onExplored or a won mission) with scripted input; needs more of the API (military buildings, maybe a Lua hook to
 know which trigger fired). Upstream PRs opened: Return-To-The-Roots/s25client#1985 (IsBuildingEnabled null guard) and #1986 (ai-battle log dir),
 branches fix/* on origin. Check them in the next sessions; answer reviews, close quietly if rejected.
+
+## 2026-09-27 — quota filler: MISS200 walkthrough (M0.5 assertions)
+- CI note: the scripted-input commit 0c878d8e8 never got Unit tests/Static analysis — the NOTES commit pushed right after
+  it cancelled them (concurrency cancel-in-progress). Commit NOTES together with the code, or wait for CI first.
+- New test API: `test:ConnectToNetwork(p, fx, fy, radius)` (road to the nearest flag that a warehouse reaches by road;
+  Codex review caught that the first version happily joined two loose flags) and `test:CallSpecialist(p, x, y,
+  JOB_GEOLOGIST|JOB_SCOUT)`. Roads: queue ONE per frame — two roads planned in the same frame can cross, and the second
+  is refused when it runs (that silently left an armory unconnected).
+- tests/coop/headless/miss200Walkthrough.lua: dummy player 0 plays MISS200 (woodcutter/quarry/sawmill → forester →
+  barracks to (34,28) → geologists on mine-capable spots → iron mine/smelter/armory → barracks to (39,19)) and asserts
+  the mission's own eHist has events 1–7 (8 comes free from a geologist finding water). ~9500 GF, 0.2 s; passes with
+  seeds 1,2,3,7; exit 2 with too few frames. ctest `CoopWalkthrough_roman_MISS200` (local, needs RTTR_COOP_S2_DIR).
+  Tip: FindBuildingSpot(P, BLD_IRONMINE, …) finds mountain spots even while the mine is disabled.
+- clang-format 10 is not installed here (system has 14; pip 10.x wheel missing) — include order was the only diff.
+Next: event 99 / victory of MISS200 needs the far corner (14,8) — several military buildings + maybe scouting; or move
+on to M0.5 "CI on every push → failures to the lane" (the fault-report path exists; CI failures of master should file an
+issue). Upstream PRs #1985/#1986: no review yet.
