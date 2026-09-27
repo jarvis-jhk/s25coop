@@ -104,9 +104,20 @@ Found:
   Lua in a test script: `rttr:GetPlayerCount()`, `rttr:GetPlayer(i):GetNumBuildings(BLD_…)`, `IsDefeated()`,
   `rttr:Log` is visible in test mode. Run locally: `USER=root HOME=/app/agent/data/siedler/testhome ctest -R Coop`
   in build/dev. Test_drivers fails locally only (no ALSA device in the container).
-- S2 data: Jan said yes (2026-09-27) but not where. A root `find` for MISS200.WLD on the laptop was DENIED
-  (non-root find: permission denied on /home/mint). Asked him for the path; do not re-request the search.
-Next: M0.5b (campaign mission smoke test, blocked on the S2 data path from Jan), otherwise scripted input
-(M0.5 item 2: commands at given GFs through the same path as network players — look at how the AI's
-FetchGameCommands feeds HeadlessGame::Run and add a Lua/command-file driven player), or determinism check
-(run twice, compare AsyncChecksum) as a cheap start on replay regression.
+- Determinism (e773fbd70): `--test` prints `Final state: <AsyncChecksum>`; ctest `CoopHeadless_Deterministic`
+  (tests/coop/checkDeterminism.cmake) runs the smoke game twice and compares. At 20000 GF the AIs fight and
+  player 0 loses its HQ — keep smoke runs at 6000 GF.
+- `--test-script` (b8bf97b02): second Lua file in the map script's state; tests/coop/headless/missionSmoke.lua
+  wraps a mission's onStart/onGameFrame and adds onTestEnd. For M0.5b:
+  `RTTR_GAME_DIR=<S2 dir> ai-battle --test --map <S2>/DATA/MAPS/MISS200.WLD --lua data/RTTR/campaigns/roman/MISS200.lua
+  --test-script tests/coop/headless/missionSmoke.lua --ai aijh [--ai … per map player] --maxGF N`
+  (RTTR_GAME_DIR confirmed in RttrConfig.cpp; how many --ai a mission map needs is untested).
+- S2 data: Jan said yes and "in ~/Gaming, symlinked where s25coop expects it" (= ~/.local/share/s25coop/S2 on
+  the laptop). Every `laptop (root)` gateway command fails with "request is not valid JSON" (reported to the self
+  lane, t_mujgl5wh14qv0z); non-root cannot read /home/mint. So Jan got a one-liner to run himself:
+  tar DATA+GFX | split 40M | curl to the one-off app `s2-intake` (data/apps/s2-intake, registered in
+  data/apps.json, secret path in data/apps/s2-intake/secret; nginx caps uploads between 50 and 100 MB).
+  Parts land in data/siedler/s2-incoming/s2.tgz.000, .001 … — when they are there: `cat s2.tgz.* | tar xz`
+  into data/siedler/S2 (never into the repo), then UNREGISTER s2-intake (remove it from data/apps.json and
+  delete data/apps/s2-intake) and run the mission smoke tests.
+Next: M0.5b once the data is in; else scripted input (M0.5 item 2).

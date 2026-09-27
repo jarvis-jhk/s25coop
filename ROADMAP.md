@@ -36,7 +36,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   (onGameFrame, onOccupied, victory/defeat, message boxes) fired. One smoke test per campaign
   mission: loads, scripting runs N minutes without Lua errors.
 - ☐ Run it in CI on every push; failures reported to the JARVIS lane.
-- ☐ Replay-based regression: record a short replay, assert it still replays in sync.
+- ◐ Replay-based regression: record a short replay, assert it still replays in sync. First part done:
+  same seed twice → same final checksum (ctest `CoopHeadless_Deterministic`).
 
 ## M1 — The official campaign, done properly (single group)
 
