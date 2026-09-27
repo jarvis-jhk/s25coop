@@ -139,4 +139,5 @@ Next: scripted input (M0.5 item 2) so a test can drive a mission to its triggers
 - `coop_headless_args`/`add_coop_headless_test` take the per-player AIs as extra arguments (default aijh aijh).
 Next: M0.5 "assertions on game state" — drive one campaign mission (MISS200) to a real trigger (onOccupied/
 onExplored or a won mission) with scripted input; needs more of the API (military buildings, maybe a Lua hook to
-know which trigger fired). Still open: the two upstream PRs (ai-battle log dir, IsBuildingEnabled null guard).
+know which trigger fired). Upstream PRs opened: Return-To-The-Roots/s25client#1985 (IsBuildingEnabled null guard) and #1986 (ai-battle log dir),
+branches fix/* on origin. Check them in the next sessions; answer reviews, close quietly if rejected.
