@@ -10,17 +10,25 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☑ Versioning + `CHANGELOG.md`, written for players, one entry per release.
 - ☑ In-game changelog: after an update the game shows what changed since the last run
   (menu entry "What's new" to show it again). Since 0.1.2.
-- ◐ Auto-update (launcher-level done in install.sh; in-game later): the installed game checks the GitHub releases of this repo and updates itself
-  (reuse/adapt RttR's `s25update` where possible).
+- ☑ Auto-update on Linux/Deck: the launcher (`install.sh run`) updates from GitHub releases before
+  every start. An in-game updater is not needed there.
+- ☐ Windows: launcher/updater and a fault-report hook (`handleException` in s25client.cpp). Low
+  priority — Jan tests on Deck and Mint; do it after M0.5 unless someone asks.
 - ◐ Steam Deck installer (written, untested on a Deck; no grid artwork yet): one `.desktop` file to open in Desktop Mode (pattern:
   ArnoldSmith86/minecraft-splitscreen) — downloads the release, asks for / finds the S2 Gold
   `DATA`+`GFX`, adds a Game Mode shortcut with artwork.
 - ◐ Linux (Mint) install path (same installer): same release, simple install script / AppImage.
+- The ◐ items above can only be closed by a real start on Jan's Deck/Mint. Until his feedback
+  arrives, do not polish them further; work on M0.5 instead (review 2026-09-27).
 
 ## M0.5 — Test harness (before merging anything big)
 
-- ☐ Headless mode: run a map/campaign mission without a window (null video/audio driver), at
-  maximum game speed, with a fixed seed; exit code = result.
+- ☐ Headless mode, split (start from extras/ai-battle/HeadlessGame.cpp):
+  - ☐ a) runner binary loads a map from `tests/testData/maps` with a fixed seed, runs N game frames
+    at maximum speed without video/audio, exit code = result; ctest target, runs in CI.
+  - ☐ b) load a campaign mission (campaign.lua + mission Lua) the same way. ⚠ The campaign maps
+    (MISS2xx.WLD) are original S2 data: not in the repo, not in public CI. Runs locally only,
+    once S2 data is in the container (asked Jan 2026-09-27; path kept out of the repo).
 - ☐ Scripted input: a test script issues player commands (build, attack, ...) at given game
   frames, through the same command path as network players.
 - ☐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers

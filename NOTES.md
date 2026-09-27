@@ -65,3 +65,30 @@ gate rejects skipped test lines), Codecov upload only from upstream (fork has no
 the gcc-10 coverage job). Unauthenticated GitHub API gets rate-limited fast when polling CI: use the
 token from /root/.git-credentials. Note: upstream's v0.9.x tags exist in the fork; installer uses
 GitHub *releases*, so they do not matter.
+
+## Wochenreview 2026-09-27
+Direction: on track. Week 1 delivered M0 core (CI releases, installer, launcher auto-update,
+fault reports, in-game changelog; v0.1.0–0.1.2). No Jan feedback yet on a real Deck/Mint start —
+the remaining M0 ◐ items cannot be closed without it, so work moves on to M0.5 meanwhile.
+Found:
+- ⚠ **master CI is RED since 01:11 (not green as the 0.1.2 note said).** Only the release workflow
+  was green. Two failures, both our code:
+  1. Clang-Tidy: `tests/s25Main/simple/testCoopChangelog.cpp:23` push_back in a loop →
+     `result.reserve(sections.size())` (performance-inefficient-vector-operation is -Werror there).
+  2. macOS clang Debug, Test_UI: `testCoopChangelogWindow.cpp:64` wnd is null — the test relies on
+     a 100 ms wall-clock ctrlTimer + sleep(150 ms); flaky/slow on the macOS runner. Make it not
+     depend on wall-clock timing (e.g. show the pop-up on the first Msg_PaintAfter/Draw after the
+     switch instead of a timer, or drive the timer deterministically in the test).
+  → FIRST job of the next work session (quota filler 06:30 runs: week 9 % vs pace 15 %).
+  Lesson: after a push, check the *Unit tests* and *Static analysis* runs of that SHA, not just the
+  release run. Logs: data/siedler/job108534990295.log, job108535189387.log.
+- Campaign tests need original S2 data (roman campaign.lua loads `<RTTR_GAME>/DATA/MAPS/MISS2xx.WLD`),
+  which can never go into the repo/public CI. M0.5 split into (a) test maps in CI, (b) campaign
+  missions locally with S2 data. Asked Jan whether his S2 Gold DATA/GFX may be copied into the
+  container (local only).
+- ROADMAP: auto-update on Linux marked done (launcher does it); Windows updater + fault hook split
+  out as a low-priority item after M0.5.
+- Schedules: all four are right for the goal (work Mon/Wed/Fri, quota filler every 3 h gated,
+  fork sweep 8th/22nd, this review Sun). Quota: filler gate works (week 9 %, pace 15 % → run).
+  Fixed a stale id in this review's own prompt (0895951f → bfa0b45f); review schedule re-created as 42d01edc.
+- No code off-goal. No open issues/PRs; the only issue was the fault-path selftest (#1, closed).

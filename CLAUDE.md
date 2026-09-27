@@ -83,5 +83,5 @@ Commit coherent changes, push to origin. Never force-push published history.
 - bfa0b45f — work session, Mon/Wed/Fri 02:00 UTC: next roadmap item.
 - 847b8113 — quota filler, every 3 h at :30: runs a work session only if quota-gate says "run".
 - 1f3aab11 — fork sweep, 8th and 22nd 03:00 UTC.
-- e3d3aab2 — weekly top-level review, Sun 04:00 UTC (Jan, 2026-09-26): no coding; check that
+- 42d01edc — weekly top-level review, Sun 04:00 UTC (Jan, 2026-09-26): no coding; check that
   schedules, running work and code still lead to the goal, fix what is ours, log it in NOTES.md.
