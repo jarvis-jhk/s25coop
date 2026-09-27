@@ -26,6 +26,9 @@ class HeadlessGame
 public:
     HeadlessGame(const GlobalGameSettings& ggs, const boost::filesystem::path& map, const std::vector<AI::Info>& ais,
                  const boost::filesystem::path& luaPath = {});
+    /// s25coop: the players as stored in a replay
+    HeadlessGame(const GlobalGameSettings& ggs, const boost::filesystem::path& map, std::vector<PlayerInfo> players,
+                 const boost::filesystem::path& luaPath);
     ~HeadlessGame();
 
     void Run(unsigned maxGF = std::numeric_limits<unsigned>::max());
@@ -45,6 +48,19 @@ public:
 
     /// s25coop test mode: the state checksum as used for async detection, to compare two runs
     AsyncChecksum GetChecksum() const { return AsyncChecksum::create(game_); }
+
+    struct ReplayCheck
+    {
+        unsigned numChecked = 0; ///< Command sets that carried a checksum
+        unsigned numAsync = 0;   ///< ... of which did not match the replayed game
+        unsigned firstAsyncGF = 0;
+        AsyncChecksum expected, actual; ///< at firstAsyncGF
+        unsigned endGF = 0;        ///< Where the replayed game stopped; before the recorded end = it finished early
+        bool commandsLeft = false; ///< Recorded commands the replayed game never reached
+    };
+    /// s25coop test mode: replay the commands of a replay loaded with LoadGameData instead of running the AIs, up to
+    /// its last GF, and compare every recorded checksum with the replayed game (as the client does when watching one)
+    ReplayCheck PlayReplay(Replay& replay);
 
     void RecordReplay(const boost::filesystem::path& path, unsigned random_init);
     void SaveGame(const boost::filesystem::path& path) const;

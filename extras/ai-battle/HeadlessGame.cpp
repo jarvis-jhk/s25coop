@@ -10,6 +10,7 @@
 #include "factories/AIFactory.h"
 #include "lua/LuaInterfaceGame.h"
 #include "network/PlayerGameCommands.h"
+#include "variant.h"
 #include "world/GameWorld.h"
 #include "world/MapLoader.h"
 #include "gameTypes/MapInfo.h"
@@ -18,6 +19,7 @@
 #include <boost/nowide/iostream.hpp>
 #include <chrono>
 #include <cstdio>
+#include <optional>
 #include <sstream>
 #ifdef WIN32
 #    include "Windows.h"
@@ -46,7 +48,12 @@ void printConsole(const char* fmt, ...);
 
 HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, const std::vector<AI::Info>& ais,
                            const bfs::path& luaPath)
-    : map_(map), game_(ggs, std::make_unique<EventManager>(0), GeneratePlayerInfo(ais)), world_(game_.world_),
+    : HeadlessGame(ggs, map, GeneratePlayerInfo(ais), luaPath)
+{}
+
+HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, std::vector<PlayerInfo> players,
+                           const bfs::path& luaPath)
+    : map_(map), game_(ggs, std::make_unique<EventManager>(0), std::move(players)), world_(game_.world_),
       em_(*static_cast<EventManager*>(game_.em_.get()))
 {
     MapLoader loader(world_);
@@ -132,6 +139,60 @@ void HeadlessGame::Run(unsigned maxGF)
         }
     }
     PrintState();
+}
+
+HeadlessGame::ReplayCheck HeadlessGame::PlayReplay(Replay& replay)
+{
+    // Every command of every player is in the replay, AI ones included; running the AIs would issue them twice
+    players_.clear();
+    ReplayCheck result;
+    gameStartTime_ = std::chrono::steady_clock::now();
+    auto nextReport = gameStartTime_ + std::chrono::seconds(1);
+
+    game_.Start(false);
+
+    std::optional<unsigned> nextGF = replay.ReadGF();
+    while(em_.GetCurrentGF() < replay.GetLastGF() && !game_.IsGameFinished())
+    {
+        const unsigned curGF = em_.GetCurrentGF();
+        // Recorded before the first command of the frame was executed (see Run), so compare against the same point
+        const AsyncChecksum checksum = AsyncChecksum::create(game_);
+        while(nextGF && *nextGF == curGF)
+        {
+            const auto cmd = replay.ReadCommand();
+            if(const auto* gameCmd = boost::variant2::get_if<Replay::GameCommand>(&cmd))
+            {
+                for(const gc::GameCommandPtr& gc : gameCmd->cmds.gcs)
+                    gc->Execute(world_, gameCmd->player);
+                const AsyncChecksum& recorded = gameCmd->cmds.checksum;
+                if(recorded.randChecksum != 0)
+                {
+                    ++result.numChecked;
+                    if(recorded != checksum && result.numAsync++ == 0)
+                    {
+                        result.firstAsyncGF = curGF;
+                        result.expected = recorded;
+                        result.actual = checksum;
+                    }
+                }
+            }
+            nextGF = replay.ReadGF();
+        }
+        if(nextGF && *nextGF < curGF)
+            throw std::runtime_error("Replay commands out of order at GF " + std::to_string(*nextGF));
+
+        game_.RunGF();
+
+        if(std::chrono::steady_clock::now() > nextReport)
+        {
+            nextReport += std::chrono::seconds(1);
+            PrintState();
+        }
+    }
+    PrintState();
+    result.endGF = em_.GetCurrentGF();
+    result.commandsLeft = nextGF.has_value();
+    return result;
 }
 
 void HeadlessGame::Close()

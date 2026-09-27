@@ -6,6 +6,7 @@
 #include "HeadlessGame.h"
 #include "QuickStartGame.h"
 #include "RTTR_Version.h"
+#include "Replay.h"
 #include "RttrConfig.h"
 #include "addons/Addon.h"
 #include "addons/AddonBool.h"
@@ -15,6 +16,7 @@
 #include "files.h"
 #include "lua/LuaInterfaceBase.h"
 #include "random/Random.h"
+#include "gameTypes/MapInfo.h"
 #include "s25util/Log.h"
 #include "s25util/StringConversion.h"
 #include "s25util/System.h"
@@ -70,6 +72,89 @@ static void loadAddonsFromIni(GlobalGameSettings& ggs, const bfs::path& iniPath)
     bnw::cout << "Loaded " << loaded << " addon settings from " << iniPath << '\n';
 }
 
+/// Replays a replay without AIs and compares the checksums recorded with its commands against the replayed game.
+/// Coop and network games rely on every machine computing the same game from the same commands; a replay that does
+/// not replay in sync means that is broken. Exit codes: 0 in sync, 3 async, 1 unusable replay, 2 Lua error.
+static int checkReplay(const bfs::path& path, optional<unsigned> seedOverride)
+{
+    Replay replay;
+    MapInfo mapInfo;
+    if(!replay.LoadHeader(path) || !replay.LoadGameData(mapInfo))
+    {
+        bnw::cerr << "Invalid replay " << path << ": " << replay.GetLastErrorMsg() << std::endl;
+        return 1;
+    }
+    if(mapInfo.type != MapType::OldMap)
+    {
+        bnw::cerr << "Only replays that start from a map can be checked, not from a savegame" << std::endl;
+        return 1;
+    }
+
+    // The map and its script travel inside the replay, as they do for a network game
+    struct TmpDir
+    {
+        bfs::path path = bfs::temp_directory_path() / bfs::unique_path("s25coop-replay-%%%%-%%%%-%%%%");
+        TmpDir() { bfs::create_directories(path); }
+        ~TmpDir()
+        {
+            boost::system::error_code ec;
+            bfs::remove_all(path, ec);
+        }
+    } tmpDir;
+    const bfs::path mapPath = tmpDir.path / mapInfo.filepath.filename();
+    if(!mapInfo.mapData.DecompressToFile(mapPath))
+    {
+        bnw::cerr << "Could not unpack the map from the replay" << std::endl;
+        return 1;
+    }
+    bfs::path luaPath;
+    if(mapInfo.luaData.uncompressedLength)
+    {
+        luaPath = bfs::path(mapPath).replace_extension("lua");
+        if(!mapInfo.luaData.DecompressToFile(luaPath))
+        {
+            bnw::cerr << "Could not unpack the Lua script from the replay" << std::endl;
+            return 1;
+        }
+    }
+
+    std::vector<PlayerInfo> players;
+    for(unsigned i = 0; i < replay.GetNumPlayers(); ++i)
+        players.emplace_back(replay.GetPlayer(i));
+
+    const unsigned seed = seedOverride ? *seedOverride : replay.getSeed();
+    RANDOM.Init(seed);
+    bnw::cout << "Checking replay " << path << " (" << replay.GetNumPlayers() << " players, " << replay.GetLastGF()
+              << " GF, seed " << seed << ")" << std::endl;
+
+    HeadlessGame game(replay.ggs, mapPath, std::move(players), luaPath);
+    const HeadlessGame::ReplayCheck result = game.PlayReplay(replay);
+    bnw::cout << "Final state: " << game.GetChecksum() << std::endl;
+    game.Close();
+
+    if(result.numAsync > 0)
+    {
+        bnw::cout << "Replay ASYNC at GF " << result.firstAsyncGF << ": recorded " << result.expected << ", replayed "
+                  << result.actual << " (" << result.numAsync << " of " << result.numChecked << " checksums differ)"
+                  << std::endl;
+        return 3;
+    }
+    // The recording stops where its game ended, so a replayed game that ends sooner went a different way
+    if(result.endGF != replay.GetLastGF() || result.commandsLeft)
+    {
+        bnw::cout << "Replay ASYNC at GF " << result.endGF << ": the replayed game ended before the recording did (GF "
+                  << replay.GetLastGF() << (result.commandsLeft ? ", commands left" : "") << ")" << std::endl;
+        return 3;
+    }
+    if(result.numChecked == 0)
+    {
+        bnw::cerr << "The replay holds no checksums, so nothing was checked" << std::endl;
+        return 1;
+    }
+    bnw::cout << "Replay in sync: " << result.numChecked << " checksums" << std::endl;
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     bnw::nowide_filesystem();
@@ -80,6 +165,7 @@ int main(int argc, char** argv)
     optional<std::string> lua_path;
     optional<std::string> settings_path;
     optional<std::string> test_script_path;
+    optional<std::string> check_replay_path;
     unsigned random_init = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     unsigned random_ai_init = random_init;
 
@@ -87,8 +173,8 @@ int main(int argc, char** argv)
     // clang-format off
     desc.add_options()
         ("help,h", "Show help")
-        ("map,m", po::value<std::string>()->required(),"Map to load")
-        ("ai", po::value<std::vector<std::string>>()->required(),"AI player(s) to add (aijh | dummy)")
+        ("map,m", po::value<std::string>(),"Map to load (required unless --check-replay)")
+        ("ai", po::value<std::vector<std::string>>(),"AI player(s) to add (aijh | dummy) (required unless --check-replay)")
         ("objective", po::value<std::string>()->default_value("domination"),"domination(default) | conquer | none (campaign missions: the script decides)")
         ("wares", po::value<std::string>()->default_value("normal"),"Starting wares: vlow | low | normal (default) | alot")
         ("settings", po::value(&settings_path),"INI file with an [addons] section to configure addon settings (optional)")
@@ -100,6 +186,7 @@ int main(int argc, char** argv)
         ("maxGF", po::value<unsigned>()->default_value(std::numeric_limits<unsigned>::max()),"Maximum number of game frames to run (optional)")
         ("test", "Test mode: needs --lua; the script's onTestEnd(gf) asserts on the final state, onTestFrame(gf) may issue commands through the global test. Exit code 2 on any Lua error or failed assertion")
         ("test-script", po::value(&test_script_path),"Test mode: a second script run in the map script's Lua state, e.g. checks around a campaign mission (optional)")
+        ("check-replay", po::value(&check_replay_path),"Test mode: replay this replay headless and check that it stays in sync with the recorded game. Exit code 3 if not. --random_init overrides the recorded seed (to prove the check can fail)")
         ("version", "Show version information and exit")
         ;
     // clang-format on
@@ -136,6 +223,8 @@ int main(int argc, char** argv)
         }
 
         po::notify(options);
+        if(!check_replay_path && (!options.count("map") || !options.count("ai")))
+            throw std::runtime_error("--map and --ai are required");
     } catch(const std::exception& e)
     {
         bnw::cerr << "Error: " << e.what() << std::endl;
@@ -161,6 +250,10 @@ int main(int argc, char** argv)
         LOG.setLogFilepath(logDir);
         RANDOM.Init(random_init);
         AI::getRandomGenerator().seed(random_ai_init);
+
+        if(check_replay_path)
+            return checkReplay(RTTRCONFIG.ExpandPath(*check_replay_path),
+                               options.count("random_init") ? optional<unsigned>(random_init) : optional<unsigned>());
 
         const bfs::path mapPath = RTTRCONFIG.ExpandPath(options["map"].as<std::string>());
         const std::vector<AI::Info> ais = ParseAIOptions(options["ai"].as<std::vector<std::string>>());

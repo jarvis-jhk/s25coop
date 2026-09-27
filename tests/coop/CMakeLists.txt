@@ -39,6 +39,14 @@ add_test(NAME CoopHeadless_Deterministic
                  ${CMAKE_CURRENT_SOURCE_DIR}/checkDeterminism.cmake
          WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
+# Replay regression: record the scripted-input game (AI and script commands) and replay it in sync
+coop_headless_args(replayArgs scriptedInput.lua 6000 dummy aijh)
+string(REPLACE ";" "|" replayArgs "${replayArgs}")
+add_test(NAME CoopHeadless_ReplayInSync
+         COMMAND ${CMAKE_COMMAND} -DAI_BATTLE=$<TARGET_FILE:ai-battle> "-DARGS=${replayArgs}"
+                 -DREPLAY=${CMAKE_CURRENT_BINARY_DIR}/replayInSync.rpl -P ${CMAKE_CURRENT_SOURCE_DIR}/checkReplay.cmake
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
 # Campaign mission smoke tests (ROADMAP M0.5b): each official mission loads with its own script and runs 30000 frames
 # (about 25 game minutes) without a Lua error. The maps are original Settlers II data, which can never be in this
 # repository or in public CI, so these exist only when a local S2 folder (with DATA and GFX) is configured.

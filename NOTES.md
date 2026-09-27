@@ -158,3 +158,16 @@ branches fix/* on origin. Check them in the next sessions; answer reviews, close
 Next: event 99 / victory of MISS200 needs the far corner (14,8) — several military buildings + maybe scouting; or move
 on to M0.5 "CI on every push → failures to the lane" (the fault-report path exists; CI failures of master should file an
 issue). Upstream PRs #1985/#1986: no review yet.
+
+## 2026-09-27 — quota filler: replay regression (M0.5)
+- `ai-battle --check-replay <rpl>` (HeadlessGame::PlayReplay): unpacks map+Lua from the replay, runs no AIs, executes the
+  recorded commands and compares each recorded AsyncChecksum (taken before the frame's first command, as in Run) with the
+  replayed game; exit 3 on async or if the game ends before the recorded last GF / leaves commands unread (Codex review
+  caught the early-end case). `--random_init` overrides the seed. Prints `Final state:` like --test.
+- ctest `CoopHeadless_ReplayInSync` (tests/coop/checkReplay.cmake): records the scripted-input game, checks it in sync with
+  the same final state, and checks that a wrong seed is reported async. Manually also in sync: MISS200 walkthrough
+  (18 checksums) and a 30000-GF AIJH fight (669 checksums).
+- ROADMAP M0.5 CI item closed: CoopHeadless_* run in CI already and failed workflows reach the lane via the webhook.
+Next: M0.5 leftovers are optional (MISS200 event 99/victory; GameClient-side replay). Suggest moving to M1 (campaign
+status / unlocking: upstream PR #1681 by kubaau + ottml's enable_next_missions) or M2 engine groundwork (several clients
+→ one player slot), both now testable headless. Upstream PRs #1985/#1986: still no review.

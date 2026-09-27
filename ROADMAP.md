@@ -39,9 +39,13 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   occupied spots, geologist finds; ctest `CoopWalkthrough_roman_MISS200`, local). Open: the mission's
   final event (99, the arc at 14,8) and victory; walkthroughs for further missions only where a coop
   change needs them.
-- ☐ Run it in CI on every push; failures reported to the JARVIS lane.
-- ◐ Replay-based regression: record a short replay, assert it still replays in sync. First part done:
-  same seed twice → same final checksum (ctest `CoopHeadless_Deterministic`).
+- ☑ Run it in CI on every push; failures reported to the JARVIS lane: the `CoopHeadless_*` tests run with the unit
+  tests on every push, and a failed workflow reaches the lane through the repo's GitHub webhook. The mission tests
+  need original S2 data and stay local.
+- ☑ Replay-based regression: same seed twice → same final checksum (ctest `CoopHeadless_Deterministic`);
+  `ai-battle --check-replay <rpl>` replays a recording without AIs, compares every recorded checksum and the final
+  state, exit 3 on async (ctest `CoopHeadless_ReplayInSync`, incl. a wrong-seed run that must be caught). Since
+  2026-09-27. Not covered: replaying through the real GameClient (needs the video mock setup of the UI tests).
 
 ## M1 — The official campaign, done properly (single group)
 
