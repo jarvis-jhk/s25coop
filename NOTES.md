@@ -58,3 +58,10 @@ No S2 game data here, so the real client cannot be started locally; UI tests wit
 the closest thing — that is also the entry point for M0.5.
 Next: M0 leftovers (Steam grid artwork, Deck controller basics) or M0.5 headless runner
 (extras/ai-battle/HeadlessGame.cpp already runs a game headless — start from there).
+Released v0.1.2 (CI all green on every platform incl. Windows/macOS; release tarball carries
+share/s25rttr/RTTR/texte/CHANGELOG.md). CI fixes on the way: clang-format 10 comment alignment,
+the UI test now overrides the running version (CI dev builds have date versions and the coverage
+gate rejects skipped test lines), Codecov upload only from upstream (fork has no token — it failed
+the gcc-10 coverage job). Unauthenticated GitHub API gets rate-limited fast when polling CI: use the
+token from /root/.git-credentials. Note: upstream's v0.9.x tags exist in the fork; installer uses
+GitHub *releases*, so they do not matter.
