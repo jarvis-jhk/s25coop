@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "RTTR_Version.h"
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlMultiline.h"
@@ -39,12 +38,13 @@ BOOST_AUTO_TEST_CASE(ShowsGivenSections)
 // The whole path a player takes: new version installed, game starts, main menu opens the window by itself
 BOOST_AUTO_TEST_CASE(MainMenuShowsChangelogAfterUpdate)
 {
-    const std::string current = rttr::version::GetVersion();
-    if(!coop::changelog::isReleaseVersion(current))
+    // CI builds carry a date as version, which never pops up; play a release instead
+    const std::string current = "0.5.0";
+    coop::changelog::overrideRunningVersion(current);
+    struct ResetVersion
     {
-        BOOST_TEST_MESSAGE("Dev build (" << current << "), the changelog pops up only in release builds");
-        return;
-    }
+        ~ResetVersion() { coop::changelog::overrideRunningVersion(""); }
+    } resetVersion;
     rttr::test::TmpFolder tmp;
     bfs::create_directories(tmp / "texte");
     {

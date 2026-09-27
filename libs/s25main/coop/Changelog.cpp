@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "coop/Changelog.h"
+#include "RTTR_Version.h"
 #include "RttrConfig.h"
 #include "files.h"
 #include <boost/algorithm/string/trim.hpp>
@@ -14,6 +15,8 @@
 namespace coop::changelog {
 
 namespace {
+    std::string versionOverride;
+
     std::vector<unsigned> versionParts(const std::string& version)
     {
         std::vector<unsigned> parts;
@@ -110,6 +113,16 @@ std::vector<Section> newSince(const std::vector<Section>& sections, const std::s
             break;
     }
     return result;
+}
+
+std::string runningVersion()
+{
+    return versionOverride.empty() ? rttr::version::GetVersion() : versionOverride;
+}
+
+void overrideRunningVersion(std::string version)
+{
+    versionOverride = std::move(version);
 }
 
 std::vector<Section> loadInstalled()

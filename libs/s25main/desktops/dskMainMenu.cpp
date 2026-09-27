@@ -6,7 +6,6 @@
 #include "CollisionDetection.h"
 #include "GlobalVars.h"
 #include "Loader.h"
-#include "RTTR_Version.h"
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
@@ -62,7 +61,7 @@ dskMainMenu::dskMainMenu()
 
     // Returning to the main menu later finds nothing new, because showing it marks the version as seen
     pendingChangelog_ = coop::changelog::newSince(coop::changelog::loadInstalled(), SETTINGS.global.coopChangelogSeen,
-                                                  rttr::version::GetVersion());
+                                                  coop::changelog::runningVersion());
     if(!pendingChangelog_.empty())
         AddTimer(ID_tmrChangelog, 100ms); // a window shown now would be closed by the desktop switch
 
@@ -80,7 +79,7 @@ void dskMainMenu::Msg_Timer(const unsigned ctrl_id)
         WINDOWMANAGER.Show(std::make_unique<iwChangelog>(pendingChangelog_));
         // Only once it was really shown: a missing file or a quit before the timer must not swallow the news.
         // newSince() never returns anything for a downgrade, so this only ever moves forward.
-        SETTINGS.global.coopChangelogSeen = rttr::version::GetVersion();
+        SETTINGS.global.coopChangelogSeen = coop::changelog::runningVersion();
         SETTINGS.Save();
         return;
     }

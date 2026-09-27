@@ -52,7 +52,7 @@ the real dskMainMenu). Codex review found 2 real bugs, fixed before commit.
 Local build environment now exists: Debian dev packages installed with apt in the JARVIS container
 (lost on container recreate — reinstall with the package list in coop-release.yml plus
 libboost-test-dev ccache ninja-build clang-format), build dir `build/dev` (Ninja, ccache,
-RTTR_VERSION=0.1.2, CXX_FLAGS=-Wno-array-bounds because GCC 12 + Boost 1.74 trips -Werror in
+RTTR_VERSION unset = date like CI, CXX_FLAGS=-Wno-array-bounds because GCC 12 + Boost 1.74 trips -Werror in
 upstream's test mocks). Tests need `USER=root HOME=<dir>` or they fail with "Could not get username".
 No S2 game data here, so the real client cannot be started locally; UI tests with mock drivers are
 the closest thing — that is also the entry point for M0.5.

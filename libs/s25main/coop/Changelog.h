@@ -32,6 +32,11 @@ std::vector<Section> parse(std::istream& in);
 std::vector<Section> newSince(const std::vector<Section>& sections, const std::string& lastSeen,
                               const std::string& current);
 
+/// The version the changelog is compared against: this build's version unless a test overrides it
+std::string runningVersion();
+/// For tests: pretend to be  version (empty = back to the build's version)
+void overrideRunningVersion(std::string version);
+
 /// Reads the installed CHANGELOG.md (next to the readme). Empty if it is missing.
 std::vector<Section> loadInstalled();
 
