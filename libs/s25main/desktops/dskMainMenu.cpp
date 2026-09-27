@@ -32,8 +32,7 @@ enum
     ID_btChangelog,
     ID_btQuit,
     ID_logo,
-    ID_tmrDebugData,
-    ID_tmrChangelog
+    ID_tmrDebugData
 };
 
 dskMainMenu::dskMainMenu()
@@ -62,8 +61,6 @@ dskMainMenu::dskMainMenu()
     // Returning to the main menu later finds nothing new, because showing it marks the version as seen
     pendingChangelog_ = coop::changelog::newSince(coop::changelog::loadInstalled(), SETTINGS.global.coopChangelogSeen,
                                                   coop::changelog::runningVersion());
-    if(!pendingChangelog_.empty())
-        AddTimer(ID_tmrChangelog, 100ms); // a window shown now would be closed by the desktop switch
 
     /*AddText(20, DrawPoint(50, 450), _("Font Test"), COLOR_YELLOW, FontStyle::LEFT, SmallFont);
     AddText(21, DrawPoint(50, 470), _("Font Test"), COLOR_YELLOW, FontStyle::LEFT, NormalFont);
@@ -71,18 +68,25 @@ dskMainMenu::dskMainMenu()
     //  !\"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz\\_ABCDEFGHIJKLMNOPQRSTUVWXYZÇüéâäàåçêëèïîì©ÄÅôöòûùÖÜáíóúñ
 }
 
+void dskMainMenu::SetActive(bool activate)
+{
+    dskMenuBase::SetActive(activate);
+    // Shown on the first activation after the desktop switch, not in the constructor: the switch closes every
+    // window, and one queued for it would land on whatever desktop replaced this one if the switch changed.
+    if(!activate || pendingChangelog_.empty() || WINDOWMANAGER.GetCurrentDesktop() != this)
+        return;
+    const auto sections = std::move(pendingChangelog_);
+    pendingChangelog_.clear();
+    WINDOWMANAGER.Show(std::make_unique<iwChangelog>(sections));
+    // Only once it was really shown: a missing file or a quit before must not swallow the news.
+    // newSince() never returns anything for a downgrade, so this only ever moves forward.
+    SETTINGS.global.coopChangelogSeen = coop::changelog::runningVersion();
+    SETTINGS.Save();
+}
+
 void dskMainMenu::Msg_Timer(const unsigned ctrl_id)
 {
     GetCtrl<ctrlTimer>(ctrl_id)->Stop();
-    if(ctrl_id == ID_tmrChangelog)
-    {
-        WINDOWMANAGER.Show(std::make_unique<iwChangelog>(pendingChangelog_));
-        // Only once it was really shown: a missing file or a quit before the timer must not swallow the news.
-        // newSince() never returns anything for a downgrade, so this only ever moves forward.
-        SETTINGS.global.coopChangelogSeen = coop::changelog::runningVersion();
-        SETTINGS.Save();
-        return;
-    }
     WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
       _("Submit debug data?"),
       _("RttR now supports sending debug data. Would you like to help us improving this game by sending debug data?"),

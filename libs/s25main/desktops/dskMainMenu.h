@@ -14,6 +14,7 @@ class dskMainMenu : public dskMenuBase
 public:
     dskMainMenu();
 
+    void SetActive(bool activate = true) override;
     void Msg_ButtonClick(unsigned ctrl_id) override;
     void Msg_Timer(unsigned ctrl_id) override;
     void Msg_MsgBoxResult(unsigned msgbox_id, MsgboxResult mbr) override;

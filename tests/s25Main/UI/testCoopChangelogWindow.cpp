@@ -14,8 +14,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <boost/test/unit_test.hpp>
-#include <chrono>
-#include <thread>
 
 namespace bfs = boost::filesystem;
 
@@ -55,10 +53,7 @@ BOOST_AUTO_TEST_CASE(MainMenuShowsChangelogAfterUpdate)
     SETTINGS.global.coopChangelogSeen = "0.0.1";
 
     WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
-    WINDOWMANAGER.Draw(); // performs the desktop switch
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
-    WINDOWMANAGER.Draw(); // fires the timer
-    WINDOWMANAGER.Draw();
+    WINDOWMANAGER.Draw(); // performs the desktop switch, which brings the queued window
 
     const auto* wnd = dynamic_cast<const iwChangelog*>(WINDOWMANAGER.GetTopMostWindow());
     BOOST_TEST_REQUIRE(wnd);
@@ -71,9 +66,6 @@ BOOST_AUTO_TEST_CASE(MainMenuShowsChangelogAfterUpdate)
     // Back to the main menu in the same run: no second pop-up
     WINDOWMANAGER.CloseNow(const_cast<iwChangelog*>(wnd));
     WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
-    WINDOWMANAGER.Draw();
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
-    WINDOWMANAGER.Draw();
     WINDOWMANAGER.Draw();
     BOOST_TEST(!dynamic_cast<const iwChangelog*>(WINDOWMANAGER.GetTopMostWindow()));
 }

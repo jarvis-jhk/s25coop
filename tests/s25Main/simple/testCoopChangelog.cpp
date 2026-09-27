@@ -19,6 +19,7 @@ std::vector<Section> sample()
 std::vector<std::string> versions(const std::vector<Section>& sections)
 {
     std::vector<std::string> result;
+    result.reserve(sections.size());
     for(const auto& s : sections)
         result.push_back(s.version);
     return result;
