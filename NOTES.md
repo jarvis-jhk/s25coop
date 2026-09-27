@@ -92,3 +92,21 @@ Found:
   fork sweep 8th/22nd, this review Sun). Quota: filler gate works (week 9 %, pace 15 % → run).
   Fixed a stale id in this review's own prompt (0895951f → bfa0b45f); review schedule re-created as 42d01edc.
 - No code off-goal. No open issues/PRs; the only issue was the fault-path selftest (#1, closed).
+
+## 2026-09-27 — quota filler: CI red fixed, headless harness M0.5a
+- Master CI fix (9782c1ea9): the changelog pop-up now opens in `dskMainMenu::SetActive(true)` on the first
+  activation as current desktop (no wall-clock timer; Codex rejected `ShowAfterSwitch` from the ctor because the
+  queued window would land on another desktop if the switch was replaced). clang-tidy `reserve()` fixed.
+- M0.5a (b51fd23fa): `ai-battle --test` + `onTestEnd(gf)` contract, tests/coop/CMakeLists.txt with
+  `CoopHeadless_Smoke` and `CoopHeadless_FailingScriptFails` (PASS_REGULAR_EXPRESSION on the assertion text, so
+  a run failing for another reason does not count). Upstream bug fixed on the way: ai-battle logged to ./logs and
+  died on the first Lua error when that folder was missing — worth offering upstream.
+  Lua in a test script: `rttr:GetPlayerCount()`, `rttr:GetPlayer(i):GetNumBuildings(BLD_…)`, `IsDefeated()`,
+  `rttr:Log` is visible in test mode. Run locally: `USER=root HOME=/app/agent/data/siedler/testhome ctest -R Coop`
+  in build/dev. Test_drivers fails locally only (no ALSA device in the container).
+- S2 data: Jan said yes (2026-09-27) but not where. A root `find` for MISS200.WLD on the laptop was DENIED
+  (non-root find: permission denied on /home/mint). Asked him for the path; do not re-request the search.
+Next: M0.5b (campaign mission smoke test, blocked on the S2 data path from Jan), otherwise scripted input
+(M0.5 item 2: commands at given GFs through the same path as network players — look at how the AI's
+FetchGameCommands feeds HeadlessGame::Run and add a Lua/command-file driven player), or determinism check
+(run twice, compare AsyncChecksum) as a cheap start on replay regression.
