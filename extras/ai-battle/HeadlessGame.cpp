@@ -146,6 +146,15 @@ void HeadlessGame::ShowLuaOutput()
         world_.GetLua().setSuppressStdout(false);
 }
 
+void HeadlessGame::LoadTestScript(const bfs::path& path)
+{
+    if(!world_.HasLua())
+        throw std::runtime_error("--test-script needs --lua");
+    if(!world_.GetLua().getState().dofile(path.string()))
+        throw std::runtime_error("Failed to load test script: " + path.string());
+    bnw::cout << "Test script loaded: " << path << '\n';
+}
+
 void HeadlessGame::CheckTestEnd()
 {
     if(!world_.HasLua())

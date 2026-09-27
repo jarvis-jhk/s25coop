@@ -32,6 +32,9 @@ public:
 
     /// s25coop test mode: show the script's rttr:Log output
     void ShowLuaOutput();
+    /// s25coop test mode: run a second script in the same Lua state as the map's script (--lua), e.g. to wrap
+    /// a campaign mission's event handlers with checks and to add onTestEnd
+    void LoadTestScript(const boost::filesystem::path& path);
     /// s25coop test mode: call the script's onTestEnd(), which asserts on the final game state.
     /// Throws LuaExecutionError on a failed assertion, std::runtime_error if there is no such function.
     void CheckTestEnd();

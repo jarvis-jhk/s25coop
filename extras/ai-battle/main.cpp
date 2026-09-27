@@ -79,6 +79,7 @@ int main(int argc, char** argv)
     optional<std::string> savegame_path;
     optional<std::string> lua_path;
     optional<std::string> settings_path;
+    optional<std::string> test_script_path;
     unsigned random_init = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     unsigned random_ai_init = random_init;
 
@@ -98,6 +99,7 @@ int main(int argc, char** argv)
         ("random_ai_init", po::value(&random_ai_init),"Seed value for the AI random number generator (optional)")
         ("maxGF", po::value<unsigned>()->default_value(std::numeric_limits<unsigned>::max()),"Maximum number of game frames to run (optional)")
         ("test", "Test mode: needs --lua; the script's onTestEnd(gf) asserts on the final state. Exit code 2 on any Lua error or failed assertion")
+        ("test-script", po::value(&test_script_path),"Test mode: a second script run in the map script's Lua state, e.g. checks around a campaign mission (optional)")
         ("version", "Show version information and exit")
         ;
     // clang-format on
@@ -228,6 +230,8 @@ int main(int argc, char** argv)
                 return 1;
             }
             game.ShowLuaOutput();
+            if(test_script_path)
+                game.LoadTestScript(RTTRCONFIG.ExpandPath(*test_script_path));
         }
 
         game.Run(options["maxGF"].as<unsigned>());
