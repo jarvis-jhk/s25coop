@@ -124,5 +124,6 @@ Found:
   data/siedler/run-missions.sh does the same and finds each map's player count.
   Note: most missions have no onGameFrame; their triggers are onOccupied/onExplored etc. The smoke test
   only proves "loads and runs"; asserting that triggers fire needs scripted input (next).
+- CI: master green on every job at 59463b52a (Clang-Tidy, macOS, Windows, all Linux), 2026-09-27 08:07 UTC.
 Next: scripted input (M0.5 item 2) so a test can drive a mission to its triggers; offer the two upstream fixes
 (ai-battle log dir, IsBuildingEnabled null guard) as PRs to Return-To-The-Roots.
