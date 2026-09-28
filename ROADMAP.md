@@ -14,9 +14,13 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   every start. An in-game updater is not needed there.
 - ☐ Windows: launcher/updater and a fault-report hook (`handleException` in s25client.cpp). Low
   priority — Jan tests on Deck and Mint; do it after M0.5 unless someone asks.
-- ◐ Steam Deck installer (written, untested on a Deck; no grid artwork yet): one `.desktop` file to open in Desktop Mode (pattern:
-  ArnoldSmith86/minecraft-splitscreen) — downloads the release, asks for / finds the S2 Gold
-  `DATA`+`GFX`, adds a Game Mode shortcut with artwork.
+- ◐ Steam Deck installer (written, untested on a Deck): one `.desktop` file to open in Desktop Mode (pattern:
+  ArnoldSmith86/minecraft-splitscreen) — downloads the release, takes `DATA`+`GFX`+`VIDEO` out of the
+  GOG installer or an archive.org CD copy in ~/Downloads (no disk-wide search; help page otherwise,
+  Jan 2026-09-28), adds a Game Mode shortcut named "The Settlers II: Coop" with SteamGridDB artwork.
+- ☑ Intro: the main menu's Intro button plays the original `VIDEO/INTRO.SMK` (Smacker via libsmacker)
+  with sound. The original campaign plays no other video (checked 2026-09-28, see NOTES).
+- ☑ Default display: borderless window at the desktop resolution (Jan 2026-09-28).
 - ◐ Linux (Mint) install path (same installer): same release, simple install script / AppImage.
 - The ◐ items above can only be closed by a real start on Jan's Deck/Mint. Until his feedback
   arrives, do not polish them further; work on M0.5 instead (review 2026-09-27).
@@ -82,6 +86,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
 - ☐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
+- ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
+  gamepad support are done).
 
 ## M4 — More campaigns
 

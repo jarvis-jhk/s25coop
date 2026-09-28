@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- Copyright (C) 2026 s25coop contributors. SPDX-License-Identifier: GPL-2.0-or-later -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>s25coop needs the original Settlers II</title>
+<style>
+  body { font: 17px/1.5 system-ui, sans-serif; max-width: 46em; margin: 2em auto; padding: 0 1em; color: #222; background: #f6f1e4; }
+  h1 { color: #7a2e0e; font-size: 1.6em; }
+  h2 { color: #7a2e0e; font-size: 1.2em; margin-top: 1.8em; }
+  code { background: #fff; padding: .1em .35em; border-radius: 4px; border: 1px solid #ddd2b8; }
+  .box { background: #fff; border: 1px solid #ddd2b8; border-radius: 8px; padding: .8em 1.2em; }
+  .gog { display: inline-block; background: #86328a; color: #fff; padding: .6em 1.2em; border-radius: 6px; text-decoration: none; font-weight: bold; }
+  ul.files { columns: 2; padding-left: 1.2em; }
+  ul.files li { break-inside: avoid; }
+</style>
+</head>
+<body>
+<h1>🏰 s25coop needs the original Settlers II</h1>
+
+<p>s25coop is built on <a href="https://www.rttr.info">Return to the Roots</a>, a free remake of the
+<em>engine</em> of The Settlers II. The graphics, sounds, maps, campaign and intro video still belong to
+Blue Byte / Ubisoft and cannot be shipped with it — you bring them from your own copy of
+<strong>The Settlers II Gold Edition</strong>. You need them only once; updates never touch them.</p>
+
+<h2>1. Get the game</h2>
+<p>The easiest way is the GOG version, DRM-free and cheap:</p>
+<p><a class="gog" href="https://www.gog.com/en/game/the_settlers_2_gold_edition">The Settlers 2: Gold Edition on GOG.com</a></p>
+<p>On GOG, go to your library, pick the game, and under <em>Download offline backup game installers</em>
+download the Windows installer. You do <strong>not</strong> need to run it (and you cannot, on Linux).</p>
+
+<h2>2. Leave it in your Downloads folder</h2>
+<p>The s25coop installer looks <strong>only in your Downloads folder</strong> (it never searches your whole
+disk). It recognises these files:</p>
+<div class="box">
+<p><strong>GOG installer:</strong> <code>setup_the_settlers_2_gold_….exe</code>
+(for example <code>setup_the_settlers_2_gold_1.5.1_(30319).exe</code>)</p>
+<p><strong>Copies of the original CD</strong>, as they are named on archive.org:</p>
+<ul class="files">
+<li><code>The Settlers II Gold.zip</code></li>
+<li><code>The Settlers II Gold.bin</code> + <code>.cue</code></li>
+<li><code>Settlers_II_The_Gold_Edition_1997.zip</code></li>
+<li><code>siedler2gold.7z</code></li>
+<li><code>Siedler2-Gold_mdf.zip</code></li>
+<li><code>Siedler2-Gold_nrg.zip</code></li>
+<li><code>siedler2.zip</code></li>
+<li><code>Siedler2.bin</code> / <code>SIEDLER2.bin</code></li>
+<li><code>Die Siedler II.img</code></li>
+<li><code>The Settlers II.img</code></li>
+<li><code>Settlers2MASTER.bin</code></li>
+<li><code>Game4U_12_Settlers-II_cd.bin</code></li>
+</ul>
+<p>Also any <code>.zip</code>, <code>.iso</code>, <code>.bin</code>, <code>.img</code>, <code>.mdf</code> or
+<code>.nrg</code> with “settlers” or “siedler” in its name, and a folder in Downloads that contains the game's
+<code>DATA</code> and <code>GFX</code> folders. A <code>.7z</code> file needs <code>7z</code> or
+<code>bsdtar</code> installed (SteamOS has <code>bsdtar</code>).</p>
+</div>
+
+<h2>3. Start again</h2>
+<p>Go back to the installer window and choose <em>look again</em> — or simply start s25coop, it looks
+again by itself. It copies the folders <code>DATA</code>, <code>GFX</code> and <code>VIDEO</code> (about 60 MB)
+to <code>~/.local/share/s25coop/S2</code>. After that you may delete the download.</p>
+
+<h2>Already have the game installed somewhere?</h2>
+<p>Copy its <code>DATA</code> and <code>GFX</code> folders (and <code>VIDEO</code>, for the intro) into
+<code>~/.local/share/s25coop/S2/</code> yourself, then start s25coop.</p>
+
+<h2>Which version?</h2>
+<p>Return to the Roots is made for the files of <em>The Settlers II: Veni, Vidi, Vici</em> with the Mission CD,
+which is exactly what the Gold Edition is. <em>The Settlers II: 10th Anniversary</em> (2006) is a different
+game and does not work.</p>
+</body>
+</html>

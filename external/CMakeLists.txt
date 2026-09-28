@@ -49,6 +49,7 @@ set(RTTR_BUILD_LOBBY_CLIENT ON)
 add_subdirectory(liblobby)
 
 add_subdirectory(libsiedler2)
+add_subdirectory(libsmacker)
 add_subdirectory(libutil)
 add_subdirectory(mygettext)
 add_subdirectory(s25edit)

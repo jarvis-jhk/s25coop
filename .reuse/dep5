@@ -22,3 +22,7 @@ License: GPL-2.0-or-later
 Files: data/RTTR/MUSIC/SNG/*
 Copyright: 2005 - 2021 Settlers Freaks <sf-team at siedler25.org>
 License: CC0-1.0
+
+Files: external/libsmacker/*
+Copyright: 2012 - 2021 Greg Kennedy
+License: LGPL-2.1-or-later

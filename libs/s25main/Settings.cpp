@@ -104,7 +104,9 @@ void Settings::LoadDefaults()
     } else
     {
         video.windowedSize = video.fullscreenSize = VIDEODRIVER.MinWindowSize;
-        video.displayMode = DisplayMode::Windowed;
+        // s25coop: start as a borderless window covering the screen at the desktop's own resolution
+        // (the video driver sizes a borderless window to the desktop). No mode switch, and right for the Deck.
+        video.displayMode = DisplayMode::BorderlessWindow;
     }
     video.framerate = 0; // Special value for HW vsync
     video.vbo = true;

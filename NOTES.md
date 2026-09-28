@@ -250,3 +250,35 @@ campaign default = the human slot), then step 4 (campaign as network game, MISS2
 - Clang-Tidy on the member commit: bugprone-exception-escape on CoopMember's implicit move-assignment (vector erase
   moves elements). Members are now `std::unique_ptr<CoopMember>`, copy deleted. Lesson: a new struct held by value in
   a vector that gets erase_if'd needs a nothrow move — or hold it by pointer.
+
+## 2026-09-28 — Jan's requests: GOG installer, Intro, Steam artwork, default display (0.1.4)
+- Intro: RttR's Intro button was always disabled (`dskIntro` was an empty page). Now `SmackerVideo`
+  (libs/s25main, wraps vendored libsmacker in external/libsmacker, LGPL-2.1) decodes `<RTTR_GAME>/VIDEO/INTRO.SMK`
+  (case-insensitive lookup); `dskIntro` plays it scaled to 4:3 (320x200 VGA), audio as one WAV effect
+  (louder of music/effects volume), music paused meanwhile, any key/click skips, decode error ends it. Button
+  enabled only when the file exists. Test_sounds/SmackerVideoTests (full decode of the real intro when
+  RTTR_COOP_S2_DIR is set). Seen in the real client under Xvfb (data/siedler/introtest/run.sh; Xvfb needs
+  `SDL_VIDEO_X11_FORCE_EGL=1`, GLX fails with GLXBadContextTag).
+- Videos in the original: SETTLER2.EXE (DOS launcher) names INTRO.SMK and CREDITS.SMK, but no disc ships
+  CREDITS.SMK (checked: 1996 VVV CD, Gold CD, eXoDOS zip, 7z copy, GOG). The campaign itself plays no video,
+  so the intro is the only one. S2.EXE shows DATA/CREDITS.LST pictures instead (RttR's Credits page).
+- Installer: `tools/coop/s2-extract.py` (stdlib only) looks ONLY in the Downloads folder (xdg-user-dir +
+  ~/Downloads, one level): GOG `setup_the_settlers_2_gold_*.exe` via bundled static innoextract 1.9 (release
+  workflow downloads it, sha256 pinned; GOG installer is Inno 5.6.2), ISO/bin/img/mdf/nrg via its own
+  ISO9660 reader (sector layouts 2048/2352/2336/2448, Nero offset), zip (disc image preferred over an
+  installed copy, which lacks VIDEO), .7z via 7z/7za/7zz/bsdtar. Copies DATA+GFX+VIDEO, swapped in as a whole.
+  Nothing found → `s2-help.html` opened (what, why, filenames, GOG link) and "look again" loop. `install.sh run`
+  and s25coop.sh also run it, so a user can drop the file in Downloads and just start the game.
+  Tested on: GOG exe (7 s), The Settlers II Gold.zip (identical to our S2 copy), Settlers_II_The_Gold_Edition_1997.zip,
+  siedler2.zip (installed copy, no VIDEO), siedler2gold.7z, The Settlers II.img, Die Siedler II.img.
+  All 19 official missions pass the headless smoke run on the GOG data (GOG maps differ from the CD: patched).
+  Test fixtures: /app/agent/data/siedler/dl (archive.org) and gogdl (Jan's GOG installer, local only).
+- Steam: entry named "The Settlers II: Coop" with SteamGridDB artwork (Gold Edition, game 5247477; grid p/wide,
+  hero, logo, icon), URLs in add-to-steam.py. Existing "s25coop" entries: `install.sh run` adds the pictures
+  (no Steam restart); re-running the installer renames them (closes Steam; skips if Steam will not close).
+  install.sh now replaces itself by rename (it may be the running script).
+- Display: default is a borderless window at the desktop resolution (Settings::LoadDefaults; existing
+  CONFIG.INI keeps its mode).
+- Codex review: 7 points, all fixed (ISO name traversal, zip member path, malformed ISO aborting the search,
+  non-atomic swap, per-user Steam rename, Steam not closing, decode error freezing the video).
+- ROADMAP: self-updating AppImage added to M3, after splitscreen+gamepad (Jan).

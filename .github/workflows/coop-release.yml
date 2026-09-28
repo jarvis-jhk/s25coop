@@ -66,7 +66,14 @@ jobs:
       - name: Install and bundle
         run: |
           cmake --install build
-          install -m755 tools/coop/s25coop.sh tools/coop/install.sh tools/coop/add-to-steam.py s25coop/
+          install -m755 tools/coop/s25coop.sh tools/coop/install.sh tools/coop/add-to-steam.py tools/coop/s2-extract.py s25coop/
+          install -m644 tools/coop/s2-help.html s25coop/
+          # innoextract unpacks the GOG installer of Settlers II (static build, zlib licence)
+          curl -fsSL https://constexpr.org/innoextract/files/innoextract-1.9-linux.tar.xz -o innoextract.tar.xz
+          echo "008efe5011476ccc4aae17c3e22038b5a1bc5c7aad2b9d4d869537bf3874d21f  innoextract.tar.xz" | sha256sum -c
+          tar -xJf innoextract.tar.xz
+          install -m755 innoextract-1.9-linux/bin/amd64/innoextract s25coop/bin/
+          mkdir -p s25coop/licenses/innoextract && cp innoextract-1.9-linux/license/* s25coop/licenses/innoextract/
           cp tools/release/debian/s25rttr.png s25coop/s25coop.png
           cp CHANGELOG.md README.md LICENSE s25coop/
           echo "$VERSION" > s25coop/VERSION

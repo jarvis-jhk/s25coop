@@ -15,6 +15,7 @@ BASE="${XDG_DATA_HOME:-$HOME/.local/share}/s25coop"
 GAME="$BASE/game"
 S2="$BASE/S2"
 SELF="$BASE/install.sh"
+STEAM_NAME="The Settlers II: Coop"
 
 # Faults are reported anonymously to a public ntfy.sh topic; a GitHub Action in this repo
 # (.github/workflows/fault-reports.yml) turns them into issues. Opt out: S25COOP_NO_REPORTS=1
@@ -63,36 +64,42 @@ download_game() { # <url>
     rm -rf "$GAME.old" && { [ ! -d "$GAME" ] || mv "$GAME" "$GAME.old"; } && mv "$tmp/s25coop" "$GAME" || return 1
     rm -rf "$tmp" "$GAME.old"
     # Keep the updater itself current, so fixes to it reach existing installs.
-    [ -f "$GAME/install.sh" ] && cp "$GAME/install.sh" "$SELF" && chmod +x "$SELF"
+    # Replaced by rename, never rewritten in place: this very script may be the one running, and bash
+    # reads a running script as it goes.
+    [ -f "$GAME/install.sh" ] && cp "$GAME/install.sh" "$SELF.new" && chmod +x "$SELF.new" && mv -f "$SELF.new" "$SELF"
 }
 
 have_s2() { [ -d "$1/DATA" ] && [ -d "$1/GFX" ]; }
 
-find_s2() { # searches the usual places for a Settlers II Gold installation, prints the first
+downloads_dir() { # the user's Downloads folder, localised name included (e.g. ~/Downloads, ~/Téléchargements)
     local d
-    while IFS= read -r d; do
-        d=$(dirname "$d")
-        have_s2 "$d" && [ "$d" != "$S2" ] && { echo "$d"; return 0; }
-    done < <(find "$HOME" /run/media /media /mnt -maxdepth 7 -type d -name GFX \
-                  -not -path '*/.cache/*' -not -path '*/s25coop/*' 2>/dev/null)
-    return 1
+    d=$(xdg-user-dir DOWNLOAD 2>/dev/null)
+    [ -n "$d" ] && [ "$d" != "$HOME" ] && [ -d "$d" ] && { echo "$d"; return; }
+    echo "$HOME/Downloads"
 }
 
+# Takes DATA, GFX and VIDEO out of a Settlers II download (the GOG installer or a copy of the CD) in the
+# Downloads folder. Deliberately no search of the whole disk: it is slow and finds half-copies.
+# Without a usable download it opens a help page saying what is needed, and offers to look again.
 setup_s2() {
     have_s2 "$S2" && return 0
-    local src
-    src=$(find_s2)
-    if [ -n "$src" ] && dialog question "Settlers II files found in:\n$src\n\nUse them? (DATA and GFX are copied, the original stays untouched.)"; then
-        :
-    else
-        dialog info "Please choose the folder of your Settlers II Gold installation\n(the folder that contains DATA and GFX)."
-        if command -v zenity >/dev/null; then src=$(zenity --file-selection --directory 2>/dev/null)
-        elif command -v kdialog >/dev/null; then src=$(kdialog --getexistingdirectory "$HOME" 2>/dev/null)
-        else read -rp "Folder with DATA and GFX: " src; fi
-    fi
-    have_s2 "$src" || fail_user "No DATA and GFX folders in '$src'.\nCopy them to $S2 yourself, then start the game."
-    mkdir -p "$S2" && cp -r "$src/DATA" "$src/GFX" "$S2/" || fail "Copying the Settlers II files failed."
-    say "✅ Settlers II files copied to $S2"
+    local dl used rc folders
+    dl=$(downloads_dir)
+    folders=("$dl"); [ "$dl" != "$HOME/Downloads" ] && folders+=("$HOME/Downloads")
+    while true; do
+        say "🔍 Looking for Settlers II in $dl (this can take a minute when it is found)"
+        used=$(python3 "$GAME/s2-extract.py" auto "$S2" "${folders[@]}" 2> >(tee "$BASE/s2-extract.log" >&2))
+        rc=$?
+        if [ $rc -eq 0 ] && have_s2 "$S2"; then
+            say "✅ Settlers II files taken from ${used##*/}"
+            return 0
+        fi
+        [ $rc -eq 1 ] && report "extracting Settlers II failed" "$(tail -n 30 "$BASE/s2-extract.log")"
+        cp -f "$GAME/s2-help.html" "$BASE/settlers2-needed.html" 2>/dev/null
+        xdg-open "$BASE/settlers2-needed.html" >/dev/null 2>&1 &
+        dialog question "s25coop needs the files of the original Settlers II Gold Edition,\nand no usable download was found in\n$dl\n\nA help page has opened in your browser: it says which file is needed and where to get it\n($BASE/settlers2-needed.html).\n\nPut the file into $dl, then choose Yes to look again." ||
+            fail_user "Settlers II is still missing.\nPut the GOG installer (setup_the_settlers_2_gold_….exe) into $dl and start s25coop again.\nHelp: $BASE/settlers2-needed.html"
+    done
 }
 
 add_menu_entry() {
@@ -113,20 +120,40 @@ DESKTOP
 
 add_to_steam() {
     [ -d "$HOME/.steam/steam/userdata" ] || return 0
-    grep -qs "s25coop/install.sh" "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf && { say "✅ Already in Steam"; return 0; }
-    dialog question "Add s25coop to Steam, so it can be started from Game Mode?\n\nSteam will be closed for a moment and started again." || return 0
+    local f old=0 missing=0
+    for f in "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf; do
+        if grep -qs "s25coop/install.sh" "$f"; then grep -qsF "$STEAM_NAME" "$f" || old=1; else missing=1; fi
+    done
+    if [ $missing -eq 0 ] && [ $old -eq 0 ] && ls "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf >/dev/null 2>&1; then
+        say "✅ Already in Steam"; add_steam_artwork; return 0
+    elif [ $old -eq 1 ]; then
+        # Entries from before 0.1.4 are called "s25coop" and have no artwork: rename them once
+        dialog question "Give the s25coop entry in Steam the Settlers II name and pictures?\n\nSteam will be closed for a moment and started again." || { add_steam_artwork; return 0; }
+    else
+        dialog question "Add s25coop to Steam, so it can be started from Game Mode?\n\nSteam will be closed for a moment and started again." || return 0
+    fi
     say "⏳ Closing Steam to add the shortcut…"
     steam -shutdown >/dev/null 2>&1
     for _ in $(seq 60); do pgrep -x steam >/dev/null || break; sleep 1; done
+    # Steam writes shortcuts.vdf when it exits: an edit made while it still runs would be lost
+    if pgrep -x steam >/dev/null; then say "⚠️ Steam did not close, the Steam entry is left as it is"; return 0; fi
     for f in "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf; do
         [ -f "$f" ] && cp -n "$f" "$f.s25coop-backup"
     done
-    if python3 "$GAME/add-to-steam.py" "s25coop" "$SELF" "$BASE" "run" "$GAME/s25coop.png" 2>"$BASE/add-to-steam.log"; then
+    if python3 "$GAME/add-to-steam.py" "$STEAM_NAME" "$SELF" "$BASE" "run" 2>"$BASE/add-to-steam.log"; then
         say "✅ Added to Steam"
     else
         report "adding to Steam failed" "$(tail -n 40 "$BASE/add-to-steam.log" 2>&1; ls -la "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf 2>&1)"; say "⚠️ Adding to Steam failed (backup of the old shortcuts: shortcuts.vdf.s25coop-backup)"
     fi
     nohup steam >/dev/null 2>&1 &
+}
+
+# Settlers II box art for the Steam entry (library cover, banner, hero, logo, icon), fetched from
+# SteamGridDB. Also run at every start so existing entries get it; files already there are kept.
+add_steam_artwork() {
+    [ -d "$HOME/.steam/steam/userdata" ] && [ -f "$GAME/add-to-steam.py" ] || return 0
+    grep -qs "s25coop/install.sh" "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf || return 0
+    python3 "$GAME/add-to-steam.py" --artwork-only "$STEAM_NAME" "$SELF" >/dev/null 2>>"$BASE/add-to-steam.log" &
 }
 
 run_game() {
@@ -138,6 +165,8 @@ run_game() {
         download_game "$url" || { say "⚠️ Update failed, starting the installed version"; report "update failed" "$(installed_version) -> ${tag#v} from $url"; }
     fi
     [ -x "$GAME/s25coop.sh" ] || fail "s25coop is not installed. Run the installer again."
+    setup_s2
+    add_steam_artwork
     S25COOP_S2_DIR="$S2" exec "$GAME/s25coop.sh" "$@"
 }
 
@@ -151,11 +180,11 @@ install() {
     [ -n "$tag" ] && [ "$url" != "$tag" ] || fail "Could not find a release on github.com/$REPO."
     say "⏳ Downloading s25coop ${tag#v}"
     download_game "$url" || fail "Downloading s25coop failed."
-    cp "$GAME/install.sh" "$SELF" 2>/dev/null || cp "$0" "$SELF"; chmod +x "$SELF"
+    { cp "$GAME/install.sh" "$SELF.new" 2>/dev/null || cp "$0" "$SELF.new"; } && chmod +x "$SELF.new" && mv -f "$SELF.new" "$SELF"
     say "✅ s25coop ${tag#v} installed in $GAME"
-    setup_s2
     add_menu_entry
     add_to_steam
+    setup_s2
     say "\n🎉 Done. Start s25coop from the menu, or from Steam in Game Mode."
     dialog info "s25coop is installed.\n\nStart it from the menu, or in Game Mode from your Steam library (Non-Steam)."
 }

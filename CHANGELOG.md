@@ -3,6 +3,17 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.4
+
+- The installer finds Settlers II by itself: put the GOG installer
+  (`setup_the_settlers_2_gold_….exe`) or a copy of the CD into your Downloads folder and it takes the
+  game files from there. If nothing is found, it opens a page explaining what is needed and where to get it.
+- The Intro button in the main menu works: it plays the original intro video, with sound.
+  Any key or click skips it.
+- The game starts filling the whole screen at your screen's own resolution.
+- The Steam entry is called "The Settlers II: Coop" and shows the Settlers II box art in the
+  library and in Game Mode.
+
 ## 0.1.3
 
 - Campaigns remember your progress: finishing a mission unlocks the next one (in the Roman

@@ -45,7 +45,7 @@ dskMainMenu::dskMainMenu()
                   NormalFont);
     AddTextButton(ID_btOptions, DrawPoint(115, 250), Extent(220, 22), TextureColor::Green2, _("Options"), NormalFont);
     AddTextButton(ID_btIntro, DrawPoint(115, 280), Extent(220, 22), TextureColor::Green2, _("Intro"), NormalFont)
-      ->SetEnabled(false);
+      ->SetEnabled(dskIntro::isAvailable());
     AddTextButton(ID_btReadme, DrawPoint(115, 310), Extent(220, 22), TextureColor::Green2, _("Readme"), NormalFont);
     AddTextButton(ID_btChangelog, DrawPoint(115, 340), Extent(220, 22), TextureColor::Green2, _("What's new"),
                   NormalFont);

@@ -26,16 +26,27 @@ report() { # report <title> <detail>: fire-and-forget, at most a few seconds, ne
     return 0
 }
 
-for cand in "${S25COOP_S2_DIR:-}" "$BASE/S2" "$DIR/share/s25rttr/S2"; do
-    if [ -n "$cand" ] && [ -d "$cand/DATA" ] && [ -d "$cand/GFX" ]; then
-        export RTTR_GAME_DIR="$cand"
-        break
-    fi
-done
+find_s2() {
+    for cand in "${S25COOP_S2_DIR:-}" "$BASE/S2" "$DIR/share/s25rttr/S2"; do
+        if [ -n "$cand" ] && [ -d "$cand/DATA" ] && [ -d "$cand/GFX" ]; then
+            export RTTR_GAME_DIR="$cand"
+            return 0
+        fi
+    done
+    return 1
+}
+# Not set up yet (started from the tarball, without install.sh): take the files from a Settlers II
+# download in the Downloads folder, like the installer does.
+if ! find_s2 && [ -f "$DIR/s2-extract.py" ] && command -v python3 >/dev/null; then
+    dl=$(xdg-user-dir DOWNLOAD 2>/dev/null); { [ -n "$dl" ] && [ "$dl" != "$HOME" ]; } || dl="$HOME/Downloads"
+    echo "Looking for Settlers II in $dl" >&2
+    python3 "$DIR/s2-extract.py" auto "$BASE/S2" "$dl" "$HOME/Downloads" >/dev/null && find_s2
+fi
 if [ -z "${RTTR_GAME_DIR:-}" ]; then
-    msg="Settlers II Gold files not found. Copy the folders DATA and GFX of your Settlers II Gold installation into $BASE/S2/"
-    echo "$msg" >&2
-    if command -v kdialog >/dev/null; then kdialog --error "$msg"
+    msg="The files of the original Settlers II Gold Edition are missing.\nPut the GOG installer (setup_the_settlers_2_gold_….exe) or a copy of the CD into your Downloads folder and start again.\nHelp: $BASE/settlers2-needed.html"
+    mkdir -p "$BASE" && cp -f "$DIR/s2-help.html" "$BASE/settlers2-needed.html" 2>/dev/null && xdg-open "$BASE/settlers2-needed.html" >/dev/null 2>&1 &
+    echo -e "$msg" >&2
+    if command -v kdialog >/dev/null; then kdialog --error "$(echo -e "$msg")"
     elif command -v zenity >/dev/null; then zenity --error --no-wrap --text="$msg"
     fi 2>/dev/null
     exit 1

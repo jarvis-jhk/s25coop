@@ -46,12 +46,14 @@ Downloads are on the [Releases page](https://github.com/jarvis-jhk/s25coop/relea
 
 **Steam Deck** (and any desktop Linux): in Desktop Mode, download
 [Install-s25coop.desktop](https://github.com/jarvis-jhk/s25coop/releases/latest/download/Install-s25coop.desktop)
-and open it in the file manager (Dolphin). It downloads the game, finds your Settlers II files
-(or asks for the folder), and adds s25coop to the menu and to Steam, so it starts from Game Mode.
-Every start checks for a new release and updates itself.
+and open it in the file manager (Dolphin). It downloads the game, adds it to the menu and to Steam
+(as "The Settlers II: Coop", with box art, so it starts from Game Mode) and takes the Settlers II
+files out of the GOG installer in your Downloads folder (see below). Every start checks for a new
+release and updates itself.
 
-**Linux by hand:** unpack `s25coop-<version>-linux-x86_64.tar.gz` anywhere, put `DATA` and `GFX`
-into `~/.local/share/s25coop/S2/`, run `s25coop/s25coop.sh`.
+**Linux by hand:** unpack `s25coop-<version>-linux-x86_64.tar.gz` anywhere and run
+`s25coop/s25coop.sh`; it finds a Settlers II download in `~/Downloads` the same way (or put `DATA`
+and `GFX` into `~/.local/share/s25coop/S2/` yourself).
 
 **Windows:** unpack `s25coop-<version>-windows-x64.zip`, copy `DATA` and `GFX` into the unpacked
 folder, run `s25client.exe`.
@@ -66,8 +68,12 @@ create an empty file `~/.local/share/s25coop/no-reports`.
 
 ## You still need the original game
 
-Like RttR, s25coop uses the original graphics and sounds: copy the `DATA` and `GFX` folders from
-*The Settlers II Gold Edition* (for example the GOG version) — see Install above for where they go.
+Like RttR, s25coop uses the original graphics, sounds and intro video of *The Settlers II Gold
+Edition*. The simplest way: buy it on [GOG](https://www.gog.com/en/game/the_settlers_2_gold_edition),
+download the offline installer `setup_the_settlers_2_gold_….exe` into your Downloads folder, and
+start the s25coop installer — no need to run the GOG installer. Copies of the original CD (`.iso`,
+`.bin`/`.cue`, `.img`, `.mdf`, `.nrg`, or a `.zip`/`.7z` of one) work too. The installer only looks
+in the Downloads folder; if it finds nothing it opens a page that explains what it needs.
 
 ## Who maintains this
 

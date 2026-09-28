@@ -38,7 +38,7 @@ jobs:
       - name: Check include guards
         run: |
           find . \( -path ./build -o -path ./external/glad -o -path ./external/dev-tools -o \
-                    -path ./external/turtle -o -path ./external/kaguya \) \
+                    -path ./external/turtle -o -path ./external/kaguya -o -path ./external/libsmacker \) \
                  -prune -false -o \( -name '*.hpp' -or -name '*.h' \) \
                  -print0 | xargs -0 -n1 tools/ci/checkIncludeGuards.sh
       - name: Lint markdown files
