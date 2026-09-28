@@ -49,8 +49,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 
 ## M1 — The official campaign, done properly (single group)
 
-- ☐ Campaign status: remember finished missions, unlock the next, mark conquered continents
-  (take over upstream PR #1681 by kubaau, and ottml's `enable_next_missions`).
+- ☑ Campaign status: remember finished missions, unlock the next, mark conquered continents.
+  Upstream PR #1681 (kubaau) merged with its review points fixed; since 0.1.3. Tested: unit tests +
+  ctest `CoopCampaign_*` (every official mission, finished headless, records exactly its own chapter).
+  Not yet seen in a real GUI (victory screen, locked buttons) — needs Jan's Deck/Mint.
 - ☐ Mission unlocking and presentation as close to the original as possible (Roman campaign
   MISS200–209, World campaign).
 - ☐ Original videos/intros where the original had them, if they exist in the S2 data.

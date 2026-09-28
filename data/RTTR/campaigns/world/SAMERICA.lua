@@ -68,6 +68,6 @@ end
 
 -------------------------------- mission events -------------------------------
 function onHumanWinner()
-    rttr:SetCampaignChapterCompleted("world", 4)
-    rttr:EnableCampaignChapter("world", 3) -- namerica
+    rttr:SetCampaignChapterCompleted("world", 3)
+    rttr:EnableCampaignChapter("world", 2) -- namerica
 end

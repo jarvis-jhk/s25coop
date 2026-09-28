@@ -171,3 +171,21 @@ issue). Upstream PRs #1985/#1986: no review yet.
 Next: M0.5 leftovers are optional (MISS200 event 99/victory; GameClient-side replay). Suggest moving to M1 (campaign
 status / unlocking: upstream PR #1681 by kubaau + ottml's enable_next_missions) or M2 engine groundwork (several clients
 → one player slot), both now testable headless. Upstream PRs #1985/#1986: still no review.
+
+## 2026-09-28 — quota filler: campaign progress (M1, 0.1.3)
+- Took over upstream PR #1681 (kubaau/campaign_status, merged with authorship) and fixed: world scripts used 1-based
+  chapter ids (Europe marked Africa conquered), world luaFolder "<RTTR_RTTR>/CAMPAIGNS/WORLD" reverted to "" (case
+  breaks on Linux), a config without [campaigns] was reset to defaults (every existing install!), save string padded
+  with NUL bytes instead of '0', "chapter 0" on the victory screen, IsWinnerHuman bug (Flamefire), victory screen
+  now reset at Game::Start, settings saved in ShowMenu when progress changed, default chapters always playable.
+- onHumanWinner now fires also without a GUI, and only when the announced winner (team or player) has a human.
+- Tests: testCampaignSettings (roundtrip, old config, defaults floor, no gaps, every shipped mission completes its own
+  index), testLua HumanWinner* (CheckObjective via Start(true) + SetStatisticValue), local ctest `CoopCampaign_<c>_<map>`
+  (tests/coop/headless/missionComplete.lua finishes each mission via event 99 / onHumanWinner; ai-battle --test prints
+  `Campaign progress: <uid>=<code>`). 83 local tests pass (Test_drivers local-only failure as always).
+- Codex review: winner attribution (fixed + tests). Rejected: "MISS209 enables chapter 10" (it does not; it calls
+  SetCampaignCompleted). Open design point for M2/M5: progress is written to every client's local SETTINGS
+  whatever that client's player did — right for coop (all share the win), wrong for versus campaign maps.
+- Upstream #1681 is kubaau's draft; offering our fixes back = comment on that PR (not done yet).
+Next: M1 "mission unlocking and presentation as close to the original" (check the victory screen/unlock UI against the
+original; Hirotaro's screenshot in #1681), or M2 groundwork. Upstream #1985 approved by Flow86, #1986 no review.

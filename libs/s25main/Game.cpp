@@ -7,6 +7,7 @@
 #include "EventManager.h"
 #include "GameInterface.h"
 #include "GamePlayer.h"
+#include "Settings.h"
 #include "addons/AddonEconomyModeGameLength.h"
 #include "addons/const_addons.h"
 #include "ai/AIPlayer.h"
@@ -30,6 +31,8 @@ void Game::Start(bool startFromSave)
     if(started_)
         return;
     started_ = true;
+    // A victory screen still pending from an earlier game must not show after this one
+    SETTINGS.campaigns.resetCompletionStatus();
     if(startFromSave)
         CheckObjective();
     else
@@ -168,8 +171,11 @@ void Game::CheckObjective()
         default: break;
     }
 
+    if(!finished_)
+        return;
+
     // We have a winner!
-    if(world_.GetGameInterface() && finished_)
+    if(world_.GetGameInterface())
     {
         // If there is a team that is best and it does not only consist of the best player
         // then it is a team victory, else a single players victory
@@ -177,21 +183,22 @@ void Game::CheckObjective()
             world_.GetGameInterface()->GI_TeamWinner(*bestTeam);
         else
             world_.GetGameInterface()->GI_Winner(bestPlayer);
-
-        if(world_.HasLua() && IsWinnerHuman(bestTeam.value_or(0), bestPlayer))
-            world_.GetLua().EventHumanWinner();
     }
+    // Also without a GUI (headless tests) so a campaign script can record the victory.
+    // The winners are the same as announced above: the best team, or the best player alone.
+    const unsigned winners =
+      (bestTeam && *bestTeam != getPlayerMask(bestPlayer)) ? *bestTeam : getPlayerMask(bestPlayer);
+    if(world_.HasLua() && IsAnyHuman(winners))
+        world_.GetLua().EventHumanWinner();
 }
 
-bool Game::IsWinnerHuman(unsigned bestTeam, unsigned bestPlayer) const
+bool Game::IsAnyHuman(unsigned playerMask) const
 {
-    if(world_.GetPlayer(bestPlayer).isHuman())
-        return true;
-
-    for(auto i = 0u; i < world_.GetNumPlayers(); ++i)
-        if(world_.GetPlayer(bestTeam & (1 << i)).isHuman())
+    for(unsigned i = 0; i < world_.GetNumPlayers(); ++i)
+    {
+        if((playerMask & (1u << i)) && world_.GetPlayer(i).isHuman())
             return true;
-
+    }
     return false;
 }
 

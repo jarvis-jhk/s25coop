@@ -182,6 +182,10 @@ bool GameManager::ShowMenu()
     GAMECLIENT.Stop();
     GAMESERVER.Stop();
 
+    // Campaign progress was changed by the game's script: keep it even if the game is not left normally later
+    if(SETTINGS.campaigns.shouldShowVictoryScreen())
+        SETTINGS.Save();
+
     if(LOBBYCLIENT.IsLoggedIn())
         // Lobby zeigen
         windowManager_.Switch(std::make_unique<dskLobby>());

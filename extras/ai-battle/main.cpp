@@ -8,6 +8,7 @@
 #include "RTTR_Version.h"
 #include "Replay.h"
 #include "RttrConfig.h"
+#include "Settings.h"
 #include "addons/Addon.h"
 #include "addons/AddonBool.h"
 #include "addons/AddonList.h"
@@ -336,6 +337,9 @@ int main(int argc, char** argv)
             game.CheckTestEnd();
             // Same map, seeds and GF must give the same line: tests/coop/checkDeterminism.cmake compares two runs
             bnw::cout << "Final state: " << game.GetChecksum() << std::endl;
+            // What the mission scripts recorded as campaign progress (tests/coop: CoopCampaign_*)
+            for(const auto& progress : SETTINGS.campaigns.createSaveData())
+                bnw::cout << "Campaign progress: " << progress.first << "=" << progress.second << std::endl;
             bnw::cout << "TEST PASSED" << std::endl;
         }
         game.Close();

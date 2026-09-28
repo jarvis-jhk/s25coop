@@ -201,7 +201,7 @@ void Settings::Load()
     const auto settingsPath = RTTRCONFIG.ExpandPath(s25::resources::config);
     try
     {
-        if(libsiedler2::Load(settingsPath, settings) != 0 || settings.size() < SECTION_NAMES.size())
+        if(libsiedler2::Load(settingsPath, settings) != 0 || settings.size() < SECTION_NAMES.size() - 1)
             throw std::runtime_error("File missing or invalid");
 
         const libsiedler2::ArchivItem_Ini* iniGlobal =
@@ -225,7 +225,7 @@ void Settings::Load()
 
         // Is one of the categories missing?
         if(!iniGlobal || !iniVideo || !iniLanguage || !iniDriver || !iniSound || !iniLobby || !iniServer || !iniProxy
-           || !iniInterface || !iniAddons || !iniCampaigns)
+           || !iniInterface || !iniAddons)
         {
             throw std::runtime_error("Missing section");
         }
@@ -372,10 +372,14 @@ void Settings::Load()
 
         // campaigns
         // {
-        for(unsigned campaign = 0; campaign < iniCampaigns->size(); ++campaign)
+        // Optional: configs written before campaign progress existed have no such section and keep their settings
+        if(iniCampaigns)
         {
-            if(const auto* item = dynamic_cast<const libsiedler2::ArchivItem_Text*>(iniCampaigns->get(campaign)))
-                campaigns.readSaveData(item->getName(), item->getText());
+            for(const auto& entry : *iniCampaigns)
+            {
+                if(const auto* item = dynamic_cast<const libsiedler2::ArchivItem_Text*>(entry.get()))
+                    campaigns.readSaveData(item->getName(), item->getText());
+            }
         }
         // }
 

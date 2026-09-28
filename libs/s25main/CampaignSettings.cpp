@@ -87,11 +87,15 @@ void CampaignSettings::resetCompletionStatus()
 
 CampaignSettings::CampaignState& CampaignSettings::getCampaignState(const CampaignDescription& campaignDesc)
 {
-    const auto id = campaignDesc.uid;
-    if(!states_.count(id))
-        for(auto chapter : campaignDesc.chaptersEnabled)
-            states_[id][chapter] = ChapterStatus::Enabled;
-    return states_[id];
+    // The default chapters are always playable, also when a script already changed the state of other chapters
+    // before this campaign's description was seen (e.g. a mission continued from a savegame on a fresh profile)
+    auto& state = states_[campaignDesc.uid];
+    for(auto chapter : campaignDesc.chaptersEnabled)
+    {
+        if(state[chapter] == ChapterStatus::Disabled)
+            state[chapter] = ChapterStatus::Enabled;
+    }
+    return state;
 }
 
 std::string CampaignSettings::toSaveString(const CampaignState& state) const
@@ -101,7 +105,7 @@ std::string CampaignSettings::toSaveString(const CampaignState& state) const
 
     std::string result;
 
-    result.resize(state.crbegin()->first + 1);
+    result.resize(state.crbegin()->first + 1, '0');
     for(const auto& status : state)
     {
         const auto ss = status.second;

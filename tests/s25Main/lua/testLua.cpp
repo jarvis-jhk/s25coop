@@ -926,8 +926,53 @@ BOOST_AUTO_TEST_CASE(CampaignStatusCanBeChangedFromLua)
     executeLua("rttr:SetCampaignChapterCompleted('campaign_id', 1)");
     executeLua("rttr:SetCampaignChapterCompleted('campaign_id', 3)");
     executeLua("rttr:EnableCampaignChapter('campaign_id', 4)");
-    executeLua("rttr:EnableCampaignChapter('campaign_id', 1)");       // noop - already completed
+    executeLua("rttr:EnableCampaignChapter('campaign_id', 1)"); // noop - already completed
     BOOST_TEST_REQUIRE(SETTINGS.campaigns.createSaveData()["campaign_id"] == "12021");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+namespace {
+template<GameObjective T_objective>
+struct ObjectiveLuaFixture : LuaTestsFixture
+{
+    static GlobalGameSettings makeGGS()
+    {
+        GlobalGameSettings ggs;
+        ggs.objective = T_objective;
+        return ggs;
+    }
+    ObjectiveLuaFixture() : LuaTestsFixture(makeGGS()) {}
+
+    /// Runs the objective check (as on loading a game) with the given land sizes of player 0 (human) and 1 (AI)
+    void checkObjective(unsigned humanLand, unsigned aiLand)
+    {
+        initWorld();
+        executeLua("humanWon = false\nfunction onHumanWinner() humanWon = true end");
+        world.GetPlayer(0).SetStatisticValue(StatisticType::Country, humanLand);
+        world.GetPlayer(1).SetStatisticValue(StatisticType::Country, aiLand);
+        game.Start(true);
+    }
+};
+} // namespace
+
+BOOST_FIXTURE_TEST_CASE(HumanWinnerEventFiresWhenTheHumanWins, ObjectiveLuaFixture<GameObjective::TotalDomination>)
+{
+    checkObjective(100, 0);
+    BOOST_TEST_REQUIRE(game.IsGameFinished());
+    BOOST_TEST(isLuaEqual("humanWon", "true"));
+}
+
+BOOST_FIXTURE_TEST_CASE(HumanWinnerEventDoesNotFireWhenTheAIWins, ObjectiveLuaFixture<GameObjective::Conquer3_4>)
+{
+    checkObjective(10, 90);
+    BOOST_TEST_REQUIRE(game.IsGameFinished());
+    BOOST_TEST(isLuaEqual("humanWon", "false"));
+}
+
+BOOST_FIXTURE_TEST_CASE(HumanWinnerEventNeedsAWinner, ObjectiveLuaFixture<GameObjective::Conquer3_4>)
+{
+    checkObjective(60, 40);
+    BOOST_TEST_REQUIRE(!game.IsGameFinished());
+    BOOST_TEST(isLuaEqual("humanWon", "false"));
+}

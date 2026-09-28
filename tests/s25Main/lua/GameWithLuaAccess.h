@@ -31,7 +31,9 @@
 class GameWithLuaAccess : public Game
 {
 public:
-    GameWithLuaAccess() : Game(GlobalGameSettings(), 0u, CreatePlayers()) {}
+    explicit GameWithLuaAccess(GlobalGameSettings ggs = GlobalGameSettings())
+        : Game(std::move(ggs), 0u, CreatePlayers())
+    {}
 
     void executeAICommands()
     {
@@ -78,7 +80,7 @@ public:
     MockLocalGameState localGameState;
     std::vector<MapPoint> hqPositions;
 
-    LuaTestsFixture() : world(game.world_)
+    explicit LuaTestsFixture(GlobalGameSettings ggs = GlobalGameSettings()) : game(std::move(ggs)), world(game.world_)
     {
         game.SetLua(std::make_unique<LuaInterfaceGame>(game, localGameState));
         setLua(&world.GetLua());

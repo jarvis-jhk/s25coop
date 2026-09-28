@@ -38,7 +38,8 @@ private:
     void StatisticStep();
     /// Check if the objective was reached (if set)
     void CheckObjective();
-    bool IsWinnerHuman(unsigned bestTeam, unsigned bestPlayer) const;
+    /// True if any player in the mask (bit i = player i) is human
+    bool IsAnyHuman(unsigned playerMask) const;
 
     bool started_, finished_;
     std::unique_ptr<LuaInterfaceGame> lua;

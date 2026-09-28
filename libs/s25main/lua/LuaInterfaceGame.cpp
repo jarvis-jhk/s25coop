@@ -402,9 +402,9 @@ void LuaInterfaceGame::EventStart(bool isFirstStart)
 
 void LuaInterfaceGame::EventHumanWinner()
 {
-    kaguya::LuaRef onStart = lua["onHumanWinner"];
-    if(onStart.type() == LUA_TFUNCTION)
-        onStart.call<void>();
+    kaguya::LuaRef onHumanWinner = lua["onHumanWinner"];
+    if(onHumanWinner.type() == LUA_TFUNCTION)
+        onHumanWinner.call<void>();
 }
 
 void LuaInterfaceGame::EventGameFrame(unsigned nr)

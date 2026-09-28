@@ -59,6 +59,9 @@ if(RTTR_COOP_S2_DIR)
         "roman|MAPS|MISS208|3" "roman|MAPS|MISS209|3" "world|MAPS2|EUROPE|6" "world|MAPS2|NAMERICA|3"
         "world|MAPS2|SAMERICA|3" "world|MAPS2|GREEN|2" "world|MAPS2|AFRICA|4" "world|MAPS2|NASIA|4"
         "world|MAPS2|SASIA|3" "world|MAPS2|JAPAN|2" "world|MAPS2|AUSTRA|2")
+    # Chapter order as in each campaign.lua's maps list
+    set(coopChapters_roman MISS200 MISS201 MISS202 MISS203 MISS204 MISS205 MISS206 MISS207 MISS208 MISS209)
+    set(coopChapters_world EUROPE AFRICA NAMERICA SAMERICA GREEN AUSTRA NASIA SASIA JAPAN)
     foreach(mission IN LISTS coopMissions)
         string(REPLACE "|" ";" mission "${mission}")
         list(GET mission 0 campaign)
@@ -76,6 +79,20 @@ if(RTTR_COOP_S2_DIR)
                          --random_init 1 --random_ai_init 1 --maxGF 30000
                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
         set_tests_properties(CoopMission_${campaign}_${map} PROPERTIES ENVIRONMENT "RTTR_GAME_DIR=${RTTR_COOP_S2_DIR}")
+
+        # Campaign progress (ROADMAP M1): finishing the mission records exactly its own chapter (its index in the
+        # campaign's map list) as completed
+        list(FIND coopChapters_${campaign} ${map} chapter)
+        string(REPEAT "." ${chapter} before)
+        add_test(NAME CoopCampaign_${campaign}_${map}
+                 COMMAND ai-battle --test --objective none --map ${RTTR_COOP_S2_DIR}/DATA/${folder}/${map}.WLD
+                         --lua ${PROJECT_SOURCE_DIR}/data/RTTR/campaigns/${campaign}/${map}.lua
+                         --test-script ${CMAKE_CURRENT_SOURCE_DIR}/headless/missionComplete.lua ${ais}
+                         --random_init 1 --random_ai_init 1 --maxGF 100
+                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+        set_tests_properties(CoopCampaign_${campaign}_${map} PROPERTIES
+            ENVIRONMENT "RTTR_GAME_DIR=${RTTR_COOP_S2_DIR}"
+            PASS_REGULAR_EXPRESSION "Campaign progress: ${campaign}=${before}2[0-9]*[\r\n]+TEST PASSED")
     endforeach()
 
     # Mission walkthroughs: a script plays the mission as player 0 (a dummy AI) and asserts that the mission's own

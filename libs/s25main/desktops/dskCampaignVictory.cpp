@@ -11,10 +11,11 @@
 dskCampaignVictory::dskCampaignVictory()
     : Desktop(LOADER.GetImageN(ResourceId{SETTINGS.campaigns.getCompletedCampaign() ? "setup895" : "setup896"}, 0))
 {
+    // Chapters are indices, players count from 1
     if(!SETTINGS.campaigns.getCompletedCampaign())
         AddText(10, DrawPoint{800 / 2, 600 - 50},
                 _("You have successfully completed chapter") + std::string{" "}
-                  + std::to_string(*SETTINGS.campaigns.getCompletedChapter()) + ".",
+                  + std::to_string(*SETTINGS.campaigns.getCompletedChapter() + 1) + ".",
                 COLOR_YELLOW, FontStyle::CENTER, LargeFont);
     SETTINGS.campaigns.resetCompletionStatus();
 }
