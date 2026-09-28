@@ -244,3 +244,6 @@ orders (reuse extras/ai-battle/TestInput) so a test proves a member's building a
   connections). Not tested automatically: refusal when members are not allowed (checked by hand).
 Next: M2 step 3 (join flow and lobby: the host allows members per slot, the lobby lists them, a GUI "join player X";
 campaign default = the human slot), then step 4 (campaign as network game, MISS200 walkthrough split over two clients).
+- GitHub event (same session): fork CI "failed" on fix/ai-battle-log-dir after Flamefire rebased upstream PR #1986 onto
+  upstream master — all tests passed, only the Codecov upload failed (the branch carries upstream's workflow, tokenless
+  upload is refused off the default branch). Upstream CI on that commit is green; nothing to do. #1985 is merged upstream.
