@@ -193,3 +193,9 @@ original; Hirotaro's screenshot in #1681), or M2 groundwork. Upstream #1985 appr
   folder that does not exist on a fresh runner (Save() does not create it; the test now does); StyleAndFormatting —
   kubaau's nested ternary is formatted differently by clang-format 10; Clang-Tidy — CampaignID taken by value.
   Lesson: a test that writes CONFIG.INI must create the folder; run a style check on taken-over code, not only ours.
+- CI green on every job at c02b10d67; released v0.1.3 (tarball checked: `s25client --version` = v0.1.3, CHANGELOG
+  inside). Jan told. The 02:00 regular work session request was folded into this session.
+- Upstream notifications on Return-To-The-Roots/s25client arrive via JARVIS's github-inbox → adhoc; the file
+  /app/agent/data/pr-watch/s25client-upstream.md tells adhoc to forward them to this lane.
+Next: M1 presentation vs. the original (victory screen, locked mission buttons, world map markers) — needs a GUI look;
+maybe a UI test with mock drivers that opens dskCampaignMissionSelection with S2 data locally and checks locked buttons.
