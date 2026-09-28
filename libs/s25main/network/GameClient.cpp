@@ -1372,7 +1372,7 @@ void GameClient::ExecuteGameFrame()
                         // Hence, pause up to 4 GFs randomly before trying again to execute this NWF
                         // Do not reset frameTime or lastTime as this will mess up interpolation for drawing
                         framesinfo.forcePauseStart = currentTime;
-                        framesinfo.forcePauseLen = (rand() * 4 * framesinfo.gf_length) / RAND_MAX;
+                        framesinfo.forcePauseLen = (framesinfo.gf_length * 4 * rand()) / RAND_MAX;
                         return;
                     }
 

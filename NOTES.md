@@ -287,3 +287,9 @@ campaign default = the human slot), then step 4 (campaign as network game, MISS2
 gcc-10 coverage job: checkTestCoverage rejected testSmackerVideo.cpp — the PlaysOriginalIntro body
 only runs with RTTR_COOP_S2_DIR (game data), which CI never has. Wrapped the body in
 LCOV_EXCL_START/STOP (37cdb2f). Rule: any test that needs the original game data gets that exclusion.
+
+## 2026-09-28 — CI: UBSan overflow in the lag pause
+Unit tests on master failed only on clang-12 + sanitizers: CoopNet_Member{Orders,FallsBehind,DesyncDetected}
+aborted the member in upstream's `GameClient.cpp` lag pause, `rand() * 4 * gf_length` (int overflow before
+the multiply reaches the int64 duration). Our member tests are the first to hit a lagging NWF under UBSan.
+Fixed by multiplying the duration first; CoopNet tests pass locally. Candidate for a tiny upstream PR.
