@@ -27,9 +27,10 @@
 	Safe free: attempts to prevent double-free by setting pointer to NULL.
 		Optionally warns on attempts to free a NULL pointer.
 */
+/* s25coop: no assert on NULL. smk_open_generic's error path and smk_close free members of a half-built
+   object, so a file that is not a video aborted the whole program in builds with asserts. */
 #define smk_free(p) \
 { \
-	assert (p); \
 	free(p); \
 	p = NULL; \
 }

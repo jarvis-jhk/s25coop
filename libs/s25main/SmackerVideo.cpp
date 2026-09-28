@@ -7,7 +7,7 @@
 #include "libsiedler2/WAV_Header.h"
 #include "s25util/Log.h"
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <algorithm>
 #include <cstring>
@@ -23,8 +23,7 @@ bfs::path findCaseInsensitive(const bfs::path& dir, const std::string& name)
     boost::system::error_code ec;
     if(!bfs::is_directory(dir, ec))
         return {};
-    if(bfs::exists(dir / name, ec))
-        return dir / name;
+    // Always list the folder: on a case-insensitive file system dir / name exists but is not the real name
     for(bfs::directory_iterator it(dir, ec), end; !ec && it != end; it.increment(ec))
     {
         if(boost::iequals(it->path().filename().string(), name))
@@ -71,6 +70,15 @@ bool SmackerVideo::open(const bfs::path& file)
         return false;
     }
     fileData_.assign(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+    // Check the signature before libsmacker parses anything: it is not made for arbitrary input
+    const bool isSmacker = fileData_.size() > 104 && std::memcmp(fileData_.data(), "SMK", 3) == 0
+                           && (fileData_[3] == '2' || fileData_[3] == '4');
+    if(!isSmacker)
+    {
+        LOG.write("Video %1% is not a Smacker video\n") % file;
+        fileData_.clear();
+        return false;
+    }
     smk_ = smk_open_memory(fileData_.data(), static_cast<unsigned long>(fileData_.size()));
     if(!smk_)
     {
