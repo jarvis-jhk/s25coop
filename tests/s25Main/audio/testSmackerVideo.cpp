@@ -33,7 +33,8 @@ BOOST_AUTO_TEST_CASE(FindsVideoIgnoringCase)
     RTTRCONFIG.overridePathMapping("GAME", oldGame);
 }
 
-// Only with the original game: cmake -DRTTR_COOP_S2_DIR=<folder with VIDEO/INTRO.SMK>
+// Only with the original game: RTTR_COOP_S2_DIR=<folder with VIDEO/INTRO.SMK> in the environment.
+// CI has no game data, so the body is excluded from the test coverage check.
 BOOST_AUTO_TEST_CASE(PlaysOriginalIntro)
 {
     const char* s2 = boost::nowide::getenv("RTTR_COOP_S2_DIR");
@@ -42,6 +43,7 @@ BOOST_AUTO_TEST_CASE(PlaysOriginalIntro)
         BOOST_TEST_MESSAGE("RTTR_COOP_S2_DIR not set, original intro not tested");
         return;
     }
+    // LCOV_EXCL_START
     SmackerVideo video;
     BOOST_TEST_REQUIRE(video.open(bfs::path(s2) / "VIDEO" / "INTRO.SMK"));
     BOOST_TEST(video.getSize().x == 320u);
@@ -75,6 +77,7 @@ BOOST_AUTO_TEST_CASE(PlaysOriginalIntro)
     const double seconds = (wav.size() - 44) / (rate * 2.0);
     BOOST_TEST(seconds > 140.);
     BOOST_TEST(seconds < 150.);
+    // LCOV_EXCL_STOP
 }
 
 BOOST_AUTO_TEST_SUITE_END()
