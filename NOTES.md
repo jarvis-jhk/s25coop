@@ -282,3 +282,8 @@ campaign default = the human slot), then step 4 (campaign as network game, MISS2
 - Codex review: 7 points, all fixed (ISO name traversal, zip member path, malformed ISO aborting the search,
   non-atomic swap, per-user Steam rename, Steam not closing, decode error freezing the video).
 - ROADMAP: self-updating AppImage added to M3, after splitscreen+gamepad (Jan).
+
+## 2026-09-28 — CI red on de98b41 (coverage gate)
+gcc-10 coverage job: checkTestCoverage rejected testSmackerVideo.cpp — the PlaysOriginalIntro body
+only runs with RTTR_COOP_S2_DIR (game data), which CI never has. Wrapped the body in
+LCOV_EXCL_START/STOP (37cdb2f). Rule: any test that needs the original game data gets that exclusion.
