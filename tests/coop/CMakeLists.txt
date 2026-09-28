@@ -123,4 +123,21 @@ if(NOT WIN32)
     add_coop_net_test(CoopNet_DesyncDetected 13711 3 --desync-at 300)
     # ... also in the last frames before the end: the run must not end before their checksums were compared
     add_coop_net_test(CoopNet_DesyncAtEndDetected 13712 3 --desync-at 999)
+
+    # Members (M2 steps 1+2): a client that controls player 0 together with the host
+    function(add_coop_member_test name port secondPlayer expect)
+        string(REPLACE ";" "|" memberArgs "${ARGN}")
+        add_test(NAME ${name}
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=${port}
+                         -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DSECOND_PLAYER=${secondPlayer}
+                         -DEXPECT=${expect} "-DMEMBER_ARGS=${memberArgs}" -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetMembers.cmake)
+        set_tests_properties(${name} PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
+    endfunction()
+    add_coop_member_test(CoopNet_MemberOrders 13713 OFF sync)
+    # The member first gets the free slot 1 and hands it back; then a normal player takes it
+    add_coop_member_test(CoopNet_MemberAndSecondPlayer 13714 ON sync)
+    # Nobody waits for a member: after 2 s without running it is dozens of NWFs behind and must catch up in sync
+    add_coop_member_test(CoopNet_MemberFallsBehind 13716 OFF sync --stall-at 300)
+    # A diverged member must show up in the comparison, or a green run proves nothing
+    add_coop_member_test(CoopNet_MemberDesyncDetected 13715 OFF differ --desync-at 300)
 endif()

@@ -17,6 +17,8 @@
 #include "s25util/LANDiscoveryService.h"
 #include "s25util/Singleton.h"
 #include <chrono>
+#include <map>
+#include <string>
 #include <vector>
 
 struct CreateServerInfo;
@@ -25,6 +27,7 @@ class GameMessageWithPlayer;
 class GameMessage_GameCommand;
 class GameServerPlayer;
 struct AIServerPlayer;
+class CoopMemberHandler;
 
 class GameServer :
     public Singleton<GameServer, SingletonPolicies::WithLongevity>,
@@ -49,10 +52,18 @@ public:
 
     void Stop();
 
+    /// s25coop: number of members that completed joining a player
+    unsigned GetNumCoopMembers() const;
+    /// s25coop: accept connections that ask to control a human player together with it. Off by default: a member
+    /// gives orders for somebody else's player, so the host has to want that
+    void SetAllowCoopMembers(bool allow) { allowCoopMembers_ = allow; }
+
     /// Assign players that do not have a fixed team, return true if any player was assigned.
     static bool assignPlayersOfRandomTeams(std::vector<JoinPlayerInfo>& playerInfos);
 
 private:
+    friend class CoopMemberHandler;
+
     bool StartGame();
 
     unsigned CalcNWFLength(std::chrono::milliseconds minDuration) const;
@@ -105,7 +116,31 @@ private:
     bool OnGameMessage(const GameMessage_CancelCountdown& msg) override;
     bool OnGameMessage(const GameMessage_Pause& msg) override;
     bool OnGameMessage(const GameMessage_SkipToGF& msg) override;
+    bool OnGameMessage(const GameMessage_Coop_JoinMember& msg) override;
     RTTR_POP_DIAGNOSTIC
+
+    /// Send the map info (requestInfo) or the map and lua data. False if the data was requested twice
+    bool SendMap(GameServerPlayer& player, bool requestInfo);
+
+    // s25coop members: connections that play an existing world player together with it. They are not in
+    // playerInfos, networkPlayers or nwfInfo; their game commands are merged into their leader's (GameServerCoop.cpp)
+    struct CoopMember;
+    /// Connections that are or want to become members; more are refused like players on a full server
+    static constexpr unsigned maxCoopMembers = 16;
+    /// Member orders buffered for one leader until its next command set
+    static constexpr unsigned maxCoopMemberCmds = 1000;
+    /// Accept a connection for which there is no free slot: it may only become a member. False if members are not
+    /// allowed or too many connections are waiting
+    bool AcceptCoopMember(const Socket& socket);
+    /// Answer a member's join request for the given leader; closes the connection if refused
+    void JoinCoopMember(CoopMember& member, uint8_t leader);
+    void ReceiveCoopMemberMsgs();
+    void SendCoopMemberMsgs();
+    void KickCoopMember(CoopMember& member, const char* reason);
+    /// Close the connections of all members of this player
+    void KickCoopMembersOf(uint8_t leader);
+    /// Append the member commands that arrived since the last seal to the commands of their leader
+    void AppendCoopMemberCmds(uint8_t leader, PlayerGameCommands& cmds) const;
 
     void CancelCountdown();
     bool ArePlayersReady() const;
@@ -164,6 +199,10 @@ private:
     Socket serversocket;
     std::vector<JoinPlayerInfo> playerInfos;
     std::vector<GameServerPlayer> networkPlayers;
+    std::vector<CoopMember> coopMembers_;
+    /// Commands of members per leader, in arrival order, not yet sealed into a leader's command set
+    std::map<uint8_t, std::vector<gc::GameCommandPtr>> coopMemberCmds_;
+    bool allowCoopMembers_ = false;
     NWFInfo nwfInfo;
     GlobalGameSettings ggs_;
 

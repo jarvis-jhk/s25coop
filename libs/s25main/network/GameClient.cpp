@@ -87,6 +87,7 @@ void GameClient::ClientConfig::Clear()
     password.clear();
     port = 0;
     isHost = false;
+    coopMemberOf = 0xFF;
 }
 
 GameClient::GameClient() : skiptogf(0), mainPlayer(0), state(ClientState::Stopped), ci(nullptr), replayMode(false) {}
@@ -107,7 +108,7 @@ GameClient::~GameClient()
  *  @return true, wenn Client erfolgreich verbunden und gestartet
  */
 bool GameClient::Connect(const std::string& server, const std::string& password, ServerType servertyp,
-                         unsigned short port, bool host, bool use_ipv6)
+                         unsigned short port, bool host, bool use_ipv6, uint8_t coopMemberOf)
 {
     Stop();
 
@@ -120,6 +121,7 @@ bool GameClient::Connect(const std::string& server, const std::string& password,
     clientconfig.servertyp = servertyp;
     clientconfig.port = port;
     clientconfig.isHost = host;
+    clientconfig.coopMemberOf = host ? 0xFF : coopMemberOf;
 
     // Verbinden
     if(!mainPlayer.socket.Connect(server, port, use_ipv6, SETTINGS.proxy))
@@ -423,6 +425,12 @@ bool GameClient::OnGameMessage(const GameMessage_Player_Id& msg)
 {
     if(!VerifyState(ConnectState::Initiated))
         return true;
+    if(IsCoopMember())
+    {
+        // Whether or not we got a slot, we do not want it: ask to join the player instead
+        mainPlayer.sendMsgAsync(new GameMessage_Coop_JoinMember(clientconfig.coopMemberOf));
+        return true;
+    }
     // haben wir eine ungültige ID erhalten? (aka Server-Voll)
     if(msg.player == GameMessageWithPlayer::NO_PLAYER_ID)
     {
@@ -433,6 +441,22 @@ bool GameClient::OnGameMessage(const GameMessage_Player_Id& msg)
     mainPlayer.playerId = msg.player;
 
     // Server-Typ senden
+    mainPlayer.sendMsgAsync(new GameMessage_Server_Type(clientconfig.servertyp, rttr::version::GetRevision()));
+    AdvanceState(ConnectState::VerifyServer);
+    return true;
+}
+
+bool GameClient::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
+{
+    if(!VerifyState(ConnectState::Initiated))
+        return true;
+    if(!IsCoopMember() || msg.player != clientconfig.coopMemberOf)
+    {
+        OnError(ClientError::ServerFull);
+        return true;
+    }
+    // From now on we act for that player: what we see, what our orders are for
+    mainPlayer.playerId = msg.player;
     mainPlayer.sendMsgAsync(new GameMessage_Server_Type(clientconfig.servertyp, rttr::version::GetRevision()));
     AdvanceState(ConnectState::VerifyServer);
     return true;
@@ -781,6 +805,7 @@ bool GameClient::OnGameMessage(const GameMessage_Server_Start& msg)
 
     nwfInfo = std::make_shared<NWFInfo>();
     nwfInfo->init(msg.firstNwf, msg.cmdDelay);
+    nwfInfo->setUnboundedCmds(IsCoopMember());
     try
     {
         StartGame(msg.random_init);
@@ -1310,7 +1335,9 @@ void GameClient::ExecuteGameFrame()
     }
 
     const unsigned curGF = GetGFNumber();
-    const bool isSkipping = skiptogf > curGF;
+    // A member (s25coop) that fell behind the players plays as fast as it can until it caught up: nobody waits for it
+    const bool isCatchingUp = !replayMode && IsCoopMember() && nwfInfo->getNumPendingNWFs() > nwfInfo->getCmdDelay();
+    const bool isSkipping = skiptogf > curGF || isCatchingUp;
     // Is it time for the next GF? If we are skipping, it is always time for the next GF
     if(isSkipping || (currentTime - framesinfo.lastTime) >= framesinfo.gf_length)
     {

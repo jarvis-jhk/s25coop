@@ -46,7 +46,7 @@ bool NWFInfo::addPlayerCmds(unsigned playerId, const PlayerGameCommands& cmds)
     // others are received. This means no one can execute NWF n + cmdDelay before we executed NWF n. So the last NWF one
     // can have executed is n + cmDelay - 1 with the commands for n + cmdDelay - 1 + cmdDelay. Counting those leads to
     // cmdDelay*2 pending commands.
-    if(it->commands.size() >= 2 * cmdDelay_)
+    if(!unboundedCmds_ && it->commands.size() >= 2 * cmdDelay_)
         return false;
     it->commands.push(cmds);
     return true;

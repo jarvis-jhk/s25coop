@@ -86,6 +86,16 @@ state), their sockets are polled separately, and only a whitelist of messages is
 Local players on one machine that share the campaign player are simpler still: all their input
 goes into the one client's `gameCommands_`. Only players on *different* machines need the above.
 
+## Status
+
+Steps 0–2 are implemented (2026-09-28): `GameServerCoop.cpp` (members, whitelist handler, merge), the member mode in
+`GameClient` (`Connect(..., coopMemberOf)`), the message `NMS_COOP_JOIN_MEMBER`, and ctest `CoopNet_Member*`.
+How a member joins today: it connects like any client and, whatever id it is offered (a free slot or none), answers
+with `GameMessage_Coop_JoinMember(leader)`; the server hands a reserved slot back and keeps the connection as a member
+if the leader is an occupied human slot, then the stock handshake (type, password, map) follows. Found while testing:
+nobody waits for a member, so it can fall many NWFs behind; its NWFInfo therefore keeps any number of command sets
+(`setUnboundedCmds`) and it runs GFs without waiting while more than cmdDelay NWFs are pending (catch-up).
+
 ## Steps, each finishable and testable on its own
 
 - **0 Network test harness.** Nothing can be merged here without running it, and a network game

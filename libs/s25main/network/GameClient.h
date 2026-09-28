@@ -78,8 +78,11 @@ public:
 
     unsigned GetPlayerId() const override { return mainPlayer.playerId; }
 
+    /// coopMemberOf: join as a member of this (human) player instead of taking a slot (s25coop)
     bool Connect(const std::string& server, const std::string& password, ServerType servertyp, unsigned short port,
-                 bool host, bool use_ipv6);
+                 bool host, bool use_ipv6, uint8_t coopMemberOf = 0xFF);
+    /// A member controls the player GetPlayerId() together with that player's own client (s25coop)
+    bool IsCoopMember() const { return clientconfig.coopMemberOf != 0xFF; }
 
     /// Start the server and connect to it
     bool HostGame(const CreateServerInfo& csi, const MapDescription& map);
@@ -229,6 +232,7 @@ private:
     bool OnGameMessage(const GameMessage_CancelCountdown& msg) override;
 
     bool OnGameMessage(const GameMessage_Player_Id& msg) override;
+    bool OnGameMessage(const GameMessage_Coop_JoinMember& msg) override;
     bool OnGameMessage(const GameMessage_Player_List& msg) override;
     bool OnGameMessage(const GameMessage_Player_Name& msg) override;
     bool OnGameMessage(const GameMessage_Player_Portrait& msg) override;
@@ -309,6 +313,8 @@ private:
         ServerType servertyp;
         unsigned short port;
         bool isHost;
+        /// Player to join as a member, 0xFF = none
+        uint8_t coopMemberOf;
     } clientconfig;
 
     MapInfo mapinfo;

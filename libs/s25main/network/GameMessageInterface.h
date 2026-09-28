@@ -56,5 +56,7 @@ GENERATE_GAME_MESSAGE_INTERFACE(GameMessage_Ping, GameMessage_Pong,
                                 GameMessage_RemoveLua, GameMessage_Pause, GameMessage_SkipToGF,
                                 GameMessage_Server_NWFDone, GameMessage_GameCommand, GameMessage_Speed,
 
-                                GameMessage_GetAsyncLog, GameMessage_AsyncLog)
+                                GameMessage_GetAsyncLog, GameMessage_AsyncLog,
+
+                                GameMessage_Coop_JoinMember)
 RTTR_POP_DIAGNOSTIC

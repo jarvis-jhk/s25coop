@@ -60,6 +60,7 @@ Message* GameMessage::create_game(unsigned short id)
         case NMS_REMOVE_LUA: msg = new GameMessage_RemoveLua(); break;
         case NMS_GET_ASYNC_LOG: msg = new GameMessage_GetAsyncLog(); break;
         case NMS_ASYNC_LOG: msg = new GameMessage_AsyncLog(); break;
+        case NMS_COOP_JOIN_MEMBER: msg = new GameMessage_Coop_JoinMember(); break;
     }
 
     return msg;

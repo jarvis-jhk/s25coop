@@ -42,9 +42,14 @@ class NWFInfo
     std::queue<NWFServerInfo> serverInfos_;
     std::vector<NWFPlayerInfo> playerInfos_;
     unsigned nextNWF_, cmdDelay_;
+    bool unboundedCmds_ = false;
 
 public:
     NWFInfo() : nextNWF_(0), cmdDelay_(1) {}
+    /// s25coop: nobody waits for a member, so it can fall any number of NWFs behind and must keep every command set
+    void setUnboundedCmds(bool unbounded) { unboundedCmds_ = unbounded; }
+    /// NWFs released by the server and not executed yet
+    unsigned getNumPendingNWFs() const { return static_cast<unsigned>(serverInfos_.size()); }
     /// Has to be called on game start with the first server info. Command delay is the number of NWS a command is sent
     /// in advance (>=1)
     void init(unsigned nextNWF, unsigned cmdDelay);

@@ -8,9 +8,11 @@
 // stayed in lockstep. Exit codes: 0 ok, 1 setup error, 3 async, 4 connection error or timeout.
 
 #include "Game.h"
+#include "GameCommands.h"
 #include "GameLobby.h"
 #include "GameLobbyController.h"
 #include "GameManager.h"
+#include "GamePlayer.h"
 #include "JoinPlayerInfo.h"
 #include "RttrConfig.h"
 #include "Settings.h"
@@ -23,6 +25,8 @@
 #include "network/GameClient.h"
 #include "network/GameServer.h"
 #include "random/Random.h"
+#include "world/GameWorld.h"
+#include "gameTypes/BuildingQuality.h"
 #include "gameTypes/MapDescription.h"
 #include "gameData/GameConsts.h"
 #include "s25util/Log.h"
@@ -68,7 +72,12 @@ struct Callbacks : ClientInterface
             error = e;
     }
     // GameLoaded must not be called from inside StartGame, which is still loading the world when this fires
-    void CI_GameLoading(std::shared_ptr<Game>) override { loadingPending = true; } // NOLINT
+    void CI_GameLoading(std::shared_ptr<Game> loaded) override
+    {
+        loadingPending = true;
+        game = std::move(loaded);
+    }
+    std::shared_ptr<Game> game;
     void CI_GameStarted() override { started = true; }
     void CI_Async(const std::string& checksums) override
     {
@@ -89,6 +98,16 @@ struct Options
     bfs::path out;
     bfs::path waitFor;
     std::optional<unsigned> desyncAtGF;
+    /// Join as a member of this player instead of taking a slot
+    std::optional<uint8_t> memberOf;
+    /// Host: members to wait for before starting
+    unsigned members = 0;
+    /// Order a woodcutter near our HQ at this GF
+    std::optional<unsigned> buildAtGF;
+    /// Stop running for 2 s at this GF, as a slow machine or a hiccup on the line would
+    std::optional<unsigned> stallAtGF;
+    /// Log the checksum every this many GFs (0 = never), to find where two processes diverged
+    unsigned traceEvery = 0;
     std::chrono::seconds timeout{300};
 };
 
@@ -99,6 +118,37 @@ AI::Info parseAI(const std::string& name)
     if(name == "dummy")
         return AI::Info(AI::Type::Dummy);
     throw std::runtime_error("Unknown AI: " + name);
+}
+
+/// What must be equal in every process at the end: the world checksum and the woodcutters (sites included) of each
+/// player, which shows whether an order arrived
+std::string describeState(const Game& game)
+{
+    std::string result = "checksum " + std::to_string(AsyncChecksum::create(game).getHash()) + ", woodcutters";
+    for(unsigned i = 0; i < game.world_.GetNumPlayers(); i++)
+    {
+        const BuildingCount count = game.world_.GetPlayer(i).GetBuildingRegister().GetBuildingNums();
+        result +=
+          " "
+          + std::to_string(count.buildings[BuildingType::Woodcutter] + count.buildingSites[BuildingType::Woodcutter]);
+    }
+    return result;
+}
+
+/// Order a woodcutter on the first spot near our HQ where one fits
+void orderWoodcutter(const Game& game)
+{
+    const unsigned playerId = GAMECLIENT.GetPlayerId();
+    const GameWorld& world = game.world_;
+    const MapPoint hq = world.GetPlayer(playerId).GetHQPos();
+    const auto spots = world.GetMatchingPointsInRadius<1>(hq, 8, [&world, playerId](const MapPoint pt) {
+        return canUseBq(world.GetBQ(pt, playerId), BuildingQuality::Hut);
+    });
+    if(spots.empty())
+        throw std::runtime_error("No spot for a woodcutter near the HQ");
+    GAMECLIENT.SetBuildingSite(spots.front(), BuildingType::Woodcutter);
+    bnw::cout << "Ordered a woodcutter for player " << playerId << " at " << spots.front().x << "," << spots.front().y
+              << std::endl;
 }
 
 void writeResult(const bfs::path& path, const std::string& text)
@@ -122,6 +172,8 @@ int run(Options& opt, Callbacks& cb)
     const auto numClients = static_cast<unsigned>(opt.players);
     auto nextProgress = startTime + 5s;
     unsigned maxNWFLength = 1;
+    std::string stateAtMaxGF;
+    unsigned lastTracedGF = 0;
 
     while(true)
     {
@@ -139,7 +191,8 @@ int run(Options& opt, Callbacks& cb)
             cb.error.reset();
             GAMECLIENT.Stop();
             std::this_thread::sleep_for(200ms);
-            GAMECLIENT.Connect("localhost", "", ServerType::Direct, opt.port, false, false);
+            GAMECLIENT.Connect("localhost", "", ServerType::Direct, opt.port, false, false,
+                               opt.memberOf.value_or(0xFF));
             continue;
         }
         if(cb.error)
@@ -184,7 +237,7 @@ int run(Options& opt, Callbacks& cb)
                 }
                 GAMECLIENT.Command_SetReady(true);
                 slotsSet = true;
-            } else if(!opt.host && !readySent)
+            } else if(!opt.host && !readySent && !opt.memberOf)
             {
                 GAMECLIENT.Command_SetReady(true);
                 readySent = true;
@@ -197,6 +250,7 @@ int run(Options& opt, Callbacks& cb)
                     const JoinPlayerInfo& player = gameLobby->getPlayer(i);
                     allThere &= player.ps == PlayerState::Occupied && player.isReady;
                 }
+                allThere &= GAMESERVER.GetNumCoopMembers() >= opt.members;
                 if(allThere)
                 {
                     lobby->StartCountdown(0);
@@ -223,6 +277,24 @@ int run(Options& opt, Callbacks& cb)
                 speedSet = true;
             }
             const unsigned gf = GAMECLIENT.GetGFNumber();
+            // One GF per Run(), so every GF is seen here
+            if(opt.buildAtGF && gf >= *opt.buildAtGF)
+            {
+                orderWoodcutter(*cb.game);
+                opt.buildAtGF.reset();
+            }
+            if(opt.stallAtGF && gf >= *opt.stallAtGF)
+            {
+                std::this_thread::sleep_for(2s);
+                opt.stallAtGF.reset();
+            }
+            if(opt.traceEvery && gf % opt.traceEvery == 0 && gf != lastTracedGF)
+            {
+                bnw::cout << "Trace GF " << gf << ": " << AsyncChecksum::create(*cb.game) << std::endl;
+                lastTracedGF = gf;
+            }
+            if(gf == opt.maxGF && stateAtMaxGF.empty())
+                stateAtMaxGF = "State at GF " + std::to_string(gf) + ": " + describeState(*cb.game);
             maxNWFLength = std::max(maxNWFLength, GAMECLIENT.GetNWFLength());
             if(opt.desyncAtGF && gf >= *opt.desyncAtGF)
             {
@@ -237,13 +309,14 @@ int run(Options& opt, Callbacks& cb)
             if(checkedGF >= opt.maxGF && !finishedAt)
             {
                 writeResult(opt.out, "Reached GF " + std::to_string(gf) + " in sync (checksums compared through GF "
-                                       + std::to_string(checkedGF) + ")");
+                                       + std::to_string(checkedGF) + ")\n" + stateAtMaxGF);
                 finishedAt = std::chrono::steady_clock::now();
             }
             if(finishedAt)
             {
                 if(opt.host
-                   && (cb.playersLeft + 1 >= numClients || std::chrono::steady_clock::now() - *finishedAt > 30s))
+                   && ((cb.playersLeft + 1 >= numClients && GAMESERVER.GetNumCoopMembers() == 0)
+                       || std::chrono::steady_clock::now() - *finishedAt > 30s))
                     break;
                 if(!opt.host && (opt.waitFor.empty() || bfs::exists(opt.waitFor)))
                     break;
@@ -277,6 +350,12 @@ int main(int argc, char** argv)
         ("out", po::value<std::string>(), "Write the result line to this file as well")
         ("wait-for", po::value<std::string>(), "Join: after maxGF keep running until this file exists (the host's --out)")
         ("desync-at", po::value<unsigned>(), "Test the harness: diverge this process's world at this GF")
+        ("member-of", po::value<unsigned>(), "Join: control this player together with its client instead of taking a slot")
+        ("members", po::value(&opt.members), "Host: wait for this many members before starting")
+        ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
+        ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
+        ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
+        ("connect-delay", po::value<unsigned>(), "Join: wait this many seconds before connecting")
         ("timeout", po::value(&timeoutSec), "Give up after this many seconds (default 300)")
         ("log", po::value<std::string>(), "Write standard output (the game's log) to this file")
         ;
@@ -323,6 +402,12 @@ int main(int argc, char** argv)
     const bfs::path mapArg = options.count("map") ? bfs::absolute(options["map"].as<std::string>()) : bfs::path();
     if(options.count("desync-at"))
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
+    if(options.count("member-of"))
+        opt.memberOf = static_cast<uint8_t>(options["member-of"].as<unsigned>());
+    if(options.count("stall-at"))
+        opt.stallAtGF = options["stall-at"].as<unsigned>();
+    if(options.count("build-at"))
+        opt.buildAtGF = options["build-at"].as<unsigned>();
     opt.timeout = std::chrono::seconds(timeoutSec);
     try
     {
@@ -357,11 +442,15 @@ int main(int argc, char** argv)
                 bnw::cerr << "Could not host on port " << opt.port << std::endl;
                 return SetupError;
             }
+            GAMESERVER.SetAllowCoopMembers(opt.members > 0);
         } else
         {
+            if(options.count("connect-delay"))
+                std::this_thread::sleep_for(std::chrono::seconds(options["connect-delay"].as<unsigned>()));
             // The host may still be starting: retry for a while
             const auto start = std::chrono::steady_clock::now();
-            while(!GAMECLIENT.Connect("localhost", "", ServerType::Direct, opt.port, false, false))
+            while(!GAMECLIENT.Connect("localhost", "", ServerType::Direct, opt.port, false, false,
+                                      opt.memberOf.value_or(0xFF)))
             {
                 if(std::chrono::steady_clock::now() - start > 30s)
                 {

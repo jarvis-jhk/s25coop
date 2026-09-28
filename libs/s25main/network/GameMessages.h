@@ -1090,3 +1090,21 @@ public:
         return callback->OnGameMessage(*this);
     }
 };
+
+/// s25coop: join as a member of a world player (client: the player to join, server: the accepted player or
+/// NO_PLAYER_ID if refused). A member controls that player together with it and has no player id of its own.
+class GameMessage_Coop_JoinMember : public GameMessageWithPlayer
+{
+public:
+    GameMessage_Coop_JoinMember() : GameMessageWithPlayer(NMS_COOP_JOIN_MEMBER) {} //-V730
+    GameMessage_Coop_JoinMember(uint8_t player) : GameMessageWithPlayer(NMS_COOP_JOIN_MEMBER, player)
+    {
+        LOG.writeToFile(">>> NMS_COOP_JOIN_MEMBER(%d)\n") % unsigned(player);
+    }
+
+    bool Run(GameMessageInterface* callback) const override
+    {
+        LOG.writeToFile("<<< NMS_COOP_JOIN_MEMBER(%d)\n") % unsigned(player);
+        return callback->OnGameMessage(*this);
+    }
+};

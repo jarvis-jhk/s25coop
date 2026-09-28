@@ -6,6 +6,7 @@
 #include "Debug.h"
 #include "GameMessage.h"
 #include "GameMessage_GameCommand.h"
+#include "GameServerCoop.h"
 #include "GameServerPlayer.h"
 #include "GlobalGameSettings.h"
 #include "JoinPlayerInfo.h"
@@ -292,6 +293,7 @@ void GameServer::Run()
 
     // post zustellen
     FillPlayerQueues();
+    ReceiveCoopMemberMsgs();
 
     // Execute messages
     for(GameServerPlayer& player : networkPlayers)
@@ -309,6 +311,7 @@ void GameServer::Run()
             continue;
         player.sendMsgs(10);
     }
+    SendCoopMemberMsgs();
     helpers::erase_if(networkPlayers, [](const auto& player) { return !player.socket.isValid(); });
 
     lanAnnouncer.Run();
@@ -397,6 +400,9 @@ void GameServer::Stop()
     // player verabschieden
     playerInfos.clear();
     networkPlayers.clear();
+    coopMembers_.clear();
+    coopMemberCmds_.clear();
+    allowCoopMembers_ = false;
 
     // aufräumen
     framesinfo.Clear();
@@ -606,6 +612,11 @@ void GameServer::SendToAll(const GameMessage& msg)
         if(player.isActive())
             player.sendMsgAsync(msg.clone());
     }
+    for(CoopMember& member : coopMembers_)
+    {
+        if(member.connection.isActive())
+            member.connection.sendMsgAsync(msg.clone());
+    }
 }
 
 void GameServer::KickPlayer(uint8_t playerId, KickReason cause, uint32_t param)
@@ -616,6 +627,8 @@ void GameServer::KickPlayer(uint8_t playerId, KickReason cause, uint32_t param)
     GameServerPlayer* player = GetNetworkPlayer(playerId);
     if(player)
         player->closeConnection();
+    // Until a member can take over (doc/coop/SharedPlayerSlot.md step 5), the group goes with its leader
+    KickCoopMembersOf(playerId);
     // Non-existing or connecting player
     if(!playerInfo.isUsed())
         return;
@@ -844,11 +857,14 @@ void GameServer::WaitForClients()
             }
         }
 
+        // No free slot: the connection may still join an existing player as a member, else it is closed there
+        const bool isMember = newPlayerId == GameMessageWithPlayer::NO_PLAYER_ID && AcceptCoopMember(socket);
+
         GameMessage_Player_Id msg(newPlayerId);
         MessageHandler::send(socket, msg);
 
         // war kein platz mehr frei, wenn ja dann verbindung trennen?
-        if(newPlayerId == 0xFFFFFFFF)
+        if(newPlayerId == GameMessageWithPlayer::NO_PLAYER_ID && !isMember)
             socket.Close();
     }
 }
@@ -1153,19 +1169,24 @@ bool GameServer::OnGameMessage(const GameMessage_MapRequest& msg)
         return true;
     }
     GameServerPlayer* player = GetNetworkPlayer(msg.senderPlayerID);
-    if(!player)
-        return true;
-
-    if(msg.requestInfo)
-    {
-        player->sendMsgAsync(new GameMessage_Map_Info(mapinfo.filepath.filename().string(), mapinfo.type,
-                                                      mapinfo.mapData.uncompressedLength, mapinfo.mapData.data.size(),
-                                                      mapinfo.luaData.uncompressedLength, mapinfo.luaData.data.size()));
-    } else if(player->isMapSending())
+    if(player && !SendMap(*player, msg.requestInfo))
     {
         // Don't send again
         KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
-    } else
+    }
+    return true;
+}
+
+bool GameServer::SendMap(GameServerPlayer& player, bool requestInfo)
+{
+    if(requestInfo)
+    {
+        player.sendMsgAsync(new GameMessage_Map_Info(mapinfo.filepath.filename().string(), mapinfo.type,
+                                                     mapinfo.mapData.uncompressedLength, mapinfo.mapData.data.size(),
+                                                     mapinfo.luaData.uncompressedLength, mapinfo.luaData.data.size()));
+    } else if(player.isMapSending())
+        return false;
+    else
     {
         // Send map data
         unsigned curPos = 0;
@@ -1174,7 +1195,7 @@ bool GameServer::OnGameMessage(const GameMessage_MapRequest& msg)
         {
             unsigned chunkSize = std::min(MAP_PART_SIZE, remainingSize);
 
-            player->sendMsgAsync(new GameMessage_Map_Data(true, curPos, &mapinfo.mapData.data[curPos], chunkSize));
+            player.sendMsgAsync(new GameMessage_Map_Data(true, curPos, &mapinfo.mapData.data[curPos], chunkSize));
             curPos += chunkSize;
             remainingSize -= chunkSize;
         }
@@ -1188,13 +1209,13 @@ bool GameServer::OnGameMessage(const GameMessage_MapRequest& msg)
         {
             unsigned chunkSize = std::min(MAP_PART_SIZE, remainingSize);
 
-            player->sendMsgAsync(new GameMessage_Map_Data(false, curPos, &mapinfo.luaData.data[curPos], chunkSize));
+            player.sendMsgAsync(new GameMessage_Map_Data(false, curPos, &mapinfo.luaData.data[curPos], chunkSize));
             curPos += chunkSize;
             remainingSize -= chunkSize;
         }
         // estimate time. max 60 chunks/s (currently limited by framerate), assume 50 (~25kb/s)
         auto numChunks = (mapinfo.mapData.data.size() + mapinfo.luaData.data.size()) / MAP_PART_SIZE;
-        player->setMapSending(std::chrono::seconds(numChunks / 50 + 1));
+        player.setMapSending(std::chrono::seconds(numChunks / 50 + 1));
     }
     return true;
 }
@@ -1276,12 +1297,16 @@ bool GameServer::OnGameMessage(const GameMessage_GameCommand& msg)
         return true;
     }
 
-    if(!nwfInfo.addPlayerCmds(targetPlayerId, msg.cmds))
+    // The canonical command set of this NWF: the player's own commands, then those of its members (s25coop)
+    PlayerGameCommands cmds = msg.cmds;
+    AppendCoopMemberCmds(targetPlayerId, cmds);
+    if(!nwfInfo.addPlayerCmds(targetPlayerId, cmds))
         return true; // Ignore
+    coopMemberCmds_.erase(targetPlayerId);
     GameServerPlayer* player = GetNetworkPlayer(targetPlayerId);
     if(player)
         player->setNotLagging();
-    SendToAll(GameMessage_GameCommand(targetPlayerId, msg.cmds.checksum, msg.cmds.gcs));
+    SendToAll(GameMessage_GameCommand(targetPlayerId, cmds.checksum, cmds.gcs));
 
     return true;
 }

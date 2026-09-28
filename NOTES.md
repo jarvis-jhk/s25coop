@@ -222,3 +222,25 @@ maybe a UI test with mock drivers that opens dskCampaignMissionSelection with S2
   twice), markdownlint wants a blank line after the licence comment. Fixed in the next commit.
 Next: M2 step 1 (server merge) + step 2 (client member mode) — extend coop-net with `join --member-of 0` and scripted
 orders (reuse extras/ai-battle/TestInput) so a test proves a member's building appears in the leader's world in sync.
+
+## 2026-09-28 — quota filler: M2 steps 1+2 (members)
+- Server: `libs/s25main/network/GameServerCoop.cpp` — members are `CoopMember`s (own list, own socket polling, a
+  whitelist handler `CoopMemberHandler`; anything else kicks the member). Joining: the member answers whatever
+  Player_Id it gets (free slot or none) with the new `GameMessage_Coop_JoinMember(leader)` (NMS 0x0701); a reserved
+  slot is handed back. Then the stock handshake; map only after version AND password passed (Codex finding). Its
+  commands are buffered per leader and appended to the leader's set in OnGameMessage(GameCommand) before addPlayerCmds
+  and the broadcast. Members off by default: `GAMESERVER.SetAllowCoopMembers(true)` (harness: host `--members N`);
+  caps: 16 member connections, 1000 buffered orders per leader. Leader kicked → its members are closed (step 5 later).
+- Client: `GameClient::Connect(..., coopMemberOf)`; GetPlayerId() = leader. Bug found by testing: nobody waits for a
+  member, so under load it fell > 2·cmdDelay NWFs behind and NWFInfo dropped command sets ("He might be cheating") →
+  silent desync. Fix: `NWFInfo::setUnboundedCmds` for members + catch-up (run GFs without waiting while more than
+  cmdDelay NWFs are pending).
+- Harness: `coop-net join --member-of 0 --build-at GF` (orders a woodcutter near the HQ), `--stall-at GF` (2 s pause),
+  `--trace N` (checksum every N GF, to find where two processes diverge), `--connect-delay S`; every process writes
+  `State at GF <max>: checksum …, woodcutters …` into its --out file. ctest (tests/coop/checkNetMembers.cmake):
+  CoopNet_MemberOrders, CoopNet_MemberAndSecondPlayer (member first takes and returns free slot 1),
+  CoopNet_MemberFallsBehind (fails without the fix), CoopNet_MemberDesyncDetected. 7 CoopNet tests × 10 loops green.
+- Codex review: 4 findings, all fixed (password bypass, no opt-in, unbounded order buffer, unbounded pending
+  connections). Not tested automatically: refusal when members are not allowed (checked by hand).
+Next: M2 step 3 (join flow and lobby: the host allows members per slot, the lobby lists them, a GUI "join player X";
+campaign default = the human slot), then step 4 (campaign as network game, MISS200 walkthrough split over two clients).

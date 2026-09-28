@@ -56,7 +56,10 @@ enum
     NMS_REMOVE_LUA,
 
     NMS_GET_ASYNC_LOG = 0x0600,
-    NMS_ASYNC_LOG
+    NMS_ASYNC_LOG,
+
+    // s25coop: a connection that plays an existing player together with it (doc/coop/SharedPlayerSlot.md)
+    NMS_COOP_JOIN_MEMBER = 0x0701 // 1 player to join | 1 accepted player or 0xFF
 };
 
 /* Hinweise:
