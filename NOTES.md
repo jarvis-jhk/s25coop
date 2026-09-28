@@ -189,3 +189,7 @@ status / unlocking: upstream PR #1681 by kubaau + ottml's enable_next_missions) 
 - Upstream #1681 is kubaau's draft; offering our fixes back = comment on that PR (not done yet).
 Next: M1 "mission unlocking and presentation as close to the original" (check the victory screen/unlock UI against the
 original; Hirotaro's screenshot in #1681), or M2 groundwork. Upstream #1985 approved by Flow86, #1986 no review.
+- CI on 07bf3205a was red (fixed in the next commit): Windows Test_integration — the settings test saved into a user data
+  folder that does not exist on a fresh runner (Save() does not create it; the test now does); StyleAndFormatting —
+  kubaau's nested ternary is formatted differently by clang-format 10; Clang-Tidy — CampaignID taken by value.
+  Lesson: a test that writes CONFIG.INI must create the folder; run a style check on taken-over code, not only ours.

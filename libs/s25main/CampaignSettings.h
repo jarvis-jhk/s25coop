@@ -24,9 +24,9 @@ public:
     auto getCompletedCampaign() const { return campaignCompleted_; }
     auto getCompletedChapter() const { return chapterCompleted_; }
 
-    void enableChapter(CampaignID campaignUid, ChapterID chapter);
-    void setChapterCompleted(CampaignID campaignUid, ChapterID chapter);
-    void setCampaignCompleted(CampaignID campaignUid);
+    void enableChapter(const CampaignID& campaignUid, ChapterID chapter);
+    void setChapterCompleted(const CampaignID& campaignUid, ChapterID chapter);
+    void setCampaignCompleted(const CampaignID& campaignUid);
     void resetCompletionStatus();
 
 private:
@@ -40,7 +40,7 @@ private:
 
     CampaignState& getCampaignState(const CampaignDescription& campaignDesc);
     std::string toSaveString(const CampaignState& state) const;
-    void setChapterStatus(CampaignID campaignUid, ChapterID chapter, ChapterStatus status);
+    void setChapterStatus(const CampaignID& campaignUid, ChapterID chapter, ChapterStatus status);
 
     std::map<CampaignID, CampaignState> states_;
     std::optional<ChapterID> chapterCompleted_;

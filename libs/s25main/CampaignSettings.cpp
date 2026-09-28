@@ -10,10 +10,14 @@ void CampaignSettings::readSaveData(const CampaignID& campaignId, const std::str
 {
     int i = 0;
     for(auto c : saveString)
-        setChapterStatus(campaignId, i++,
-                         c == '1' ? ChapterStatus::Enabled :
-                         c == '2' ? ChapterStatus::Completed :
-                                    ChapterStatus::Disabled);
+    {
+        ChapterStatus status = ChapterStatus::Disabled;
+        if(c == '1')
+            status = ChapterStatus::Enabled;
+        else if(c == '2')
+            status = ChapterStatus::Completed;
+        setChapterStatus(campaignId, i++, status);
+    }
 }
 
 std::map<CampaignID, std::string> CampaignSettings::createSaveData() const
@@ -62,19 +66,19 @@ bool CampaignSettings::shouldShowVictoryScreen() const
     return chapterCompleted_ || campaignCompleted_;
 }
 
-void CampaignSettings::enableChapter(CampaignID campaignUid, ChapterID chapter)
+void CampaignSettings::enableChapter(const CampaignID& campaignUid, ChapterID chapter)
 {
     if(states_[campaignUid][chapter] == ChapterStatus::Disabled)
         setChapterStatus(campaignUid, chapter, ChapterStatus::Enabled);
 }
 
-void CampaignSettings::setChapterCompleted(CampaignID campaignUid, ChapterID chapter)
+void CampaignSettings::setChapterCompleted(const CampaignID& campaignUid, ChapterID chapter)
 {
     setChapterStatus(campaignUid, chapter, ChapterStatus::Completed);
     chapterCompleted_ = chapter;
 }
 
-void CampaignSettings::setCampaignCompleted(CampaignID campaignUid)
+void CampaignSettings::setCampaignCompleted(const CampaignID& campaignUid)
 {
     campaignCompleted_ = campaignUid;
 }
@@ -114,7 +118,7 @@ std::string CampaignSettings::toSaveString(const CampaignState& state) const
     return result;
 }
 
-void CampaignSettings::setChapterStatus(CampaignID campaignUid, ChapterID chapter, ChapterStatus status)
+void CampaignSettings::setChapterStatus(const CampaignID& campaignUid, ChapterID chapter, ChapterStatus status)
 {
     states_[campaignUid][chapter] = status;
 }

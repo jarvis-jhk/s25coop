@@ -9,6 +9,7 @@
 #include "lua/CampaignDataLoader.h"
 #include "gameData/CampaignDescription.h"
 #include "rttr/test/TmpFolder.hpp"
+#include <boost/filesystem/operations.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <boost/test/unit_test.hpp>
 #include <regex>
@@ -148,6 +149,8 @@ BOOST_FIXTURE_TEST_CASE(CompletionStatusIsResetForTheNextGame, CampaignSettingsF
 BOOST_AUTO_TEST_CASE(CampaignProgressIsSavedAndOldConfigsKeepTheirSettings)
 {
     const auto configPath = RTTRCONFIG.ExpandPath(s25::resources::config);
+    // A fresh test machine (Windows CI) has no user data folder yet, and Save() does not create it
+    boost::filesystem::create_directories(configPath.parent_path());
     SETTINGS.campaigns = CampaignSettings{};
     SETTINGS.global.coopChangelogSeen = "9.9.9";
     SETTINGS.campaigns.readSaveData("roman", "2210");
