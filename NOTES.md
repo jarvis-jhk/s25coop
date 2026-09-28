@@ -312,3 +312,6 @@ Fixed by multiplying the duration first; CoopNet tests pass locally. Candidate f
 Next: lobby GUI (dskGameLobby): members under their player row, a "play together" button on occupied human rows when
   allowed, host checkbox "allow co-players" + kick; a UI test with mock drivers like testCoopChangelogWindow. Then the
   campaign default and step 4 (campaign as network game).
+- CI on a4f59bc: StyleAndFormatting (clang-format 10 packs the GENERATE_CALLBACK list differently) and Clang-Tidy
+  (performance-inefficient-string-concatenation inside the run loop, bugprone-exception-escape from option reads in
+  main) — fixed in the next commit; player-index options now validated by a po notifier inside the try.

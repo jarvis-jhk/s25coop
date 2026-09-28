@@ -125,6 +125,13 @@ struct Options
     std::chrono::seconds timeout{300};
 };
 
+/// 0xFF means "none" in the protocol
+void checkPlayerIndex(unsigned player)
+{
+    if(player >= 0xFF)
+        throw po::error("a player index must be below 255");
+}
+
 AI::Info parseAI(const std::string& name)
 {
     if(name == "aijh")
@@ -387,13 +394,25 @@ int run(Options& opt, Callbacks& cb)
             const unsigned checkedGF = gf - std::min(gf, (GAMECLIENT.GetNWFInfo()->getCmdDelay() + 1) * maxNWFLength);
             if(checkedGF >= opt.maxGF && !finishedAt)
             {
-                std::string extra;
+                std::string result = "Reached GF ";
+                result += std::to_string(gf);
+                result += " in sync (checksums compared through GF ";
+                result += std::to_string(checkedGF);
+                result += ")\n";
+                result += stateAtMaxGF;
                 if(opt.host)
-                    extra += "\nMembers at start: " + membersAtStart + "\nMembers at the end: " + describeMembers();
+                {
+                    result += "\nMembers at start: ";
+                    result += membersAtStart;
+                    result += "\nMembers at the end: ";
+                    result += describeMembers();
+                }
                 if(!switchResult.empty())
-                    extra += "\n" + switchResult;
-                writeResult(opt.out, "Reached GF " + std::to_string(gf) + " in sync (checksums compared through GF "
-                                       + std::to_string(checkedGF) + ")\n" + stateAtMaxGF + extra);
+                {
+                    result += '\n';
+                    result += switchResult;
+                }
+                writeResult(opt.out, result);
                 finishedAt = std::chrono::steady_clock::now();
             }
             if(finishedAt)
@@ -434,12 +453,12 @@ int main(int argc, char** argv)
         ("out", po::value<std::string>(), "Write the result line to this file as well")
         ("wait-for", po::value<std::string>(), "Join: after maxGF keep running until this file exists (the host's --out)")
         ("desync-at", po::value<unsigned>(), "Test the harness: diverge this process's world at this GF")
-        ("member-of", po::value<unsigned>(), "Join: control this player together with its client instead of taking a slot")
+        ("member-of", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: control this player together with its client instead of taking a slot")
         ("members", po::value(&opt.members), "Host: wait for this many members before starting")
         ("members-via-lobby", po::bool_switch(&opt.membersViaLobby), "Host: allow members through the lobby message, as the GUI does")
         ("open-slots", po::value(&opt.openSlots), "Host: leave this many slots after the human ones free, close them once the members are there")
         ("kick-members", po::bool_switch(&opt.kickMembers), "Host: kick every member once they are there, then play without them")
-        ("switch-to-member", po::value<unsigned>(), "Join: take a slot, then become a member of this player from the lobby")
+        ("switch-to-member", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: take a slot, then become a member of this player from the lobby")
         ("switch-now", po::bool_switch(&opt.switchNow), "Join: ask to switch without waiting until members are allowed")
         ("expect-kick", po::bool_switch(&opt.expectKick), "Join: being kicked in the lobby is the expected outcome (exit 0)")
         ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
@@ -494,14 +513,6 @@ int main(int argc, char** argv)
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
     if(options.count("member-of"))
         opt.memberOf = static_cast<uint8_t>(options["member-of"].as<unsigned>());
-    for(const char* name : {"switch-to-member", "member-of"})
-    {
-        if(options.count(name) && options[name].as<unsigned>() >= 0xFF)
-        {
-            bnw::cerr << name << " must be a player index" << std::endl;
-            return SetupError;
-        }
-    }
     if(options.count("switch-to-member"))
         opt.switchToMember = static_cast<uint8_t>(options["switch-to-member"].as<unsigned>());
     if(options.count("stall-at"))
