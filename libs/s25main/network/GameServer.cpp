@@ -612,10 +612,10 @@ void GameServer::SendToAll(const GameMessage& msg)
         if(player.isActive())
             player.sendMsgAsync(msg.clone());
     }
-    for(CoopMember& member : coopMembers_)
+    for(auto& member : coopMembers_)
     {
-        if(member.connection.isActive())
-            member.connection.sendMsgAsync(msg.clone());
+        if(member->connection.isActive())
+            member->connection.sendMsgAsync(msg.clone());
     }
 }
 

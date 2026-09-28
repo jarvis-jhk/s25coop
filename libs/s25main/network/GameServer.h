@@ -18,6 +18,7 @@
 #include "s25util/Singleton.h"
 #include <chrono>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -199,7 +200,8 @@ private:
     Socket serversocket;
     std::vector<JoinPlayerInfo> playerInfos;
     std::vector<GameServerPlayer> networkPlayers;
-    std::vector<CoopMember> coopMembers_;
+    /// Owned by pointer: never moved, so references held while handling a member's messages stay valid
+    std::vector<std::unique_ptr<CoopMember>> coopMembers_;
     /// Commands of members per leader, in arrival order, not yet sealed into a leader's command set
     std::map<uint8_t, std::vector<gc::GameCommandPtr>> coopMemberCmds_;
     bool allowCoopMembers_ = false;

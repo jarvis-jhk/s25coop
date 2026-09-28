@@ -19,5 +19,8 @@ struct GameServer::CoopMember
     bool versionOk = false, passwordOk = false;
 
     explicit CoopMember(const Socket& socket) : connection(GameMessageWithPlayer::NO_PLAYER_ID, socket) {}
+    // Held by unique_ptr and never moved (see GameServer::coopMembers_)
+    CoopMember(const CoopMember&) = delete;
+    CoopMember& operator=(const CoopMember&) = delete;
     bool hasJoined() const { return connection.playerId != GameMessageWithPlayer::NO_PLAYER_ID; }
 };

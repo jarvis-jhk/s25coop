@@ -247,3 +247,6 @@ campaign default = the human slot), then step 4 (campaign as network game, MISS2
 - GitHub event (same session): fork CI "failed" on fix/ai-battle-log-dir after Flamefire rebased upstream PR #1986 onto
   upstream master — all tests passed, only the Codecov upload failed (the branch carries upstream's workflow, tokenless
   upload is refused off the default branch). Upstream CI on that commit is green; nothing to do. #1985 is merged upstream.
+- Clang-Tidy on the member commit: bugprone-exception-escape on CoopMember's implicit move-assignment (vector erase
+  moves elements). Members are now `std::unique_ptr<CoopMember>`, copy deleted. Lesson: a new struct held by value in
+  a vector that gets erase_if'd needs a nothrow move — or hold it by pointer.

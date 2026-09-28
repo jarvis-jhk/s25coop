@@ -152,8 +152,8 @@ private:
 
 unsigned GameServer::GetNumCoopMembers() const
 {
-    return static_cast<unsigned>(helpers::count_if(coopMembers_, [](const CoopMember& member) {
-        return member.connection.isActive() && member.connection.socket.isValid();
+    return static_cast<unsigned>(helpers::count_if(coopMembers_, [](const auto& member) {
+        return member->connection.isActive() && member->connection.socket.isValid();
     }));
 }
 
@@ -161,7 +161,7 @@ bool GameServer::AcceptCoopMember(const Socket& socket)
 {
     if(!allowCoopMembers_ || coopMembers_.size() >= maxCoopMembers)
         return false;
-    coopMembers_.emplace_back(socket);
+    coopMembers_.push_back(std::make_unique<CoopMember>(socket));
     return true;
 }
 
@@ -186,12 +186,12 @@ bool GameServer::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
         KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
         return true;
     }
-    coopMembers_.emplace_back(player->socket);
+    coopMembers_.push_back(std::make_unique<CoopMember>(player->socket));
     // Not closed: the member holds the other reference. Run() drops the invalid player afterwards
     player->socket = Socket();
     player->recvQueue.clear();
     player->sendQueue.clear();
-    JoinCoopMember(coopMembers_.back(), msg.player);
+    JoinCoopMember(*coopMembers_.back(), msg.player);
     return true;
 }
 
@@ -206,8 +206,9 @@ void GameServer::KickCoopMember(CoopMember& member, const char* reason)
 
 void GameServer::KickCoopMembersOf(uint8_t leader)
 {
-    for(CoopMember& member : coopMembers_)
+    for(const auto& memberPtr : coopMembers_)
     {
+        CoopMember& member = *memberPtr;
         if(member.connection.playerId == leader)
             KickCoopMember(member, "its player left");
     }
@@ -219,33 +220,40 @@ void GameServer::ReceiveCoopMemberMsgs()
     if(coopMembers_.empty())
         return;
     SocketSet set;
-    for(const CoopMember& member : coopMembers_)
+    for(const auto& memberPtr : coopMembers_)
+    {
+        CoopMember& member = *memberPtr;
         set.Add(member.connection.socket);
+    }
     if(set.Select(0, 0) > 0)
     {
-        for(CoopMember& member : coopMembers_)
+        for(const auto& memberPtr : coopMembers_)
         {
+            CoopMember& member = *memberPtr;
             if(set.InSet(member.connection.socket) && !member.connection.receiveMsgs())
                 KickCoopMember(member, "connection lost");
         }
     }
     set.Clear();
-    for(const CoopMember& member : coopMembers_)
+    for(const auto& memberPtr : coopMembers_)
     {
+        CoopMember& member = *memberPtr;
         if(member.connection.socket.isValid())
             set.Add(member.connection.socket);
     }
     if(set.Select(0, 2) > 0)
     {
-        for(CoopMember& member : coopMembers_)
+        for(const auto& memberPtr : coopMembers_)
         {
+            CoopMember& member = *memberPtr;
             if(set.InSet(member.connection.socket))
                 KickCoopMember(member, "socket error");
         }
     }
     // No handler adds or erases members (kicked ones are erased after sending), so the references stay valid
-    for(CoopMember& member : coopMembers_)
+    for(const auto& memberPtr : coopMembers_)
     {
+        CoopMember& member = *memberPtr;
         if(member.connection.hasTimedOut())
             KickCoopMember(member, "timeout");
         else
@@ -262,12 +270,13 @@ void GameServer::ReceiveCoopMemberMsgs()
 
 void GameServer::SendCoopMemberMsgs()
 {
-    for(CoopMember& member : coopMembers_)
+    for(const auto& memberPtr : coopMembers_)
     {
+        CoopMember& member = *memberPtr;
         if(member.connection.socket.isValid() && !member.connection.sendMsgs(10))
             KickCoopMember(member, "sending failed");
     }
-    helpers::erase_if(coopMembers_, [](const CoopMember& member) { return !member.connection.socket.isValid(); });
+    helpers::erase_if(coopMembers_, [](const auto& member) { return !member->connection.socket.isValid(); });
 }
 
 void GameServer::AppendCoopMemberCmds(uint8_t leader, PlayerGameCommands& cmds) const
