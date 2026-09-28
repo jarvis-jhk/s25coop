@@ -265,6 +265,17 @@ const AIPlayer* GameClient::GetAIPlayer(unsigned id) const
     return game->GetAIPlayer(id);
 }
 
+/// Draw the moon as wait cursor. Only with a video driver: the s25coop network test harness runs a client without one
+void GameClient::DrawWaitCursor()
+{
+    if(!VIDEODRIVER.IsLoaded())
+        return;
+    Position moonPos = VIDEODRIVER.GetMousePos();
+    moonPos.y -= 40;
+    LOADER.GetImageN("resource", 33)->DrawFull(moonPos);
+    VIDEODRIVER.SwapBuffers();
+}
+
 /**
  *  Startet ein Spiel oder Replay.
  *
@@ -274,11 +285,7 @@ void GameClient::StartGame(const unsigned random_init)
 {
     RTTR_Assert(state == ClientState::Config || (state == ClientState::Stopped && replayMode));
 
-    // Mond malen
-    Position moonPos = VIDEODRIVER.GetMousePos();
-    moonPos.y -= 40;
-    LOADER.GetImageN("resource", 33)->DrawFull(moonPos);
-    VIDEODRIVER.SwapBuffers();
+    DrawWaitCursor();
 
     // Start in pause mode
     framesinfo.isPaused = true;
@@ -1714,11 +1721,7 @@ bool GameClient::SaveToFile(const boost::filesystem::path& filepath)
 {
     mainPlayer.sendMsg(GameMessage_Chat(GetPlayerId(), ChatDestination::System, _("Saving game...")));
 
-    // Mond malen
-    Position moonPos = VIDEODRIVER.GetMousePos();
-    moonPos.y -= 40;
-    LOADER.GetImageN("resource", 33)->DrawFull(moonPos);
-    VIDEODRIVER.SwapBuffers();
+    DrawWaitCursor();
 
     Savegame save;
 

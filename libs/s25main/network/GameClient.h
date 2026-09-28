@@ -193,6 +193,8 @@ private:
     /// Liefert einen Player zurück
     GamePlayer& GetPlayer(unsigned id);
 
+    /// The moon shown while loading or saving (nothing without a video driver)
+    void DrawWaitCursor();
     /// Versucht einen neuen GameFrame auszuführen, falls die Zeit dafür gekommen ist
     void ExecuteGameFrame();
     void ExecuteGameFrame_Replay();

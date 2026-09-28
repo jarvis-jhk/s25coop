@@ -105,3 +105,22 @@ if(RTTR_COOP_S2_DIR)
              WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     set_tests_properties(CoopWalkthrough_roman_MISS200 PROPERTIES ENVIRONMENT "RTTR_GAME_DIR=${RTTR_COOP_S2_DIR}")
 endif()
+
+# Network test harness (ROADMAP M2 step 0): host + client processes over localhost, headless. Not on Windows: both
+# processes would share one user folder there, and an async opens a message box (GameServer::SendAsyncLog).
+if(NOT WIN32)
+    set(coopNetMap ${PROJECT_SOURCE_DIR}/data/RTTR/MAPS/NEW/KARTE06-fix.swd)
+    function(add_coop_net_test name port expect)
+        string(REPLACE ";" "|" joinArgs "${ARGN}")
+        add_test(NAME ${name}
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=${port}
+                         -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DEXPECT=${expect}
+                         "-DJOIN_ARGS=${joinArgs}" -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetGame.cmake)
+        set_tests_properties(${name} PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
+    endfunction()
+    add_coop_net_test(CoopNet_TwoClientsInSync 13710 0)
+    # The harness must catch a client whose world diverges, or a green run proves nothing
+    add_coop_net_test(CoopNet_DesyncDetected 13711 3 --desync-at 300)
+    # ... also in the last frames before the end: the run must not end before their checksums were compared
+    add_coop_net_test(CoopNet_DesyncAtEndDetected 13712 3 --desync-at 999)
+endif()

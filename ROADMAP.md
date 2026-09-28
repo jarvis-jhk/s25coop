@@ -61,6 +61,11 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 
 - ☐ Engine: several clients control ONE player slot (commands from any of them act for that
   player; host decides who is in the group). Nobody upstream or in any fork does this yet.
+  Design: doc/coop/SharedPlayerSlot.md (member connections; the server merges their orders into the
+  leader's command set; reviewed by Codex 2026-09-28). Steps:
+  - ☑ 0 network test harness: `coop-net host/join` (extras/coop-net), ctest `CoopNet_*` (Linux/macOS CI). 2026-09-28
+  - ☐ 1 server merge · ☐ 2 client member mode · ☐ 3 join flow and lobby
+  - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
 - ☐ Save and resume a coop campaign with the same group; deterministic loading
   (upstream `save-rng-state` / PR #1970).

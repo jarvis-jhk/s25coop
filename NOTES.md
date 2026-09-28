@@ -199,3 +199,24 @@ original; Hirotaro's screenshot in #1681), or M2 groundwork. Upstream #1985 appr
   /app/agent/data/pr-watch/s25client-upstream.md tells adhoc to forward them to this lane.
 Next: M1 presentation vs. the original (victory screen, locked mission buttons, world map markers) — needs a GUI look;
 maybe a UI test with mock drivers that opens dskCampaignMissionSelection with S2 data locally and checks locked buttons.
+
+## 2026-09-28 — quota filler: M2 design + network test harness (step 0)
+- No open issues, CI green. Started M2 (several clients → one player). Design: doc/coop/SharedPlayerSlot.md. Members are
+  a connection role on the server (not a player id); the server seals each world player's command set once, as leader
+  cmds + every member cmd that arrived since, BEFORE nwfInfo.addPlayerCmds and the broadcast → world, replays and saves
+  unchanged. Codex reviewed the design (15 points folded in: no fake ids, merge before addPlayerCmds, tagged checksums,
+  refuse orders of a desynced member, leader hand-over is atomic). ROADMAP M2 item 1 split into steps 0–6.
+- Step 0 done: `extras/coop-net` — `coop-net host --port P --maxGF N --map M --ai aijh` / `coop-net join --port P
+  --maxGF N --wait-for <host --out>`; real GameServer+GameClient, no video (GameClient::DrawWaitCursor now skips the moon
+  without a video driver; the harness calls GameLoaded/OnGameStart itself like dskGameLoader/dskGameInterface do, and
+  unpauses). The server compares all checksums every NWF; the host only reports success once its GF is
+  (cmdDelay+1)·NWF past maxGF, so the last checksums were compared (Codex review finding). Exit 0 ok / 1 setup / 3 async /
+  4 error. `--desync-at GF` reseeds RANDOM in one process to prove detection.
+- ctest (tests/coop/checkNetGame.cmake, execute_process runs both processes at once, each with its own HOME; `--log`
+  keeps stdout off the pipe): CoopNet_TwoClientsInSync (1000 GF on data/RTTR/MAPS/NEW/KARTE06-fix.swd, ~12 s),
+  CoopNet_DesyncDetected (GF 300), CoopNet_DesyncAtEndDetected (GF 999). Not on Windows: shared user folder, and
+  GameServer::SendAsyncLog opens a MessageBox on async.
+- Gotchas: RTTRCONFIG.Init() chdirs — make paths absolute before it. A map with a .lua beside it gets that script
+  (LuaFunctions.SWD's is a unit-test script that errors). The game starts paused until OnGameStart().
+Next: M2 step 1 (server merge) + step 2 (client member mode) — extend coop-net with `join --member-of 0` and scripted
+orders (reuse extras/ai-battle/TestInput) so a test proves a member's building appears in the leader's world in sync.
