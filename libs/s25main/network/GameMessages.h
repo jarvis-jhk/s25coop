@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "CoopMemberInfo.h"
 #include "GameMessage.h"
 #include "GameMessageInterface.h"
 #include "GameMessage_Chat.h"
@@ -20,7 +21,9 @@
 #include "s25util/Log.h"
 #include "s25util/Serializer.h"
 #include <chrono>
+#include <stdexcept>
 #include <utility>
+#include <vector>
 
 struct JoinPlayerInfo;
 class MessageInterface;
@@ -1105,6 +1108,113 @@ public:
     bool Run(GameMessageInterface* callback) const override
     {
         LOG.writeToFile("<<< NMS_COOP_JOIN_MEMBER(%d)\n") % unsigned(player);
+        return callback->OnGameMessage(*this);
+    }
+};
+
+/// s25coop: who plays which player together with it (server -> everybody, whenever it changes)
+class GameMessage_Coop_Members : public GameMessage
+{
+public:
+    /// Whether the host lets connections join a player as members
+    bool allowed = false;
+    std::vector<CoopMemberInfo> members;
+
+    GameMessage_Coop_Members() : GameMessage(NMS_COOP_MEMBERS) {}
+    GameMessage_Coop_Members(bool allowed, std::vector<CoopMemberInfo> members)
+        : GameMessage(NMS_COOP_MEMBERS), allowed(allowed), members(std::move(members))
+    {}
+
+    void Serialize(Serializer& ser) const override
+    {
+        GameMessage::Serialize(ser);
+        ser.PushBool(allowed);
+        ser.PushUnsignedInt(static_cast<uint32_t>(members.size()));
+        for(const CoopMemberInfo& member : members)
+        {
+            ser.PushUnsignedInt(member.id);
+            ser.PushUnsignedChar(member.leader);
+            ser.PushString(member.name);
+        }
+    }
+
+    void Deserialize(Serializer& ser) override
+    {
+        GameMessage::Deserialize(ser);
+        allowed = ser.PopBool();
+        const uint32_t count = ser.PopUnsignedInt();
+        members.clear();
+        // The server caps the members far below this; a larger count is a broken message, not a reason to allocate
+        if(count > 255)
+            throw std::range_error("Too many coop members");
+        members.resize(count);
+        for(CoopMemberInfo& member : members)
+        {
+            member.id = ser.PopUnsignedInt();
+            member.leader = ser.PopUnsignedChar();
+            member.name = ser.PopString();
+        }
+    }
+
+    bool Run(GameMessageInterface* callback) const override
+    {
+        LOG.writeToFile("<<< NMS_COOP_MEMBERS(%1%, %2%)\n") % allowed % members.size();
+        return callback->OnGameMessage(*this);
+    }
+};
+
+/// s25coop: the host lets connections join a player as members, or stops letting new ones in
+class GameMessage_Coop_AllowMembers : public GameMessage
+{
+public:
+    bool allowed = false;
+
+    GameMessage_Coop_AllowMembers() : GameMessage(NMS_COOP_ALLOW_MEMBERS) {}
+    explicit GameMessage_Coop_AllowMembers(bool allowed) : GameMessage(NMS_COOP_ALLOW_MEMBERS), allowed(allowed) {}
+
+    void Serialize(Serializer& ser) const override
+    {
+        GameMessage::Serialize(ser);
+        ser.PushBool(allowed);
+    }
+
+    void Deserialize(Serializer& ser) override
+    {
+        GameMessage::Deserialize(ser);
+        allowed = ser.PopBool();
+    }
+
+    bool Run(GameMessageInterface* callback) const override
+    {
+        LOG.writeToFile("<<< NMS_COOP_ALLOW_MEMBERS(%1%)\n") % allowed;
+        return callback->OnGameMessage(*this);
+    }
+};
+
+/// s25coop: the host removes a member (by its CoopMemberInfo::id)
+class GameMessage_Coop_KickMember : public GameMessage
+{
+public:
+    uint32_t id = 0;
+
+    GameMessage_Coop_KickMember() : GameMessage(NMS_COOP_KICK_MEMBER) {}
+    explicit GameMessage_Coop_KickMember(uint32_t id) : GameMessage(NMS_COOP_KICK_MEMBER), id(id) {}
+
+    void Serialize(Serializer& ser) const override
+    {
+        GameMessage::Serialize(ser);
+        ser.PushUnsignedInt(id);
+    }
+
+    void Deserialize(Serializer& ser) override
+    {
+        GameMessage::Deserialize(ser);
+        id = ser.PopUnsignedInt();
+    }
+
+    bool Run(GameMessageInterface* callback) const override
+    {
+        LOG.writeToFile("<<< NMS_COOP_KICK_MEMBER(%1%)\n") % id;
         return callback->OnGameMessage(*this);
     }
 };

@@ -96,6 +96,18 @@ if the leader is an occupied human slot, then the stock handshake (type, passwor
 nobody waits for a member, so it can fall many NWFs behind; its NWFInfo therefore keeps any number of command sets
 (`setUnboundedCmds`) and it runs GFs without waiting while more than cmdDelay NWFs are pending (catch-up).
 
+Step 3, protocol part (2026-09-28): the server broadcasts `GameMessage_Coop_Members` (allowed flag + id, leader, name
+of every joined member) whenever it changes and to every connection that finishes joining; `GameClient::
+GetCoopMembers()` / `AreCoopMembersAllowed()` and `CI_CoopMembersChanged` expose it. The host allows members with
+`GameMessage_Coop_AllowMembers` and removes one with `GameMessage_Coop_KickMember(id)` (`GameLobbyController`); both
+are refused from anybody but the host's own connection (a member of the host never gets them through: its handler
+accepts only its whitelist). A player already in the lobby becomes a member with `GameClient::JoinCoopMember(leader)`:
+the server moves its connection (with both queues) into the member list, frees its slot like a leaving player
+(`Player_Kicked`, countdown cancelled) and answers `Coop_JoinMember(leader)`; refused, it answers `NO_PLAYER_ID` and
+the client stays the player it was. The host itself cannot switch. ctest `CoopNet_Lobby{Switch,Refused,Kick}`.
+Open in step 3: the GUI (dskGameLobby rows for members, "play together with" button, host checkbox and kick button)
+and the campaign default (members allowed, joiners offered the human slot).
+
 ## Steps, each finishable and testable on its own
 
 - **0 Network test harness.** Nothing can be merged here without running it, and a network game

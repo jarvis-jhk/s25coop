@@ -67,6 +67,8 @@ public:
     bool OnGameMessage(const GameMessage_Player_Name& msg) override
     {
         member.name = msg.playername;
+        if(member.connection.isActive())
+            server.coopMembersChanged_ = true;
         return true;
     }
     bool OnGameMessage(const GameMessage_Player_Portrait&) override { return true; }
@@ -101,6 +103,7 @@ public:
         connection.sendMsgAsync(new GameMessage_Player_List(server.playerInfos));
         connection.sendMsgAsync(new GameMessage_GGSChange(server.ggs_));
         connection.setActive();
+        server.coopMembersChanged_ = true;
         LOG.write("SERVER: %1% joined player %2% as a member\n") % member.name % unsigned(connection.playerId);
         return true;
     }
@@ -161,14 +164,25 @@ bool GameServer::AcceptCoopMember(const Socket& socket)
 {
     if(!allowCoopMembers_ || coopMembers_.size() >= maxCoopMembers)
         return false;
-    coopMembers_.push_back(std::make_unique<CoopMember>(socket));
+    coopMembers_.push_back(std::make_unique<CoopMember>(socket, nextCoopMemberId_++));
     return true;
+}
+
+void GameServer::SetAllowCoopMembers(bool allow)
+{
+    allowCoopMembers_ = allow;
+    coopMembersChanged_ = true;
+}
+
+bool GameServer::CanJoinCoopMember(uint8_t leader) const
+{
+    // Only a human player can be joined; AIs, free and closed slots cannot
+    return leader < playerInfos.size() && playerInfos[leader].ps == PlayerState::Occupied;
 }
 
 void GameServer::JoinCoopMember(CoopMember& member, uint8_t leader)
 {
-    // Only a human player can be joined; AIs, free and closed slots cannot
-    const bool ok = leader < playerInfos.size() && playerInfos[leader].ps == PlayerState::Occupied;
+    const bool ok = CanJoinCoopMember(leader);
     member.connection.sendMsg(GameMessage_Coop_JoinMember(ok ? leader : GameMessageWithPlayer::NO_PLAYER_ID));
     if(ok)
         member.connection.playerId = leader;
@@ -178,15 +192,24 @@ void GameServer::JoinCoopMember(CoopMember& member, uint8_t leader)
 
 bool GameServer::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
 {
-    // A connection that got a free slot asks to be a member instead: hand its socket over and leave the slot free
     GameServerPlayer* player = GetNetworkPlayer(msg.senderPlayerID);
-    if(state != ServerState::Config || !player || player->isActive() || player->isMapSending() || !allowCoopMembers_
-       || coopMembers_.size() >= maxCoopMembers)
+    if(state != ServerState::Config || !player || player->isMapSending())
     {
         KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
         return true;
     }
-    coopMembers_.push_back(std::make_unique<CoopMember>(player->socket));
+    if(player->isActive())
+    {
+        SwitchToCoopMember(*player, msg.player);
+        return true;
+    }
+    // A connection that got a free slot asks to be a member instead: hand its socket over and leave the slot free
+    if(!allowCoopMembers_ || coopMembers_.size() >= maxCoopMembers)
+    {
+        KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
+        return true;
+    }
+    coopMembers_.push_back(std::make_unique<CoopMember>(player->socket, nextCoopMemberId_++));
     // Not closed: the member holds the other reference. Run() drops the invalid player afterwards
     player->socket = Socket();
     player->recvQueue.clear();
@@ -195,10 +218,92 @@ bool GameServer::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
     return true;
 }
 
+void GameServer::SwitchToCoopMember(GameServerPlayer& player, uint8_t leader)
+{
+    const uint8_t oldId = player.playerId;
+    // Refused: it simply stays the player it was. The host cannot leave its slot, it runs the server
+    if(!allowCoopMembers_ || coopMembers_.size() >= maxCoopMembers || leader == oldId || IsHost(oldId)
+       || !CanJoinCoopMember(leader))
+    {
+        player.sendMsgAsync(new GameMessage_Coop_JoinMember(GameMessageWithPlayer::NO_PLAYER_ID));
+        return;
+    }
+    coopMembers_.push_back(std::make_unique<CoopMember>(player.socket, nextCoopMemberId_++));
+    CoopMember& member = *coopMembers_.back();
+    // It went through the handshake as a player already
+    member.name = playerInfos[oldId].name;
+    member.versionOk = member.passwordOk = true;
+    member.connection.playerId = leader;
+    // Keep what is queued in both directions: broadcasts it has not got yet, and whatever it sent after this request
+    // (the member handler takes it from here; executeMsgs stops as the player's queue is now empty)
+    using std::swap;
+    swap(member.connection.sendQueue, player.sendQueue);
+    swap(member.connection.recvQueue, player.recvQueue);
+    member.connection.setActive();
+    member.connection.sendMsgAsync(new GameMessage_Coop_JoinMember(leader));
+    // Not closed: the member holds the other reference. Run() drops the invalid player afterwards
+    player.socket = Socket();
+    coopMembersChanged_ = true;
+    LOG.write("SERVER: Player %1% (%2%) now plays player %3% as a member\n") % unsigned(oldId) % member.name
+      % unsigned(leader);
+
+    // Its slot is free again, as if it had left
+    playerInfos[oldId].ps = PlayerState::Free;
+    playerInfos[oldId].isReady = false;
+    SendToAll(GameMessage_Player_Kicked(oldId, KickReason::NoCause, 0));
+    CancelCountdown();
+    AnnounceStatusChange();
+}
+
+bool GameServer::OnGameMessage(const GameMessage_Coop_AllowMembers& msg)
+{
+    if(state != ServerState::Config || !IsHost(msg.senderPlayerID))
+    {
+        KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
+        return true;
+    }
+    SetAllowCoopMembers(msg.allowed);
+    return true;
+}
+
+bool GameServer::OnGameMessage(const GameMessage_Coop_KickMember& msg)
+{
+    if(!IsHost(msg.senderPlayerID))
+    {
+        KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
+        return true;
+    }
+    // Unknown ids are no error: the member may have left in the meantime
+    for(const auto& member : coopMembers_)
+    {
+        if(member->id == msg.id)
+            KickCoopMember(*member, "kicked by the host");
+    }
+    return true;
+}
+
+void GameServer::BroadcastCoopMembers()
+{
+    if(!coopMembersChanged_)
+        return;
+    coopMembersChanged_ = false;
+    std::vector<CoopMemberInfo> members;
+    members.reserve(coopMembers_.size());
+    for(const auto& member : coopMembers_)
+    {
+        if(member->connection.isActive() && member->connection.socket.isValid())
+            members.push_back(
+              CoopMemberInfo{member->id, static_cast<uint8_t>(member->connection.playerId), member->name});
+    }
+    SendToAll(GameMessage_Coop_Members(allowCoopMembers_, std::move(members)));
+}
+
 void GameServer::KickCoopMember(CoopMember& member, const char* reason)
 {
     if(!member.connection.socket.isValid())
         return;
+    if(member.connection.isActive())
+        coopMembersChanged_ = true;
     LOG.write("SERVER: Member %1% of player %2% removed: %3%\n") % member.name % unsigned(member.connection.playerId)
       % reason;
     member.connection.closeConnection();

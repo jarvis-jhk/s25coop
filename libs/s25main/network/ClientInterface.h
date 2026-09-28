@@ -49,6 +49,8 @@ public:
     virtual void CI_ReadyChanged(unsigned /*playerId*/, bool /*ready*/) {}
     virtual void CI_PlayersSwapped(unsigned /*player1*/, unsigned /*player2*/) {}
     virtual void CI_GGSChanged(const GlobalGameSettings&) {}
+    /// s25coop: the member list (GameClient::GetCoopMembers), whether members are allowed, or our own role changed
+    virtual void CI_CoopMembersChanged() {}
 
     virtual void CI_Chat(unsigned /*playerId*/, ChatDestination /*cd*/, const std::string& /*msg*/) {}
     virtual void CI_Countdown(unsigned /*remainingTimeInSec*/) {}

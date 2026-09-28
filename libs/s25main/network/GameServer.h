@@ -57,7 +57,7 @@ public:
     unsigned GetNumCoopMembers() const;
     /// s25coop: accept connections that ask to control a human player together with it. Off by default: a member
     /// gives orders for somebody else's player, so the host has to want that
-    void SetAllowCoopMembers(bool allow) { allowCoopMembers_ = allow; }
+    void SetAllowCoopMembers(bool allow);
 
     /// Assign players that do not have a fixed team, return true if any player was assigned.
     static bool assignPlayersOfRandomTeams(std::vector<JoinPlayerInfo>& playerInfos);
@@ -118,6 +118,8 @@ private:
     bool OnGameMessage(const GameMessage_Pause& msg) override;
     bool OnGameMessage(const GameMessage_SkipToGF& msg) override;
     bool OnGameMessage(const GameMessage_Coop_JoinMember& msg) override;
+    bool OnGameMessage(const GameMessage_Coop_AllowMembers& msg) override;
+    bool OnGameMessage(const GameMessage_Coop_KickMember& msg) override;
     RTTR_POP_DIAGNOSTIC
 
     /// Send the map info (requestInfo) or the map and lua data. False if the data was requested twice
@@ -135,6 +137,12 @@ private:
     bool AcceptCoopMember(const Socket& socket);
     /// Answer a member's join request for the given leader; closes the connection if refused
     void JoinCoopMember(CoopMember& member, uint8_t leader);
+    /// A player in the lobby asks to become a member of leader instead: its slot is freed, its connection kept
+    void SwitchToCoopMember(GameServerPlayer& player, uint8_t leader);
+    /// Whether leader is a player a member may join
+    bool CanJoinCoopMember(uint8_t leader) const;
+    /// Tell everybody who is a member of whom, if that (or who is listening) changed since the last time
+    void BroadcastCoopMembers();
     void ReceiveCoopMemberMsgs();
     void SendCoopMemberMsgs();
     void KickCoopMember(CoopMember& member, const char* reason);
@@ -205,6 +213,9 @@ private:
     /// Commands of members per leader, in arrival order, not yet sealed into a leader's command set
     std::map<uint8_t, std::vector<gc::GameCommandPtr>> coopMemberCmds_;
     bool allowCoopMembers_ = false;
+    /// The member list, the allowed flag or the set of connections that must hear about them changed
+    bool coopMembersChanged_ = false;
+    uint32_t nextCoopMemberId_ = 1;
     NWFInfo nwfInfo;
     GlobalGameSettings ggs_;
 

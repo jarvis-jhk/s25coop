@@ -230,6 +230,9 @@ void GameClient::Stop()
     framesinfo.Clear();
     clientconfig.Clear();
     mapinfo.Clear();
+    coopMembers_.clear();
+    coopMembersAllowed_ = false;
+    coopSwitchPending_ = 0xFF;
 
     if(replayinfo)
     {
@@ -446,8 +449,43 @@ bool GameClient::OnGameMessage(const GameMessage_Player_Id& msg)
     return true;
 }
 
+void GameClient::JoinCoopMember(uint8_t leader)
+{
+    // 0xFF means "none" here and in the answer
+    if(state != ClientState::Config || IsHost() || IsCoopMember() || coopSwitchPending_ != 0xFF
+       || leader >= gameLobby->getNumPlayers())
+        return;
+    coopSwitchPending_ = leader;
+    mainPlayer.sendMsgAsync(new GameMessage_Coop_JoinMember(leader));
+}
+
+bool GameClient::OnGameMessage(const GameMessage_Coop_Members& msg)
+{
+    coopMembersAllowed_ = msg.allowed;
+    coopMembers_ = msg.members;
+    if(ci)
+        ci->CI_CoopMembersChanged();
+    return true;
+}
+
 bool GameClient::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
 {
+    if(state == ClientState::Config && coopSwitchPending_ != 0xFF)
+    {
+        // Answer to JoinCoopMember from the lobby: accepted for that leader, or refused (we stay the player we were)
+        const uint8_t leader = coopSwitchPending_;
+        coopSwitchPending_ = 0xFF;
+        if(msg.player == leader)
+        {
+            clientconfig.coopMemberOf = leader;
+            mainPlayer.playerId = leader;
+            LOG.write("Client: now playing player %1% as a member\n") % unsigned(leader);
+        } else
+            LOG.write("Client: the server refused to let us play player %1% as a member\n") % unsigned(leader);
+        if(ci)
+            ci->CI_CoopMembersChanged();
+        return true;
+    }
     if(!VerifyState(ConnectState::Initiated))
         return true;
     if(!IsCoopMember() || msg.player != clientconfig.coopMemberOf)

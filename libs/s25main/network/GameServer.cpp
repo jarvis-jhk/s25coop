@@ -303,6 +303,7 @@ void GameServer::Run()
             continue;
         player.executeMsgs(*this);
     }
+    BroadcastCoopMembers();
     // Send afterwards as most messages are relayed which should be done as fast as possible
     for(GameServerPlayer& player : networkPlayers)
     {
@@ -403,6 +404,7 @@ void GameServer::Stop()
     coopMembers_.clear();
     coopMemberCmds_.clear();
     allowCoopMembers_ = false;
+    coopMembersChanged_ = false;
 
     // aufräumen
     framesinfo.Clear();
@@ -1269,6 +1271,8 @@ bool GameServer::OnGameMessage(const GameMessage_Map_Checksum& msg)
             player->sendMsgAsync(new GameMessage_Player_List(playerInfos));
             player->sendMsgAsync(new GameMessage_GGSChange(ggs_));
             player->setActive();
+            // It has to learn who plays together with whom (s25coop)
+            coopMembersChanged_ = true;
         }
         AnnounceStatusChange();
     }

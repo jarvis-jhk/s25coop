@@ -58,5 +58,6 @@ GENERATE_GAME_MESSAGE_INTERFACE(GameMessage_Ping, GameMessage_Pong,
 
                                 GameMessage_GetAsyncLog, GameMessage_AsyncLog,
 
-                                GameMessage_Coop_JoinMember)
+                                GameMessage_Coop_JoinMember, GameMessage_Coop_Members,
+                                GameMessage_Coop_AllowMembers, GameMessage_Coop_KickMember)
 RTTR_POP_DIAGNOSTIC

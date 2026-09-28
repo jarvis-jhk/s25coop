@@ -119,6 +119,16 @@ void GameLobbyController::RemoveLuaScript()
     mainPlayer_.sendMsgAsync(new GameMessage_RemoveLua());
 }
 
+void GameLobbyController::SetCoopMembersAllowed(bool allowed)
+{
+    mainPlayer_.sendMsgAsync(new GameMessage_Coop_AllowMembers(allowed));
+}
+
+void GameLobbyController::KickCoopMember(uint32_t memberId)
+{
+    mainPlayer_.sendMsgAsync(new GameMessage_Coop_KickMember(memberId));
+}
+
 void GameLobbyController::SetName(unsigned playerIdx, const std::string& name)
 {
     mainPlayer_.sendMsgAsync(new GameMessage_Player_Name(playerIdx, name));

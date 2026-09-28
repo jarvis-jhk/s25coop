@@ -38,4 +38,7 @@ public:
     void StartCountdown(unsigned numSecs);
     void CancelCountdown();
     void RemoveLuaScript();
+    /// s25coop, host only: let clients join a player as members (or stop letting new ones in) / remove one
+    void SetCoopMembersAllowed(bool allowed);
+    void KickCoopMember(uint32_t memberId);
 };

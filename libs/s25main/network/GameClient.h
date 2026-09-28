@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ClientError.h"
+#include "CoopMemberInfo.h"
 #include "FramesInfo.h"
 #include "GameCommand.h"
 #include "GameMessageInterface.h"
@@ -83,6 +84,14 @@ public:
                  bool host, bool use_ipv6, uint8_t coopMemberOf = 0xFF);
     /// A member controls the player GetPlayerId() together with that player's own client (s25coop)
     bool IsCoopMember() const { return clientconfig.coopMemberOf != 0xFF; }
+    /// In the lobby: stop being a player and play leader together with its client instead. The answer arrives as
+    /// CI_CoopMembersChanged (and CI_PlayerLeft for our old slot); refused, we stay the player we were
+    void JoinCoopMember(uint8_t leader);
+    bool IsCoopSwitchPending() const { return coopSwitchPending_ != 0xFF; }
+    /// Who plays which player together with it, as the server last told us
+    const std::vector<CoopMemberInfo>& GetCoopMembers() const { return coopMembers_; }
+    /// Whether the host lets clients join a player as members
+    bool AreCoopMembersAllowed() const { return coopMembersAllowed_; }
 
     /// Start the server and connect to it
     bool HostGame(const CreateServerInfo& csi, const MapDescription& map);
@@ -233,6 +242,7 @@ private:
 
     bool OnGameMessage(const GameMessage_Player_Id& msg) override;
     bool OnGameMessage(const GameMessage_Coop_JoinMember& msg) override;
+    bool OnGameMessage(const GameMessage_Coop_Members& msg) override;
     bool OnGameMessage(const GameMessage_Player_List& msg) override;
     bool OnGameMessage(const GameMessage_Player_Name& msg) override;
     bool OnGameMessage(const GameMessage_Player_Portrait& msg) override;
@@ -328,6 +338,12 @@ private:
 
     std::unique_ptr<ReplayInfo> replayinfo;
     bool replayMode;
+
+    // s25coop
+    std::vector<CoopMemberInfo> coopMembers_;
+    bool coopMembersAllowed_ = false;
+    /// Leader we asked to join from the lobby, 0xFF = none
+    uint8_t coopSwitchPending_ = 0xFF;
 
     /// Configured players for an AI battle.
     std::vector<AI::Info> aiBattlePlayers_;

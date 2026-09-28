@@ -140,4 +140,16 @@ if(NOT WIN32)
     add_coop_member_test(CoopNet_MemberFallsBehind 13716 OFF sync --stall-at 300)
     # A diverged member must show up in the comparison, or a green run proves nothing
     add_coop_member_test(CoopNet_MemberDesyncDetected 13715 OFF differ --desync-at 300)
+
+    # Members in the lobby (M2 step 3): switching from a slot, refusal, kick by the host
+    function(add_coop_lobby_test name port mode)
+        add_test(NAME ${name}
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=${port}
+                         -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DMODE=${mode}
+                         -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetLobby.cmake)
+        set_tests_properties(${name} PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
+    endfunction()
+    add_coop_lobby_test(CoopNet_LobbySwitch 13720 switch)
+    add_coop_lobby_test(CoopNet_LobbyRefused 13721 refused)
+    add_coop_lobby_test(CoopNet_LobbyKick 13722 kick)
 endif()

@@ -85,6 +85,8 @@ struct Callbacks : ClientInterface
             async = checksums;
     }
     void CI_PlayerLeft(unsigned) override { playersLeft++; }
+    unsigned membersChanged = 0;
+    void CI_CoopMembersChanged() override { membersChanged++; }
 };
 
 struct Options
@@ -102,6 +104,18 @@ struct Options
     std::optional<uint8_t> memberOf;
     /// Host: members to wait for before starting
     unsigned members = 0;
+    /// Host: allow members through the lobby message (as the GUI does) instead of on the server directly
+    bool membersViaLobby = false;
+    /// Host: slots after the human ones that stay free for a joiner, closed once the members are there
+    unsigned openSlots = 0;
+    /// Host: kick every member once they are all there, then play without them
+    bool kickMembers = false;
+    /// Join: take a slot first, then become a member of this player from the lobby
+    std::optional<uint8_t> switchToMember;
+    /// Join: ask to switch at once, without waiting until the host allows members
+    bool switchNow = false;
+    /// Join: being kicked by the host in the lobby is the expected outcome
+    bool expectKick = false;
     /// Order a woodcutter near our HQ at this GF
     std::optional<unsigned> buildAtGF;
     /// Stop running for 2 s at this GF, as a slow machine or a hiccup on the line would
@@ -122,6 +136,14 @@ AI::Info parseAI(const std::string& name)
 
 /// What must be equal in every process at the end: the world checksum and the woodcutters (sites included) of each
 /// player, which shows whether an order arrived
+std::string describeMembers()
+{
+    std::string result;
+    for(const CoopMemberInfo& member : GAMECLIENT.GetCoopMembers())
+        result += (result.empty() ? "" : " ") + member.name + "@" + std::to_string(member.leader);
+    return result.empty() ? "none" : result;
+}
+
 std::string describeState(const Game& game)
 {
     std::string result = "checksum " + std::to_string(AsyncChecksum::create(game).getHash()) + ", woodcutters";
@@ -174,6 +196,9 @@ int run(Options& opt, Callbacks& cb)
     unsigned maxNWFLength = 1;
     std::string stateAtMaxGF;
     unsigned lastTracedGF = 0;
+    bool switchRequested = false, switchDone = false, kicked = false, openSlotsClosed = false;
+    unsigned seenMemberChanges = 0;
+    std::string membersAtStart, switchResult;
 
     while(true)
     {
@@ -195,6 +220,11 @@ int run(Options& opt, Callbacks& cb)
                                opt.memberOf.value_or(0xFF));
             continue;
         }
+        if(cb.error && opt.expectKick && cb.connected && GAMECLIENT.GetState() != ClientState::Game)
+        {
+            writeResult(opt.out, "Kicked by the host in the lobby");
+            return Ok;
+        }
         if(cb.error)
         {
             if(finishedAt)
@@ -215,29 +245,52 @@ int run(Options& opt, Callbacks& cb)
                       << GAMECLIENT.IsPaused() << " GF " << (state == ClientState::Game ? GAMECLIENT.GetGFNumber() : 0u)
                       << std::endl;
         }
+        if(cb.membersChanged != seenMemberChanges)
+        {
+            seenMemberChanges = cb.membersChanged;
+            bnw::cout << "Members: " << describeMembers()
+                      << (GAMECLIENT.AreCoopMembersAllowed() ? "" : " (not allowed)") << std::endl;
+        }
         if(state == ClientState::Config && cb.connected)
         {
             auto gameLobby = GAMECLIENT.GetGameLobby();
+            if(opt.switchToMember && !switchRequested && (opt.switchNow || GAMECLIENT.AreCoopMembersAllowed()))
+            {
+                GAMECLIENT.JoinCoopMember(*opt.switchToMember);
+                switchRequested = true;
+            } else if(switchRequested && !switchDone && !GAMECLIENT.IsCoopSwitchPending())
+            {
+                // Refused: we stay the player we were and play as one
+                switchDone = true;
+                switchResult = GAMECLIENT.IsCoopMember() ?
+                                 "Switched to a member of player " + std::to_string(GAMECLIENT.GetPlayerId()) :
+                                 "Switch refused, still player " + std::to_string(GAMECLIENT.GetPlayerId());
+                bnw::cout << switchResult << std::endl;
+            }
             if(opt.host && !slotsSet)
             {
-                if(gameLobby->getNumPlayers() < numClients)
+                if(gameLobby->getNumPlayers() < numClients + opt.openSlots)
                 {
                     bnw::cerr << "Map has only " << gameLobby->getNumPlayers() << " players" << std::endl;
                     return SetupError;
                 }
                 lobby = std::make_unique<GameLobbyController>(gameLobby, GAMECLIENT.GetMainPlayer());
-                // Slot 0 is the host, the next ones wait for the joining clients, the rest get the given AIs
-                for(unsigned i = numClients; i < gameLobby->getNumPlayers(); i++)
+                // Slot 0 is the host, the next ones wait for the joining clients (and the open slots for a joiner that
+                // becomes a member), the rest get the given AIs
+                for(unsigned i = numClients + opt.openSlots; i < gameLobby->getNumPlayers(); i++)
                 {
-                    const unsigned aiIdx = i - numClients;
+                    const unsigned aiIdx = i - numClients - opt.openSlots;
                     if(aiIdx < opt.ais.size())
                         lobby->SetPlayerState(i, PlayerState::AI, parseAI(opt.ais[aiIdx]));
                     else
                         lobby->CloseSlot(i);
                 }
+                if(opt.membersViaLobby)
+                    lobby->SetCoopMembersAllowed(true);
                 GAMECLIENT.Command_SetReady(true);
                 slotsSet = true;
-            } else if(!opt.host && !readySent && !opt.memberOf)
+            } else if(!opt.host && !readySent && !opt.memberOf
+                      && (!opt.switchToMember || switchResult.find("refused") != std::string::npos))
             {
                 GAMECLIENT.Command_SetReady(true);
                 readySent = true;
@@ -250,7 +303,33 @@ int run(Options& opt, Callbacks& cb)
                     const JoinPlayerInfo& player = gameLobby->getPlayer(i);
                     allThere &= player.ps == PlayerState::Occupied && player.isReady;
                 }
-                allThere &= GAMESERVER.GetNumCoopMembers() >= opt.members;
+                // The members as the server counts them and as the lobby lists them (the broadcast arrived)
+                const auto numListed = static_cast<unsigned>(GAMECLIENT.GetCoopMembers().size());
+                allThere &= GAMESERVER.GetNumCoopMembers() >= opt.members && numListed >= opt.members;
+                if(allThere && membersAtStart.empty())
+                    membersAtStart = describeMembers();
+                if(allThere && opt.kickMembers)
+                {
+                    if(!kicked)
+                    {
+                        for(const CoopMemberInfo& member : GAMECLIENT.GetCoopMembers())
+                            lobby->KickCoopMember(member.id);
+                        kicked = true;
+                    }
+                    allThere = false;
+                } else if(kicked)
+                    allThere = numListed == 0 && GAMESERVER.GetNumCoopMembers() == 0;
+                if(allThere && opt.openSlots)
+                {
+                    for(unsigned i = numClients; i < numClients + opt.openSlots; i++)
+                    {
+                        const PlayerState ps = gameLobby->getPlayer(i).ps;
+                        if(ps == PlayerState::Free && !openSlotsClosed)
+                            lobby->CloseSlot(i);
+                        allThere &= ps == PlayerState::Locked;
+                    }
+                    openSlotsClosed = true;
+                }
                 if(allThere)
                 {
                     lobby->StartCountdown(0);
@@ -308,8 +387,13 @@ int run(Options& opt, Callbacks& cb)
             const unsigned checkedGF = gf - std::min(gf, (GAMECLIENT.GetNWFInfo()->getCmdDelay() + 1) * maxNWFLength);
             if(checkedGF >= opt.maxGF && !finishedAt)
             {
+                std::string extra;
+                if(opt.host)
+                    extra += "\nMembers at start: " + membersAtStart + "\nMembers at the end: " + describeMembers();
+                if(!switchResult.empty())
+                    extra += "\n" + switchResult;
                 writeResult(opt.out, "Reached GF " + std::to_string(gf) + " in sync (checksums compared through GF "
-                                       + std::to_string(checkedGF) + ")\n" + stateAtMaxGF);
+                                       + std::to_string(checkedGF) + ")\n" + stateAtMaxGF + extra);
                 finishedAt = std::chrono::steady_clock::now();
             }
             if(finishedAt)
@@ -352,6 +436,12 @@ int main(int argc, char** argv)
         ("desync-at", po::value<unsigned>(), "Test the harness: diverge this process's world at this GF")
         ("member-of", po::value<unsigned>(), "Join: control this player together with its client instead of taking a slot")
         ("members", po::value(&opt.members), "Host: wait for this many members before starting")
+        ("members-via-lobby", po::bool_switch(&opt.membersViaLobby), "Host: allow members through the lobby message, as the GUI does")
+        ("open-slots", po::value(&opt.openSlots), "Host: leave this many slots after the human ones free, close them once the members are there")
+        ("kick-members", po::bool_switch(&opt.kickMembers), "Host: kick every member once they are there, then play without them")
+        ("switch-to-member", po::value<unsigned>(), "Join: take a slot, then become a member of this player from the lobby")
+        ("switch-now", po::bool_switch(&opt.switchNow), "Join: ask to switch without waiting until members are allowed")
+        ("expect-kick", po::bool_switch(&opt.expectKick), "Join: being kicked in the lobby is the expected outcome (exit 0)")
         ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
         ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
@@ -404,6 +494,16 @@ int main(int argc, char** argv)
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
     if(options.count("member-of"))
         opt.memberOf = static_cast<uint8_t>(options["member-of"].as<unsigned>());
+    for(const char* name : {"switch-to-member", "member-of"})
+    {
+        if(options.count(name) && options[name].as<unsigned>() >= 0xFF)
+        {
+            bnw::cerr << name << " must be a player index" << std::endl;
+            return SetupError;
+        }
+    }
+    if(options.count("switch-to-member"))
+        opt.switchToMember = static_cast<uint8_t>(options["switch-to-member"].as<unsigned>());
     if(options.count("stall-at"))
         opt.stallAtGF = options["stall-at"].as<unsigned>();
     if(options.count("build-at"))
@@ -442,7 +542,8 @@ int main(int argc, char** argv)
                 bnw::cerr << "Could not host on port " << opt.port << std::endl;
                 return SetupError;
             }
-            GAMESERVER.SetAllowCoopMembers(opt.members > 0);
+            if(!opt.membersViaLobby)
+                GAMESERVER.SetAllowCoopMembers(opt.members > 0);
         } else
         {
             if(options.count("connect-delay"))

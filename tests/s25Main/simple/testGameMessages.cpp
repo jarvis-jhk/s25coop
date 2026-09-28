@@ -316,4 +316,40 @@ BOOST_AUTO_TEST_CASE(Serialization)
     }
 }
 
+// s25coop member messages
+BOOST_AUTO_TEST_CASE(CoopSerialization)
+{
+    using rttr::test::randomBool;
+    using rttr::test::randomValue;
+    using rttr::test::randString;
+    {
+        const GameMessage_Coop_JoinMember msgIn(randomValue<uint8_t>());
+        BOOST_TEST(serializeDeserializeMessage(msgIn)->player == msgIn.player);
+    }
+    {
+        std::vector<CoopMemberInfo> members(3);
+        for(CoopMemberInfo& member : members)
+            member = CoopMemberInfo{randomValue<uint32_t>(), randomValue<uint8_t>(), randString()};
+        const GameMessage_Coop_Members msgIn(randomBool(), members);
+        const auto msgOut = serializeDeserializeMessage(msgIn);
+        BOOST_TEST(msgOut->allowed == msgIn.allowed);
+        BOOST_TEST_REQUIRE(msgOut->members.size() == members.size());
+        for(unsigned i = 0; i < members.size(); i++)
+        {
+            BOOST_TEST(msgOut->members[i].id == members[i].id);
+            BOOST_TEST(msgOut->members[i].leader == members[i].leader);
+            BOOST_TEST(msgOut->members[i].name == members[i].name);
+        }
+        BOOST_TEST(serializeDeserializeMessage(GameMessage_Coop_Members())->members.empty());
+    }
+    {
+        const GameMessage_Coop_AllowMembers msgIn(randomBool());
+        BOOST_TEST(serializeDeserializeMessage(msgIn)->allowed == msgIn.allowed);
+    }
+    {
+        const GameMessage_Coop_KickMember msgIn(randomValue<uint32_t>());
+        BOOST_TEST(serializeDeserializeMessage(msgIn)->id == msgIn.id);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

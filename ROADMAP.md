@@ -71,7 +71,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ☑ 1 server merge · ☑ 2 client member mode: `coop-net join --member-of 0`, ctest `CoopNet_Member*` (a member's
     order lands in the leader's world; every process ends in the same state; a member that stalls 2 s catches up;
     a diverged member is caught by the test). 2026-09-28
-  - ☐ 3 join flow and lobby
+  - ◐ 3 join flow and lobby: ☑ protocol (member list, host allow/kick, switch from a lobby slot to member; ctest
+    `CoopNet_Lobby*`, 2026-09-28) · ☐ lobby GUI (members listed under their player, "play together" button, host
+    checkbox + kick) · ☐ campaign default (members allowed, the human slot offered)
   - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
 - ☐ Save and resume a coop campaign with the same group; deterministic loading

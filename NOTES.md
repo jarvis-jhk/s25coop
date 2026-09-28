@@ -293,3 +293,22 @@ Unit tests on master failed only on clang-12 + sanitizers: CoopNet_Member{Orders
 aborted the member in upstream's `GameClient.cpp` lag pause, `rand() * 4 * gf_length` (int overflow before
 the multiply reaches the int64 duration). Our member tests are the first to hit a lagging NWF under UBSan.
 Fixed by multiplying the duration first; CoopNet tests pass locally. Candidate for a tiny upstream PR.
+
+## 2026-09-28 — quota filler: M2 step 3, lobby protocol
+- No issues, master CI green at 4b2fb3d. Step 3 split into protocol / lobby GUI / campaign default (ROADMAP).
+- Protocol done: NMS_COOP_MEMBERS (server → all: allowed + {id, leader, name}), NMS_COOP_ALLOW_MEMBERS and
+  NMS_COOP_KICK_MEMBER (host only), and NMS_COOP_JOIN_MEMBER from an ACTIVE lobby player = switch to member (server
+  swaps both queues into the new CoopMember, frees the slot via Player_Kicked(NoCause); refusal answers NO_PLAYER_ID and
+  the client stays a player). Client: GetCoopMembers/AreCoopMembersAllowed/JoinCoopMember/IsCoopSwitchPending,
+  CI_CoopMembersChanged; host: GameLobbyController::SetCoopMembersAllowed/KickCoopMember. Details in
+  doc/coop/SharedPlayerSlot.md (Status).
+- Harness: host --members-via-lobby, --open-slots N, --kick-members; join --switch-to-member P, --switch-now,
+  --expect-kick; result files carry "Members at start/at the end". ctest CoopNet_LobbySwitch (member built the
+  woodcutter, states equal), CoopNet_LobbyRefused (plays on as player 1), CoopNet_LobbyKick (host log must say
+  "kicked by the host"). Message round-trip: Test_simple GameMessages/CoopSerialization.
+- Codex review: fixed 0xFF leader sentinel + CLI range, kick test accepted any disconnect. Rejected: "recvQueue swap
+  while executeMsgs loops" (it pops before running), "member of the host can send host messages" (member handler
+  whitelist refuses them).
+Next: lobby GUI (dskGameLobby): members under their player row, a "play together" button on occupied human rows when
+  allowed, host checkbox "allow co-players" + kick; a UI test with mock drivers like testCoopChangelogWindow. Then the
+  campaign default and step 4 (campaign as network game).

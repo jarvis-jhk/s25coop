@@ -61,6 +61,9 @@ Message* GameMessage::create_game(unsigned short id)
         case NMS_GET_ASYNC_LOG: msg = new GameMessage_GetAsyncLog(); break;
         case NMS_ASYNC_LOG: msg = new GameMessage_AsyncLog(); break;
         case NMS_COOP_JOIN_MEMBER: msg = new GameMessage_Coop_JoinMember(); break;
+        case NMS_COOP_MEMBERS: msg = new GameMessage_Coop_Members(); break;
+        case NMS_COOP_ALLOW_MEMBERS: msg = new GameMessage_Coop_AllowMembers(); break;
+        case NMS_COOP_KICK_MEMBER: msg = new GameMessage_Coop_KickMember(); break;
     }
 
     return msg;

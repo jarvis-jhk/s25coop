@@ -14,11 +14,13 @@
 struct GameServer::CoopMember
 {
     GameServerPlayer connection;
+    /// What the lobby shows and the host kicks by (CoopMemberInfo::id)
+    uint32_t id;
     std::string name;
     /// Handshake steps passed; the map is only sent after both, as to a player
     bool versionOk = false, passwordOk = false;
 
-    explicit CoopMember(const Socket& socket) : connection(GameMessageWithPlayer::NO_PLAYER_ID, socket) {}
+    CoopMember(const Socket& socket, uint32_t id) : connection(GameMessageWithPlayer::NO_PLAYER_ID, socket), id(id) {}
     // Held by unique_ptr and never moved (see GameServer::coopMembers_)
     CoopMember(const CoopMember&) = delete;
     CoopMember& operator=(const CoopMember&) = delete;
