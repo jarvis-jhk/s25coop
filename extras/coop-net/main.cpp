@@ -263,7 +263,6 @@ int main(int argc, char** argv)
 
     Options opt;
     std::string mode;
-    std::optional<unsigned> desyncAtGF;
     unsigned timeoutSec = 300;
     po::options_description desc("Allowed options");
     // clang-format off

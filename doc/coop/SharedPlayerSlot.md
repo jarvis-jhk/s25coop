@@ -3,6 +3,7 @@ Copyright (C) 2026 s25coop contributors
 
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
+
 # Coop: several clients control one player (design, M2)
 
 Goal: any number of people play the ONE human tribe of a campaign mission together, over LAN or the

@@ -186,7 +186,7 @@ status / unlocking: upstream PR #1681 by kubaau + ottml's enable_next_missions) 
 - Codex review: winner attribution (fixed + tests). Rejected: "MISS209 enables chapter 10" (it does not; it calls
   SetCampaignCompleted). Open design point for M2/M5: progress is written to every client's local SETTINGS
   whatever that client's player did — right for coop (all share the win), wrong for versus campaign maps.
-- Upstream #1681 is kubaau's draft; offering our fixes back = comment on that PR (not done yet).
+- Upstream #1681 is kubaau's draft; our fixes were offered back as a comment on that PR (2026-09-28 01:00).
 Next: M1 "mission unlocking and presentation as close to the original" (check the victory screen/unlock UI against the
 original; Hirotaro's screenshot in #1681), or M2 groundwork. Upstream #1985 approved by Flow86, #1986 no review.
 - CI on 07bf3205a was red (fixed in the next commit): Windows Test_integration — the settings test saved into a user data
@@ -218,5 +218,7 @@ maybe a UI test with mock drivers that opens dskCampaignMissionSelection with S2
   GameServer::SendAsyncLog opens a MessageBox on async.
 - Gotchas: RTTRCONFIG.Init() chdirs — make paths absolute before it. A map with a .lua beside it gets that script
   (LuaFunctions.SWD's is a unit-test script that errors). The game starts paused until OnGameStart().
+- CI on acd6ecfcd: clang builds failed on an unused variable (GCC does not warn — build with clang locally or read
+  twice), markdownlint wants a blank line after the licence comment. Fixed in the next commit.
 Next: M2 step 1 (server merge) + step 2 (client member mode) — extend coop-net with `join --member-of 0` and scripted
 orders (reuse extras/ai-battle/TestInput) so a test proves a member's building appears in the leader's world in sync.
