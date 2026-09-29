@@ -674,9 +674,14 @@ int main(int argc, char** argv)
         if(opt.host)
         {
             const CreateServerInfo csi(ServerType::Direct, opt.port, "s25coop net test");
-            const MapDescription map = opt.isSavegame ? MapDescription(savegameArg, MapType::Savegame) :
-                                       luaArg.empty() ? MapDescription(mapArg, MapType::OldMap) :
-                                                        MapDescription(mapArg, MapType::OldMap, luaArg);
+            const auto makeMap = [&]() {
+                if(opt.isSavegame)
+                    return MapDescription(savegameArg, MapType::Savegame);
+                if(luaArg.empty())
+                    return MapDescription(mapArg, MapType::OldMap);
+                return MapDescription(mapArg, MapType::OldMap, luaArg);
+            };
+            const MapDescription map = makeMap();
             if(!GAMECLIENT.HostGame(csi, map))
             {
                 bnw::cerr << "Could not host on port " << opt.port << std::endl;
