@@ -95,7 +95,7 @@ dskSelectMap::dskSelectMap(CreateServerInfo csi)
     // random map settings
     AddTextButton(7, DrawPoint(540, 530), Extent(40, 22), TextureColor::Green2, _("..."), NormalFont);
     // s25coop: host a campaign mission; the others join the one campaign player as co-players
-    if(csi.type != ServerType::Local)
+    if(this->csi.type != ServerType::Local)
     {
         AddTextButton(ID_btCampaign, DrawPoint(590, 445), Extent(200, 22), TextureColor::Green2,
                       _("Campaign together..."), NormalFont,
