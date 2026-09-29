@@ -85,10 +85,15 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     GameClient::SetPause is host-only, same as in any upstream network game)
   - ◐ 5 robustness: ☑ member checksums compared with the leader's on the server, a diverged member is removed,
     one more than 20000 NWFs behind too (ctest `CoopNet_MemberDesyncDetected`, 2026-09-29) · ☑ the removed member
-    is told why (host removed you / your player left / async / too far behind) instead of "connection lost" · ☐ leader leaves → first member takes over the slot
-- ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
-- ☐ Save and resume a coop campaign with the same group; deterministic loading
-  (upstream `save-rng-state` / PR #1970).
+    is told why (host removed you / your player left / async / too far behind) instead of "connection lost" · ☐ leader leaves → first member takes over the slot. Deferred (2026-09-29): the server runs in the host's process,
+    so when the host leaves the game ends anyway, and in a campaign the leader IS the host; hand-over would only help
+    a non-host leader in a multi-player map (M5). Host migration is a separate, much bigger topic.
+- ☑ Campaign missions hosted as network games instead of local-only, with the shared slot (steps 3+4 above).
+- ◐ Save and resume a coop campaign with the same group: ☑ works with upstream's network load (Create game → Load):
+  the saved human slot is free again, the co-player rejoins "the host's tribe", both stay in sync, the mission can
+  still be won (local ctest `CoopNetCampaignResume_roman_MISS200`, 2026-09-29); loading a save with one human over
+  the network allows co-players at once. ☐ seen in the real GUI · ☐ deterministic loading of a save made in a
+  single-player game (upstream `save-rng-state` / PR #1970) — only if a test shows an async after loading.
 
 ## M3 — Splitscreen, controller and Steam Deck UI
 

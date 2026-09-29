@@ -6,6 +6,7 @@
 #include "ILobbyClient.hpp"
 #include "JoinPlayerInfo.h"
 #include "RTTR_Version.h"
+#include "Savegame.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
 #include "controls/ctrlCheck.h"
@@ -274,6 +275,18 @@ BOOST_AUTO_TEST_CASE(CoopLobbyHelpers)
     BOOST_TEST(coop::lobby::memberLabel(gameLobby, members[0]) == "Max (with Jan)");
     // A leader the lobby does not know (yet): just the name
     BOOST_TEST(coop::lobby::memberLabel(gameLobby, members[2]) == "Bad");
+
+    Savegame save;
+    BasePlayerInfo human, ai, locked;
+    human.ps = PlayerState::Occupied;
+    ai.ps = PlayerState::AI;
+    locked.ps = PlayerState::Locked;
+    save.AddPlayer(human);
+    save.AddPlayer(ai);
+    save.AddPlayer(locked);
+    BOOST_TEST(coop::lobby::isSingleHumanSave(save));
+    save.AddPlayer(human);
+    BOOST_TEST(!coop::lobby::isSingleHumanSave(save));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -14,6 +14,7 @@
 #include "controls/ctrlEdit.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "coop/CoopLobby.h"
 #include "desktops/dskLobby.h"
 #include "files.h"
 #include "helpers/make_array.h"
@@ -21,6 +22,7 @@
 #include "iwConnecting.h"
 #include "iwMsgbox.h"
 #include "network/GameClient.h"
+#include "network/GameServer.h"
 #include "gameData/GameConsts.h"
 #include "gameData/const_gui_ids.h"
 #include "liblobby/LobbyClient.h"
@@ -199,8 +201,14 @@ void iwLoad::SaveLoad()
     if(!table->GetSelection())
         return;
 
-    if(GAMECLIENT.HostGame(csi, {table->GetItemText(*table->GetSelection(), 4), MapType::Savegame}))
+    const boost::filesystem::path savePath = table->GetItemText(*table->GetSelection(), 4);
+    if(GAMECLIENT.HostGame(csi, {savePath, MapType::Savegame}))
     {
+        // s25coop: a saved campaign has one human player; over the network the others rejoin it as co-players
+        Savegame save;
+        if(csi.type != ServerType::Local && save.Load(savePath, SaveGameDataToLoad::HeaderAndSettings)
+           && coop::lobby::isSingleHumanSave(save))
+            GAMESERVER.SetAllowCoopMembers(true);
         std::unique_ptr<ILobbyClient> lobbyClient;
         if(csi.type == ServerType::Lobby)
             lobbyClient = std::make_unique<RttrLobbyClient>(LOBBYCLIENT);

@@ -9,6 +9,7 @@
 #include <vector>
 
 class GameLobby;
+class SavedFile;
 
 /// What the game lobby shows about co-players (members, doc/coop/SharedPlayerSlot.md), kept apart from the desktop so
 /// it can be tested without one.
@@ -22,5 +23,8 @@ std::string playerRowName(const std::string& name, const std::vector<CoopMemberI
 std::vector<unsigned> leaderCandidates(const GameLobby& lobby, unsigned localPlayer);
 /// A member as the host's list shows it: "Anna (with Jan)"
 std::string memberLabel(const GameLobby& lobby, const CoopMemberInfo& member);
+/// A savegame with exactly one human player (a campaign, or a game played alone): whoever joins it can only be a
+/// co-player of that player, so co-players are allowed from the start
+bool isSingleHumanSave(SavedFile& save);
 
 } // namespace coop::lobby

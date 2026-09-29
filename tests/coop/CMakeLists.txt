@@ -171,5 +171,14 @@ if(NOT WIN32)
                          -DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/headless/missionComplete.lua
                          -DMODE=campaign -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetLobby.cmake)
         set_tests_properties(CoopNetCampaignWin_roman_MISS200 PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
+        # Save and resume with the same group (M2 step 6): the saved game continues with the co-player, who still
+        # plays the host's tribe; the mission can still be won
+        add_test(NAME CoopNetCampaignResume_roman_MISS200
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${RTTR_COOP_S2_DIR}/DATA/MAPS/MISS200.WLD
+                         -DLUA=${PROJECT_SOURCE_DIR}/data/RTTR/campaigns/roman/MISS200.lua -DGAME_DIR=${RTTR_COOP_S2_DIR}
+                         -DPORT=13727 -DMAX_GF=1500 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/CoopNetCampaignResume_roman_MISS200
+                         -DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/headless/missionComplete.lua
+                         -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetResume.cmake)
+        set_tests_properties(CoopNetCampaignResume_roman_MISS200 PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE)
     endif()
 endif()

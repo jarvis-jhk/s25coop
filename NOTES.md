@@ -379,5 +379,14 @@ yet; port it from ai-battle). Then step 5 robustness.
   by every screen's CI_Error. The member's ServerLost first runs what it already received (reason and EOF usually
   arrive in the same read); ServerLost returns once stopped, so the reason is not overwritten. coop-net prints the
   error text; CoopNet_MemberDesyncDetected and CoopNet_LobbyKick assert on it. Codex review: nothing.
-Next: step 5c leader hand-over (leader leaves → first member takes the slot; if the leader was the host, host rights
-too — probably the hardest part of M2; split it before starting). Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Mint feedback still open.
+- Step 5c (leader hand-over) deferred, reasons in ROADMAP (host leaving ends the game anyway; campaign leader = host).
+- Step 6 save/resume: coop-net --save <file> (host, at maxGF) and --savegame <file> (host continues it; slots are
+  left as saved). checkNetResume.cmake + local ctest CoopNetCampaignResume_roman_MISS200: MISS200 with a co-player
+  saved at GF 1500, resumed, co-player rejoins the host's player, second woodcutter, missionComplete at GF 3000 →
+  both "woodcutters 2", in sync, both roman=2. Worked on the first try: upstream frees the saved human slot and our
+  COOP_LEADER_HOST join finds the host. GUI: iwLoad over the network allows co-players when the save has exactly one
+  human (coop::lobby::isSingleHumanSave, unit-tested in UI/CoopLobbyHelpers) — not clicked through in the GUI yet.
+  CHANGELOG 0.1.6 section written (not released). Codex review: nothing.
+Next: release 0.1.6 once CI is green; a GUI hand test of Load → lobby → co-player joins (data/siedler/lobbytest,
+Xvfb) would be good first. Then M3 (splitscreen/gamepad: derneuere's branch) or M1 presentation, whichever Jan's
+feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Mint feedback still open.

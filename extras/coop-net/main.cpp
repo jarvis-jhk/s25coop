@@ -101,6 +101,10 @@ struct Options
     unsigned maxGF = 0;
     unsigned players = 2;
     bfs::path map;
+    /// Host: the game is a savegame, whose slots are fixed
+    bool isSavegame = false;
+    /// Host: save the game at maxGF (after the test script ran)
+    bfs::path saveAt;
     std::vector<std::string> ais;
     bfs::path out;
     bfs::path waitFor;
@@ -317,7 +321,7 @@ int run(Options& opt, Callbacks& cb)
             }
             if(opt.host && !slotsSet)
             {
-                if(gameLobby->getNumPlayers() < numClients + opt.openSlots)
+                if(!opt.isSavegame && gameLobby->getNumPlayers() < numClients + opt.openSlots)
                 {
                     bnw::cerr << "Map has only " << gameLobby->getNumPlayers() << " players" << std::endl;
                     return SetupError;
@@ -325,7 +329,8 @@ int run(Options& opt, Callbacks& cb)
                 lobby = std::make_unique<GameLobbyController>(gameLobby, GAMECLIENT.GetMainPlayer());
                 // Slot 0 is the host, the next ones wait for the joining clients (and the open slots for a joiner that
                 // becomes a member), the rest get the given AIs
-                for(unsigned i = numClients + opt.openSlots; i < gameLobby->getNumPlayers(); i++)
+                // A savegame keeps the slots it was saved with
+                for(unsigned i = numClients + opt.openSlots; !opt.isSavegame && i < gameLobby->getNumPlayers(); i++)
                 {
                     const unsigned aiIdx = i - numClients - opt.openSlots;
                     if(aiIdx < opt.ais.size())
@@ -475,6 +480,11 @@ int run(Options& opt, Callbacks& cb)
                 stateAtMaxGF = "State at GF " + std::to_string(gf) + ": " + describeState(*cb.game);
                 if(!opt.testScript.empty())
                     stateAtMaxGF += "\nCampaign progress: " + describeCampaignProgress();
+                if(!opt.saveAt.empty() && !GAMECLIENT.SaveToFile(opt.saveAt))
+                {
+                    bnw::cerr << "Could not save the game to " << opt.saveAt << std::endl;
+                    return Failed;
+                }
             }
             maxNWFLength = std::max(maxNWFLength, GAMECLIENT.GetNWFLength());
             if(opt.desyncAtGF && gf >= *opt.desyncAtGF)
@@ -563,6 +573,8 @@ int main(int argc, char** argv)
         ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
         ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
+        ("savegame", po::value<std::string>(), "Host: continue this savegame instead of starting --map")
+        ("save", po::value<std::string>(), "Host: save the game to this file at maxGF")
         ("test-script", po::value<std::string>(), "Run this in the map script's Lua state; its onTestEnd(gf) is called at maxGF, then the campaign progress is reported")
         ("connect-delay", po::value<unsigned>(), "Join: wait this many seconds before connecting")
         ("after", po::value<std::string>(), "Join: wait until this file exists before connecting (the host's --out plus .connected)")
@@ -593,9 +605,9 @@ int main(int argc, char** argv)
         bnw::cerr << "Mode must be host or join" << std::endl;
         return SetupError;
     }
-    if(opt.host && !options.count("map"))
+    if(opt.host && options.count("map") == options.count("savegame"))
     {
-        bnw::cerr << "host needs --map" << std::endl;
+        bnw::cerr << "host needs either --map or --savegame" << std::endl;
         return SetupError;
     }
     // Absolute now: RTTRCONFIG.Init changes the working directory
@@ -613,6 +625,10 @@ int main(int argc, char** argv)
     }
     const bfs::path mapArg = options.count("map") ? bfs::absolute(options["map"].as<std::string>()) : bfs::path();
     const bfs::path luaArg = options.count("lua") ? bfs::absolute(options["lua"].as<std::string>()) : bfs::path();
+    opt.isSavegame = options.count("savegame") > 0;
+    const bfs::path savegameArg = opt.isSavegame ? bfs::absolute(options["savegame"].as<std::string>()) : bfs::path();
+    if(options.count("save"))
+        opt.saveAt = bfs::absolute(options["save"].as<std::string>());
     if(options.count("test-script"))
         opt.testScript = bfs::absolute(options["test-script"].as<std::string>());
     if(options.count("desync-at"))
@@ -658,7 +674,8 @@ int main(int argc, char** argv)
         if(opt.host)
         {
             const CreateServerInfo csi(ServerType::Direct, opt.port, "s25coop net test");
-            const MapDescription map = luaArg.empty() ? MapDescription(mapArg, MapType::OldMap) :
+            const MapDescription map = opt.isSavegame ? MapDescription(savegameArg, MapType::Savegame) :
+                                       luaArg.empty() ? MapDescription(mapArg, MapType::OldMap) :
                                                         MapDescription(mapArg, MapType::OldMap, luaArg);
             if(!GAMECLIENT.HostGame(csi, map))
             {

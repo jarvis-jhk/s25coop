@@ -5,6 +5,7 @@
 #include "coop/CoopLobby.h"
 #include "GameLobby.h"
 #include "JoinPlayerInfo.h"
+#include "SavedFile.h"
 #include "helpers/format.hpp"
 #include <algorithm>
 #include <mygettext/mygettext.h>
@@ -40,6 +41,14 @@ std::string memberLabel(const GameLobby& lobby, const CoopMemberInfo& member)
     if(member.leader >= lobby.getNumPlayers())
         return member.name;
     return helpers::format(_("%1% (with %2%)"), member.name, lobby.getPlayer(member.leader).name);
+}
+
+bool isSingleHumanSave(SavedFile& save)
+{
+    unsigned numHumans = 0;
+    for(unsigned i = 0; i < save.GetNumPlayers(); i++)
+        numHumans += save.GetPlayer(i).ps == PlayerState::Occupied ? 1 : 0;
+    return numHumans == 1;
 }
 
 } // namespace coop::lobby

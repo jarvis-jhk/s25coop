@@ -3,6 +3,13 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.6
+
+- Continue a campaign together: the host loads the saved game under "Create game" → "Load", and the co-players
+  join with "Play the host's tribe together" again.
+- A co-player who has to leave a game is told why (the host removed them, their player left, or their game got
+  out of step with the others) instead of just "Lost connection".
+
 ## 0.1.5
 
 - Play one tribe together: in a network game the host ticks "Allow co-players", and anyone in the
