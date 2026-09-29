@@ -315,3 +315,26 @@ Next: lobby GUI (dskGameLobby): members under their player row, a "play together
 - CI on a4f59bc: StyleAndFormatting (clang-format 10 packs the GENERATE_CALLBACK list differently) and Clang-Tidy
   (performance-inefficient-string-concatenation inside the run loop, bugprone-exception-escape from option reads in
   main) — fixed in the next commit; player-index options now validated by a po notifier inside the try.
+
+## 2026-09-29 — quota filler: M2 step 3, lobby GUI
+- No issues, master CI green at f56218f. Lobby GUI done (dskGameLobby co-player row above the chat, helpers in
+  libs/s25main/coop/CoopLobby.*): host "Allow co-players" checkbox (400,430) + member list + Remove; players choose
+  "Play X's tribe" + Join; members see "You play together with X", no Start/Ready, no changes to the row
+  (`IsOwnRow`); rows show "Jan +2". Chat area starts 25 px lower. Selection survives rebuilds (every player change).
+- Tests: UI/CoopMembersHostView, UI/CoopMembersPlayerView, UI/CoopLobbyHelpers (inject the server broadcast with
+  `GameMessage_Coop_Members(...).run(&GAMECLIENT, 0)`). The member view is not unit-tested (IsCoopMember needs a
+  connection) — checked by hand.
+- By hand with two real s25client under Xvfb (data/siedler/lobbytest: start.sh/start2.sh, click.sh, type.py for
+  keys, shot.sh; Direct IP → Create Game → map → lobby; second client Join Game 127.0.0.1): allow, join, switch,
+  Remove, start the game (free slots must be closed or AI), member orders a woodcutter site → visible on the host,
+  no async. First real GUI coop game.
+- Bugs found by the new ctest CoopNet_LobbySwap (host swaps slot 0 with a dummy AI while a member is there): server
+  kept members on the old slot (fixed: GameServer::SwapCoopMembers, orders buffer swaps too), and members got kicked for
+  their SwapConfirm (now whitelisted).
+- Codex review: co-player list went stale on join/leave/swap/data changes → rebuilt there, choice preserved.
+- Upstream RttR asks "Submit debug data?" at first start (sends to upstream's server) — consider switching it off or
+  routing it to our fault path (M0 Windows fault hook item).
+- CHANGELOG has a 0.1.5 section; release once CI is green on this commit.
+Next: step 3 campaign default — a campaign lobby has one human slot and AIs, so joiners find no free slot: Direct IP /
+LAN join needs a "join as co-player" choice (Connect(..., coopMemberOf) exists; the GUI does not use it yet), then
+step 4 (campaign as network game).

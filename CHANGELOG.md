@@ -3,6 +3,12 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.5
+
+- Play one tribe together: in a network game the host ticks "Allow co-players", and anyone in the
+  lobby can pick a player and press Join to control that player's tribe together with them. The
+  host sees who plays with whom and can send a co-player away.
+
 ## 0.1.4
 
 - The installer finds Settlers II by itself: put the GOG installer

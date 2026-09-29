@@ -72,8 +72,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     order lands in the leader's world; every process ends in the same state; a member that stalls 2 s catches up;
     a diverged member is caught by the test). 2026-09-28
   - ◐ 3 join flow and lobby: ☑ protocol (member list, host allow/kick, switch from a lobby slot to member; ctest
-    `CoopNet_Lobby*`, 2026-09-28) · ☐ lobby GUI (members listed under their player, "play together" button, host
-    checkbox + kick) · ☐ campaign default (members allowed, the human slot offered)
+    `CoopNet_Lobby*`, 2026-09-28) · ☑ lobby GUI (co-player row: host checkbox + list + Remove, players Join,
+    "Jan +2" in the rows; UI tests + a real two-client game by hand, 2026-09-29) · ☐ campaign default (members
+    allowed; joining a full lobby directly as co-player from Direct IP/LAN, the human slot offered)
   - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
 - ☐ Save and resume a coop campaign with the same group; deterministic loading
