@@ -115,8 +115,16 @@ the member orders a building site that appears on the host's screen, no async).
 Fixed on the way: a slot swap in the lobby left the server's members on the old slot while their clients followed the
 swap (`GameServer::SwapCoopMembers` now moves them and their buffered orders), and a member's `SwapConfirm` got it
 kicked as an unexpected message. ctest `CoopNet_LobbySwap`.
-Open in step 3: the campaign default (members allowed, joiners offered the human slot) — a campaign lobby has no free
-slot, so a joiner must be able to connect directly as a member from the GUI (Direct IP/LAN "join as co-player").
+Joining a full lobby (2026-09-29): the Join Game window (Direct IP, LAN, lobby) has "Play the host's tribe together";
+it connects with `coopMemberOf = COOP_LEADER_HOST` (0xFE), the server resolves that to the host's current slot in
+`JoinCoopMember` and answers with the real id, which the client takes. A connection that cannot be a member now gets
+`Coop_JoinMember(NO_PLAYER_ID)` before it is closed (no free slot and members not allowed, or a free slot but members
+not allowed), shown as "Co-players are not allowed." (`ClientError::CoopRefused`) instead of "Lost connection".
+ctest `CoopNet_LobbyJoinHost` (host moves to slot 1 first, the joiner must land there). The harness joiners now wait
+for `<host out>.connected` (`--after`): the server gives slots in connection order and knows the host by its password,
+so a joiner that raced in first took slot 0 and broke the host's setup (a rare CI-style flake, seen once locally).
+Open in step 3: the campaign default (members allowed by default when a campaign is hosted) — belongs with step 4,
+which hosts campaigns as network games at all.
 
 ## Steps, each finishable and testable on its own
 

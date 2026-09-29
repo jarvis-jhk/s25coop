@@ -8,6 +8,8 @@ and the game will show the new sections after an update.
 - Play one tribe together: in a network game the host ticks "Allow co-players", and anyone in the
   lobby can pick a player and press Join to control that player's tribe together with them. The
   host sees who plays with whom and can send a co-player away.
+- Join Game has a new box "Play the host's tribe together": tick it to join even a full game as
+  the host's co-player.
 
 ## 0.1.4
 

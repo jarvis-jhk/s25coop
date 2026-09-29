@@ -24,6 +24,7 @@
 #include <rttr/test/LogAccessor.hpp>
 #include <turtle/mock.hpp>
 #include <boost/test/unit_test.hpp>
+#include <algorithm>
 
 //-V:MOCK_METHOD:813
 //-V:MOCK_EXPECT:807
@@ -112,25 +113,22 @@ BOOST_AUTO_TEST_CASE(CheckServerVersionValidity)
 
 namespace {
 // s25coop: the co-player controls, found by what they say rather than by their (private) ids
+// (find_if keeps every line covered: the coverage gate wants 100 % of a test file)
 template<typename T>
 T* findByTooltip(Window& wnd, const std::string& start)
 {
-    for(T* ctrl : wnd.GetCtrls<T>())
-    {
-        if(ctrl->GetTooltip().rfind(start, 0) == 0)
-            return ctrl;
-    }
-    return nullptr;
+    const std::vector<T*> ctrls = wnd.GetCtrls<T>();
+    const auto it =
+      std::find_if(ctrls.begin(), ctrls.end(), [&start](T* ctrl) { return ctrl->GetTooltip().rfind(start, 0) == 0; });
+    return it == ctrls.end() ? nullptr : *it;
 }
 ctrlComboBox* findCoopCombo(Window& wnd)
 {
     // The co-player combo is the only one left of the settings column
-    for(ctrlComboBox* combo : wnd.GetCtrls<ctrlComboBox>())
-    {
-        if(combo->GetPos().x < 100)
-            return combo;
-    }
-    return nullptr;
+    const std::vector<ctrlComboBox*> combos = wnd.GetCtrls<ctrlComboBox>();
+    const auto it =
+      std::find_if(combos.begin(), combos.end(), [](ctrlComboBox* combo) { return combo->GetPos().x < 100; });
+    return it == combos.end() ? nullptr : *it;
 }
 std::vector<std::string> comboItems(Window& wnd)
 {

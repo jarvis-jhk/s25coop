@@ -867,7 +867,11 @@ void GameServer::WaitForClients()
 
         // war kein platz mehr frei, wenn ja dann verbindung trennen?
         if(newPlayerId == GameMessageWithPlayer::NO_PLAYER_ID && !isMember)
+        {
+            // A client that wanted to be a co-player learns why (any other has stopped at the missing id already)
+            MessageHandler::send(socket, GameMessage_Coop_JoinMember(GameMessageWithPlayer::NO_PLAYER_ID));
             socket.Close();
+        }
     }
 }
 

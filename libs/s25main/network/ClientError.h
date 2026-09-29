@@ -15,7 +15,9 @@ enum class ClientError
     InvalidServerType,
     MapTransmission,
     WrongVersion,
-    InvalidMap
+    InvalidMap,
+    /// s25coop: asked to join a player as a co-player, but the host does not allow it (or that player cannot be joined)
+    CoopRefused
 };
 
 const char* ClientErrorToStr(ClientError error);

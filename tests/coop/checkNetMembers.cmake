@@ -18,6 +18,7 @@ if(SECOND_PLAYER)
     set(players 2)
     list(APPEND roles join)
     set(second COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/join USER=coop ${COOP_NET} join ${common} --connect-delay 3
+                --after ${WORK}/host.txt.connected
                 --out ${WORK}/join.txt --wait-for ${WORK}/host.txt --log ${WORK}/join.log)
 else()
     set(players 1)
@@ -27,6 +28,7 @@ execute_process(
     COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/host USER=coop ${COOP_NET} host ${common} --map ${MAP} --ai aijh
             --players ${players} --members 1 --out ${WORK}/host.txt --log ${WORK}/host.log
     COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/member USER=coop ${COOP_NET} join ${common} --member-of 0 --build-at 200
+            --after ${WORK}/host.txt.connected
             --out ${WORK}/member.txt --wait-for ${WORK}/host.txt --log ${WORK}/member.log ${MEMBER_ARGS}
     ${second}
     RESULTS_VARIABLE results

@@ -8,11 +8,13 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlCheck.h"
 #include "controls/ctrlEdit.h"
 #include "controls/ctrlOptionGroup.h"
 #include "controls/ctrlText.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "iwConnecting.h"
+#include "network/CoopMemberInfo.h"
 #include "network/GameClient.h"
 #include "ogl/FontStyle.h"
 #include "gameData/const_gui_ids.h"
@@ -31,6 +33,7 @@ enum : unsigned
     ID_edtPw,
     ID_txtIpv6,
     ID_grpIpv6,
+    ID_chkCoop,
     ID_txtStatus,
     ID_btConnect,
     ID_btBack,
@@ -38,7 +41,7 @@ enum : unsigned
 }
 
 iwDirectIPConnect::iwDirectIPConnect(ServerType serverType)
-    : IngameWindow(CGI_DIRECTIPCONNECT, IngameWindow::posLastOrCenter, Extent(300, 285), _("Join Game"),
+    : IngameWindow(CGI_DIRECTIPCONNECT, IngameWindow::posLastOrCenter, Extent(300, 315), _("Join Game"),
                    LOADER.GetImageN("resource", 41), true),
       serverType_(serverType)
 {
@@ -60,9 +63,15 @@ iwDirectIPConnect::iwDirectIPConnect(ServerType serverType)
     ipv6->AddTextButton(1, DrawPoint(205, 180), Extent(75, 22), TextureColor::Green2, _("IPv6"), NormalFont);
     ipv6->SetSelection((SETTINGS.server.ipv6 ? 1 : 0));
 
-    AddText(ID_txtStatus, DrawPoint(150, 215), "", COLOR_RED, FontStyle::CENTER, NormalFont);
-    AddTextButton(ID_btConnect, DrawPoint(20, 240), Extent(125, 22), TextureColor::Green2, _("Connect"), NormalFont);
-    AddTextButton(ID_btBack, DrawPoint(155, 240), Extent(125, 22), TextureColor::Red1, _("Back"), NormalFont);
+    // s25coop: needs no free slot, so it also works for a campaign, where the host's player is the only human one
+    ctrlCheck* coop = AddCheckBox(ID_chkCoop, DrawPoint(20, 210), Extent(260, 26), TextureColor::Grey,
+                                  _("Play the host's tribe together"), NormalFont);
+    coop->SetTooltip(_("Join as a co-player of the host instead of taking a slot of your own. The host must allow "
+                       "co-players."));
+
+    AddText(ID_txtStatus, DrawPoint(150, 245), "", COLOR_RED, FontStyle::CENTER, NormalFont);
+    AddTextButton(ID_btConnect, DrawPoint(20, 270), Extent(125, 22), TextureColor::Green2, _("Connect"), NormalFont);
+    AddTextButton(ID_btBack, DrawPoint(155, 270), Extent(125, 22), TextureColor::Red1, _("Back"), NormalFont);
 
     host->SetFocus();
     host->SetText(SETTINGS.server.lastIP);
@@ -107,8 +116,9 @@ void iwDirectIPConnect::Msg_ButtonClick(const unsigned ctrl_id)
             // save settings
             SETTINGS.server.lastIP = edtHost->GetText();
 
+            const bool asCoopMember = GetCtrl<ctrlCheck>(ID_chkCoop)->isChecked();
             if(!GAMECLIENT.Connect(edtHost->GetText(), edtPw->GetText(), serverType_, *port, false,
-                                   SETTINGS.server.ipv6))
+                                   SETTINGS.server.ipv6, asCoopMember ? COOP_LEADER_HOST : 0xFF))
             {
                 SetStatus(_("Connection failed!"), COLOR_RED);
             } else

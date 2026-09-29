@@ -17,6 +17,7 @@ const char* ClientErrorToStr(ClientError error)
         case ClientError::MapTransmission: return _("Map transmission was corrupt!");
         case ClientError::WrongVersion: return _("Wrong client version");
         case ClientError::InvalidMap: return _("Map is invalid or failed to load properly!");
+        case ClientError::CoopRefused: return _("Co-players are not allowed.");
         default: return _("Unknown error!");
     }
 }

@@ -16,6 +16,7 @@
 #include "network/GameMessages.h"
 #include "s25util/Log.h"
 #include "s25util/SocketSet.h"
+#include <algorithm>
 
 /// Handles the messages of one member. Only what a member needs is accepted; the lobby settings of its own
 /// (name, ready, nation, ...) are ignored because it has no slot, and anything else is a protocol error
@@ -184,6 +185,13 @@ bool GameServer::CanJoinCoopMember(uint8_t leader) const
 
 void GameServer::JoinCoopMember(CoopMember& member, uint8_t leader)
 {
+    if(leader == COOP_LEADER_HOST)
+    {
+        const auto itHost =
+          std::find_if(playerInfos.begin(), playerInfos.end(), [](const JoinPlayerInfo& p) { return p.isHost; });
+        leader = itHost == playerInfos.end() ? GameMessageWithPlayer::NO_PLAYER_ID :
+                                               static_cast<uint8_t>(itHost - playerInfos.begin());
+    }
     const bool ok = CanJoinCoopMember(leader);
     member.connection.sendMsg(GameMessage_Coop_JoinMember(ok ? leader : GameMessageWithPlayer::NO_PLAYER_ID));
     if(ok)
@@ -208,6 +216,8 @@ bool GameServer::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
     // A connection that got a free slot asks to be a member instead: hand its socket over and leave the slot free
     if(!allowCoopMembers_ || coopMembers_.size() >= maxCoopMembers)
     {
+        // Tell it why before the connection goes
+        player->sendMsg(GameMessage_Coop_JoinMember(GameMessageWithPlayer::NO_PLAYER_ID));
         KickPlayer(msg.senderPlayerID, KickReason::InvalidMsg, __LINE__);
         return true;
     }

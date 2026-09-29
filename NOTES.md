@@ -334,7 +334,12 @@ Next: lobby GUI (dskGameLobby): members under their player row, a "play together
 - Codex review: co-player list went stale on join/leave/swap/data changes → rebuilt there, choice preserved.
 - Upstream RttR asks "Submit debug data?" at first start (sends to upstream's server) — consider switching it off or
   routing it to our fault path (M0 Windows fault hook item).
-- CHANGELOG has a 0.1.5 section; release once CI is green on this commit.
-Next: step 3 campaign default — a campaign lobby has one human slot and AIs, so joiners find no free slot: Direct IP /
-LAN join needs a "join as co-player" choice (Connect(..., coopMemberOf) exists; the GUI does not use it yet), then
-step 4 (campaign as network game).
+- CI on bb44a17 red: coverage gate (two never-taken `return nullptr;` in the new UI test helpers) → find_if.
+- Same session, second part: Join Game window checkbox "Play the host's tribe together" (COOP_LEADER_HOST 0xFE, the
+  server resolves the host's slot), explicit refusal → "Co-players are not allowed." instead of "Lost connection".
+  Hand test under Xvfb: 2-player map with an AI in slot 1 (full), refused while not allowed, joined once allowed,
+  game started, no async. ctest CoopNet_LobbyJoinHost. Harness race fixed (joiners wait for host.txt.connected,
+  `--after`): a joiner could take slot 0 before the host's own client. Codex review: the joinhost test could pass
+  without exercising the resolution (host announced before its early swap) → fixed + asserted in the host log.
+Next: step 4 — host a campaign mission as a network game (dskCampaignMissionSelection → a server type choice, members
+allowed by default), MISS200 walkthrough split over two clients in coop-net. Release 0.1.5 once CI is green.

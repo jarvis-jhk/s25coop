@@ -15,6 +15,7 @@ execute_process(
     COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/host USER=coop ${COOP_NET} host ${common} --map ${MAP} --ai aijh
             --out ${WORK}/host.txt --log ${WORK}/host.log
     COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/join USER=coop ${COOP_NET} join ${common} --out ${WORK}/join.txt
+            --after ${WORK}/host.txt.connected
             --wait-for ${WORK}/host.txt --log ${WORK}/join.log ${JOIN_ARGS}
     RESULTS_VARIABLE results
     ERROR_VARIABLE errors)

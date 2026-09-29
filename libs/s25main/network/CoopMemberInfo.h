@@ -9,6 +9,10 @@
 
 /// s25coop: a connection that plays an existing player together with it, as the lobby shows it
 /// (doc/coop/SharedPlayerSlot.md)
+/// As the leader of a join request: whichever player the host plays. A joiner does not know the slots of a lobby it
+/// has not seen yet, and in a campaign the host's player is the only human one.
+constexpr uint8_t COOP_LEADER_HOST = 0xFE;
+
 struct CoopMemberInfo
 {
     /// Given by the server, unique for the lifetime of the server; the host kicks a member by it

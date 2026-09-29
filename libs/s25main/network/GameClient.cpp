@@ -488,11 +488,19 @@ bool GameClient::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
     }
     if(!VerifyState(ConnectState::Initiated))
         return true;
-    if(!IsCoopMember() || msg.player != clientconfig.coopMemberOf)
+    // Asked for the host's player, the answer says which one that is
+    const bool anyLeader = clientconfig.coopMemberOf == COOP_LEADER_HOST;
+    if(IsCoopMember() && msg.player == GameMessageWithPlayer::NO_PLAYER_ID)
+    {
+        OnError(ClientError::CoopRefused);
+        return true;
+    }
+    if(!IsCoopMember() || (msg.player != clientconfig.coopMemberOf && !anyLeader))
     {
         OnError(ClientError::ServerFull);
         return true;
     }
+    clientconfig.coopMemberOf = msg.player;
     // From now on we act for that player: what we see, what our orders are for
     mainPlayer.playerId = msg.player;
     mainPlayer.sendMsgAsync(new GameMessage_Server_Type(clientconfig.servertyp, rttr::version::GetRevision()));

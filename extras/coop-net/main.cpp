@@ -112,6 +112,8 @@ struct Options
     bool kickMembers = false;
     /// Host: once the members are there, swap our slot with this one (they must follow us)
     std::optional<uint8_t> swapWith;
+    /// Host: swap at once instead, before anybody joined
+    bool swapEarly = false;
     /// Join: take a slot first, then become a member of this player from the lobby
     std::optional<uint8_t> switchToMember;
     /// Join: ask to switch at once, without waiting until the host allows members
@@ -206,6 +208,7 @@ int run(Options& opt, Callbacks& cb)
     std::string stateAtMaxGF;
     unsigned lastTracedGF = 0;
     bool switchRequested = false, switchDone = false, kicked = false, openSlotsClosed = false, swapped = false;
+    bool announcedConnected = false;
     unsigned seenMemberChanges = 0;
     std::string membersAtStart, switchResult;
 
@@ -247,6 +250,16 @@ int run(Options& opt, Callbacks& cb)
             return Async;
         }
         const ClientState state = GAMECLIENT.GetState();
+        // With --swap-early only once we are in the new slot, so a joiner asking for "the host's player" must find it
+        // there
+        const bool inPlace = !(opt.swapWith && opt.swapEarly) || (swapped && GAMECLIENT.GetPlayerId() == *opt.swapWith);
+        if(opt.host && cb.connected && inPlace && !announcedConnected && !opt.out.empty())
+        {
+            // The server hands out slots in connection order and knows the host by its password, not its slot: a joiner
+            // that got in before our own client would take slot 0. Joiners wait for this file (--after).
+            bnw::ofstream(opt.out.string() + ".connected") << "connected\n";
+            announcedConnected = true;
+        }
         if(std::chrono::steady_clock::now() > nextProgress)
         {
             nextProgress += 5s;
@@ -296,6 +309,11 @@ int run(Options& opt, Callbacks& cb)
                 }
                 if(opt.membersViaLobby)
                     lobby->SetCoopMembersAllowed(true);
+                if(opt.swapWith && opt.swapEarly)
+                {
+                    lobby->SwapPlayers(GAMECLIENT.GetPlayerId(), *opt.swapWith);
+                    swapped = true;
+                }
                 GAMECLIENT.Command_SetReady(true);
                 slotsSet = true;
             } else if(!opt.host && !readySent && !opt.memberOf
@@ -474,6 +492,8 @@ int main(int argc, char** argv)
         ("open-slots", po::value(&opt.openSlots), "Host: leave this many slots after the human ones free, close them once the members are there")
         ("kick-members", po::bool_switch(&opt.kickMembers), "Host: kick every member once they are there, then play without them")
         ("swap-with", po::value<unsigned>()->notifier(checkPlayerIndex), "Host: once the members are there, swap our slot with this one")
+        ("swap-early", po::bool_switch(&opt.swapEarly), "Host: do the --swap-with at once, before anybody joined")
+        ("member-of-host", "Join: as a member of whichever player the host plays (what the Join Game window does)")
         ("switch-to-member", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: take a slot, then become a member of this player from the lobby")
         ("switch-now", po::bool_switch(&opt.switchNow), "Join: ask to switch without waiting until members are allowed")
         ("expect-kick", po::bool_switch(&opt.expectKick), "Join: being kicked in the lobby is the expected outcome (exit 0)")
@@ -481,6 +501,7 @@ int main(int argc, char** argv)
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
         ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
         ("connect-delay", po::value<unsigned>(), "Join: wait this many seconds before connecting")
+        ("after", po::value<std::string>(), "Join: wait until this file exists before connecting (the host's --out plus .connected)")
         ("timeout", po::value(&timeoutSec), "Give up after this many seconds (default 300)")
         ("log", po::value<std::string>(), "Write standard output (the game's log) to this file")
         ;
@@ -518,6 +539,8 @@ int main(int argc, char** argv)
         opt.out = bfs::absolute(options["out"].as<std::string>());
     if(options.count("wait-for"))
         opt.waitFor = bfs::absolute(options["wait-for"].as<std::string>());
+    const bfs::path afterFile =
+      options.count("after") ? bfs::absolute(options["after"].as<std::string>()) : bfs::path();
     if(options.count("log")
        && !std::freopen(bfs::absolute(options["log"].as<std::string>()).string().c_str(), "w", stdout))
     {
@@ -529,6 +552,8 @@ int main(int argc, char** argv)
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
     if(options.count("member-of"))
         opt.memberOf = static_cast<uint8_t>(options["member-of"].as<unsigned>());
+    if(options.count("member-of-host"))
+        opt.memberOf = COOP_LEADER_HOST;
     if(options.count("switch-to-member"))
         opt.switchToMember = static_cast<uint8_t>(options["switch-to-member"].as<unsigned>());
     if(options.count("swap-with"))
@@ -575,6 +600,19 @@ int main(int argc, char** argv)
                 GAMESERVER.SetAllowCoopMembers(opt.members > 0);
         } else
         {
+            if(!afterFile.empty())
+            {
+                const auto start = std::chrono::steady_clock::now();
+                while(!bfs::exists(afterFile))
+                {
+                    if(std::chrono::steady_clock::now() - start > 60s)
+                    {
+                        bnw::cerr << "The host did not connect: " << afterFile << std::endl;
+                        return Failed;
+                    }
+                    std::this_thread::sleep_for(50ms);
+                }
+            }
             if(options.count("connect-delay"))
                 std::this_thread::sleep_for(std::chrono::seconds(options["connect-delay"].as<unsigned>()));
             // The host may still be starting: retry for a while

@@ -73,8 +73,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     a diverged member is caught by the test). 2026-09-28
   - ◐ 3 join flow and lobby: ☑ protocol (member list, host allow/kick, switch from a lobby slot to member; ctest
     `CoopNet_Lobby*`, 2026-09-28) · ☑ lobby GUI (co-player row: host checkbox + list + Remove, players Join,
-    "Jan +2" in the rows; UI tests + a real two-client game by hand, 2026-09-29) · ☐ campaign default (members
-    allowed; joining a full lobby directly as co-player from Direct IP/LAN, the human slot offered)
+    "Jan +2" in the rows; UI tests + a real two-client game by hand, 2026-09-29) · ☑ joining a full lobby as
+    co-player of the host (Join Game checkbox, ctest `CoopNet_LobbyJoinHost`, 2026-09-29) · ☐ campaign default (members
+    allowed when a campaign is hosted; comes with step 4)
   - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
 - ☐ Save and resume a coop campaign with the same group; deterministic loading
