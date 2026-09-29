@@ -138,8 +138,8 @@ if(NOT WIN32)
     add_coop_member_test(CoopNet_MemberAndSecondPlayer 13714 ON sync)
     # Nobody waits for a member: after 2 s without running it is dozens of NWFs behind and must catch up in sync
     add_coop_member_test(CoopNet_MemberFallsBehind 13716 OFF sync --stall-at 300)
-    # A diverged member must show up in the comparison, or a green run proves nothing
-    add_coop_member_test(CoopNet_MemberDesyncDetected 13715 OFF differ --desync-at 300)
+    # A diverged member is caught by the server (its checksums against its leader's) and removed; the game goes on
+    add_coop_member_test(CoopNet_MemberDesyncDetected 13715 OFF outofsync --desync-at 300)
 
     # Members in the lobby (M2 step 3): switching from a slot, refusal, kick by the host
     function(add_coop_lobby_test name port mode)

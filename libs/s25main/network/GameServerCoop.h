@@ -4,9 +4,11 @@
 
 #pragma once
 
+#include "AsyncChecksum.h"
 #include "GameMessage.h"
 #include "GameServer.h"
 #include "GameServerPlayer.h"
+#include <deque>
 #include <string>
 
 /// A connection that plays an existing world player (its leader) together with it. connection.playerId is the leader
@@ -19,6 +21,10 @@ struct GameServer::CoopMember
     std::string name;
     /// Handshake steps passed; the map is only sent after both, as to a player
     bool versionOk = false, passwordOk = false;
+    /// Checksums the member sent with its command sets (one per NWF, like every client) that were not compared with its
+    /// leader's yet; the first one is that of NWF number nextChecksumIdx, counted from the game's start
+    std::deque<AsyncChecksum> checksums;
+    unsigned nextChecksumIdx = 0;
 
     CoopMember(const Socket& socket, uint32_t id) : connection(GameMessageWithPlayer::NO_PLAYER_ID, socket), id(id) {}
     // Held by unique_ptr and never moved (see GameServer::coopMembers_)

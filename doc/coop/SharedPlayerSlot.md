@@ -134,7 +134,16 @@ woodcutter is built, both processes in sync over 2000 GF (local ctest `CoopNetCa
 `RTTR_COOP_S2_DIR`). Needed: `LuaInterfaceGame::MissionStatement` logs instead of opening a window when no video
 driver is loaded (the diary window crashed every headless client). In a network game the diary does not pause (upstream:
 only single player pauses).
-Open in step 4: what the mission scripts do per client (message boxes, pause on the diary, `onHumanWinner`/campaign progress for members).
+Step 4, per-client script effects (2026-09-29): the script runs in every process, so a won mission records the chapter
+in the co-player's own settings too (`coop-net --test-script`, local ctest `CoopNetCampaignWin_roman_MISS200`: host and
+co-player both report `roman=2`). Pause and resume are host-only (`GameClient::SetPause`), as in any network game.
+Step 5, member checksums (2026-09-29): every client sends exactly one command set per NWF, starting with the empty one
+after loading, so the n-th checksum of a member and of its leader belong to the same GF — the count is the tag, no
+protocol change. The server keeps the leader's checksums until every member compared (`CompareCoopChecksums`, at
+most `maxCoopChecksumLag` = 20000 NWFs) and removes a member that differs ("out of sync") or needs one already dropped
+("too far behind"). A dead member is still caught by the ping timeout. ctest `CoopNet_MemberDesyncDetected` now
+expects the server to remove the diverged member while the host plays on. The member is only disconnected; it is not
+told why yet.
 
 ## Steps, each finishable and testable on its own
 

@@ -83,7 +83,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     co-player both record the chapter; local ctest `CoopNetCampaignWin_roman_MISS200`, 2026-09-29) · ☑ diary pause
     (the host's close resumes everyone — seen by hand; a co-player's close only closes their own window, because
     GameClient::SetPause is host-only, same as in any upstream network game)
-  - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
+  - ◐ 5 robustness: ☑ member checksums compared with the leader's on the server, a diverged member is removed,
+    one more than 20000 NWFs behind too (ctest `CoopNet_MemberDesyncDetected`, 2026-09-29) · ☐ tell the removed
+    member why (today it just loses the connection) · ☐ leader leaves → first member takes over the slot
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
 - ☐ Save and resume a coop campaign with the same group; deterministic loading
   (upstream `save-rng-state` / PR #1970).

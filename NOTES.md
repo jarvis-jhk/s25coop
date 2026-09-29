@@ -367,4 +367,12 @@ yet; port it from ai-battle). Then step 5 robustness.
   moment the win fires, not after it.
 - Diary pause settled by reading: GameClient::SetPause only acts on the host, so a co-player's close just closes their
   window; the host's close resumes everyone (seen by hand earlier). Step 4 done except the campaign default in step 3.
-Next: step 5 robustness (tagged checksums, member timeout, leader hand-over). Jan's Deck/Mint feedback still open.
+- Step 5a: member checksums. No protocol change — every client sends exactly one command set per NWF (the first
+  one right after loading), so the n-th of a member and the n-th of its leader belong to the same GF.
+  GameServer::CompareCoopChecksums keeps the leader's until all members compared (max 20000 NWFs), removes a member
+  that differs ("out of sync") or lags past that ("too far behind"). CoopNet_MemberDesyncDetected now expects the
+  removal (member desynced at GF 300, removed at its NWF 64; host plays on). All 14 CoopNet ctests + unit tests pass
+  (Test_drivers local-only as always). Codex review: claimed a loading-phase off-by-one — rejected, the leader's
+  loading set passes the same addPlayerCmds path and the in-sync member tests would fail on any offset.
+Next: step 5 rest — tell a removed member why (a message before the close, shown in the GUI instead of "Lost
+connection"), then leader hand-over. Jan's Deck/Mint feedback still open.

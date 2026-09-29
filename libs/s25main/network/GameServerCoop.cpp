@@ -131,10 +131,18 @@ public:
         if(!member.connection.isActive())
             return false;
         if(server.state == GameServer::ServerState::Loading)
-            return msg.cmds.gcs.empty();
+        {
+            // The one empty set every client sends once it loaded, like its leader: the first checksum of both
+            if(!msg.cmds.gcs.empty())
+                return false;
+            server.AddCoopMemberChecksum(member, msg.cmds.checksum);
+            return true;
+        }
         if(server.state != GameServer::ServerState::Game)
             return false;
-        // The member's checksum is not compared yet (step 5 needs checksums tagged with their GF)
+        server.AddCoopMemberChecksum(member, msg.cmds.checksum);
+        if(!member.connection.socket.isValid())
+            return true; // Removed for being out of sync: its orders were given on a wrong picture of the world
         if(!msg.cmds.gcs.empty())
         {
             auto& pending = server.coopMemberCmds_[member.connection.playerId];
@@ -147,7 +155,7 @@ public:
         return true;
     }
 
-    // Answered with the server's own logs only; members are not part of the async check yet
+    // Answered with the server's own logs only: a member's checksums are compared on their own (CompareCoopChecksums)
     bool OnGameMessage(const GameMessage_AsyncLog&) override { return true; }
     RTTR_POP_DIAGNOSTIC
 
@@ -330,6 +338,7 @@ void GameServer::KickCoopMembersOf(uint8_t leader)
             KickCoopMember(member, "its player left");
     }
     coopMemberCmds_.erase(leader);
+    coopLeaderChecksums_.erase(leader);
 }
 
 void GameServer::SwapCoopMembers(uint8_t player1, uint8_t player2)
@@ -350,6 +359,7 @@ void GameServer::SwapCoopMembers(uint8_t player1, uint8_t player2)
     }
     using std::swap;
     swap(coopMemberCmds_[player1], coopMemberCmds_[player2]);
+    swap(coopLeaderChecksums_[player1], coopLeaderChecksums_[player2]);
     coopMembersChanged_ |= changed;
 }
 
@@ -424,4 +434,69 @@ void GameServer::AppendCoopMemberCmds(uint8_t leader, PlayerGameCommands& cmds) 
     const auto it = coopMemberCmds_.find(leader);
     if(it != coopMemberCmds_.end())
         cmds.gcs.insert(cmds.gcs.end(), it->second.begin(), it->second.end());
+}
+
+void GameServer::AddCoopLeaderChecksum(uint8_t leader, const AsyncChecksum& checksum)
+{
+    coopLeaderChecksums_[leader].checksums.push_back(checksum);
+    CompareCoopChecksums(leader);
+}
+
+void GameServer::AddCoopMemberChecksum(CoopMember& member, const AsyncChecksum& checksum)
+{
+    member.checksums.push_back(checksum);
+    CompareCoopChecksums(member.connection.playerId);
+}
+
+void GameServer::CompareCoopChecksums(uint8_t leader)
+{
+    // Every client sends exactly one command set per NWF, starting with the one when it finished loading, so the n-th
+    // checksum of a member and the n-th of its leader were taken at the same GF, however far apart they arrive. That is
+    // the tag the async check of the players does not need: they cannot run apart, a member can.
+    CoopLeaderChecksums& leaderChecksums = coopLeaderChecksums_[leader];
+    const unsigned leaderEnd = leaderChecksums.firstIdx + static_cast<unsigned>(leaderChecksums.checksums.size());
+    unsigned oldestNeeded = leaderEnd;
+    for(const auto& memberPtr : coopMembers_)
+    {
+        CoopMember& member = *memberPtr;
+        if(member.connection.playerId != leader || !member.connection.socket.isValid())
+            continue;
+        while(!member.checksums.empty() && member.nextChecksumIdx < leaderEnd)
+        {
+            if(member.nextChecksumIdx < leaderChecksums.firstIdx)
+            {
+                KickCoopMember(member, "too far behind");
+                break;
+            }
+            const AsyncChecksum& expected =
+              leaderChecksums.checksums[member.nextChecksumIdx - leaderChecksums.firstIdx];
+            if(member.checksums.front() != expected)
+            {
+                LOG.write("SERVER: Member %1% of player %2% out of sync at its NWF %3%. Checksums:\n%4%\n%5%\n")
+                  % member.name % unsigned(leader) % member.nextChecksumIdx % member.checksums.front() % expected;
+                KickCoopMember(member, "out of sync");
+                break;
+            }
+            member.checksums.pop_front();
+            member.nextChecksumIdx++;
+        }
+        // A member cannot run ahead of its leader: it needs the leader's command sets to get anywhere
+        if(member.checksums.size() > maxCoopChecksumLag)
+            KickCoopMember(member, "too many checksums");
+        if(member.connection.socket.isValid())
+            oldestNeeded = std::min(oldestNeeded, member.nextChecksumIdx);
+    }
+    // Keep what a member still has to be compared with, but never more than maxCoopChecksumLag NWFs
+    oldestNeeded = std::max(oldestNeeded, leaderEnd - std::min(leaderEnd, maxCoopChecksumLag));
+    while(leaderChecksums.firstIdx < oldestNeeded)
+    {
+        leaderChecksums.checksums.pop_front();
+        leaderChecksums.firstIdx++;
+    }
+    for(const auto& memberPtr : coopMembers_)
+    {
+        CoopMember& member = *memberPtr;
+        if(member.connection.playerId == leader && member.nextChecksumIdx < leaderChecksums.firstIdx)
+            KickCoopMember(member, "too far behind");
+    }
 }

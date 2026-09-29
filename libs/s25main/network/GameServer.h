@@ -17,6 +17,7 @@
 #include "s25util/LANDiscoveryService.h"
 #include "s25util/Singleton.h"
 #include <chrono>
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -132,6 +133,14 @@ private:
     static constexpr unsigned maxCoopMembers = 16;
     /// Member orders buffered for one leader until its next command set
     static constexpr unsigned maxCoopMemberCmds = 1000;
+    /// How many NWFs a member may run behind its leader before it is removed: the leader's checksums are kept that long
+    static constexpr unsigned maxCoopChecksumLag = 20000;
+    /// The checksums a leader sent with its command sets, from NWF number firstIdx on, for comparing its members'
+    struct CoopLeaderChecksums
+    {
+        std::deque<AsyncChecksum> checksums;
+        unsigned firstIdx = 0;
+    };
     /// Accept a connection for which there is no free slot: it may only become a member. False if members are not
     /// allowed or too many connections are waiting
     bool AcceptCoopMember(const Socket& socket);
@@ -152,6 +161,11 @@ private:
     void KickCoopMembersOf(uint8_t leader);
     /// Append the member commands that arrived since the last seal to the commands of their leader
     void AppendCoopMemberCmds(uint8_t leader, PlayerGameCommands& cmds) const;
+    /// Record the checksum of a leader's or a member's next command set and compare what can be compared: a member
+    /// that diverged from its leader, or fell more than maxCoopChecksumLag NWFs behind, is removed
+    void AddCoopLeaderChecksum(uint8_t leader, const AsyncChecksum& checksum);
+    void AddCoopMemberChecksum(CoopMember& member, const AsyncChecksum& checksum);
+    void CompareCoopChecksums(uint8_t leader);
 
     void CancelCountdown();
     bool ArePlayersReady() const;
@@ -214,6 +228,7 @@ private:
     std::vector<std::unique_ptr<CoopMember>> coopMembers_;
     /// Commands of members per leader, in arrival order, not yet sealed into a leader's command set
     std::map<uint8_t, std::vector<gc::GameCommandPtr>> coopMemberCmds_;
+    std::map<uint8_t, CoopLeaderChecksums> coopLeaderChecksums_;
     bool allowCoopMembers_ = false;
     /// The member list, the allowed flag or the set of connections that must hear about them changed
     bool coopMembersChanged_ = false;

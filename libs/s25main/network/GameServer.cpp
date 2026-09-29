@@ -403,6 +403,7 @@ void GameServer::Stop()
     networkPlayers.clear();
     coopMembers_.clear();
     coopMemberCmds_.clear();
+    coopLeaderChecksums_.clear();
     allowCoopMembers_ = false;
     coopMembersChanged_ = false;
 
@@ -1311,6 +1312,9 @@ bool GameServer::OnGameMessage(const GameMessage_GameCommand& msg)
     if(!nwfInfo.addPlayerCmds(targetPlayerId, cmds))
         return true; // Ignore
     coopMemberCmds_.erase(targetPlayerId);
+    // A player's own command set (not one of the AIs the host sends for): what its members' checksums must match
+    if(targetPlayerId == msg.senderPlayerID)
+        AddCoopLeaderChecksum(targetPlayerId, cmds.checksum);
     GameServerPlayer* player = GetNetworkPlayer(targetPlayerId);
     if(player)
         player->setNotLagging();
