@@ -385,8 +385,10 @@ yet; port it from ai-battle). Then step 5 robustness.
   saved at GF 1500, resumed, co-player rejoins the host's player, second woodcutter, missionComplete at GF 3000 →
   both "woodcutters 2", in sync, both roman=2. Worked on the first try: upstream frees the saved human slot and our
   COOP_LEADER_HOST join finds the host. GUI: iwLoad over the network allows co-players when the save has exactly one
-  human (coop::lobby::isSingleHumanSave, unit-tested in UI/CoopLobbyHelpers) — not clicked through in the GUI yet.
+  human (coop::lobby::isSingleHumanSave, unit-tested in UI/CoopLobbyHelpers). GUI hand test under Xvfb (lobbytest:
+  save copied into home/.s25rttr/SAVE; Map selection "Load game..." at 683,541, row 200,162, load 609,459): lobby
+  showed "Allow co-players" ticked, the second client joined with the co-player box, "root +1", game started, the
+  co-player saw the saved woodcutter site, no async. Note: `pkill -f bin/s25client` kills the calling shell — use -x.
   CHANGELOG 0.1.6 section written (not released). Codex review: nothing.
-Next: release 0.1.6 once CI is green; a GUI hand test of Load → lobby → co-player joins (data/siedler/lobbytest,
-Xvfb) would be good first. Then M3 (splitscreen/gamepad: derneuere's branch) or M1 presentation, whichever Jan's
+Next: release 0.1.6 once CI is green. Then M3 (splitscreen/gamepad: derneuere's branch) or M1 presentation, whichever Jan's
 feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Mint feedback still open.

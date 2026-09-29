@@ -92,7 +92,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ◐ Save and resume a coop campaign with the same group: ☑ works with upstream's network load (Create game → Load):
   the saved human slot is free again, the co-player rejoins "the host's tribe", both stay in sync, the mission can
   still be won (local ctest `CoopNetCampaignResume_roman_MISS200`, 2026-09-29); loading a save with one human over
-  the network allows co-players at once. ☐ seen in the real GUI · ☐ deterministic loading of a save made in a
+  the network allows co-players at once. ☑ seen in the real GUI (two clients under Xvfb: Load → lobby with co-players already allowed → join
+  with "Play the host's tribe together" → both in the resumed game, no async; 2026-09-29) · ☐ deterministic loading of a save made in a
   single-player game (upstream `save-rng-state` / PR #1970) — only if a test shows an async after loading.
 
 ## M3 — Splitscreen, controller and Steam Deck UI
