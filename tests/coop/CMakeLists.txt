@@ -162,5 +162,14 @@ if(NOT WIN32)
                          -DPORT=13725 -DMAX_GF=2000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/CoopNetCampaign_roman_MISS200
                          -DMODE=campaign -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetLobby.cmake)
         set_tests_properties(CoopNetCampaign_roman_MISS200 PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
+        # The same, won: the mission's final event fires in both processes, and the co-player's machine records the
+        # campaign progress as well as the host's
+        add_test(NAME CoopNetCampaignWin_roman_MISS200
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${RTTR_COOP_S2_DIR}/DATA/MAPS/MISS200.WLD
+                         -DLUA=${PROJECT_SOURCE_DIR}/data/RTTR/campaigns/roman/MISS200.lua -DGAME_DIR=${RTTR_COOP_S2_DIR}
+                         -DPORT=13726 -DMAX_GF=2000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/CoopNetCampaignWin_roman_MISS200
+                         -DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/headless/missionComplete.lua
+                         -DMODE=campaign -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetLobby.cmake)
+        set_tests_properties(CoopNetCampaignWin_roman_MISS200 PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
     endif()
 endif()

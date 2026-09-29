@@ -13,7 +13,9 @@
 #             script's slots stay closed, the client joins "the host's player" and orders a woodcutter for it.
 #   joinhost - the host moves to slot 1 first; the client then joins "the host's player" without knowing its slot, as the
 #             Join Game window's co-player box does, and must end up in slot 1.
-# Inputs: COOP_NET, MAP, PORT, MAX_GF, WORK, MODE
+#             With TEST_SCRIPT (e.g. headless/missionComplete.lua) both processes run it at MAX_GF, and both must record
+#             the mission's chapter as completed: a co-player keeps the campaign progress on their own machine too.
+# Inputs: COOP_NET, MAP, PORT, MAX_GF, WORK, MODE, optional TEST_SCRIPT
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK}/host ${WORK}/join)
 set(common --port ${PORT} --maxGF ${MAX_GF} --timeout 120)
@@ -46,6 +48,9 @@ endif()
 set(gameDirEnv)
 if(GAME_DIR)
     set(gameDirEnv RTTR_GAME_DIR=${GAME_DIR})
+endif()
+if(TEST_SCRIPT)
+    list(APPEND common --test-script ${TEST_SCRIPT})
 endif()
 set(aiArgs)
 if(ai)
@@ -100,6 +105,11 @@ elseif(MODE STREQUAL "campaign")
     expect("${host}" "Members at start: Client@0")
     # The script's other slots are closed: only player 0 and the co-player's woodcutter
     expect("${host}" "woodcutters [1-9] 0 0 0 0 0 0")
+    if(TEST_SCRIPT)
+        # Chapter 0 of the Roman campaign, recorded by the mission's script in each process on its own
+        expect("${host}" "Campaign progress: roman=2")
+        expect("${join}" "Campaign progress: roman=2")
+    endif()
 elseif(MODE STREQUAL "swap" OR MODE STREQUAL "joinhost")
     expect("${host}" "Members at start: Client@1")
     if(MODE STREQUAL "joinhost")

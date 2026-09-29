@@ -5,7 +5,8 @@
 // s25coop network test harness (ROADMAP M2 step 0): one process hosts a game over localhost, others join it, all
 // without video or audio, through the real GameServer and GameClient. The server compares every player's checksum at
 // every network frame, so a run that reaches the requested game frame without an async report proves the clients
-// stayed in lockstep. Exit codes: 0 ok, 1 setup error, 3 async, 4 connection error or timeout.
+// stayed in lockstep. Exit codes: 0 ok, 1 setup error, 2 Lua error in the test script, 3 async, 4 connection error or
+// timeout.
 
 #include "Game.h"
 #include "GameCommands.h"
@@ -20,6 +21,8 @@
 #include "drivers/AudioDriverWrapper.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "files.h"
+#include "lua/LuaInterfaceBase.h"
+#include "lua/LuaInterfaceGame.h"
 #include "network/ClientInterface.h"
 #include "network/CreateServerInfo.h"
 #include "network/GameClient.h"
@@ -52,6 +55,7 @@ enum ExitCode
 {
     Ok = 0,
     SetupError = 1,
+    LuaError = 2,
     Async = 3,
     Failed = 4
 };
@@ -126,6 +130,8 @@ struct Options
     std::optional<unsigned> stallAtGF;
     /// Log the checksum every this many GFs (0 = never), to find where two processes diverged
     unsigned traceEvery = 0;
+    /// Run in the map script's Lua state once the game started; its onTestEnd(gf) is called at maxGF
+    bfs::path testScript;
     std::chrono::seconds timeout{300};
 };
 
@@ -153,6 +159,24 @@ std::string describeMembers()
     for(const CoopMemberInfo& member : GAMECLIENT.GetCoopMembers())
         result += (result.empty() ? "" : " ") + member.name + "@" + std::to_string(member.leader);
     return result.empty() ? "none" : result;
+}
+
+/// What the map script recorded as campaign progress in this process (SETTINGS is per process, like on a real machine)
+std::string describeCampaignProgress()
+{
+    std::string result;
+    for(const auto& progress : SETTINGS.campaigns.createSaveData())
+        result += (result.empty() ? "" : " ") + progress.first + "=" + progress.second;
+    return result.empty() ? "none" : result;
+}
+
+/// Every process calls this between the same two GFs, so whatever the script changes in the world stays in sync
+void callTestEnd(const Game& game, const unsigned gf)
+{
+    kaguya::LuaRef onTestEnd = game.world_.GetLua().getState()["onTestEnd"];
+    if(onTestEnd.type() != LUA_TFUNCTION)
+        throw std::runtime_error("Test script has no onTestEnd() function");
+    onTestEnd.call<void>(gf);
 }
 
 std::string describeState(const Game& game)
@@ -387,6 +411,27 @@ int run(Options& opt, Callbacks& cb)
                 // What the game interface does when it becomes active: runs the map script's start and unpauses
                 GAMECLIENT.OnGameStart();
                 gameStarted = true;
+                if(!opt.testScript.empty())
+                {
+                    if(!cb.game->world_.HasLua())
+                    {
+                        bnw::cerr << "--test-script needs a map script" << std::endl;
+                        return SetupError;
+                    }
+                    bool loaded = false;
+                    try
+                    {
+                        loaded = cb.game->world_.GetLua().getState().dofile(opt.testScript.string());
+                    } catch(const LuaExecutionError& e)
+                    {
+                        bnw::cerr << "Lua error: " << e.what() << std::endl;
+                    }
+                    if(!loaded)
+                    {
+                        bnw::cerr << "Failed to load the test script " << opt.testScript << std::endl;
+                        return LuaError;
+                    }
+                }
             }
             if(opt.host && !speedSet)
             {
@@ -413,7 +458,22 @@ int run(Options& opt, Callbacks& cb)
                 lastTracedGF = gf;
             }
             if(gf == opt.maxGF && stateAtMaxGF.empty())
+            {
+                if(!opt.testScript.empty())
+                {
+                    try
+                    {
+                        callTestEnd(*cb.game, gf);
+                    } catch(const std::exception& e) // LuaExecutionError, or no onTestEnd at all
+                    {
+                        bnw::cerr << "Test script failed: " << e.what() << std::endl;
+                        return LuaError;
+                    }
+                }
                 stateAtMaxGF = "State at GF " + std::to_string(gf) + ": " + describeState(*cb.game);
+                if(!opt.testScript.empty())
+                    stateAtMaxGF += "\nCampaign progress: " + describeCampaignProgress();
+            }
             maxNWFLength = std::max(maxNWFLength, GAMECLIENT.GetNWFLength());
             if(opt.desyncAtGF && gf >= *opt.desyncAtGF)
             {
@@ -501,6 +561,7 @@ int main(int argc, char** argv)
         ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
         ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
+        ("test-script", po::value<std::string>(), "Run this in the map script's Lua state; its onTestEnd(gf) is called at maxGF, then the campaign progress is reported")
         ("connect-delay", po::value<unsigned>(), "Join: wait this many seconds before connecting")
         ("after", po::value<std::string>(), "Join: wait until this file exists before connecting (the host's --out plus .connected)")
         ("timeout", po::value(&timeoutSec), "Give up after this many seconds (default 300)")
@@ -550,6 +611,8 @@ int main(int argc, char** argv)
     }
     const bfs::path mapArg = options.count("map") ? bfs::absolute(options["map"].as<std::string>()) : bfs::path();
     const bfs::path luaArg = options.count("lua") ? bfs::absolute(options["lua"].as<std::string>()) : bfs::path();
+    if(options.count("test-script"))
+        opt.testScript = bfs::absolute(options["test-script"].as<std::string>());
     if(options.count("desync-at"))
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
     if(options.count("member-of"))
