@@ -390,5 +390,8 @@ yet; port it from ai-battle). Then step 5 robustness.
   showed "Allow co-players" ticked, the second client joined with the co-player box, "root +1", game started, the
   co-player saw the saved woodcutter site, no async. Note: `pkill -f bin/s25client` kills the calling shell — use -x.
   CHANGELOG 0.1.6 section written (not released). Codex review: nothing.
-Next: release 0.1.6 once CI is green. Then M3 (splitscreen/gamepad: derneuere's branch) or M1 presentation, whichever Jan's
+- CI: StyleAndFormatting failed on cb60a18 (nested ternary in coop-net: clang-format 10 vs 14 lay it out
+  differently → lambda, e1ec5cd). Everything else green incl. Clang-Tidy, Windows, macOS, sanitizers. Tagged v0.1.6.
+  Rule: avoid nested ternaries, local clang-format 14 does not catch CI's 10.
+Next: wait for Jan's test of 0.1.5/0.1.6 on Deck/Mint; meanwhile M3 (splitscreen/gamepad: derneuere's branch) or M1 presentation, whichever Jan's
 feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Mint feedback still open.
