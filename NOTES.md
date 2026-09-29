@@ -365,5 +365,6 @@ yet; port it from ai-battle). Then step 5 robustness.
   a script without onTestEnd (Codex review). Local ctest CoopNetCampaignWin_roman_MISS200 (missionComplete.lua):
   host AND co-player record roman=2, in sync. Caveat: checksums are only compared through maxGF, i.e. up to the
   moment the win fires, not after it.
-Next: step 4 leftover — what happens when a co-player (not the host) closes a mission diary (SetPause is a host
-thing?); then step 5 robustness (tagged checksums, member timeout, leader hand-over). Jan's Deck/Mint feedback still open.
+- Diary pause settled by reading: GameClient::SetPause only acts on the host, so a co-player's close just closes their
+  window; the host's close resumes everyone (seen by hand earlier). Step 4 done except the campaign default in step 3.
+Next: step 5 robustness (tagged checksums, member timeout, leader hand-over). Jan's Deck/Mint feedback still open.
