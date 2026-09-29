@@ -14,6 +14,7 @@
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "desktops/dskCampaignSelection.h"
 #include "desktops/dskDirectIP.h"
 #include "desktops/dskLAN.h"
 #include "desktops/dskLobby.h"
@@ -47,6 +48,7 @@
 
 namespace bfs = boost::filesystem;
 constexpr unsigned ID_msgBoxError = 0;
+constexpr unsigned ID_btCampaign = 20;
 
 /**
  *  Konstruktor von @p dskSelectMap.
@@ -92,6 +94,13 @@ dskSelectMap::dskSelectMap(CreateServerInfo csi)
     AddTextButton(6, DrawPoint(380, 530), Extent(150, 22), TextureColor::Green2, _("Random Map"), NormalFont);
     // random map settings
     AddTextButton(7, DrawPoint(540, 530), Extent(40, 22), TextureColor::Green2, _("..."), NormalFont);
+    // s25coop: host a campaign mission; the others join the one campaign player as co-players
+    if(csi.type != ServerType::Local)
+    {
+        AddTextButton(ID_btCampaign, DrawPoint(590, 445), Extent(200, 22), TextureColor::Green2,
+                      _("Campaign together..."), NormalFont,
+                      _("Play a campaign mission together: the others join your tribe as co-players"));
+    }
 
     ctrlOptionGroup* optiongroup = AddOptionGroup(10, GroupSelectType::Check);
     Extent catBtSize = Extent(90, 22);
@@ -260,6 +269,7 @@ void dskSelectMap::Msg_ButtonClick(const unsigned ctrl_id)
 {
     switch(ctrl_id)
     {
+        case ID_btCampaign: WINDOWMANAGER.Switch(std::make_unique<dskCampaignSelection>(csi)); break;
         case 3: // "Zurück"
         {
             GoBack();

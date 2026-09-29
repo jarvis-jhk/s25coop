@@ -17,6 +17,7 @@
 #include "ingameWindows/iwMsgbox.h"
 #include "lua/CampaignDataLoader.h"
 #include "network/GameClient.h"
+#include "network/GameServer.h"
 #include "ogl/glFont.h"
 #include "gameData/CampaignDescription.h"
 #include "libsiedler2/ArchivItem_Map.h"
@@ -167,6 +168,9 @@ void dskCampaignMissionSelection::StartServer(unsigned missionIdx)
                                                       MsgboxButton::Ok, MsgboxIcon::ExclamationRed, ID_msgBoxError));
     } else
     {
+        // s25coop: a campaign has one human player; over the network the others join it as co-players
+        if(csi_.type != ServerType::Local)
+            GAMESERVER.SetAllowCoopMembers(true);
         iwConnecting& wnd = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(csi_.type, nullptr));
         onErrorConnection_ = wnd.onError.connect([this](ClientError error) {
             WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), ClientErrorToStr(error), this, MsgboxButton::Ok,

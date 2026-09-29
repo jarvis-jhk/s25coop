@@ -123,8 +123,14 @@ not allowed), shown as "Co-players are not allowed." (`ClientError::CoopRefused`
 ctest `CoopNet_LobbyJoinHost` (host moves to slot 1 first, the joiner must land there). The harness joiners now wait
 for `<host out>.connected` (`--after`): the server gives slots in connection order and knows the host by its password,
 so a joiner that raced in first took slot 0 and broke the host's setup (a rare CI-style flake, seen once locally).
-Open in step 3: the campaign default (members allowed by default when a campaign is hosted) — belongs with step 4,
-which hosts campaigns as network games at all.
+Step 4, first part (2026-09-29): "Create game" (Direct IP/LAN/lobby) → map selection has "Campaign together...",
+which opens the ordinary campaign and mission selection with the network `CreateServerInfo`; hosting a mission that
+way allows co-players at once (`dskCampaignMissionSelection::StartServer`). The mission script closes every other
+slot as in single player, so the lobby is full and the others join with "Play the host's tribe together". Tested by
+hand under Xvfb: Roman mission 1 hosted over the network, a second client joined as co-player, both got the mission
+diary, the co-player's flag appeared on the host's map, no async. UI test `UI/CampaignTogetherOnlyOverTheNetwork`.
+Open in step 4: the headless proof (MISS200 walkthrough with its orders split over two coop-net clients), and what
+the mission scripts do per client (message boxes, pause on the diary, `onHumanWinner`/campaign progress for members).
 
 ## Steps, each finishable and testable on its own
 

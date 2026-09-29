@@ -341,5 +341,12 @@ Next: lobby GUI (dskGameLobby): members under their player row, a "play together
   game started, no async. ctest CoopNet_LobbyJoinHost. Harness race fixed (joiners wait for host.txt.connected,
   `--after`): a joiner could take slot 0 before the host's own client. Codex review: the joinhost test could pass
   without exercising the resolution (host announced before its early swap) → fixed + asserted in the host log.
-Next: step 4 — host a campaign mission as a network game (dskCampaignMissionSelection → a server type choice, members
-allowed by default), MISS200 walkthrough split over two clients in coop-net. Release 0.1.5 once CI is green.
+- Third part: step 4 entry — "Campaign together..." button in the network map selection (dskSelectMap, 590,445) →
+  dskCampaignSelection(csi) → mission → network lobby with co-players allowed (StartServer). Back from the campaign
+  list returns to dskSelectMap for network csi. By hand: Roman mission 1 over the network with a co-player; both get
+  the diary; closing it on the host resumed the game ("The game was resumed"), the co-player's flag showed on the host.
+  UI test UI/CampaignTogetherOnlyOverTheNetwork. Codex review: nothing.
+- Our local S2 copy (archive.org) has Portuguese mission names ("Lá Vamos Nós"); Jan's GOG copy will not.
+Next: release 0.1.5 once CI is green (announce to Jan: coop campaign to test with a second PC). Then step 4 headless
+proof: coop-net host with a campaign map + lua (MISS200, local only), a member doing part of the walkthrough; check
+what the diary pause and onHumanWinner/campaign progress do on a co-player's client.

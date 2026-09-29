@@ -17,6 +17,8 @@
 #include "coop/CoopLobby.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskLobby.h"
+#include "desktops/dskSelectMap.h"
+#include "network/CreateServerInfo.h"
 #include "network/GameClient.h"
 #include "network/GameMessages.h"
 #include "uiHelper/uiHelpers.hpp"
@@ -240,6 +242,19 @@ BOOST_FIXTURE_TEST_CASE(CoopMembersPlayerView, uiHelper::Fixture)
     BOOST_TEST(findCoopCombo(*desktop)->GetSelection().value_or(99) == 2u);
     WINDOWMANAGER.CleanUp();
     setCoopMembers(false, {});
+}
+
+BOOST_FIXTURE_TEST_CASE(CampaignTogetherOnlyOverTheNetwork, uiHelper::Fixture)
+{
+    // s25coop: "Create game" offers hosting a campaign mission; single player has its own campaign menu
+    auto* desktop =
+      WINDOWMANAGER.Switch(std::make_unique<dskSelectMap>(CreateServerInfo(ServerType::Direct, 3665, "Test")));
+    WINDOWMANAGER.Draw();
+    BOOST_TEST(findByTooltip<ctrlButton>(*desktop, "Play a campaign mission together"));
+    desktop = WINDOWMANAGER.Switch(std::make_unique<dskSelectMap>(CreateServerInfo(ServerType::Local, 3665, "Test")));
+    WINDOWMANAGER.Draw();
+    BOOST_TEST(!findByTooltip<ctrlButton>(*desktop, "Play a campaign mission together"));
+    WINDOWMANAGER.CleanUp();
 }
 
 BOOST_AUTO_TEST_CASE(CoopLobbyHelpers)

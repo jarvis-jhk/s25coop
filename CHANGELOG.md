@@ -10,6 +10,8 @@ and the game will show the new sections after an update.
   host sees who plays with whom and can send a co-player away.
 - Join Game has a new box "Play the host's tribe together": tick it to join even a full game as
   the host's co-player.
+- Campaigns together: under "Create game", pick "Campaign together..." and a mission; your friends
+  join with "Play the host's tribe together" and you play the mission as one tribe.
 
 ## 0.1.4
 
