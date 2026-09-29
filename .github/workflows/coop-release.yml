@@ -137,10 +137,18 @@ jobs:
         with:
           merge-multiple: true
       - name: Release notes from CHANGELOG.md
+        # Every section since the last published release, so a version that was never tagged on its
+        # own (0.1.4) still reaches the release notes of the next one.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           v="${{ needs.version.outputs.version }}"
-          awk -v v="$v" '/^## /{p = ($2 == v)} p && !/^## /' CHANGELOG.md > notes.md
-          [ -s notes.md ] || { echo "CHANGELOG.md has no section '## $v'"; exit 1; }
+          prev=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name 2>/dev/null | sed 's/^v//') || prev=
+          awk -v v="$v" -v prev="$prev" '
+            /^## / { if ($2 == v) on = 1; else if (on && $2 == prev) exit; if (on) n++ }
+            on && /^## / { if (n > 1) print "### " $2; next }
+            on' CHANGELOG.md > notes.md
+          grep -q '[^[:space:]]' notes.md || { echo "CHANGELOG.md has no section '## $v'"; exit 1; }
           cat notes.md
       - uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:

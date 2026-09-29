@@ -351,5 +351,7 @@ Next: lobby GUI (dskGameLobby): members under their player row, a "play together
   (IngameWindow needs loaded graphics). Local ctest CoopNetCampaign_roman_MISS200 (checkNetLobby.cmake mode campaign,
   GAME_DIR/LUA inputs, no AIs): co-player joins the host's player, woodcutter built, in sync. Codex review: nothing.
 Next: release 0.1.5 once CI is green (announce to Jan: coop campaign, needs a second PC/Deck). Then step 4 leftovers:
-victory/campaign progress on a co-player's client (onHumanWinner fires per client? SETTINGS.campaigns saved on the
-member too?) — test with missionComplete.lua over coop-net; then step 5 robustness.
+victory/campaign progress on a co-player's client. Read, not tested: Game::CheckObjective fires EventHumanWinner in
+the deterministic game on every client and SetCampaignChapterCompleted writes the local SETTINGS, so a co-player's
+own machine should record the progress too — prove it with coop-net + a test script (coop-net has no --test-script
+yet; port it from ai-battle). Then step 5 robustness.
