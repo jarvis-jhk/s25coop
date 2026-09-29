@@ -374,5 +374,10 @@ yet; port it from ai-battle). Then step 5 robustness.
   removal (member desynced at GF 300, removed at its NWF 64; host plays on). All 14 CoopNet ctests + unit tests pass
   (Test_drivers local-only as always). Codex review: claimed a loading-phase off-by-one — rejected, the leader's
   loading set passes the same addPlayerCmds path and the in-sync member tests would fail on any offset.
-Next: step 5 rest — tell a removed member why (a message before the close, shown in the GUI instead of "Lost
-connection"), then leader hand-over. Jan's Deck/Mint feedback still open.
+- Step 5b: NMS_COOP_REMOVED(reason) sent synchronously right before the server closes a member (kicked by the host,
+  its player left, out of sync, too far behind); ClientError::Coop{Kicked,LeaderLeft,OutOfSync,TooFarBehind}, shown
+  by every screen's CI_Error. The member's ServerLost first runs what it already received (reason and EOF usually
+  arrive in the same read); ServerLost returns once stopped, so the reason is not overwritten. coop-net prints the
+  error text; CoopNet_MemberDesyncDetected and CoopNet_LobbyKick assert on it. Codex review: nothing.
+Next: step 5c leader hand-over (leader leaves → first member takes the slot; if the leader was the host, host rights
+too — probably the hardest part of M2; split it before starting). Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Mint feedback still open.

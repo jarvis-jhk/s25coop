@@ -17,7 +17,12 @@ enum class ClientError
     WrongVersion,
     InvalidMap,
     /// s25coop: asked to join a player as a co-player, but the host does not allow it (or that player cannot be joined)
-    CoopRefused
+    CoopRefused,
+    /// s25coop: removed as a co-player by the server (GameMessage_Coop_Removed says why)
+    CoopKicked,
+    CoopLeaderLeft,
+    CoopOutOfSync,
+    CoopTooFarBehind
 };
 
 const char* ClientErrorToStr(ClientError error);

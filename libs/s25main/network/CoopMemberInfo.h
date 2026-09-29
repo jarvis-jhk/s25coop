@@ -13,6 +13,19 @@
 /// has not seen yet, and in a campaign the host's player is the only human one.
 constexpr uint8_t COOP_LEADER_HOST = 0xFE;
 
+/// Why the server removed a member, told to that member just before its connection is closed
+enum class CoopRemovedReason : uint8_t
+{
+    KickedByHost,
+    LeaderLeft,
+    OutOfSync,
+    TooFarBehind
+};
+constexpr auto maxEnumValue(CoopRemovedReason)
+{
+    return CoopRemovedReason::TooFarBehind;
+}
+
 struct CoopMemberInfo
 {
     /// Given by the server, unique for the lifetime of the server; the host kicks a member by it

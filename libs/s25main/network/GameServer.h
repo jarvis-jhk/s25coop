@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "CoopMemberInfo.h"
 #include "FramesInfo.h"
 #include "GameMessageInterface.h"
 #include "GameProtocol.h"
@@ -155,6 +156,8 @@ private:
     void ReceiveCoopMemberMsgs();
     void SendCoopMemberMsgs();
     void KickCoopMember(CoopMember& member, const char* reason);
+    /// The same, and tell the member why
+    void KickCoopMember(CoopMember& member, const char* reason, CoopRemovedReason tell);
     /// Two slots were swapped: move the members (and their buffered orders) along with their players
     void SwapCoopMembers(uint8_t player1, uint8_t player2);
     /// Close the connections of all members of this player

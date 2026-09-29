@@ -297,7 +297,7 @@ bool GameServer::OnGameMessage(const GameMessage_Coop_KickMember& msg)
     for(const auto& member : coopMembers_)
     {
         if(member->id == msg.id)
-            KickCoopMember(*member, "kicked by the host");
+            KickCoopMember(*member, "kicked by the host", CoopRemovedReason::KickedByHost);
     }
     return true;
 }
@@ -329,13 +329,21 @@ void GameServer::KickCoopMember(CoopMember& member, const char* reason)
     member.connection.closeConnection();
 }
 
+void GameServer::KickCoopMember(CoopMember& member, const char* reason, CoopRemovedReason tell)
+{
+    // Sent directly, not queued: closing the connection drops the queue
+    if(member.connection.socket.isValid() && member.hasJoined())
+        member.connection.sendMsg(GameMessage_Coop_Removed(tell));
+    KickCoopMember(member, reason);
+}
+
 void GameServer::KickCoopMembersOf(uint8_t leader)
 {
     for(const auto& memberPtr : coopMembers_)
     {
         CoopMember& member = *memberPtr;
         if(member.connection.playerId == leader)
-            KickCoopMember(member, "its player left");
+            KickCoopMember(member, "its player left", CoopRemovedReason::LeaderLeft);
     }
     coopMemberCmds_.erase(leader);
     coopLeaderChecksums_.erase(leader);
@@ -465,7 +473,7 @@ void GameServer::CompareCoopChecksums(uint8_t leader)
         {
             if(member.nextChecksumIdx < leaderChecksums.firstIdx)
             {
-                KickCoopMember(member, "too far behind");
+                KickCoopMember(member, "too far behind", CoopRemovedReason::TooFarBehind);
                 break;
             }
             const AsyncChecksum& expected =
@@ -474,7 +482,7 @@ void GameServer::CompareCoopChecksums(uint8_t leader)
             {
                 LOG.write("SERVER: Member %1% of player %2% out of sync at its NWF %3%. Checksums:\n%4%\n%5%\n")
                   % member.name % unsigned(leader) % member.nextChecksumIdx % member.checksums.front() % expected;
-                KickCoopMember(member, "out of sync");
+                KickCoopMember(member, "out of sync", CoopRemovedReason::OutOfSync);
                 break;
             }
             member.checksums.pop_front();
@@ -497,6 +505,6 @@ void GameServer::CompareCoopChecksums(uint8_t leader)
     {
         CoopMember& member = *memberPtr;
         if(member.connection.playerId == leader && member.nextChecksumIdx < leaderChecksums.firstIdx)
-            KickCoopMember(member, "too far behind");
+            KickCoopMember(member, "too far behind", CoopRemovedReason::TooFarBehind);
     }
 }

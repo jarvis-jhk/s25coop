@@ -89,7 +89,7 @@ endfunction()
 
 expect("${host}" "State at GF ${MAX_GF}: ")
 if(MODE STREQUAL "kick")
-    expect("${join}" "Kicked by the host in the lobby")
+    expect("${join}" "Kicked by the host in the lobby: The host removed you from the game.")
     # ... and not by a connection that simply broke
     file(READ ${WORK}/host.log hostLog)
     expect("${hostLog}" "Member Client of player 0 removed: kicked by the host")

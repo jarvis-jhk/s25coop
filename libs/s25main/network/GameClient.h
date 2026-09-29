@@ -243,6 +243,7 @@ private:
     bool OnGameMessage(const GameMessage_Player_Id& msg) override;
     bool OnGameMessage(const GameMessage_Coop_JoinMember& msg) override;
     bool OnGameMessage(const GameMessage_Coop_Members& msg) override;
+    bool OnGameMessage(const GameMessage_Coop_Removed& msg) override;
     bool OnGameMessage(const GameMessage_Player_List& msg) override;
     bool OnGameMessage(const GameMessage_Player_Name& msg) override;
     bool OnGameMessage(const GameMessage_Player_Portrait& msg) override;

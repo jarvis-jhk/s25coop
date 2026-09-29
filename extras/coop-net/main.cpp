@@ -23,6 +23,7 @@
 #include "files.h"
 #include "lua/LuaInterfaceBase.h"
 #include "lua/LuaInterfaceGame.h"
+#include "network/ClientError.h"
 #include "network/ClientInterface.h"
 #include "network/CreateServerInfo.h"
 #include "network/GameClient.h"
@@ -258,14 +259,15 @@ int run(Options& opt, Callbacks& cb)
         }
         if(cb.error && opt.expectKick && cb.connected && GAMECLIENT.GetState() != ClientState::Game)
         {
-            writeResult(opt.out, "Kicked by the host in the lobby");
+            writeResult(opt.out, std::string("Kicked by the host in the lobby: ") + ClientErrorToStr(*cb.error));
             return Ok;
         }
         if(cb.error)
         {
             if(finishedAt)
                 break; // Somebody leaving after the end is expected
-            bnw::cerr << "Client error " << static_cast<int>(*cb.error) << std::endl;
+            bnw::cerr << "Client error " << static_cast<int>(*cb.error) << ": " << ClientErrorToStr(*cb.error)
+                      << std::endl;
             return cb.async ? Async : Failed;
         }
         if(cb.async)

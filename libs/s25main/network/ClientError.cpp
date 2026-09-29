@@ -18,6 +18,12 @@ const char* ClientErrorToStr(ClientError error)
         case ClientError::WrongVersion: return _("Wrong client version");
         case ClientError::InvalidMap: return _("Map is invalid or failed to load properly!");
         case ClientError::CoopRefused: return _("Co-players are not allowed.");
+        case ClientError::CoopKicked: return _("The host removed you from the game.");
+        case ClientError::CoopLeaderLeft: return _("The player you played together with left the game.");
+        case ClientError::CoopOutOfSync:
+            return _("Your game went out of sync with the others (async), so you were removed from it.");
+        case ClientError::CoopTooFarBehind:
+            return _("Your computer fell too far behind the others, so you were removed from the game.");
         default: return _("Unknown error!");
     }
 }

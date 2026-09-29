@@ -350,6 +350,9 @@ BOOST_AUTO_TEST_CASE(CoopSerialization)
         const GameMessage_Coop_KickMember msgIn(randomValue<uint32_t>());
         BOOST_TEST(serializeDeserializeMessage(msgIn)->id == msgIn.id);
     }
+    for(const CoopRemovedReason reason : {CoopRemovedReason::KickedByHost, CoopRemovedReason::LeaderLeft,
+                                          CoopRemovedReason::OutOfSync, CoopRemovedReason::TooFarBehind})
+        BOOST_TEST(serializeDeserializeMessage(GameMessage_Coop_Removed(reason))->reason == reason);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

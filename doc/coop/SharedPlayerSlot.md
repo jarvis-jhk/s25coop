@@ -142,8 +142,9 @@ after loading, so the n-th checksum of a member and of its leader belong to the 
 protocol change. The server keeps the leader's checksums until every member compared (`CompareCoopChecksums`, at
 most `maxCoopChecksumLag` = 20000 NWFs) and removes a member that differs ("out of sync") or needs one already dropped
 ("too far behind"). A dead member is still caught by the ping timeout. ctest `CoopNet_MemberDesyncDetected` now
-expects the server to remove the diverged member while the host plays on. The member is only disconnected; it is not
-told why yet.
+expects the server to remove the diverged member while the host plays on. The server then tells the member why
+(`GameMessage_Coop_Removed`, also for "kicked by the host" and "its player left"), and the member shows that instead
+of "connection lost".
 
 ## Steps, each finishable and testable on its own
 

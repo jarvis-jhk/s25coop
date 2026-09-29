@@ -64,6 +64,7 @@ Message* GameMessage::create_game(unsigned short id)
         case NMS_COOP_MEMBERS: msg = new GameMessage_Coop_Members(); break;
         case NMS_COOP_ALLOW_MEMBERS: msg = new GameMessage_Coop_AllowMembers(); break;
         case NMS_COOP_KICK_MEMBER: msg = new GameMessage_Coop_KickMember(); break;
+        case NMS_COOP_REMOVED: msg = new GameMessage_Coop_Removed(); break;
     }
 
     return msg;

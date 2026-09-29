@@ -62,7 +62,8 @@ enum
     NMS_COOP_JOIN_MEMBER = 0x0701, // 1 player to join | 1 accepted player or 0xFF
     NMS_COOP_MEMBERS,              // 1 members allowed, 4 count | count * (4 id, 1 leader, x name)
     NMS_COOP_ALLOW_MEMBERS,        // 1 members allowed (host only)
-    NMS_COOP_KICK_MEMBER           // 4 member id (host only)
+    NMS_COOP_KICK_MEMBER,          // 4 member id (host only)
+    NMS_COOP_REMOVED               // 1 reason (server -> the member it removes)
 };
 
 /* Hinweise:

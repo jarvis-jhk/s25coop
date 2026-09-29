@@ -1715,8 +1715,33 @@ int GameClient::Interpolate(const int x1, const int x2, const GameEvent* ev) con
     return do_interpolate(x1, x2, assertNonNull(ev));
 }
 
+bool GameClient::OnGameMessage(const GameMessage_Coop_Removed& msg)
+{
+    if(!IsCoopMember())
+        return true;
+    switch(msg.reason)
+    {
+        case CoopRemovedReason::KickedByHost: OnError(ClientError::CoopKicked); break;
+        case CoopRemovedReason::LeaderLeft: OnError(ClientError::CoopLeaderLeft); break;
+        case CoopRemovedReason::OutOfSync: OnError(ClientError::CoopOutOfSync); break;
+        case CoopRemovedReason::TooFarBehind: OnError(ClientError::CoopTooFarBehind); break;
+    }
+    return true;
+}
+
 void GameClient::ServerLost()
 {
+    // Run() may see the loss twice (failed read, then socket error); once stopped, the first error stands
+    if(state == ClientState::Stopped)
+        return;
+    // A removed member gets the reason right before the server closes the connection, often in the same read that
+    // saw the connection end: run what arrived first, so it is told why rather than "connection lost"
+    if(IsCoopMember())
+    {
+        mainPlayer.executeMsgs(*this);
+        if(state == ClientState::Stopped)
+            return;
+    }
     OnError(ClientError::ConnectionLost);
     // Stop game
     framesinfo.isPaused = true;

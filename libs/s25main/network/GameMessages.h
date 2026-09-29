@@ -1218,3 +1218,31 @@ public:
         return callback->OnGameMessage(*this);
     }
 };
+
+/// s25coop: the server tells a member why it removes it, right before it closes the connection
+class GameMessage_Coop_Removed : public GameMessage
+{
+public:
+    CoopRemovedReason reason = CoopRemovedReason::KickedByHost;
+
+    GameMessage_Coop_Removed() : GameMessage(NMS_COOP_REMOVED) {}
+    explicit GameMessage_Coop_Removed(CoopRemovedReason reason) : GameMessage(NMS_COOP_REMOVED), reason(reason) {}
+
+    void Serialize(Serializer& ser) const override
+    {
+        GameMessage::Serialize(ser);
+        helpers::pushEnum<uint8_t>(ser, reason);
+    }
+
+    void Deserialize(Serializer& ser) override
+    {
+        GameMessage::Deserialize(ser);
+        reason = helpers::popEnum<CoopRemovedReason>(ser);
+    }
+
+    bool Run(GameMessageInterface* callback) const override
+    {
+        LOG.writeToFile("<<< NMS_COOP_REMOVED(%1%)\n") % static_cast<unsigned>(reason);
+        return callback->OnGameMessage(*this);
+    }
+};
