@@ -71,12 +71,12 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ☑ 1 server merge · ☑ 2 client member mode: `coop-net join --member-of 0`, ctest `CoopNet_Member*` (a member's
     order lands in the leader's world; every process ends in the same state; a member that stalls 2 s catches up;
     a diverged member is caught by the test). 2026-09-28
-  - ◐ 3 join flow and lobby: ☑ protocol (member list, host allow/kick, switch from a lobby slot to member; ctest
+  - ☑ 3 join flow and lobby: ☑ protocol (member list, host allow/kick, switch from a lobby slot to member; ctest
     `CoopNet_Lobby*`, 2026-09-28) · ☑ lobby GUI (co-player row: host checkbox + list + Remove, players Join,
     "Jan +2" in the rows; UI tests + a real two-client game by hand, 2026-09-29) · ☑ joining a full lobby as
-    co-player of the host (Join Game checkbox, ctest `CoopNet_LobbyJoinHost`, 2026-09-29) · ☐ campaign default (members
-    allowed when a campaign is hosted; comes with step 4)
-  - ◐ 4 campaign as network game: ☑ "Campaign together..." in Create game, co-players allowed by default (seen
+    co-player of the host (Join Game checkbox, ctest `CoopNet_LobbyJoinHost`, 2026-09-29) · ☑ campaign default (members
+    allowed when a campaign is hosted: dskCampaignMissionSelection::StartServer, 2026-09-29)
+  - ☑ 4 campaign as network game: ☑ "Campaign together..." in Create game, co-players allowed by default (seen
     working by hand with Roman mission 1, 2026-09-29) · ☑ headless proof: MISS200 with its script as a
     network game, a co-player's order lands (local ctest `CoopNetCampaign_roman_MISS200`, 2026-09-29) ·
     ☑ victory/progress on a co-player's machine (the mission's final event fires in every process; host and
