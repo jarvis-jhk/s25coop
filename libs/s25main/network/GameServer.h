@@ -146,6 +146,8 @@ private:
     void ReceiveCoopMemberMsgs();
     void SendCoopMemberMsgs();
     void KickCoopMember(CoopMember& member, const char* reason);
+    /// Two slots were swapped: move the members (and their buffered orders) along with their players
+    void SwapCoopMembers(uint8_t player1, uint8_t player2);
     /// Close the connections of all members of this player
     void KickCoopMembersOf(uint8_t leader);
     /// Append the member commands that arrived since the last seal to the commands of their leader

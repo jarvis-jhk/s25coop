@@ -23,6 +23,7 @@
 #include "controls/ctrlText.h"
 #include "controls/ctrlTextButton.h"
 #include "controls/ctrlVarDeepening.h"
+#include "coop/CoopLobby.h"
 #include "desktops/dskDirectIP.h"
 #include "desktops/dskGameLoader.h"
 #include "desktops/dskLAN.h"
@@ -44,9 +45,11 @@
 #include "libsiedler2/prototypen.h"
 #include "s25util/Log.h"
 #include "s25util/MyTime.h"
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <mygettext/mygettext.h>
+#include <optional>
 #include <set>
 
 namespace {
@@ -100,6 +103,10 @@ enum CtrlIds
     ID_optChatTab,
     ID_btChatGame,
     ID_btChatLobby,
+    ID_chkCoopMembers,
+    ID_cbCoop,
+    ID_btCoop,
+    ID_txtCoop,
     ID_grpPlayerStart,                           // up to and including ID_grpPlayerStart + MAX_PLAYERS - 1
     ID_btSwap = ID_grpPlayerStart + MAX_PLAYERS, // up to and including ID_btSwap + MAX_PLAYERS - 1
 };
@@ -190,22 +197,25 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
 
     if(!IsSinglePlayer())
     {
+        // s25coop: the co-player row (UpdateCoopRow) takes the first line of the chat area
+        constexpr int chatTop = 320 + 25;
         // Enable lobby chat when we are logged in
         if(lobbyClient_ && lobbyClient_->IsLoggedIn())
         {
             ctrlOptionGroup* chatTab = AddOptionGroup(ID_optChatTab, GroupSelectType::Check);
-            chatTab->AddTextButton(ID_btChatGame, DrawPoint(20, 320), Extent(178, 22), TextureColor::Green2,
+            chatTab->AddTextButton(ID_btChatGame, DrawPoint(20, chatTop), Extent(178, 22), TextureColor::Green2,
                                    _("Game Chat"), NormalFont);
-            chatTab->AddTextButton(ID_btChatLobby, DrawPoint(202, 320), Extent(178, 22), TextureColor::Green2,
+            chatTab->AddTextButton(ID_btChatLobby, DrawPoint(202, chatTop), Extent(178, 22), TextureColor::Green2,
                                    _("Lobby Chat"), NormalFont);
-            gameChat =
-              AddChatCtrl(ID_chatGame, DrawPoint(20, 345), Extent(360, 218 - 25), TextureColor::Grey, NormalFont);
-            lobbyChat =
-              AddChatCtrl(ID_chatLobby, DrawPoint(20, 345), Extent(360, 218 - 25), TextureColor::Grey, NormalFont);
+            gameChat = AddChatCtrl(ID_chatGame, DrawPoint(20, chatTop + 25), Extent(360, 218 - 50), TextureColor::Grey,
+                                   NormalFont);
+            lobbyChat = AddChatCtrl(ID_chatLobby, DrawPoint(20, chatTop + 25), Extent(360, 218 - 50),
+                                    TextureColor::Grey, NormalFont);
             chatTab->SetSelection(ID_btChatGame, true);
         } else
         {
-            gameChat = AddChatCtrl(ID_chatGame, DrawPoint(20, 320), Extent(360, 218), TextureColor::Grey, NormalFont);
+            gameChat =
+              AddChatCtrl(ID_chatGame, DrawPoint(20, chatTop), Extent(360, 218 - 25), TextureColor::Grey, NormalFont);
         }
         AddEdit(ID_edtChatMsg, DrawPoint(20, 540), Extent(360, 22), TextureColor::Grey, NormalFont);
     }
@@ -221,6 +231,14 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
                 NormalFont, readonlySettings);
     AddCheckBox(ID_chkRandomSpawn, DrawPoint(600, 430), Extent(180, 26), TextureColor::Grey,
                 _("Random start locations"), NormalFont, readonlySettings);
+    if(!IsSinglePlayer())
+    {
+        // s25coop: only the host decides, everybody sees it
+        ctrlCheck* allowCoop = AddCheckBox(ID_chkCoopMembers, DrawPoint(400, 430), Extent(180, 26), TextureColor::Grey,
+                                           _("Allow co-players"), NormalFont, !gameLobby_->isHost());
+        allowCoop->SetTooltip(
+          _("Others may join a player instead of taking their own slot and play that tribe together"));
+    }
 
     AddText(ID_txtAddons, DrawPoint(400, 499), _("Addons:"), COLOR_YELLOW, FontStyle{}, NormalFont);
     AddTextButton(ID_btSettings, DrawPoint(600, 495), Extent(180, 22), TextureColor::Green2,
@@ -347,6 +365,7 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
         }
     }
     CI_GGSChanged(gameLobby_->getSettings());
+    UpdateCoopRow();
 
     if(serverType == ServerType::Lobby && lobbyClient_ && lobbyClient_->IsLoggedIn())
     {
@@ -419,6 +438,8 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
     {
         default: name.clear(); break;
         case PlayerState::Occupied:
+            name = coop::lobby::playerRowName(player.name, GAMECLIENT.GetCoopMembers(), row);
+            break;
         case PlayerState::AI: name = player.name; break;
         case PlayerState::Free: name = _("Open"); break;
         case PlayerState::Locked: name = _("Closed"); break;
@@ -450,15 +471,15 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
     if(player.isUsed())
     {
         // If not in savegame -> Player can change own row and host can change AIs
-        const bool allowPlayerChange = ((gameLobby_->isHost() && player.ps == PlayerState::AI) || localPlayerId_ == row)
-                                       && !gameLobby_->isSavegame();
+        const bool allowPlayerChange =
+          ((gameLobby_->isHost() && player.ps == PlayerState::AI) || IsOwnRow(row)) && !gameLobby_->isSavegame();
         bool allowNationChange = allowPlayerChange;
         bool allowColorChange = allowPlayerChange;
         bool allowTeamChange = allowPlayerChange;
         bool allowPortraitChange = allowPlayerChange;
         if(lua)
         {
-            if(localPlayerId_ == row)
+            if(IsOwnRow(row))
             {
                 allowNationChange &= lua->IsChangeAllowed("ownNation", true);
                 allowColorChange &= lua->IsChangeAllowed("ownColor", true);
@@ -501,8 +522,7 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
 
         // Ready (not for AIs and Host)
         if(player.ps == PlayerState::Occupied && !player.isHost)
-            group->AddCheckBox(ID_chkReady, DrawPoint(464, cy), Extent(22, 22), tc, "", nullptr,
-                               (localPlayerId_ != row));
+            group->AddCheckBox(ID_chkReady, DrawPoint(464, cy), Extent(22, 22), tc, "", nullptr, !IsOwnRow(row));
 
         ctrlVarDeepening* ping = group->AddVarDeepening(ID_txtPing, DrawPoint(505, cy), Extent(50, 22), tc, _("%d"),
                                                         NormalFont, COLOR_YELLOW, 1, &player.ping); //-V111
@@ -568,7 +588,7 @@ void dskGameLobby::Msg_Group_ButtonClick(const unsigned group_id, const unsigned
         {
             SetPlayerReady(playerId, false);
 
-            if(playerId == localPlayerId_ || gameLobby_->isHost())
+            if(IsOwnRow(playerId) || gameLobby_->isHost())
             {
                 JoinPlayerInfo& player = gameLobby_->getPlayer(playerId);
                 player.nation = nextNation(player.nation);
@@ -585,7 +605,7 @@ void dskGameLobby::Msg_Group_ButtonClick(const unsigned group_id, const unsigned
         {
             SetPlayerReady(playerId, false);
 
-            if(playerId == localPlayerId_ || gameLobby_->isHost())
+            if(IsOwnRow(playerId) || gameLobby_->isHost())
             {
                 JoinPlayerInfo& player = gameLobby_->getPlayer(playerId);
                 player.portraitIndex = (player.portraitIndex + 1) % Portraits.size();
@@ -602,7 +622,7 @@ void dskGameLobby::Msg_Group_ButtonClick(const unsigned group_id, const unsigned
         {
             SetPlayerReady(playerId, false);
 
-            if(playerId == localPlayerId_ || gameLobby_->isHost())
+            if(IsOwnRow(playerId) || gameLobby_->isHost())
             {
                 // Get colors used by other players
                 std::set<unsigned> takenColors;
@@ -640,7 +660,7 @@ void dskGameLobby::Msg_Group_ButtonClick(const unsigned group_id, const unsigned
         {
             SetPlayerReady(playerId, false);
 
-            if(playerId == localPlayerId_ || gameLobby_->isHost())
+            if(IsOwnRow(playerId) || gameLobby_->isHost())
             {
                 JoinPlayerInfo& player = gameLobby_->getPlayer(playerId);
                 player.team = nextEnumValue(player.team);
@@ -716,6 +736,21 @@ void dskGameLobby::Msg_ButtonClick(const unsigned ctrl_id)
     }
     switch(ctrl_id)
     {
+        case ID_btCoop:
+        {
+            const auto selection = GetCtrl<ctrlComboBox>(ID_cbCoop)->GetSelection();
+            if(!selection || *selection >= coopChoices_.size())
+                break;
+            if(gameLobby_->isHost())
+                lobbyController->KickCoopMember(coopChoices_[*selection]);
+            else
+            {
+                GAMECLIENT.JoinCoopMember(static_cast<uint8_t>(coopChoices_[*selection]));
+                // Disabled until the server answered
+                UpdateCoopRow();
+            }
+        }
+        break;
         case ID_btReturn:
             GAMECLIENT.Stop();
             GoBack();
@@ -909,6 +944,10 @@ void dskGameLobby::Msg_CheckboxChange(const unsigned ctrl_id, const bool /*check
     switch(ctrl_id)
     {
         default: break;
+        case ID_chkCoopMembers:
+            if(gameLobby_->isHost())
+                lobbyController->SetCoopMembersAllowed(GetCtrl<ctrlCheck>(ID_chkCoopMembers)->isChecked());
+            break;
         case ID_chkSharedView:
         case ID_chkLockTeams:
         case ID_chkRandomSpawn:
@@ -971,7 +1010,7 @@ void dskGameLobby::ChangeReady(const unsigned player, const bool ready)
     if(check)
         check->setChecked(ready);
 
-    if(player == localPlayerId_)
+    if(IsOwnRow(player))
     {
         auto* start = GetCtrl<ctrlTextButton>(ID_btStartGame);
         if(gameLobby_->isHost())
@@ -1022,7 +1061,7 @@ void dskGameLobby::ChangeColor(const unsigned player, const unsigned color)
 
 void dskGameLobby::SetPlayerReady(unsigned char player, bool ready)
 {
-    if(player != localPlayerId_)
+    if(!IsOwnRow(player))
         return;
     if(gameLobby_->isHost())
         ready = true;
@@ -1037,6 +1076,8 @@ void dskGameLobby::SetPlayerReady(unsigned char player, bool ready)
 void dskGameLobby::CI_NewPlayer(const unsigned playerId)
 {
     UpdatePlayerRow(playerId);
+    // Whom we may play together with
+    UpdateCoopRow();
 
     if(lua && gameLobby_->isHost())
         lua->EventPlayerJoined(playerId);
@@ -1045,6 +1086,7 @@ void dskGameLobby::CI_NewPlayer(const unsigned playerId)
 void dskGameLobby::CI_PlayerLeft(const unsigned playerId)
 {
     UpdatePlayerRow(playerId);
+    UpdateCoopRow();
     if(lua && gameLobby_->isHost())
         lua->EventPlayerLeft(playerId);
 }
@@ -1057,6 +1099,8 @@ void dskGameLobby::CI_GameLoading(std::shared_ptr<Game> game)
 void dskGameLobby::CI_PlayerDataChanged(unsigned playerId)
 {
     UpdatePlayerRow(playerId);
+    // A slot may have become (or stopped being) a human player, or a name changed
+    UpdateCoopRow();
 }
 
 void dskGameLobby::CI_PingChanged(const unsigned playerId, const unsigned short /*ping*/)
@@ -1082,6 +1126,98 @@ void dskGameLobby::CI_PlayersSwapped(const unsigned player1, const unsigned play
     // Spieler wurden vertauscht, beide Reihen updaten
     UpdatePlayerRow(player1);
     UpdatePlayerRow(player2);
+    // Candidates and the leaders' names moved with the slots
+    UpdateCoopRow();
+}
+
+bool dskGameLobby::IsOwnRow(unsigned row) const
+{
+    return row == localPlayerId_ && !GAMECLIENT.IsCoopMember();
+}
+
+void dskGameLobby::CI_CoopMembersChanged()
+{
+    // Our own role may have changed: after switching we act for the player we joined
+    if(GAMECLIENT.IsCoopMember())
+        localPlayerId_ = GAMECLIENT.GetPlayerId();
+    for(unsigned i = 0; i < gameLobby_->getNumPlayers(); i++)
+        UpdatePlayerRow(i);
+    UpdateCoopRow();
+}
+
+void dskGameLobby::UpdateCoopRow()
+{
+    if(IsSinglePlayer())
+        return;
+    // Rebuilt whenever a player changes: keep what was chosen if it is still there
+    std::optional<unsigned> chosen;
+    if(const auto* oldCombo = GetCtrl<ctrlComboBox>(ID_cbCoop))
+    {
+        const auto& selection = oldCombo->GetSelection();
+        if(selection && *selection < coopChoices_.size())
+            chosen = coopChoices_[*selection];
+    }
+    DeleteCtrl(ID_txtCoop);
+    DeleteCtrl(ID_cbCoop);
+    DeleteCtrl(ID_btCoop);
+    coopChoices_.clear();
+
+    const std::vector<CoopMemberInfo>& members = GAMECLIENT.GetCoopMembers();
+    const bool allowed = GAMECLIENT.AreCoopMembersAllowed();
+    GetCtrl<ctrlCheck>(ID_chkCoopMembers)->setChecked(allowed);
+    // A member has no ready state of its own; the game starts when the players are ready
+    GetCtrl<Window>(ID_btStartGame)->SetVisible(!GAMECLIENT.IsCoopMember());
+
+    const DrawPoint rowPos(20, 320);
+    if(GAMECLIENT.IsCoopMember())
+    {
+        AddTextDeepening(ID_txtCoop, rowPos, Extent(360, 22), TextureColor::Grey,
+                         helpers::format(_("You play together with %1%"), gameLobby_->getPlayer(localPlayerId_).name),
+                         NormalFont, COLOR_YELLOW);
+        return;
+    }
+    std::vector<std::string> items;
+    std::string emptyText;
+    if(gameLobby_->isHost())
+    {
+        for(const CoopMemberInfo& member : members)
+        {
+            items.push_back(coop::lobby::memberLabel(*gameLobby_, member));
+            coopChoices_.push_back(member.id);
+        }
+        emptyText = allowed ? _("No co-players yet") : _("Co-players are not allowed");
+    } else if(allowed)
+    {
+        for(const unsigned player : coop::lobby::leaderCandidates(*gameLobby_, localPlayerId_))
+        {
+            items.push_back(helpers::format(_("Play %1%'s tribe"), gameLobby_->getPlayer(player).name));
+            coopChoices_.push_back(player);
+        }
+        emptyText = _("Nobody to play together with");
+    } else
+        emptyText = _("Co-players are not allowed");
+    if(items.empty())
+        items.push_back(emptyText);
+
+    ctrlComboBox* combo =
+      AddComboBox(ID_cbCoop, rowPos, Extent(250, 22), TextureColor::Grey, NormalFont, 100, coopChoices_.empty());
+    for(const std::string& item : items)
+        combo->AddItem(item);
+    const auto itChosen = std::find(coopChoices_.begin(), coopChoices_.end(), chosen.value_or(~0u));
+    combo->SetSelection(itChosen == coopChoices_.end() ? 0 : static_cast<unsigned>(itChosen - coopChoices_.begin()));
+    const DrawPoint buttonPos(275, 320);
+    const Extent buttonSize(105, 22);
+    ctrlButton* button;
+    if(gameLobby_->isHost())
+    {
+        button = AddTextButton(ID_btCoop, buttonPos, buttonSize, TextureColor::Red1, _("Remove"), NormalFont,
+                               _("Send the chosen co-player away"));
+    } else
+    {
+        button = AddTextButton(ID_btCoop, buttonPos, buttonSize, TextureColor::Green2, _("Join"), NormalFont,
+                               _("Give up your own slot and play the chosen player's tribe together with them"));
+    }
+    button->SetEnabled(!coopChoices_.empty() && !GAMECLIENT.IsCoopSwitchPending());
 }
 
 void dskGameLobby::CI_GGSChanged(const GlobalGameSettings& /*ggs*/)

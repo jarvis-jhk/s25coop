@@ -76,6 +76,8 @@ public:
     bool OnGameMessage(const GameMessage_Player_Nation&) override { return true; }
     bool OnGameMessage(const GameMessage_Player_Team&) override { return true; }
     bool OnGameMessage(const GameMessage_Player_Color&) override { return true; }
+    // Every client confirms a swap; only players have pending swaps to clear (a member follows its player's)
+    bool OnGameMessage(const GameMessage_Player_SwapConfirm&) override { return true; }
 
     bool OnGameMessage(const GameMessage_MapRequest& msg) override
     {
@@ -318,6 +320,27 @@ void GameServer::KickCoopMembersOf(uint8_t leader)
             KickCoopMember(member, "its player left");
     }
     coopMemberCmds_.erase(leader);
+}
+
+void GameServer::SwapCoopMembers(uint8_t player1, uint8_t player2)
+{
+    // Members follow their player to its new slot, as its own connection does; their clients do the same when they get
+    // the swap message. Orders still buffered go along with them.
+    bool changed = false;
+    for(const auto& memberPtr : coopMembers_)
+    {
+        GameServerPlayer& connection = memberPtr->connection;
+        if(connection.playerId == player1)
+            connection.playerId = player2;
+        else if(connection.playerId == player2)
+            connection.playerId = player1;
+        else
+            continue;
+        changed |= connection.isActive();
+    }
+    using std::swap;
+    swap(coopMemberCmds_[player1], coopMemberCmds_[player2]);
+    coopMembersChanged_ |= changed;
 }
 
 void GameServer::ReceiveCoopMemberMsgs()

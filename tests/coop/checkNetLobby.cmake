@@ -7,10 +7,13 @@
 #             member of player 0 from the lobby and orders a woodcutter for it. Both must end in the same state.
 #   refused - members are not allowed; the client asks to switch anyway, is refused and plays on as player 1.
 #   kick    - the client joins as a member; the host kicks it in the lobby and plays alone.
+#   swap    - the client joins as a member; the host then swaps its slot 0 with the dummy AI in slot 1. The member must
+#             follow it to slot 1 (server and client), so its woodcutter is built for player 1, not for the AI.
 # Inputs: COOP_NET, MAP, PORT, MAX_GF, WORK, MODE
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK}/host ${WORK}/join)
 set(common --port ${PORT} --maxGF ${MAX_GF} --timeout 120)
+set(ai aijh)
 if(MODE STREQUAL "switch")
     set(hostArgs --players 1 --open-slots 1 --members 1 --members-via-lobby)
     set(joinArgs --switch-to-member 0 --build-at 200 --wait-for ${WORK}/host.txt)
@@ -20,11 +23,15 @@ elseif(MODE STREQUAL "refused")
 elseif(MODE STREQUAL "kick")
     set(hostArgs --players 1 --members 1 --kick-members)
     set(joinArgs --member-of 0 --expect-kick)
+elseif(MODE STREQUAL "swap")
+    set(hostArgs --players 1 --members 1 --members-via-lobby --swap-with 1)
+    set(ai dummy)
+    set(joinArgs --member-of 0 --build-at 200 --wait-for ${WORK}/host.txt)
 else()
     message(FATAL_ERROR "Unknown MODE ${MODE}")
 endif()
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/host USER=coop ${COOP_NET} host ${common} --map ${MAP} --ai aijh
+    COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/host USER=coop ${COOP_NET} host ${common} --map ${MAP} --ai ${ai}
             ${hostArgs} --out ${WORK}/host.txt --log ${WORK}/host.log
     COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/join USER=coop ${COOP_NET} join ${common} ${joinArgs}
             --out ${WORK}/join.txt --log ${WORK}/join.log
@@ -67,6 +74,10 @@ if(MODE STREQUAL "switch")
     expect("${join}" "Switched to a member of player 0")
     expect("${host}" "Members at start: Client@0")
     expect("${host}" "woodcutters [1-9]")
+elseif(MODE STREQUAL "swap")
+    expect("${host}" "Members at start: Client@1")
+    # The dummy AI now in slot 0 builds nothing; the woodcutter is the member's, for the host's new slot 1
+    expect("${host}" "woodcutters 0 [1-9]")
 else()
     expect("${join}" "Switch refused, still player 1")
     expect("${host}" "Members at start: none")

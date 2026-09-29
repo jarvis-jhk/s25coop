@@ -105,8 +105,18 @@ accepts only its whitelist). A player already in the lobby becomes a member with
 the server moves its connection (with both queues) into the member list, frees its slot like a leaving player
 (`Player_Kicked`, countdown cancelled) and answers `Coop_JoinMember(leader)`; refused, it answers `NO_PLAYER_ID` and
 the client stays the player it was. The host itself cannot switch. ctest `CoopNet_Lobby{Switch,Refused,Kick}`.
-Open in step 3: the GUI (dskGameLobby rows for members, "play together with" button, host checkbox and kick button)
-and the campaign default (members allowed, joiners offered the human slot).
+Step 3, lobby GUI (2026-09-29): `dskGameLobby` has a co-player row above the chat. The host gets an "Allow co-players"
+checkbox (read-only for everybody else) and a list of members ("Anna (with Jan)") with a Remove button; a player picks
+a human player ("Play Jan's tribe") and presses Join (`JoinCoopMember`); a member sees "You play together with Jan",
+has no Ready/Start button and cannot change its player's row (`IsOwnRow`). A player's row shows its member count
+("Jan +2"). Text helpers in `coop/CoopLobby.*`. Tested: UI tests with mock drivers (`UI/CoopMembers*`) and by hand
+with two real clients under Xvfb (host allows, second client joins by Direct IP, switches with Join, the game starts,
+the member orders a building site that appears on the host's screen, no async).
+Fixed on the way: a slot swap in the lobby left the server's members on the old slot while their clients followed the
+swap (`GameServer::SwapCoopMembers` now moves them and their buffered orders), and a member's `SwapConfirm` got it
+kicked as an unexpected message. ctest `CoopNet_LobbySwap`.
+Open in step 3: the campaign default (members allowed, joiners offered the human slot) — a campaign lobby has no free
+slot, so a joiner must be able to connect directly as a member from the GUI (Direct IP/LAN "join as co-player").
 
 ## Steps, each finishable and testable on its own
 

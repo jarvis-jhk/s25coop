@@ -9,6 +9,7 @@
 #include "gameTypes/ServerType.h"
 #include "liblobby/LobbyInterface.h"
 #include <memory>
+#include <vector>
 
 class ctrlChat;
 class GameLobby;
@@ -36,6 +37,11 @@ private:
     void UpdateGGS();
     /// Aktualisiert eine Spielerreihe (löscht Controls und legt neue an)
     void UpdatePlayerRow(unsigned row);
+    /// s25coop: the co-player row above the chat (host: members and "Remove"; player: whom to play together with)
+    void UpdateCoopRow();
+    /// Whether this row is the player we control on our own. A co-player (member) acts for its player in the game but
+    /// changes nothing of it in the lobby.
+    bool IsOwnRow(unsigned row) const;
 
     /// Füllt die Felder einer Reihe aus
     void ChangeTeam(unsigned player, Team);
@@ -68,6 +74,7 @@ private:
     void CI_ReadyChanged(unsigned playerId, bool ready) override;
     void CI_PlayersSwapped(unsigned player1, unsigned player2) override;
     void CI_GGSChanged(const GlobalGameSettings& ggs) override;
+    void CI_CoopMembersChanged() override;
 
     void CI_Chat(unsigned playerId, ChatDestination cd, const std::string& msg) override;
     void CI_Countdown(unsigned remainingTimeInSec) override;
@@ -97,4 +104,6 @@ private:
     bool wasActivated, allowAddonChange;
     ctrlChat *gameChat, *lobbyChat;
     unsigned lobbyChatTabAnimId, localChatTabAnimId;
+    /// What the entries of the co-player combo box stand for: member ids (host) or player ids (others)
+    std::vector<unsigned> coopChoices_;
 };

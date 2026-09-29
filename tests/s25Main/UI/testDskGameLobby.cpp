@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2021 Settlers Freaks (sf-team at siedler25.org)
+// Copyright (C) 2005 - 2026 Settlers Freaks (sf-team at siedler25.org)
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -8,9 +8,17 @@
 #include "RTTR_Version.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlCheck.h"
+#include "controls/ctrlComboBox.h"
+#include "controls/ctrlGroup.h"
+#include "controls/ctrlList.h"
 #include "controls/ctrlOptionGroup.h"
+#include "controls/ctrlTextButton.h"
+#include "coop/CoopLobby.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskLobby.h"
+#include "network/GameClient.h"
+#include "network/GameMessages.h"
 #include "uiHelper/uiHelpers.hpp"
 #include "liblobby/LobbyServerInfo.h"
 #include <rttr/test/LogAccessor.hpp>
@@ -100,6 +108,159 @@ BOOST_AUTO_TEST_CASE(CheckServerVersionValidity)
     info.setVersion("v20120730 " + rttr::version::GetShortRevision());
     BOOST_TEST(!isServerVersionValid(info));
     RTTR_REQUIRE_LOG_CONTAINS("Can't get server revision", true);
+}
+
+namespace {
+// s25coop: the co-player controls, found by what they say rather than by their (private) ids
+template<typename T>
+T* findByTooltip(Window& wnd, const std::string& start)
+{
+    for(T* ctrl : wnd.GetCtrls<T>())
+    {
+        if(ctrl->GetTooltip().rfind(start, 0) == 0)
+            return ctrl;
+    }
+    return nullptr;
+}
+ctrlComboBox* findCoopCombo(Window& wnd)
+{
+    // The co-player combo is the only one left of the settings column
+    for(ctrlComboBox* combo : wnd.GetCtrls<ctrlComboBox>())
+    {
+        if(combo->GetPos().x < 100)
+            return combo;
+    }
+    return nullptr;
+}
+std::vector<std::string> comboItems(Window& wnd)
+{
+    ctrlComboBox* combo = findCoopCombo(wnd);
+    BOOST_TEST_REQUIRE(combo);
+    std::vector<std::string> result;
+    result.reserve(combo->GetNumItems());
+    for(unsigned i = 0; i < combo->GetNumItems(); i++)
+        result.push_back(combo->GetCtrl<ctrlList>(0)->GetItemText(i));
+    return result;
+}
+std::string rowName(Window& wnd, unsigned row)
+{
+    // Player rows are the groups, in order; the name is the first text control of each
+    const auto groups = wnd.GetCtrls<ctrlGroup>();
+    BOOST_TEST_REQUIRE(row < groups.size());
+    return groups[row]->GetCtrls<ctrlBaseText>().front()->GetText();
+}
+void setCoopMembers(bool allowed, std::vector<CoopMemberInfo> members)
+{
+    // As the server's broadcast would arrive
+    GameMessage_Coop_Members msg(allowed, std::move(members));
+    msg.run(&GAMECLIENT, 0);
+}
+} // namespace
+
+BOOST_FIXTURE_TEST_CASE(CoopMembersHostView, uiHelper::Fixture)
+{
+    rttr::test::LogAccessor logAcc;
+    GameLobby gameLobby(false, true, 3);
+    gameLobby.getPlayer(0).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(0).name = "Jan";
+    gameLobby.getPlayer(0).isHost = true;
+    gameLobby.getPlayer(1).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(1).name = "Anna";
+
+    auto* desktop = WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(
+      ServerType::Direct, std::shared_ptr<GameLobby>(&gameLobby, [](auto) {}), 0, nullptr));
+    WINDOWMANAGER.Draw();
+    auto* allow = findByTooltip<ctrlCheck>(*desktop, "Others may join");
+    auto* remove = findByTooltip<ctrlButton>(*desktop, "Send the chosen co-player away");
+    BOOST_TEST_REQUIRE(allow);
+    BOOST_TEST_REQUIRE(remove);
+    BOOST_TEST(!allow->isChecked());
+    BOOST_TEST(!allow->isReadOnly());
+    BOOST_TEST(!remove->GetEnabled());
+    BOOST_TEST(comboItems(*desktop) == std::vector<std::string>{"Co-players are not allowed"});
+
+    setCoopMembers(true, {{7, 0, "Max"}, {8, 1, "Lea"}, {9, 0, "Tom"}});
+    // The row is rebuilt: find the controls again
+    allow = findByTooltip<ctrlCheck>(*desktop, "Others may join");
+    remove = findByTooltip<ctrlButton>(*desktop, "Send the chosen co-player away");
+    BOOST_TEST_REQUIRE(remove);
+    BOOST_TEST(allow->isChecked());
+    BOOST_TEST(remove->GetEnabled());
+    BOOST_TEST(comboItems(*desktop)
+               == (std::vector<std::string>{"Max (with Jan)", "Lea (with Anna)", "Tom (with Jan)"}));
+    BOOST_TEST(rowName(*desktop, 0) == "Jan +2");
+    BOOST_TEST(rowName(*desktop, 1) == "Anna +1");
+    // Not connected: this only must not crash
+    desktop->Msg_ButtonClick(remove->GetID());
+
+    setCoopMembers(true, {});
+    BOOST_TEST(comboItems(*desktop) == std::vector<std::string>{"No co-players yet"});
+    BOOST_TEST(rowName(*desktop, 0) == "Jan");
+    WINDOWMANAGER.CleanUp();
+    setCoopMembers(false, {});
+}
+
+BOOST_FIXTURE_TEST_CASE(CoopMembersPlayerView, uiHelper::Fixture)
+{
+    rttr::test::LogAccessor logAcc;
+    GameLobby gameLobby(false, false, 4);
+    gameLobby.getPlayer(0).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(0).name = "Jan";
+    gameLobby.getPlayer(0).isHost = true;
+    gameLobby.getPlayer(1).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(1).name = "Me";
+    gameLobby.getPlayer(2).ps = PlayerState::AI;
+    gameLobby.getPlayer(2).name = "Computer";
+    gameLobby.getPlayer(3).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(3).name = "Anna";
+
+    auto* desktop = WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(
+      ServerType::Direct, std::shared_ptr<GameLobby>(&gameLobby, [](auto) {}), 1, nullptr));
+    WINDOWMANAGER.Draw();
+    auto* allow = findByTooltip<ctrlCheck>(*desktop, "Others may join");
+    BOOST_TEST_REQUIRE(allow);
+    // Only the host decides
+    BOOST_TEST(allow->isReadOnly());
+    auto* join = findByTooltip<ctrlButton>(*desktop, "Give up your own slot");
+    BOOST_TEST_REQUIRE(join);
+    BOOST_TEST(!join->GetEnabled());
+    BOOST_TEST(comboItems(*desktop) == std::vector<std::string>{"Co-players are not allowed"});
+
+    setCoopMembers(true, {});
+    join = findByTooltip<ctrlButton>(*desktop, "Give up your own slot");
+    BOOST_TEST(join->GetEnabled());
+    // Humans only, not ourselves, not the AI
+    BOOST_TEST(comboItems(*desktop) == (std::vector<std::string>{"Play Jan's tribe", "Play Anna's tribe"}));
+    // A choice survives the rebuild when some player changes, and the list follows who is human
+    auto* coopCombo = findCoopCombo(*desktop);
+    coopCombo->SetSelection(1);
+    gameLobby.getPlayer(2).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(2).name = "Lea";
+    dynamic_cast<ClientInterface*>(desktop)->CI_PlayerDataChanged(2);
+    BOOST_TEST(comboItems(*desktop)
+               == (std::vector<std::string>{"Play Jan's tribe", "Play Lea's tribe", "Play Anna's tribe"}));
+    BOOST_TEST(findCoopCombo(*desktop)->GetSelection().value_or(99) == 2u);
+    WINDOWMANAGER.CleanUp();
+    setCoopMembers(false, {});
+}
+
+BOOST_AUTO_TEST_CASE(CoopLobbyHelpers)
+{
+    GameLobby gameLobby(false, true, 3);
+    gameLobby.getPlayer(0).ps = PlayerState::Occupied;
+    gameLobby.getPlayer(0).name = "Jan";
+    gameLobby.getPlayer(1).ps = PlayerState::Free;
+    gameLobby.getPlayer(2).ps = PlayerState::Occupied;
+    const std::vector<CoopMemberInfo> members{{1, 0, "Max"}, {2, 0, "Tom"}, {3, 200, "Bad"}};
+    BOOST_TEST(coop::lobby::countMembers(members, 0) == 2u);
+    BOOST_TEST(coop::lobby::countMembers(members, 2) == 0u);
+    BOOST_TEST(coop::lobby::playerRowName("Jan", members, 0) == "Jan +2");
+    BOOST_TEST(coop::lobby::playerRowName("Lea", members, 2) == "Lea");
+    BOOST_TEST(coop::lobby::leaderCandidates(gameLobby, 0) == std::vector<unsigned>{2});
+    BOOST_TEST(coop::lobby::leaderCandidates(gameLobby, 1) == (std::vector<unsigned>{0, 2}));
+    BOOST_TEST(coop::lobby::memberLabel(gameLobby, members[0]) == "Max (with Jan)");
+    // A leader the lobby does not know (yet): just the name
+    BOOST_TEST(coop::lobby::memberLabel(gameLobby, members[2]) == "Bad");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

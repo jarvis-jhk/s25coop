@@ -110,6 +110,8 @@ struct Options
     unsigned openSlots = 0;
     /// Host: kick every member once they are all there, then play without them
     bool kickMembers = false;
+    /// Host: once the members are there, swap our slot with this one (they must follow us)
+    std::optional<uint8_t> swapWith;
     /// Join: take a slot first, then become a member of this player from the lobby
     std::optional<uint8_t> switchToMember;
     /// Join: ask to switch at once, without waiting until the host allows members
@@ -203,7 +205,7 @@ int run(Options& opt, Callbacks& cb)
     unsigned maxNWFLength = 1;
     std::string stateAtMaxGF;
     unsigned lastTracedGF = 0;
-    bool switchRequested = false, switchDone = false, kicked = false, openSlotsClosed = false;
+    bool switchRequested = false, switchDone = false, kicked = false, openSlotsClosed = false, swapped = false;
     unsigned seenMemberChanges = 0;
     std::string membersAtStart, switchResult;
 
@@ -307,12 +309,25 @@ int run(Options& opt, Callbacks& cb)
                 bool allThere = true;
                 for(unsigned i = 0; i < numClients; i++)
                 {
-                    const JoinPlayerInfo& player = gameLobby->getPlayer(i);
+                    // After --swap-with the host is no longer in slot 0
+                    const JoinPlayerInfo& player = gameLobby->getPlayer(i == 0 ? GAMECLIENT.GetPlayerId() : i);
                     allThere &= player.ps == PlayerState::Occupied && player.isReady;
                 }
                 // The members as the server counts them and as the lobby lists them (the broadcast arrived)
                 const auto numListed = static_cast<unsigned>(GAMECLIENT.GetCoopMembers().size());
                 allThere &= GAMESERVER.GetNumCoopMembers() >= opt.members && numListed >= opt.members;
+                if(allThere && opt.swapWith)
+                {
+                    if(!swapped)
+                    {
+                        lobby->SwapPlayers(GAMECLIENT.GetPlayerId(), *opt.swapWith);
+                        swapped = true;
+                    }
+                    // Until we are in the new slot and the member list says the members followed
+                    allThere = GAMECLIENT.GetPlayerId() == *opt.swapWith
+                               && std::all_of(GAMECLIENT.GetCoopMembers().begin(), GAMECLIENT.GetCoopMembers().end(),
+                                              [&opt](const CoopMemberInfo& m) { return m.leader == *opt.swapWith; });
+                }
                 if(allThere && membersAtStart.empty())
                     membersAtStart = describeMembers();
                 if(allThere && opt.kickMembers)
@@ -458,6 +473,7 @@ int main(int argc, char** argv)
         ("members-via-lobby", po::bool_switch(&opt.membersViaLobby), "Host: allow members through the lobby message, as the GUI does")
         ("open-slots", po::value(&opt.openSlots), "Host: leave this many slots after the human ones free, close them once the members are there")
         ("kick-members", po::bool_switch(&opt.kickMembers), "Host: kick every member once they are there, then play without them")
+        ("swap-with", po::value<unsigned>()->notifier(checkPlayerIndex), "Host: once the members are there, swap our slot with this one")
         ("switch-to-member", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: take a slot, then become a member of this player from the lobby")
         ("switch-now", po::bool_switch(&opt.switchNow), "Join: ask to switch without waiting until members are allowed")
         ("expect-kick", po::bool_switch(&opt.expectKick), "Join: being kicked in the lobby is the expected outcome (exit 0)")
@@ -515,6 +531,8 @@ int main(int argc, char** argv)
         opt.memberOf = static_cast<uint8_t>(options["member-of"].as<unsigned>());
     if(options.count("switch-to-member"))
         opt.switchToMember = static_cast<uint8_t>(options["switch-to-member"].as<unsigned>());
+    if(options.count("swap-with"))
+        opt.swapWith = static_cast<uint8_t>(options["swap-with"].as<unsigned>());
     if(options.count("stall-at"))
         opt.stallAtGF = options["stall-at"].as<unsigned>();
     if(options.count("build-at"))

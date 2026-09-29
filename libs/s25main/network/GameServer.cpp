@@ -1736,6 +1736,7 @@ void GameServer::SwapPlayer(const uint8_t player1, const uint8_t player2)
         newPlayer->playerId = player1;
     if(oldPlayer)
         oldPlayer->playerId = player2;
+    SwapCoopMembers(player1, player2);
     SendToAll(GameMessage_Player_Swap(player1, player2));
     const auto pSwap = std::make_pair(player1, player2);
     for(GameServerPlayer& player : networkPlayers)
