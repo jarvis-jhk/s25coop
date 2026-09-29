@@ -9,6 +9,8 @@
 #   kick    - the client joins as a member; the host kicks it in the lobby and plays alone.
 #   swap    - the client joins as a member; the host then swaps its slot 0 with the dummy AI in slot 1. The member must
 #             follow it to slot 1 (server and client), so its woodcutter is built for player 1, not for the AI.
+#   campaign - a campaign mission hosted as a network game (MAP + LUA, original S2 data in GAME_DIR, local only): the
+#             script's slots stay closed, the client joins "the host's player" and orders a woodcutter for it.
 #   joinhost - the host moves to slot 1 first; the client then joins "the host's player" without knowing its slot, as the
 #             Join Game window's co-player box does, and must end up in slot 1.
 # Inputs: COOP_NET, MAP, PORT, MAX_GF, WORK, MODE
@@ -34,13 +36,25 @@ elseif(MODE STREQUAL "joinhost")
     set(ai dummy)
     # --after: the host announces itself only once it sits in slot 1
     set(joinArgs --member-of-host --build-at 200 --wait-for ${WORK}/host.txt)
+elseif(MODE STREQUAL "campaign")
+    set(hostArgs --players 1 --members 1 --members-via-lobby --lua ${LUA})
+    set(ai)
+    set(joinArgs --member-of-host --build-at 200 --wait-for ${WORK}/host.txt)
 else()
     message(FATAL_ERROR "Unknown MODE ${MODE}")
 endif()
+set(gameDirEnv)
+if(GAME_DIR)
+    set(gameDirEnv RTTR_GAME_DIR=${GAME_DIR})
+endif()
+set(aiArgs)
+if(ai)
+    set(aiArgs --ai ${ai})
+endif()
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/host USER=coop ${COOP_NET} host ${common} --map ${MAP} --ai ${ai}
+    COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/host USER=coop ${gameDirEnv} ${COOP_NET} host ${common} --map ${MAP} ${aiArgs}
             ${hostArgs} --out ${WORK}/host.txt --log ${WORK}/host.log
-    COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/join USER=coop ${COOP_NET} join ${common} ${joinArgs}
+    COMMAND ${CMAKE_COMMAND} -E env HOME=${WORK}/join USER=coop ${gameDirEnv} ${COOP_NET} join ${common} ${joinArgs}
             --after ${WORK}/host.txt.connected
             --out ${WORK}/join.txt --log ${WORK}/join.log
     RESULTS_VARIABLE results
@@ -82,6 +96,10 @@ if(MODE STREQUAL "switch")
     expect("${join}" "Switched to a member of player 0")
     expect("${host}" "Members at start: Client@0")
     expect("${host}" "woodcutters [1-9]")
+elseif(MODE STREQUAL "campaign")
+    expect("${host}" "Members at start: Client@0")
+    # The script's other slots are closed: only player 0 and the co-player's woodcutter
+    expect("${host}" "woodcutters [1-9] 0 0 0 0 0 0")
 elseif(MODE STREQUAL "swap" OR MODE STREQUAL "joinhost")
     expect("${host}" "Members at start: Client@1")
     if(MODE STREQUAL "joinhost")

@@ -154,4 +154,13 @@ if(NOT WIN32)
     add_coop_lobby_test(CoopNet_LobbyKick 13722 kick)
     add_coop_lobby_test(CoopNet_LobbySwap 13723 swap)
     add_coop_lobby_test(CoopNet_LobbyJoinHost 13724 joinhost)
+    if(RTTR_COOP_S2_DIR)
+        # M2 step 4: the first official mission as a network game with a co-player (original data: local only)
+        add_test(NAME CoopNetCampaign_roman_MISS200
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${RTTR_COOP_S2_DIR}/DATA/MAPS/MISS200.WLD
+                         -DLUA=${PROJECT_SOURCE_DIR}/data/RTTR/campaigns/roman/MISS200.lua -DGAME_DIR=${RTTR_COOP_S2_DIR}
+                         -DPORT=13725 -DMAX_GF=2000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/CoopNetCampaign_roman_MISS200
+                         -DMODE=campaign -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetLobby.cmake)
+        set_tests_properties(CoopNetCampaign_roman_MISS200 PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
+    endif()
 endif()

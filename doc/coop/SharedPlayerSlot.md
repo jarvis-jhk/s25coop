@@ -129,8 +129,12 @@ way allows co-players at once (`dskCampaignMissionSelection::StartServer`). The 
 slot as in single player, so the lobby is full and the others join with "Play the host's tribe together". Tested by
 hand under Xvfb: Roman mission 1 hosted over the network, a second client joined as co-player, both got the mission
 diary, the co-player's flag appeared on the host's map, no async. UI test `UI/CampaignTogetherOnlyOverTheNetwork`.
-Open in step 4: the headless proof (MISS200 walkthrough with its orders split over two coop-net clients), and what
-the mission scripts do per client (message boxes, pause on the diary, `onHumanWinner`/campaign progress for members).
+Headless proof: `coop-net host --lua` hosts MISS200 with its script; the co-player joins the host's player and its
+woodcutter is built, both processes in sync over 2000 GF (local ctest `CoopNetCampaign_roman_MISS200`, needs
+`RTTR_COOP_S2_DIR`). Needed: `LuaInterfaceGame::MissionStatement` logs instead of opening a window when no video
+driver is loaded (the diary window crashed every headless client). In a network game the diary does not pause (upstream:
+only single player pauses).
+Open in step 4: what the mission scripts do per client (message boxes, pause on the diary, `onHumanWinner`/campaign progress for members).
 
 ## Steps, each finishable and testable on its own
 

@@ -347,6 +347,9 @@ Next: lobby GUI (dskGameLobby): members under their player row, a "play together
   the diary; closing it on the host resumed the game ("The game was resumed"), the co-player's flag showed on the host.
   UI test UI/CampaignTogetherOnlyOverTheNetwork. Codex review: nothing.
 - Our local S2 copy (archive.org) has Portuguese mission names ("Lá Vamos Nós"); Jan's GOG copy will not.
-Next: release 0.1.5 once CI is green (announce to Jan: coop campaign to test with a second PC). Then step 4 headless
-proof: coop-net host with a campaign map + lua (MISS200, local only), a member doing part of the walkthrough; check
-what the diary pause and onHumanWinner/campaign progress do on a co-player's client.
+- Fourth part: headless proof. coop-net `--lua`; MissionStatement without a video driver logs instead of crashing
+  (IngameWindow needs loaded graphics). Local ctest CoopNetCampaign_roman_MISS200 (checkNetLobby.cmake mode campaign,
+  GAME_DIR/LUA inputs, no AIs): co-player joins the host's player, woodcutter built, in sync. Codex review: nothing.
+Next: release 0.1.5 once CI is green (announce to Jan: coop campaign, needs a second PC/Deck). Then step 4 leftovers:
+victory/campaign progress on a co-player's client (onHumanWinner fires per client? SETTINGS.campaigns saved on the
+member too?) — test with missionComplete.lua over coop-net; then step 5 robustness.

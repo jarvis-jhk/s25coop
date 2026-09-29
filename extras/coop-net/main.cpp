@@ -482,6 +482,7 @@ int main(int argc, char** argv)
         ("maxGF", po::value(&opt.maxGF)->required(), "Game frame to play to")
         ("players", po::value(&opt.players), "Host: number of human players, host included (default 2)")
         ("map", po::value<std::string>(), "Host: map file")
+        ("lua", po::value<std::string>(), "Host: map script (a campaign mission's .lua); default: the .lua beside the map, if any")
         ("ai", po::value(&opt.ais)->multitoken(), "Host: AI (aijh, dummy) for the slots after the human ones; others are closed")
         ("out", po::value<std::string>(), "Write the result line to this file as well")
         ("wait-for", po::value<std::string>(), "Join: after maxGF keep running until this file exists (the host's --out)")
@@ -548,6 +549,7 @@ int main(int argc, char** argv)
         return SetupError;
     }
     const bfs::path mapArg = options.count("map") ? bfs::absolute(options["map"].as<std::string>()) : bfs::path();
+    const bfs::path luaArg = options.count("lua") ? bfs::absolute(options["lua"].as<std::string>()) : bfs::path();
     if(options.count("desync-at"))
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
     if(options.count("member-of"))
@@ -591,7 +593,9 @@ int main(int argc, char** argv)
         if(opt.host)
         {
             const CreateServerInfo csi(ServerType::Direct, opt.port, "s25coop net test");
-            if(!GAMECLIENT.HostGame(csi, MapDescription(mapArg, MapType::OldMap)))
+            const MapDescription map = luaArg.empty() ? MapDescription(mapArg, MapType::OldMap) :
+                                                        MapDescription(mapArg, MapType::OldMap, luaArg);
+            if(!GAMECLIENT.HostGame(csi, map))
             {
                 bnw::cerr << "Could not host on port " << opt.port << std::endl;
                 return SetupError;

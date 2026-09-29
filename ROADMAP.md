@@ -77,7 +77,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     co-player of the host (Join Game checkbox, ctest `CoopNet_LobbyJoinHost`, 2026-09-29) · ☐ campaign default (members
     allowed when a campaign is hosted; comes with step 4)
   - ◐ 4 campaign as network game: ☑ "Campaign together..." in Create game, co-players allowed by default (seen
-    working by hand with Roman mission 1, 2026-09-29) · ☐ MISS200 walkthrough split over two coop-net clients ·
+    working by hand with Roman mission 1, 2026-09-29) · ☑ headless proof: MISS200 with its script as a
+    network game, a co-player's order lands (local ctest `CoopNetCampaign_roman_MISS200`, 2026-09-29) ·
     ☐ per-client script effects (diary pause, victory/progress for co-players)
   - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.

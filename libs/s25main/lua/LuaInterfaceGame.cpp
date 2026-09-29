@@ -9,6 +9,7 @@
 #include "WindowManager.h"
 #include "ai/AIInterface.h"
 #include "ai/AIPlayer.h"
+#include "drivers/VideoDriverWrapper.h"
 #include "ingameWindows/iwMissionStatement.h"
 #include "lua/LuaHelpers.h"
 #include "lua/LuaPlayer.h"
@@ -17,6 +18,7 @@
 #include "postSystem/PostMsg.h"
 #include "world/GameWorld.h"
 #include "gameTypes/Resource.h"
+#include "s25util/Log.h"
 #include "s25util/Serializer.h"
 #include "s25util/strAlgos.h"
 
@@ -309,6 +311,12 @@ void LuaInterfaceGame::MissionStatement3(int playerIdx, const std::string& title
 {
     if(playerIdx >= 0 && localGameState.GetPlayerId() != unsigned(playerIdx))
         return;
+    // s25coop: headless (test harnesses, no video driver) there are no window graphics; a window would crash
+    if(!VIDEODRIVER.IsLoaded())
+    {
+        LOG.write("Mission statement: %1%\n") % title;
+        return;
+    }
 
     WINDOWMANAGER.Show(std::make_unique<iwMissionStatement>(_(title), msg, gw.IsSinglePlayer() && pause,
                                                             iwMissionStatement::HelpImage(imgIdx)));
