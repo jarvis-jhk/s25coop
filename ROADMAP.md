@@ -79,7 +79,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ◐ 4 campaign as network game: ☑ "Campaign together..." in Create game, co-players allowed by default (seen
     working by hand with Roman mission 1, 2026-09-29) · ☑ headless proof: MISS200 with its script as a
     network game, a co-player's order lands (local ctest `CoopNetCampaign_roman_MISS200`, 2026-09-29) ·
-    ☐ per-client script effects (diary pause, victory/progress for co-players)
+    ☑ victory/progress on a co-player's machine (the mission's final event fires in every process; host and
+    co-player both record the chapter; local ctest `CoopNetCampaignWin_roman_MISS200`, 2026-09-29) · ◐ diary pause
+    (closing it on the host resumes everyone — seen by hand; what a co-player's own close does is untested)
   - ☐ 5 robustness (tagged checksums, member timeout, leader hand-over)
 - ☐ Campaign missions hosted as network games instead of local-only, with the shared slot.
 - ☐ Save and resume a coop campaign with the same group; deterministic loading

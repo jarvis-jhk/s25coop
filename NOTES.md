@@ -355,3 +355,15 @@ victory/campaign progress on a co-player's client. Read, not tested: Game::Check
 the deterministic game on every client and SetCampaignChapterCompleted writes the local SETTINGS, so a co-player's
 own machine should record the progress too — prove it with coop-net + a test script (coop-net has no --test-script
 yet; port it from ai-battle). Then step 5 robustness.
+
+## 2026-09-29 — quota filler: 0.1.5 released, co-player campaign progress
+- No issues, master CI green at cb627a2. 0.1.4 had never been tagged: the release workflow now puts every CHANGELOG
+  section since the last published release into the notes (`gh api releases/latest`), so v0.1.5 carries 0.1.4 too.
+  Tagged v0.1.5 at e689fd5.
+- coop-net `--test-script` (both processes): loaded into the map's Lua state at game start, onTestEnd(gf) called at
+  maxGF between the same two GFs everywhere, then "Campaign progress: …" in the result file; exit 2 on a Lua error or
+  a script without onTestEnd (Codex review). Local ctest CoopNetCampaignWin_roman_MISS200 (missionComplete.lua):
+  host AND co-player record roman=2, in sync. Caveat: checksums are only compared through maxGF, i.e. up to the
+  moment the win fires, not after it.
+Next: step 4 leftover — what happens when a co-player (not the host) closes a mission diary (SetPause is a host
+thing?); then step 5 robustness (tagged checksums, member timeout, leader hand-over). Jan's Deck/Mint feedback still open.
