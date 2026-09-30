@@ -50,7 +50,7 @@ struct NetworkMenuReturnFixture : rttr::test::MenuPadFixture
         }
         pickUp(pad);
         BOOST_TEST_REQUIRE(isMenu(lan));
-        BOOST_TEST_REQUIRE(router().GetSlot(pad) == 0u);
+        BOOST_TEST_REQUIRE((router().GetSlot(pad) == 0u));
     }
 
     static bool isMenu(const bool lan)
