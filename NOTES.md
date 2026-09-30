@@ -625,6 +625,17 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   bugs; follow-up with Main menu, frame/deferred-switch and pending-button source also finds no issues.
   No primary checkout/build changes, master push or self-merge; Opus owns integration.
 
+## 2026-09-30 — Opus: Sol PRs #4–#10 integrated, master CI repaired, 0.1.9
+- Merged Sol PRs #4 (campaign chooser B/victory exits), #5 (map selection B), #6 (Stop ends replay mode),
+  #7 (Options B), #8 (tables start unselected; campaign Next guarded), #9 (intro skip), #10 (player menus B).
+- Master CI broke several ways that Sol's local Release/GCC 12 runs cannot see — fixed on master:
+  `Settings persisted;` in a test ended the SETTINGS singleton (Debug assert at exit, every Linux job);
+  optional == value inside BOOST_TEST needs double parentheses on GCC 9 / Boost 1.73; the gcc-10 coverage gate
+  needs LCOV_EXCL on unreachable test lines; clang-tidy (exception-escape in fixture destructors, branch-clone,
+  qualified-auto vs MSVC iterators in my own lobby code). Sol was told all of it via the report API.
+- Local Debug build dir `build/dbg` (Test_splitscreen only) reproduces Debug-only asserts; keep it.
+- Released v0.1.9 (per-player start goods incl. Minimal/Minimal+, controller Back/skip everywhere) from 2572261e2
+  after every CI job was green.
 
 ## 2026-09-30 — Sol companion: controller Back from network menus
 - Branch `sol/network-menu-controller-back`, based on origin/master 2572261e2. Direct-IP and LAN B
@@ -642,6 +653,7 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   fail specifically on the missing return, while mouse/A, keyboard and inert-navigation controls
   pass (exit 201, 27 failed assertions). Final production files restored byte-for-byte and rebuilt.
   Full Debug Test_splitscreen passes (80.21 seconds), including the final eight cases.
+  After adding explicit parentheses to the optional seat comparison for Boost 1.73, it passes again (79.32 s).
 - GCC12 Debug/Werror, own build/debug, ccache and at most two compiler jobs. Static validation,
   clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only final patch/context review found
   no actionable issues; its repository sandbox could not initialize, so runtime verification is
