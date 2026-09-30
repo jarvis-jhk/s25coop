@@ -148,13 +148,11 @@ void MenuPadInput::OnPadButton(const unsigned slot, const PadButton button, cons
         // Tastatur mit ESC hat, samt derselben Ausnahmen (WindowManager::RelayKeyboardMessage).
         if(!rootWnd_->IsPinned() && rootWnd_->getCloseBehavior() != CloseBehavior::Custom)
             rootWnd_->Close();
-    } else if(button == PadButton::B || button == PadButton::Start)
+    } else if(button == PadButton::B
+              || button == PadButton::Start
+              // Videos have no controls. A can confirm the desktop itself only when no window owns input.
+              || (button == PadButton::A && !rootWnd_ && !focus_[slot].GetFocused()))
     {
-        if(desktop_)
-            desktop_->Msg_PadCommand(slot, button);
-    } else if(button == PadButton::A && !rootWnd_ && !focus_[slot].GetFocused())
-    {
-        // Videos have no controls. A can confirm the desktop itself only when no window owns input.
         if(desktop_)
             desktop_->Msg_PadCommand(slot, button);
     } else

@@ -52,7 +52,8 @@ struct IntroPadFixture : rttr::test::MenuPadFixture
         SETTINGS.sound.musicEnabled = false;
         SETTINGS.sound.effectsEnabled = false;
     }
-    ~IntroPadFixture() override
+    // Test teardown: a throw here is a failed test, not something to recover from
+    ~IntroPadFixture() override // NOLINT(bugprone-exception-escape)
     {
         WINDOWMANAGER.Switch(std::make_unique<Desktop>(nullptr));
         frame();
