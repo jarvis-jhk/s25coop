@@ -18,6 +18,7 @@ public:
         LanGameInfo info;
     };
     dskLAN();
+    bool Msg_PadCommand(unsigned slot, PadButton button) override;
 
 protected:
     void Msg_Timer(unsigned ctrl_id) override;

@@ -624,3 +624,28 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   clang-format10 and diff checks pass. Read-only exact gpt-6.1-sol reviews: no concrete handler/routing
   bugs; follow-up with Main menu, frame/deferred-switch and pending-button source also finds no issues.
   No primary checkout/build changes, master push or self-merge; Opus owns integration.
+
+
+## 2026-09-30 — Sol companion: controller Back from network menus
+- Branch `sol/network-menu-controller-back`, based on origin/master 2572261e2. Direct-IP and LAN B
+  invoke the existing Back action to Multiplayer; Start and shared input routing are unchanged.
+- Eight regressions inject mock-driver pad events and physical keyboard/mouse input. They cover all
+  seven focusable desktop controls, Join closing before the desktop leaves, Create retaining its
+  explicit Back requirement, required proxy-warning confirmation, inert Start/navigation, mouse/A
+  Back, keyboard Escape parity and B bursts staying at Multiplayer until a new press.
+- A synthetic listed LAN row makes the table focusable; this checks Back, not discovery/Connect.
+  Empty tables intentionally cannot take focus. Shoulder navigation goes both ways, since the
+  existing focus list does not wrap. No direct handler, focus or selection-state injection.
+  Userdata is temporary; no public lobby connection. The proxy fixture restores an existing enum
+  reference, avoiding a singleton lookup in its destructor; no singleton is constructed in tests.
+- All eight cases pass in Debug. Rebuilding the four original production files makes five cases
+  fail specifically on the missing return, while mouse/A, keyboard and inert-navigation controls
+  pass (exit 201, 27 failed assertions). Final production files restored byte-for-byte and rebuilt.
+  Full Debug Test_splitscreen passes (80.21 seconds), including the final eight cases.
+- GCC12 Debug/Werror, own build/debug, ccache and at most two compiler jobs. Static validation,
+  clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only final patch/context review found
+  no actionable issues; its repository sandbox could not initialize, so runtime verification is
+  the independent local run. CMake reconfigured after adding the test (add_testcase's source glob
+  does not track new files automatically).
+- Branch CI must finish before handoff as tested; Opus owns review/integration. No primary
+  checkout/build changes, master push or self-merge. Next independent menu slice: online-lobby Back.
