@@ -11,6 +11,7 @@ class dskSinglePlayer : public dskMenuBase
 {
 public:
     dskSinglePlayer();
+    bool Msg_PadCommand(unsigned slot, PadButton button) override;
 
 private:
     void Msg_ButtonClick(unsigned ctrl_id) override;
