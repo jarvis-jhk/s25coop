@@ -263,6 +263,7 @@ void GameClient::Stop()
     aiBattlePlayers_.clear();
     additionalLocalPlayers_.clear();
     sharedLocalViews_ = 0;
+    hostingCampaign_ = false;
 }
 
 std::shared_ptr<GameLobby> GameClient::GetGameLobby()

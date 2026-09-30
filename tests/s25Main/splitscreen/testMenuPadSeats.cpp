@@ -9,6 +9,7 @@
 #include "MenuPadFixture.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlCheck.h"
 #include "controls/ctrlGroup.h"
 #include "controls/ctrlTextButton.h"
 #include "desktops/dskGameLobby.h"
@@ -191,6 +192,19 @@ struct LobbySeatFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixtu
     void takeOverTheClientInterface() { GAMECLIENT.SetInterface(&ci()); }
 
     static iwMsgbox* topMsgbox() { return dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()); }
+
+    /// s25coop: the "Play one tribe together" box of the seat panel (the only checkbox at its place)
+    static ctrlCheck* togetherCheck()
+    {
+        auto* lobby = desktopAs<dskGameLobby>();
+        BOOST_TEST_REQUIRE(lobby != nullptr);
+        for(ctrlCheck* chk : lobby->GetCtrls<ctrlCheck>())
+        {
+            if(chk->GetPos() == DrawPoint(400, 340))
+                return chk;
+        }
+        return nullptr; // LCOV_EXCL_LINE
+    }
 };
 
 } // namespace
@@ -681,6 +695,65 @@ BOOST_FIXTURE_TEST_CASE(SwappingPlayersMovesTheSeatWithThem, LobbySeatFixture)
     BOOST_TEST(localPlayers().empty());
     BOOST_TEST((player(0).ps == PlayerState::AI));
     BOOST_TEST((player(0).aiInfo.type == AI::Type::Default));
+}
+
+/// s25coop, couch coop: with "Play one tribe together" ticked, a pad that sits down gets a view on
+/// the HOST's player - no slot is taken or changed - and the game starts with it.
+BOOST_FIXTURE_TEST_CASE(ATogetherSeatSharesTheHostsTribe, LobbySeatFixture)
+{
+    enterLobby();
+    pickUp(10); // Host
+    pickUp(11);
+    const PlayerState ps1Before = player(1).ps;
+    ctrlCheck* chk = togetherCheck();
+    BOOST_TEST_REQUIRE(chk != static_cast<ctrlCheck*>(nullptr));
+    BOOST_TEST_REQUIRE(!chk->isChecked());
+    clickWithMouse(*chk);
+    BOOST_TEST_REQUIRE(togetherCheck()->isChecked());
+
+    press(11, Activate);
+    settle();
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST((player(1).ps == ps1Before));
+    BOOST_TEST(router().GetSlot(11) == 1u);
+
+    // Unticking stands everybody up again
+    clickWithMouse(*togetherCheck());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 0u);
+    BOOST_TEST(localPlayers().empty());
+    clickWithMouse(*togetherCheck());
+    press(11, Activate);
+    settle();
+    BOOST_TEST_REQUIRE(GAMECLIENT.GetSharedLocalViews() == 1u);
+
+    takeOverTheClientInterface();
+    press(10, PadButton::Start);
+    BOOST_TEST(frameUntil([] { return GAMECLIENT.GetState() == ClientState::Loading; }),
+               "the game to start with a shared seat");
+    BOOST_TEST(ci().numErrors == 0u);
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+}
+
+/// s25coop: a campaign has one human side, so its seats are always "together" and cannot be switched
+BOOST_FIXTURE_TEST_CASE(CampaignSeatsAreAlwaysTogether, LobbySeatFixture)
+{
+    hostAndEnterLobby();
+    GAMECLIENT.SetHostingCampaign(true);
+    enterLobbyKeepingLocalPlayers();
+    pickUp(10);
+    pickUp(11);
+    const PlayerState ps1Before = player(1).ps;
+    ctrlCheck* chk = togetherCheck();
+    BOOST_TEST_REQUIRE(chk != static_cast<ctrlCheck*>(nullptr));
+    BOOST_TEST(chk->isChecked());
+    BOOST_TEST(chk->isReadOnly());
+
+    press(11, Activate);
+    settle();
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST((player(1).ps == ps1Before));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

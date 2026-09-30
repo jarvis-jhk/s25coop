@@ -185,7 +185,9 @@ void dskCampaignMissionSelection::StartServer(unsigned missionIdx)
                                                       MsgboxButton::Ok, MsgboxIcon::ExclamationRed, ID_msgBoxError));
     } else
     {
-        // s25coop: a campaign has one human player; over the network the others join it as co-players
+        // s25coop: a campaign has one human player; over the network the others join it as co-players,
+        // on one screen they share it (splitscreen seats "together", dskGameLobby)
+        GAMECLIENT.SetHostingCampaign(true);
         if(csi_.type != ServerType::Local)
             GAMESERVER.SetAllowCoopMembers(true);
         iwConnecting& wnd = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(csi_.type, nullptr));

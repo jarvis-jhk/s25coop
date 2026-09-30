@@ -5558,6 +5558,9 @@ msgstr "Winterwelt"
 #~ msgid "Not available"
 #~ msgstr "Nicht verfügbar"
 
+#~ msgid "Play one tribe together"
+#~ msgstr "Gemeinsam ein Volk spielen"
+
 #~ msgid "Player Distribution"
 #~ msgstr "Spielerverteilung"
 
@@ -5575,6 +5578,9 @@ msgstr "Winterwelt"
 
 #~ msgid "Ringland"
 #~ msgstr "Ringland"
+
+#~ msgid "Splitscreen seats (gamepad), one tribe:"
+#~ msgstr "Splitscreen-Plätze (Gamepad), ein Volk:"
 
 #~ msgid "Start GF"
 #~ msgstr "Start-GF"

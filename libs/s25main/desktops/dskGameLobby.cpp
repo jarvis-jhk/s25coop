@@ -125,6 +125,7 @@ enum CtrlIds
     ID_cbCoop,
     ID_btCoop,
     ID_txtCoop,
+    ID_chkSeatsTogether,
 };
 template<typename T>
 constexpr T nextEnumValue(T value)
@@ -492,13 +493,30 @@ void dskGameLobby::CreateSeatPanel()
         return;
 
     const unsigned numPlayers = gameLobby_->getNumPlayers();
-    const unsigned numSeats = std::min<unsigned>(MAX_VIEWPORTS, numPlayers);
+    // s25coop: a campaign has one human side, and a one-player map has nothing else - there every seat
+    // plays the host's tribe
+    if(GAMECLIENT.IsHostingCampaign() || numPlayers < 2)
+        seatsTogether_ = true;
+    if(!GetCtrl<ctrlCheck>(ID_chkSeatsTogether))
+    {
+        auto* chk = AddCheckBox(ID_chkSeatsTogether, DrawPoint(400, 340), Extent(220, 26), TextureColor::Grey,
+                                _("Play one tribe together"), NormalFont, false);
+        chk->setChecked(seatsTogether_);
+        chk->setReadOnly(GAMECLIENT.IsHostingCampaign() || numPlayers < 2);
+    }
+    const unsigned numSeats = seatsTogether_ ? MAX_VIEWPORTS : std::min<unsigned>(MAX_VIEWPORTS, numPlayers);
     if(numSeats < 2)
         return; // eine Karte fuer einen Spieler - da gibt es nichts zu verteilen
 
     // Sitz 1 ist der Hostslot. Er ist immer besetzt und kann nicht verlassen werden; Maus und
     // Tastatur bleiben fuer ihn zustaendig.
     seats_.push_back(LocalSeat{localPlayerId_, InvalidPadDevice, true});
+    if(seatsTogether_)
+    {
+        // s25coop: every further seat is another view on the host's player; no slot is taken
+        while(seats_.size() < numSeats)
+            seats_.push_back(LocalSeat{localPlayerId_, InvalidPadDevice, false});
+    }
 
     // Danach zuerst die Slots, die --local-players schon benannt hat - sonst haette die
     // Kommandozeile Sitze, die auf keiner Karte auftauchen -, dann die uebrigen aufsteigend.
@@ -512,7 +530,7 @@ void dskGameLobby::CreateSeatPanel()
     const auto alreadySeated = [&](const unsigned id) {
         return helpers::contains_if(seats_, [id](const LocalSeat& s) { return s.playerId == id; });
     };
-    for(const uint8_t id : fromCmdLine)
+    for(const uint8_t id : seatsTogether_ ? std::vector<uint8_t>{} : fromCmdLine)
     {
         if(seats_.size() >= numSeats)
             break;
@@ -540,13 +558,35 @@ void dskGameLobby::CreateSeatPanel()
 
     // Der Platz unter der Spielertabelle ist im Einzelspieler frei: die Chatcontrols entstehen
     // nur, wenn !IsSinglePlayer(), und den Zuordnungsbildschirm gibt es nur dort.
-    AddText(ID_txtSeats, DrawPoint(20, 318), _("Splitscreen seats (gamepad):"), COLOR_YELLOW, FontStyle{}, NormalFont);
+    AddText(ID_txtSeats, DrawPoint(20, 318),
+            seatsTogether_ ? _("Splitscreen seats (gamepad), one tribe:") : _("Splitscreen seats (gamepad):"),
+            COLOR_YELLOW, FontStyle{}, NormalFont);
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
         const DrawPoint pos(20 + static_cast<int>(i % 2) * 190, 340 + static_cast<int>(i / 2) * 30);
         AddTextButton(ID_btSeat + i, pos, Extent(180, 22), TextureColor::Green2, "", NormalFont);
     }
     UpdateSeatPanel();
+}
+
+void dskGameLobby::SetSeatsTogether(const bool together)
+{
+    if(together == seatsTogether_ || seats_.empty())
+        return;
+    // Everybody stands up first, in the old mode, so the slots taken for own-slot seats get back
+    // what was there before
+    for(unsigned i = 1; i < seats_.size(); ++i)
+    {
+        seats_[i].taken = false;
+        seats_[i].device = InvalidPadDevice;
+    }
+    ApplyLocalSeats();
+    for(unsigned i = 0; i < seats_.size(); ++i)
+        DeleteCtrl(ID_btSeat + i);
+    DeleteCtrl(ID_txtSeats);
+    seatsTogether_ = together;
+    GAMECLIENT.SetSharedLocalViews(0);
+    CreateSeatPanel();
 }
 
 void dskGameLobby::UpdateSeatPanel()
@@ -568,6 +608,8 @@ void dskGameLobby::UpdateSeatPanel()
     const bool visible = WINDOWMANAGER.GetPadInput().GetRouter().GetNumDevices() > 0;
     if(auto* txt = GetCtrl<Window>(ID_txtSeats))
         txt->SetVisible(visible);
+    if(auto* chk = GetCtrl<Window>(ID_chkSeatsTogether))
+        chk->SetVisible(visible);
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
         auto* bt = GetCtrl<ctrlTextButton>(ID_btSeat + i);
@@ -616,6 +658,8 @@ bool dskGameLobby::IsSeatJoinable(const unsigned seat) const
 {
     if(seat == 0 || seat >= seats_.size() || !gameLobby_)
         return false;
+    if(seatsTogether_)
+        return true; // takes no slot, so nothing the host does to the slots closes it
     const PlayerState ps = gameLobby_->getPlayer(seats_[seat].playerId).ps;
     // Occupied: dort sitzt eine echte Netzwerkverbindung. Locked: der Host hat den Slot
     // geschlossen. In beiden Faellen ist der Platz keiner mehr, den dieser Bildschirm vergibt.
@@ -676,6 +720,26 @@ void dskGameLobby::ApplyLocalSeats()
 {
     if(seats_.empty() || !lobbyController)
         return;
+
+    if(seatsTogether_)
+    {
+        // s25coop: views on the host's player, no slot changes (GameClient::SetSharedLocalViews)
+        unsigned numShared = 0;
+        PadRouter& router = WINDOWMANAGER.GetPadInput().GetRouter();
+        for(unsigned i = 1; i < seats_.size(); ++i)
+        {
+            if(!seats_[i].taken)
+                continue;
+            ++numShared;
+            if(seats_[i].device != InvalidPadDevice)
+                router.AssignSlot(seats_[i].device, numShared);
+        }
+        router.RebalanceUnassigned();
+        GAMECLIENT.SetAdditionalLocalPlayers({});
+        GAMECLIENT.SetSharedLocalViews(numShared);
+        UpdateSeatPanel();
+        return;
+    }
 
     std::vector<uint8_t> ids;
     for(unsigned i = 1; i < seats_.size(); ++i)
@@ -774,7 +838,7 @@ bool dskGameLobby::DropDisconnectedSeats()
 
 bool dskGameLobby::DropSeatsClosedByTheHost()
 {
-    if(!gameLobby_)
+    if(!gameLobby_ || seatsTogether_)
         return false;
     bool changed = false;
     for(unsigned i = 1; i < seats_.size(); ++i)
@@ -819,6 +883,8 @@ bool dskGameLobby::PrepareSeatsForStart()
     // scheitern laesst: ein zusaetzlicher lokaler Slot muss eine KI sein. Was es nicht besteht,
     // wird geraeumt und GENANNT - statt den Start mit OnError(LocalPlayerSetup) -> Stop()
     // abzubrechen und die ganze Partievorbereitung mitzunehmen.
+    if(seatsTogether_)
+        return true; // s25coop: shared views take no slot, so there is none to lose
     bool dropped = false;
     for(unsigned i = 1; i < seats_.size(); ++i)
     {
@@ -1488,6 +1554,7 @@ void dskGameLobby::Msg_CheckboxChange(const unsigned ctrl_id, const bool /*check
     switch(ctrl_id)
     {
         default: break;
+        case ID_chkSeatsTogether: SetSeatsTogether(GetCtrl<ctrlCheck>(ID_chkSeatsTogether)->isChecked()); break;
         case ID_chkCoopMembers:
             if(gameLobby_->isHost())
                 lobbyController->SetCoopMembersAllowed(GetCtrl<ctrlCheck>(ID_chkCoopMembers)->isChecked());

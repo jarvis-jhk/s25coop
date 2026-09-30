@@ -93,6 +93,8 @@ private:
     /// Zusatzspieler beim Start annimmt (network/GameClient.cpp:1897-1939, 2007-2008).
     bool AreLocalSeatsAvailable() const;
     void CreateSeatPanel();
+    /// s25coop: switch the seats between "own slot" and "together with seat 1" (one tribe). Stands everybody up.
+    void SetSeatsTogether(bool together);
     void UpdateSeatPanel();
     /// Sitz dieses Geraets oder seats_.size(), wenn es keinen hat.
     unsigned SeatOfDevice(PadDeviceId device) const;
@@ -205,4 +207,6 @@ private:
     std::vector<unsigned> coopChoices_;
     /// Sitz 0 ist immer der Host. Leer, wenn es hier keinen Splitscreen geben kann.
     std::vector<LocalSeat> seats_;
+    /// s25coop: every seat plays the host's tribe (shared views, doc/coop/SharedLocalViews.md) instead of a slot
+    bool seatsTogether_ = false;
 };
