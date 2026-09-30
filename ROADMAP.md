@@ -39,10 +39,11 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   (extras/ai-battle/TestInput.h), ctest `CoopHeadless_ScriptedInput`. Since 2026-09-27.
 - ◐ Assertions on game state: buildings, wares, mission flags, and that campaign Lua triggers
   (onGameFrame, onOccupied, victory/defeat, message boxes) fired. Done: smoke test per mission (M0.5b);
-  MISS200 walkthrough — a script plays mission 1 and asserts events 1–8 fire in order (buildings,
-  occupied spots, geologist finds; ctest `CoopWalkthrough_roman_MISS200`, local). Open: the mission's
-  final event (99, the arc at 14,8) and victory; walkthroughs for further missions only where a coop
-  change needs them.
+  MISS200 walkthrough — a script plays mission 1 through its tutorial goals, explores and occupies
+  the arc at 14,8 through real buildings/roads and asserts events 1–7, 16 and 99 in order. Victory
+  records chapter 0 (`roman=2`); disabling the arc's real victory trigger must fail the walkthrough
+  (ctest `CoopWalkthrough_roman_MISS200`, local; CD and GOG maps tested, 2026-09-30).
+  Walkthroughs for further missions only where a coop change needs them.
 - ☑ Run it in CI on every push; failures reported to the JARVIS lane: the `CoopHeadless_*` tests run with the unit
   tests on every push, and a failed workflow reaches the lane through the repo's GitHub webhook. The mission tests
   need original S2 data and stay local.
