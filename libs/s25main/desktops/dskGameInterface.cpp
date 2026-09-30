@@ -179,6 +179,17 @@ std::vector<std::unique_ptr<PlayerView>> dskGameInterface::CreateViews(const uns
         if(id < world.GetNumPlayers() && !helpers::contains(playerIds, unsigned(id)))
             playerIds.push_back(id);
     }
+    // s25coop: further views on the MAIN player (couch coop, doc/coop/SharedLocalViews.md). Here a
+    // repeated id is the point, so they bypass the duplicate check above.
+    for(unsigned i = 0; i < GAMECLIENT.GetSharedLocalViews(); ++i)
+    {
+        if(playerIds.size() >= MAX_VIEWPORTS)
+        {
+            LOG.write(_("Only %1% local views are supported, ignoring the remaining shared views\n")) % MAX_VIEWPORTS;
+            break;
+        }
+        playerIds.push_back(mainPlayerIdx);
+    }
 
     const std::vector<Viewport> viewports =
       CalcViewports(VIDEODRIVER.GetRenderSize(), static_cast<unsigned>(playerIds.size()));

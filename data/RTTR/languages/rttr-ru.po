@@ -76,6 +76,10 @@ msgstr ""
 msgid " stones"
 msgstr " камни"
 
+#: libs/s25main/coop/CoopLobby.cpp:43
+msgid "%1% (with %2%)"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameInterface.cpp:1410
 msgid "%1% are the winners!"
 msgstr "%1% - победители!"
@@ -154,9 +158,24 @@ msgstr "+100%"
 msgid "+1000%"
 msgstr "+1000%"
 
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:32
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+150%"
+msgstr ""
+
 #: libs/s25main/addons/AddonMoreAnimals.h:23
 msgid "+200%"
 msgstr "+200%"
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:28
+msgid "+25%"
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+33%"
+msgstr ""
 
 #: libs/s25main/addons/AddonBurnDuration.h:24
 #: libs/s25main/addons/AddonMoreAnimals.h:21
@@ -166,6 +185,15 @@ msgstr "+50%"
 #: libs/s25main/addons/AddonMoreAnimals.h:24
 msgid "+500%"
 msgstr "+500%"
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+66%"
+msgstr ""
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:30
+msgid "+75%"
+msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:345
 #: libs/s25main/desktops/dskGameLobby.cpp:497
@@ -303,6 +331,10 @@ msgstr "Много"
 msgid "A new ship is ready"
 msgstr "Готов новый корабль"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:232
+msgid "A preset named '%1%' already exists. Do you want to overwrite it?"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameInterface.cpp:1637
 msgid "A road has to end where a flag can stand."
 msgstr ""
@@ -420,6 +452,10 @@ msgstr ""
 msgid "Addon %1$#x not found!\n"
 msgstr "Дополнение %1$#x не найдено!\n"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:80
+msgid "Addon Presets Unavailable"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwAddons.cpp:35
 msgid "Addon Settings"
 msgstr "Настройки дополнений"
@@ -453,9 +489,17 @@ msgstr ""
 msgid "Adjust"
 msgstr ""
 
+#: libs/s25main/addons/AddonForesterReachRadius.h:23
+msgid "Adjust forester's range"
+msgstr ""
+
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:29
 msgid "Adjust military strength"
 msgstr "Регулирование военной силы"
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:24
+msgid "Adjust stonemason's range"
+msgstr ""
 
 #: libs/s25main/addons/AddonMoreAnimals.h:18
 msgid "Adjust the fraction of trees that spawn animals."
@@ -464,6 +508,10 @@ msgstr "Выберите какой количество животных буд
 #: libs/s25main/addons/AddonEconomyModeGameLength.h:45
 msgid "Adjust the time after which the economy mode victory condition is checked."
 msgstr "Выберите время, по истечении которого проверяется условие победы в экономичном режиме."
+
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:23
+msgid "Adjust woodcutter's range"
+msgstr ""
 
 #: libs/s25main/addons/AddonBurnDuration.h:17
 msgid "Adjusts how long a building will burn for when it is destroyed"
@@ -499,6 +547,10 @@ msgstr "Союзные игроки больше не смогут уменьш�
 msgid "Allies"
 msgstr "Союзники"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:255
+msgid "Allow co-players"
+msgstr ""
+
 #: libs/s25main/addons/AddonCustomBuildSequence.h:19
 msgid "Allows every player to control whether building sites should be supplied in sequence of given order or in a definable sequence based on the building type."
 msgstr "Позволяет каждому игроку контролировать, должны ли постройки строиться по очереди в заданном порядке или в определенной последовательности на основе типа здания."
@@ -506,6 +558,10 @@ msgstr "Позволяет каждому игроку контролирова�
 #: libs/s25main/addons/AddonCharburner.h:18
 msgid "Allows to build the charburner."
 msgstr "Позволяет построить угольную ферму."
+
+#: libs/s25main/addons/AddonLeather.h:18
+msgid "Allows to build the leather economy buildings."
+msgstr ""
 
 #: libs/s25main/addons/AddonWine.h:18
 msgid "Allows to build the wine economy buildings."
@@ -552,9 +608,25 @@ msgstr "Вы хотите удалить все недействительные
 msgid "Are you sure to remove all replays?"
 msgstr "Вы уверены, что хотите удалить все повторы?"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:179
+msgid "Are you sure you want to delete preset '%1%'?"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:153
 msgid "Are you sure you want to remove the selected replay?"
 msgstr "Вы уверены, что хотите удалить выбранный повтор?"
+
+#: libs/s25main/gameData/GoodConsts.cpp:48
+msgid "Armor"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwMilitaryBuilding.cpp:88
+msgid "Armor delivery"
+msgstr ""
+
+#: libs/s25main/addons/AddonArmorCapturedBld.h:17
+msgid "Armor on captured buildings"
+msgstr ""
 
 #: libs/s25main/gameData/JobConsts.cpp:37
 msgid "Armorer"
@@ -763,6 +835,11 @@ msgstr "Bob-like файл содержал несколько текстовых
 msgid "Border areas"
 msgstr "Пограничные районы"
 
+#: libs/s25main/desktops/dskOptions.cpp:342
+#: libs/s25main/ingameWindows/iwSettings.cpp:62
+msgid "Borderless window"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwBuildOrder.cpp:56
 #: libs/s25main/ingameWindows/iwTransport.cpp:36
 msgid "Bottom"
@@ -899,6 +976,10 @@ msgstr "Карта кампании %1% не существует.\n"
 msgid "Campaign map lua file %1% does not exist.\n"
 msgstr "Файл lua карты кампании %1% не существует.\n"
 
+#: libs/s25main/desktops/dskSelectMap.cpp:101
+msgid "Campaign together..."
+msgstr ""
+
 #: libs/s25main/desktops/dskCampaignSelection.cpp:67
 #: libs/s25main/desktops/dskSinglePlayer.cpp:43
 msgid "Campaigns"
@@ -964,6 +1045,10 @@ msgstr "Изменить залежи золота"
 #: libs/s25main/addons/AddonMetalworksBehaviorOnZero.h:14
 msgid "Change metalworks behavior on zero"
 msgstr "Режим металлозавода во время бездействия"
+
+#: libs/s25main/addons/AddonArmorCapturedBld.h:18
+msgid "Change the armor setting for captured military buildings."
+msgstr ""
 
 #: libs/s25main/addons/AddonCoinsCapturedBld.h:18
 msgid "Change the coin setting for captured military buildings."
@@ -1060,6 +1145,15 @@ msgstr ""
 #: libs/s25main/desktops/dskGameLobby.cpp:424
 msgid "Closed"
 msgstr "Закрыто"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1820
+#: libs/s25main/desktops/dskGameLobby.cpp:1830
+msgid "Co-players are not allowed"
+msgstr ""
+
+#: libs/s25main/network/ClientError.cpp:20
+msgid "Co-players are not allowed."
+msgstr ""
 
 #: libs/s25main/gameData/GoodConsts.cpp:40
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:58
@@ -1274,10 +1368,22 @@ msgstr "Глубокая разработка железной руды не л�
 msgid "Default"
 msgstr "По-умолчанию"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:100
+msgid "Delete"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
+msgid "Delete Failed"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:133
 #, c-format
 msgid "Delete Invalid (%u)"
 msgstr "Не возможно удалить (%u)"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:179
+msgid "Delete Preset"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:81
 msgid "Delete all"
@@ -1377,6 +1483,10 @@ msgstr "Отключить"
 msgid "Disable Demolition of military buildings"
 msgstr "Запретить разрушение военных построек"
 
+#: libs/s25main/addons/AddonNoArmorDefault.h:17
+msgid "Disable armor by default"
+msgstr ""
+
 #: libs/s25main/addons/AddonNoCoinsDefault.h:17
 msgid "Disable coins by default"
 msgstr "Запрет монет для военных зданий"
@@ -1389,6 +1499,10 @@ msgstr "Запретить снос военных построек при ат�
 #: libs/s25main/ingameWindows/iwSave.cpp:140
 msgid "Disabled"
 msgstr "Отключено"
+
+#: libs/s25main/network/GameClient.cpp:2286
+msgid "Disabled AI for current player"
+msgstr ""
 
 #: libs/s25main/addons/AddonDefenderBehavior.h:25
 msgid "Disallow change"
@@ -1534,9 +1648,17 @@ msgstr "Продвижение по службе на поле боя"
 msgid "Enable charburner"
 msgstr "Включить угольную ферму"
 
+#: libs/s25main/addons/AddonLeather.h:17
+msgid "Enable leather economy"
+msgstr ""
+
 #: libs/s25main/addons/AddonWine.h:17
 msgid "Enable wine economy"
 msgstr "Включить винную экономику"
+
+#: libs/s25main/network/GameClient.cpp:2290
+msgid "Enabled AI for current player"
+msgstr ""
 
 #: libs/s25main/addons/AddonAsyncDebug.h:17
 msgid "Enables extra stuff to debug asyncs. Do not enable unless you know what you are doing!"
@@ -1705,6 +1827,10 @@ msgstr "Исследование:"
 msgid "Extend"
 msgstr ""
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
+msgid "Failed to delete the selected preset."
+msgstr ""
+
 #: libs/s25main/desktops/dskSelectMap.cpp:407
 msgid ""
 "Failed to generate random map.\n"
@@ -1778,6 +1904,10 @@ msgstr "Не удалось сохранить асинхронный журна
 #: libs/s25main/world/MapSerializer.cpp:71
 msgid "Failed to save lua state!"
 msgstr "Не удалось сохранить состояние lua!"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:258
+msgid "Failed to save the preset. Please check the filename and try again."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMapGenerator.cpp:81
 msgid "Far"
@@ -1907,6 +2037,10 @@ msgstr "Продуктовые"
 msgid "Forester"
 msgstr "Хижина лесника"
 
+#: libs/s25main/addons/AddonForesterFarmFieldAvoidance.h:15
+msgid "Foresters avoid farm field spots"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingBriefs.cpp:79
 msgid "Forges sword and shield. Without it you never get a new soldier."
 msgstr ""
@@ -2032,6 +2166,10 @@ msgstr "Получить строительные материалы обрат�
 #: libs/s25main/addons/AddonRefundMaterials.h:18
 msgid "Get building materials back when a building is destroyed."
 msgstr "Получить строительные материалы обратно, когда здание разрушается."
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1850
+msgid "Give up your own slot and play the chosen player's tribe together with them"
+msgstr ""
 
 #: libs/s25main/QuickStartGame.cpp:58
 msgid "Given map or replay (%1%) does not exist!"
@@ -2277,6 +2415,18 @@ msgstr "Улучшенный Альянс"
 msgid "Increase the durability of geologist signs by a factor."
 msgstr "Увеличьте время геологических табличек в несколько раз."
 
+#: libs/s25main/addons/AddonForesterReachRadius.h:24
+msgid "Increase the radius in which the forester plants trees."
+msgstr ""
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:25
+msgid "Increase the radius in which the stonemason searches for stone."
+msgstr ""
+
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:24
+msgid "Increase the radius in which the woodcutter searches for trees."
+msgstr ""
+
 #: libs/s25main/addons/AddonExhaustibleWater.h:21
 msgid "Inexhaustible"
 msgstr "Неисчерпаемые"
@@ -2328,6 +2478,16 @@ msgstr "Введение"
 #: libs/s25main/drivers/DriverWrapper.cpp:106
 msgid "Invalid API version!"
 msgstr "Неверная версия API!"
+
+#: libs/s25main/ingameWindows/iwSave.cpp:130
+#: libs/s25main/ingameWindows/iwSave.cpp:134
+msgid "Invalid Filename"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:217
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:221
+msgid "Invalid Name"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:94
 #: libs/s25main/network/GameClient.cpp:1479
@@ -2409,10 +2569,18 @@ msgstr "На верфи можно строить как маленькие ве
 msgid "Japanese"
 msgstr "Японцы"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1849
+msgid "Join"
+msgstr ""
+
 #: libs/s25main/desktops/dskDirectIP.cpp:28
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:41
 msgid "Join Game"
 msgstr "Присоединиться к игре"
+
+#: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:69
+msgid "Join as a co-player of the host instead of taking a slot of your own. The host must allow co-players."
+msgstr ""
 
 #: libs/s25main/gameData/PortraitConsts.h:21
 msgid "Julius"
@@ -2461,6 +2629,18 @@ msgstr "Тип карты"
 #: libs/s25main/desktops/dskOptions.cpp:200
 msgid "Language:"
 msgstr "Язык:"
+
+#: libs/s25main/gameData/GoodConsts.cpp:47
+msgid "Leather"
+msgstr ""
+
+#: libs/s25main/gameData/JobConsts.cpp:58
+msgid "Leatherworker"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwTransport.cpp:71
+msgid "Leatherworking"
+msgstr ""
 
 #: libs/s25main/gameData/BuildingConsts.cpp:25
 #, fuzzy
@@ -2554,9 +2734,23 @@ msgstr ""
 "Сторожевая башня: 2\n"
 "Крепость: 1"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:279
+#: libs/s25main/ingameWindows/iwAddons.cpp:51
+msgid "Load"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwOptionsWindow.cpp:96
 msgid "Load 'ReadMe' file"
 msgstr "Загрузить 'ReadMe' файл"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:279
+#: libs/s25main/ingameWindows/iwAddons.cpp:52
+msgid "Load Addon Preset"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:292
+msgid "Load Failed"
+msgstr ""
 
 #: libs/s25main/desktops/dskSinglePlayer.cpp:41
 msgid "Load game"
@@ -2623,6 +2817,11 @@ msgstr ""
 #: libs/s25main/desktops/dskGameLobby.cpp:218
 msgid "Lock teams:"
 msgstr "Заблокировать команды:"
+
+#: libs/s25main/desktops/dskOptions.cpp:355
+#: libs/s25main/ingameWindows/iwSettings.cpp:77
+msgid "Lock window size:"
+msgstr ""
 
 #: libs/s25main/addons/AddonBool.cpp:29 libs/s25main/addons/AddonList.cpp:37
 msgid "Locked"
@@ -3139,6 +3338,10 @@ msgstr "Без катапульт"
 msgid "No change"
 msgstr "Без изменений"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1820
+msgid "No co-players yet"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwAIDebug.cpp:154
 msgid "No current job"
 msgstr "Нет текущей работы"
@@ -3186,6 +3389,10 @@ msgstr "Никто не может ни на кого напасть."
 #: libs/s25main/addons/AddonStatisticsVisibility.h:24
 msgid "Nobody else but you"
 msgstr "Никому кроме вас"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1828
+msgid "Nobody to play together with"
+msgstr ""
 
 #: libs/s25main/gameTypes/PactTypes.cpp:9
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:89
@@ -3254,6 +3461,10 @@ msgstr "Уведомите альянс о этом местоположении
 #: libs/s25main/ingameWindows/iwAction.cpp:391
 msgid "Number of attackers"
 msgstr "Количество нападающих"
+
+#: libs/s25main/SavedFile.cpp:153
+msgid "Number of players (%1%) exceeds maximum allowed of %2%!"
+msgstr ""
 
 #: libs/s25main/addons/AddonNumScoutsExploration.h:18
 msgid "Number of scouts required for exploration expedition"
@@ -3336,6 +3547,10 @@ msgstr ""
 msgid "Only %1% local views are supported, ignoring the additional local player(s) starting at slot %2%\n"
 msgstr ""
 
+#: libs/s25main/desktops/dskGameInterface.cpp:188
+msgid "Only %1% local views are supported, ignoring the remaining shared views\n"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingBriefs.cpp:143
 msgid "Only in a mountain, and only where a geologist has found coal. The mountain runs out one day."
 msgstr ""
@@ -3397,6 +3612,10 @@ msgstr "Приказ на постройку"
 msgid "Other"
 msgstr "Другое"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:257
+msgid "Others may join a player instead of taking their own slot and play that tribe together"
+msgstr ""
+
 #: libs/s25main/figures/nofAttacker.cpp:222
 msgid "Our headquarters was destroyed!"
 msgstr "Наш Штаб уничтожен!"
@@ -3413,6 +3632,10 @@ msgid "Output: off"
 msgstr ""
 
 msgid "Output: on"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:231
+msgid "Overwrite Preset"
 msgstr ""
 
 #: libs/s25main/desktops/dskSelectMap.cpp:106
@@ -3479,10 +3702,26 @@ msgstr "Планировщик"
 msgid "Plants new trees, so your woodcutters never run out. Build one next to every pair of woodcutters."
 msgstr ""
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1825
+msgid "Play %1%'s tribe"
+msgstr ""
+
 #: libs/s25main/desktops/dskSinglePlayer.cpp:47
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:46
 msgid "Play Replay"
 msgstr "Показать повтор"
+
+#: libs/s25main/desktops/dskSelectMap.cpp:102
+msgid "Play a campaign mission together: the others join your tribe as co-players"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:503
+msgid "Play one tribe together"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68
+msgid "Play the host's tribe together"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:116
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:429
@@ -3537,9 +3776,25 @@ msgstr "Имя игрока"
 msgid "Playlist:"
 msgstr "Список воспроизведения:"
 
+#: libs/s25main/ingameWindows/iwSave.cpp:130
+msgid "Please enter a filename."
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwDirectIPCreate.cpp:129
 msgid "Please enter a name for the game"
 msgstr "Пожалуйста, укажите название игры"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:217
+msgid "Please enter a preset name."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwSave.cpp:134
+msgid "Please enter a valid filename."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:221
+msgid "Please enter a valid preset name."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwConnecting.cpp:33
 #: libs/s25main/ingameWindows/iwPleaseWait.cpp:18
@@ -3561,6 +3816,18 @@ msgstr "Портрет:"
 #: libs/s25main/ingameWindows/iwPostWindow.cpp:53
 msgid "Post office"
 msgstr "Почта"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:142
+msgid "Preset '%1%' was not found."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:89
+msgid "Preset Name"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:141
+msgid "Preset Not Found"
+msgstr ""
 
 #: libs/s25main/input/PlayerBrief.cpp:141
 msgid "Press A for the build menu, or X to put a flag here instead."
@@ -3584,6 +3851,10 @@ msgstr ""
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:32
 msgid "Presses wine, which only the temple uses."
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterFarmFieldAvoidance.h:16
+msgid "Prevents foresters from planting trees on spots that own farms could use for new fields."
 msgstr ""
 
 msgid "Previous"
@@ -3752,6 +4023,10 @@ msgstr "Получены асинхронные журналы от %1% (%2% з�
 #: libs/s25main/ingameWindows/iwConnecting.cpp:78
 msgid "Receiving Map..."
 msgstr "Проверка карты..."
+
+#: libs/s25main/addons/AddonNoArmorDefault.h:18
+msgid "Receiving armor is disabled for military buildings by default."
+msgstr ""
 
 #: libs/s25main/addons/AddonNoCoinsDefault.h:18
 msgid "Receiving coins is disabled for military buildings by default."
@@ -3936,6 +4211,20 @@ msgstr "СЕРВЕР: Зарезервированный слот %1% освоб
 msgid "SYSTEM"
 msgstr "СИСТЕМА"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:208
+#: libs/s25main/ingameWindows/iwAddons.cpp:49
+msgid "Save"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:208
+#: libs/s25main/ingameWindows/iwAddons.cpp:50
+msgid "Save Addon Preset"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:258
+msgid "Save Failed"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwLobbyConnect.cpp:72
 msgid "Save Password?"
 msgstr "Запомнить пароль?"
@@ -4051,6 +4340,10 @@ msgstr "Послать скаута"
 #: libs/s25main/ingameWindows/iwMilitaryBuilding.cpp:78
 msgid "Send soldiers home"
 msgstr "Отправьте солдат домой"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1846
+msgid "Send the chosen co-player away"
+msgstr ""
 
 #: libs/s25main/network/GameServer.cpp:1581
 msgid "Sending async logs %1%.\n"
@@ -4205,6 +4498,14 @@ msgstr "Размер страны"
 msgid "Skinner"
 msgstr ""
 
+#: libs/s25main/gameData/GoodConsts.cpp:46
+msgid "Skins"
+msgstr ""
+
+#: libs/s25main/gameData/BuildingConsts.cpp:96
+msgid "Skins are gathered from animal carcasses by the skinner. They are sent to the tannery for leather production. The skinner can also be supplied with pigs for extra skins."
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwSkipGFs.cpp:34
 msgid "Skip GameFrames"
 msgstr "Пропустить кадры"
@@ -4315,6 +4616,10 @@ msgstr "Скорость:"
 #: libs/s25main/GameManager.cpp:168
 msgid "Splash screen couldn't be loaded!"
 msgstr "Указанный файл не может быть загружен!"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:562
+msgid "Splitscreen seats (gamepad), one tribe:"
+msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:523
 msgid "Splitscreen seats (gamepad):"
@@ -4471,6 +4776,10 @@ msgstr ""
 msgid "Take out of store"
 msgstr "Вынести из склада"
 
+#: libs/s25main/gameData/JobConsts.cpp:57
+msgid "Tanner"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:18
 #, fuzzy
 msgid "Tannery"
@@ -4518,6 +4827,10 @@ msgstr "%s между '%s' и Вами был заключен."
 #: libs/s25main/network/GameClient.cpp:862
 msgid "The Game is not in sync. Checksums of some players don't match."
 msgstr "Игра не синхронизирована. Контрольная сумма некоторых игроков не совпадает."
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:81
+msgid "The addon presets folder could not be created. Saving and loading addon presets is unavailable."
+msgstr ""
 
 #: libs/s25main/gameData/BuildingConsts.cpp:212
 msgid "The armory produces swords and strong shields. This equipment is vital for your soldiers."
@@ -4608,6 +4921,14 @@ msgstr "Караульная башня - удобное место для ра�
 msgid "The headquarters represents the center of your realm. The large amount of storage space available means a great many things can be safely stored here. You can release certain merchandise from the headquarters, as and when required or stop its storage. To do this, first choose the corresponding icon followed by the desired merchandise or job symbol. On the third page, you can adjust the number of reserve soldiers who are responsible for guarding the headquarters. There are two values given: the first value indicates the current number of men, the second value indicates the desired number. "
 msgstr "Штаб-квартира представляет собой центр ваших владений. Большой объем доступного места для хранения означает, что здесь можно безопасно хранить очень много вещей. Вы можете выпустить определенный товар из штаб-квартиры по мере необходимости или остановить его хранение. Для этого сначала выберите соответствующий значок, а затем нужный символ товара или работы. На третьей странице вы можете настроить количество солдат запаса, отвечающих за охрану штаба. Даны два значения: первое значение указывает текущее количество мужчин, второе значение указывает желаемое количество. "
 
+#: libs/s25main/network/ClientError.cpp:21
+msgid "The host removed you from the game."
+msgstr ""
+
+#: libs/s25main/gameData/BuildingConsts.cpp:178
+msgid "The leatherworker crafts armor from finely tanned leather. The armor is then transported to military buildings to bolster your soldiers defense. An armored soldier can withstand an additional hit in battle and sometimes survives a catapult strike, but the armor is lost once struck."
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:113
 msgid "The merchandise statistics window allows you to check the quantities of your merchandise. By clicking the left mouse button you can switch the display of individual goods on and off. These can displayed over four different time periods. To delete all displays, click on the wastebasket button."
 msgstr "Окно статистики торговли позволяет проверить количество вашего товара. При нажатии левой кнопки мыши вы можете  включить и выключить отображение отдельных товаров. Они могут отображаться в течение четырех различных периодов времени. Чтобы удалить все дисплеи, нажмите на кнопку мусорной корзины."
@@ -4634,6 +4955,10 @@ msgstr "Игрок '%s' предлагает вам %s."
 msgid "The player '%s' want to cancel the '%s' between you both prematurely. Do you agree?"
 msgstr "Игрок  '%s'  хотите отменить '%s' между вами обоими преждевременно. Вы согласны?"
 
+#: libs/s25main/network/ClientError.cpp:22
+msgid "The player you played together with left the game."
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:341
 msgid "The playlist was saved!"
 msgstr "Плейлист сохранен!"
@@ -4656,6 +4981,10 @@ msgstr ""
 #: libs/s25main/desktops/dskLobby.cpp:226
 msgid "The selected game was not found anymore."
 msgstr "Выбранная игра больше не была найдена."
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:293
+msgid "The selected preset could not be loaded. The file may be corrupted or have an invalid format."
+msgstr ""
 
 #: libs/s25main/desktops/dskOptions.cpp:672
 msgid "The selected video driver does not support GUI scaling! Setting won't be used."
@@ -4699,6 +5028,10 @@ msgstr "Склад может помочь укоротить длинные т�
 msgid "The strongest guard post: nine soldiers, and it claims the most land of all."
 msgstr ""
 
+#: libs/s25main/gameData/BuildingConsts.cpp:133
+msgid "The tanner works animal skins to form leather. Before tanning; the skins are cured, scraped and stretched on wooden frames made from boards. Leather is used to produce armor at the leatherworks."
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:122
 msgid "The temple servant sacrifices wine and food granting a blessing of gold, iron ore, coal or granite. This allows your iron founder and minter to continue working when mines become exhausted. The desired mineral can be selected by toggling the output button."
 msgstr "Служитель храма жертвует вином и едой, даруя благословение в виде золота, железной руды, угля или гранита. Это позволяет вашему литейщику и чеканщику железа продолжать работать, когда шахты истощатся. Желаемый минерал можно выбрать, переключив кнопку."
@@ -4706,6 +5039,10 @@ msgstr "Служитель храма жертвует вином и едой, �
 #: libs/s25main/ingameWindows/iwTransport.cpp:108
 msgid "The transport priority of a type of merchandise can be determined here.The higher the priority of an item in the list, the quicker it is transported by helpers."
 msgstr "Здесь можно выбрать транспортный приоритет типа товаров. Чем выше элемент в списке, тем быстрее его доставят до места."
+
+#: libs/s25main/desktops/dskIntro.cpp:43
+msgid "The video %1% of the original game was not found (folder VIDEO)."
+msgstr ""
 
 #: libs/s25main/gameData/BuildingConsts.cpp:98
 msgid "The watchtower with its large amount of space is best suited for stationing a large number of your troops. Using the gold coin button you can stop the delivery of gold coins to the soldiers stationed here. However, without gold coins the soldiers here can not train and improve their skills."
@@ -5199,9 +5536,19 @@ msgstr ""
 msgid "What you see on the map"
 msgstr ""
 
+#: libs/s25main/desktops/dskMainMenu.cpp:50
+#: libs/s25main/ingameWindows/iwChangelog.cpp:12
+msgid "What's new"
+msgstr ""
+
 #: libs/s25main/desktops/dskOptions.cpp:298
 msgid "Window pinning"
 msgstr "Закрепление окна"
+
+#: libs/s25main/desktops/dskOptions.cpp:351
+#: libs/s25main/ingameWindows/iwSettings.cpp:72
+msgid "Window size:"
+msgstr ""
 
 #: libs/s25main/desktops/dskOptions.cpp:336
 #: libs/s25main/ingameWindows/iwSettings.cpp:69
@@ -5360,6 +5707,10 @@ msgstr ""
 msgid "You have never seen this place. Send out a scout from one of your flags."
 msgstr ""
 
+#: libs/s25main/desktops/dskCampaignVictory.cpp:17
+msgid "You have successfully completed chapter"
+msgstr ""
+
 #: libs/s25main/desktops/dskOptions.cpp:684
 #: libs/s25main/ingameWindows/iwSettings.cpp:113
 msgid "You need to restart your game to change the screen resolution!"
@@ -5368,6 +5719,10 @@ msgstr "Вам нужно перезапустить игру, чтобы при
 #: libs/s25main/desktops/dskOptions.cpp:692
 msgid "You need to restart your game to change the video or audio driver!"
 msgstr "Вам нужно перезапустить игру для смены аудио или видео драйвера!"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1807
+msgid "You play together with %1%"
+msgstr ""
 
 #: libs/s25main/ai/aijh/AIPlayerJH.cpp:395
 msgid "You win"
@@ -5389,10 +5744,18 @@ msgstr ""
 msgid "Your building"
 msgstr "Строительство порта"
 
+#: libs/s25main/network/ClientError.cpp:26
+msgid "Your computer fell too far behind the others, so you were removed from the game."
+msgstr ""
+
 #: libs/s25main/input/PlayerBrief.cpp:167
 #, fuzzy
 msgid "Your flag"
 msgstr "Установить флаг"
+
+#: libs/s25main/network/ClientError.cpp:24
+msgid "Your game went out of sync with the others (async), so you were removed from it."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwPadSystemMenu.cpp
 msgid "Your messages: why a mine stopped, where ore was found, who is attacking - and the diary of the campaign."
@@ -5516,6 +5879,10 @@ msgstr "пустошь"
 #: data/RTTR/gamedata/world/winterworld.lua:8
 msgid "winterworld"
 msgstr "снежный мир"
+
+#: libs/s25main/ingameWindows/iwWares.cpp:225
+msgid "with armor)"
+msgstr ""
 
 #~ msgid "Coming soon"
 #~ msgstr "В разработке"

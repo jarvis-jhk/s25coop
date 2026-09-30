@@ -246,6 +246,14 @@ public:
     /// Ab StartGame(): die tatsaechlich registrierten - abgeleitet aus gameCommands_, der
     /// einzigen Wahrheit, und bei jedem Ingame-Spielertausch nachgefuehrt.
     const std::vector<uint8_t>& GetAdditionalLocalPlayers() const { return additionalLocalPlayers_; }
+    /// s25coop: extra local views that control the MAIN player (couch coop: several people, one tribe).
+    /// Unlike additional local players they take no slot and need no registration: their orders go
+    /// through the main player's command factory. Set before StartGame(); cleared when the game ends.
+    void SetSharedLocalViews(unsigned numViews) { sharedLocalViews_ = numViews; }
+    unsigned GetSharedLocalViews() const { return sharedLocalViews_; }
+    /// s25coop: the game being hosted is a campaign mission (one human side). Set before HostGame, cleared by Stop.
+    void SetHostingCampaign(bool campaign) { hostingCampaign_ = campaign; }
+    bool IsHostingCampaign() const { return hostingCampaign_; }
 
     /// Prueft eine Anforderung zusaetzlicher lokaler Spieler gegen eine konkrete Lobby.
     /// Rueckgabe: leerer String = gueltig, sonst die Fehlerursache (der Aufrufer bricht ab).
@@ -471,6 +479,10 @@ private:
     /// Zusaetzlich (neben mainPlayer) lokal gesteuerte Slots. Vor dem Spielstart gesetzt,
     /// in StartGame() validiert, danach unveraenderlich.
     std::vector<uint8_t> additionalLocalPlayers_;
+    /// See SetSharedLocalViews
+    unsigned sharedLocalViews_ = 0;
+    /// See SetHostingCampaign
+    bool hostingCampaign_ = false;
     /// Je lokalem Spieler eine GameCommandFactory (Injektionspunkt fuer die spaetere UI-Phase)
     std::map<uint8_t, std::unique_ptr<LocalPlayerGCFactory>> localGCFactories_;
     /// Siehe ScopedActingPlayer. Gilt nur zusammen mit hasExplicitActingPlayer_.

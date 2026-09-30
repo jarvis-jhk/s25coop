@@ -75,6 +75,10 @@ msgstr " oder "
 msgid " stones"
 msgstr " Steine"
 
+#: libs/s25main/coop/CoopLobby.cpp:43
+msgid "%1% (with %2%)"
+msgstr "%1% (mit %2%)"
+
 #: libs/s25main/desktops/dskGameInterface.cpp:1410
 msgid "%1% are the winners!"
 msgstr "%1% sind die Sieger!"
@@ -153,9 +157,24 @@ msgstr "+100%"
 msgid "+1000%"
 msgstr "+1000%"
 
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:32
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+150%"
+msgstr "+150%"
+
 #: libs/s25main/addons/AddonMoreAnimals.h:23
 msgid "+200%"
 msgstr "+200%"
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:28
+msgid "+25%"
+msgstr "+25%"
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+33%"
+msgstr "+33%"
 
 #: libs/s25main/addons/AddonBurnDuration.h:24
 #: libs/s25main/addons/AddonMoreAnimals.h:21
@@ -165,6 +184,15 @@ msgstr "+50%"
 #: libs/s25main/addons/AddonMoreAnimals.h:24
 msgid "+500%"
 msgstr "+500%"
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+66%"
+msgstr "+66%"
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:30
+msgid "+75%"
+msgstr "+75%"
 
 #: libs/s25main/desktops/dskGameLobby.cpp:345
 #: libs/s25main/desktops/dskGameLobby.cpp:497
@@ -301,6 +329,10 @@ msgstr "Sehr viel"
 msgid "A new ship is ready"
 msgstr "Ein neues Schiff ist fertiggestellt."
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:232
+msgid "A preset named '%1%' already exists. Do you want to overwrite it?"
+msgstr "Eine Voreinstellung namens '%1%' existiert bereits. Möchtest du sie überschreiben?"
+
 #: libs/s25main/desktops/dskGameInterface.cpp:1637
 msgid "A road has to end where a flag can stand."
 msgstr "Ein Weg muss dort enden, wo eine Flagge stehen kann."
@@ -418,6 +450,10 @@ msgstr "Zusätzliche lokale Spieler setzen voraus, dass du das Spiel hostest"
 msgid "Addon %1$#x not found!\n"
 msgstr "Addon %1$#x nicht gefunden!\n"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:80
+msgid "Addon Presets Unavailable"
+msgstr "Erweiterungsvoreinstellungen nicht verfügbar"
+
 #: libs/s25main/ingameWindows/iwAddons.cpp:35
 msgid "Addon Settings"
 msgstr "Erweiterungs Einstellungen"
@@ -451,9 +487,17 @@ msgstr ""
 msgid "Adjust"
 msgstr "Einstellen"
 
+#: libs/s25main/addons/AddonForesterReachRadius.h:23
+msgid "Adjust forester's range"
+msgstr "Reichweite des Försters anpassen"
+
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:29
 msgid "Adjust military strength"
 msgstr "Stärke des Militärs anpassen"
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:24
+msgid "Adjust stonemason's range"
+msgstr "Reichweite des Steinmetzes anpassen"
 
 #: libs/s25main/addons/AddonMoreAnimals.h:18
 msgid "Adjust the fraction of trees that spawn animals."
@@ -462,6 +506,10 @@ msgstr "Verändert den Teil der Bäume, die Tiere spawnen."
 #: libs/s25main/addons/AddonEconomyModeGameLength.h:45
 msgid "Adjust the time after which the economy mode victory condition is checked."
 msgstr "Legt die Spieldauer fest, nach der die Siegbedingung im Wirtschaftsmodus geprüft wird"
+
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:23
+msgid "Adjust woodcutter's range"
+msgstr "Reichweite des Holzfällers anpassen"
 
 #: libs/s25main/addons/AddonBurnDuration.h:17
 msgid "Adjusts how long a building will burn for when it is destroyed"
@@ -497,6 +545,10 @@ msgstr "Verbündete können deine Grenzen nicht mit ihren Gebäuden verkleinern.
 msgid "Allies"
 msgstr "Verbündete"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:255
+msgid "Allow co-players"
+msgstr "Mitspieler erlauben"
+
 #: libs/s25main/addons/AddonCustomBuildSequence.h:19
 msgid "Allows every player to control whether building sites should be supplied in sequence of given order or in a definable sequence based on the building type."
 msgstr "Erlaubt jedem Spieler zu entscheiden, ob die Gebäude in Reihenfolge der Aufträge oder nach Prioritätenliste gebaut werden."
@@ -504,6 +556,10 @@ msgstr "Erlaubt jedem Spieler zu entscheiden, ob die Gebäude in Reihenfolge der
 #: libs/s25main/addons/AddonCharburner.h:18
 msgid "Allows to build the charburner."
 msgstr "Erlaubt den Köhler zu bauen."
+
+#: libs/s25main/addons/AddonLeather.h:18
+msgid "Allows to build the leather economy buildings."
+msgstr "Erlaubt den Bau von Gebäuden zur Lederverarbeitung."
 
 #: libs/s25main/addons/AddonWine.h:18
 msgid "Allows to build the wine economy buildings."
@@ -550,9 +606,25 @@ msgstr "Sind Sie sicher, dass Sie alle ungültigen Replays löschen möchten?"
 msgid "Are you sure to remove all replays?"
 msgstr "Sind Sie sicher, dass Sie alle Replays löschen möchten?"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:179
+msgid "Are you sure you want to delete preset '%1%'?"
+msgstr "Möchtest du die Voreinstellung '%1%' wirklich löschen?"
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:153
 msgid "Are you sure you want to remove the selected replay?"
 msgstr "Sind Sie sicher, dass Sie das ausgewählte Replay löschen möchten?"
+
+#: libs/s25main/gameData/GoodConsts.cpp:48
+msgid "Armor"
+msgstr "Rüstung"
+
+#: libs/s25main/ingameWindows/iwMilitaryBuilding.cpp:88
+msgid "Armor delivery"
+msgstr "Rüstungslieferung"
+
+#: libs/s25main/addons/AddonArmorCapturedBld.h:17
+msgid "Armor on captured buildings"
+msgstr "Rüstung in eroberten Gebäuden"
 
 #: libs/s25main/gameData/JobConsts.cpp:37
 msgid "Armorer"
@@ -764,6 +836,11 @@ msgstr "Bob-like Datei enthielt mehrere Texteinträge: %s\n"
 msgid "Border areas"
 msgstr "Grenzbereiche"
 
+#: libs/s25main/desktops/dskOptions.cpp:342
+#: libs/s25main/ingameWindows/iwSettings.cpp:62
+msgid "Borderless window"
+msgstr "Randloses Fenster"
+
 #: libs/s25main/ingameWindows/iwBuildOrder.cpp:56
 #: libs/s25main/ingameWindows/iwTransport.cpp:36
 msgid "Bottom"
@@ -899,6 +976,10 @@ msgstr "Kampagnen-Karte %1% existiert nicht.\n"
 msgid "Campaign map lua file %1% does not exist.\n"
 msgstr "Kampagnen-Karte lua datei %1% existiert nicht.\n"
 
+#: libs/s25main/desktops/dskSelectMap.cpp:101
+msgid "Campaign together..."
+msgstr "Gemeinsame Kampagne..."
+
 #: libs/s25main/desktops/dskCampaignSelection.cpp:67
 #: libs/s25main/desktops/dskSinglePlayer.cpp:43
 msgid "Campaigns"
@@ -964,6 +1045,10 @@ msgstr "Gold austauschen"
 #: libs/s25main/addons/AddonMetalworksBehaviorOnZero.h:14
 msgid "Change metalworks behavior on zero"
 msgstr "Ändere das Verhalten des Schlossers bei Null"
+
+#: libs/s25main/addons/AddonArmorCapturedBld.h:18
+msgid "Change the armor setting for captured military buildings."
+msgstr "Ändert die Rüstungseinstellung für eroberte Militärgebäude."
 
 #: libs/s25main/addons/AddonCoinsCapturedBld.h:18
 msgid "Change the coin setting for captured military buildings."
@@ -1058,6 +1143,15 @@ msgstr "Schließen"
 #: libs/s25main/desktops/dskGameLobby.cpp:424
 msgid "Closed"
 msgstr "Geschlossen"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1820
+#: libs/s25main/desktops/dskGameLobby.cpp:1830
+msgid "Co-players are not allowed"
+msgstr "Mitspieler sind nicht erlaubt"
+
+#: libs/s25main/network/ClientError.cpp:20
+msgid "Co-players are not allowed."
+msgstr "Mitspieler sind nicht erlaubt."
 
 #: libs/s25main/gameData/GoodConsts.cpp:40
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:58
@@ -1268,10 +1362,22 @@ msgstr "Tief in den Bergen graben Bergarbeiter nach Eisenerz. Sie werden für di
 msgid "Default"
 msgstr "Standard"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:100
+msgid "Delete"
+msgstr "Löschen"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
+msgid "Delete Failed"
+msgstr "Löschen fehlgeschlagen"
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:133
 #, c-format
 msgid "Delete Invalid (%u)"
 msgstr "Ungültige (%u) löschen"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:179
+msgid "Delete Preset"
+msgstr "Voreinstellung löschen"
 
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:81
 msgid "Delete all"
@@ -1284,7 +1390,7 @@ msgstr "Ausgewählte löschen"
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:25
 msgid "Delivers skins for the tannery - the first of three buildings that make your soldiers tougher."
-msgstr "Liefert Skins für die Gerberei - das erste von drei Gebäuden, die deine Soldaten zäher machen."
+msgstr "Liefert Tierhäute für die Gerberei - das erste von drei Gebäuden, die deine Soldaten zäher machen."
 
 #: libs/s25main/addons/AddonDemolishBldWORes.h:14
 msgid "Demolish building when out of resources"
@@ -1371,6 +1477,10 @@ msgstr "Deaktivieren"
 msgid "Disable Demolition of military buildings"
 msgstr "Verhindert die Zerstörung militärischer Gebäude"
 
+#: libs/s25main/addons/AddonNoArmorDefault.h:17
+msgid "Disable armor by default"
+msgstr "Rüstungen standardmäßig deaktivieren"
+
 #: libs/s25main/addons/AddonNoCoinsDefault.h:17
 msgid "Disable coins by default"
 msgstr "Münzannahme standardmäßig deaktiviert"
@@ -1383,6 +1493,10 @@ msgstr "Verhindert die Zerstörung militärischer Gebäude während eines Angrif
 #: libs/s25main/ingameWindows/iwSave.cpp:140
 msgid "Disabled"
 msgstr "Deaktiviert"
+
+#: libs/s25main/network/GameClient.cpp:2286
+msgid "Disabled AI for current player"
+msgstr "KI für den aktuellen Spieler deaktiviert"
 
 #: libs/s25main/addons/AddonDefenderBehavior.h:25
 msgid "Disallow change"
@@ -1527,9 +1641,17 @@ msgstr "Aktiviere Schlachtbeförderungen"
 msgid "Enable charburner"
 msgstr "Köhlerei hinzufügen"
 
+#: libs/s25main/addons/AddonLeather.h:17
+msgid "Enable leather economy"
+msgstr "Lederverarbeitung aktivieren"
+
 #: libs/s25main/addons/AddonWine.h:17
 msgid "Enable wine economy"
 msgstr "Weinbau aktivieren"
+
+#: libs/s25main/network/GameClient.cpp:2290
+msgid "Enabled AI for current player"
+msgstr "KI für den aktuellen Spieler aktiviert"
 
 #: libs/s25main/addons/AddonAsyncDebug.h:17
 msgid "Enables extra stuff to debug asyncs. Do not enable unless you know what you are doing!"
@@ -1698,6 +1820,10 @@ msgstr "Aufklärung:"
 msgid "Extend"
 msgstr "Verlängern"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
+msgid "Failed to delete the selected preset."
+msgstr "Die ausgewählte Voreinstellung konnte nicht gelöscht werden."
+
 #: libs/s25main/desktops/dskSelectMap.cpp:407
 msgid ""
 "Failed to generate random map.\n"
@@ -1771,6 +1897,10 @@ msgstr "Konnte async log nicht unter %1% speichern\n"
 #: libs/s25main/world/MapSerializer.cpp:71
 msgid "Failed to save lua state!"
 msgstr "Fehler beim Speichern des LUA Zustands!"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:258
+msgid "Failed to save the preset. Please check the filename and try again."
+msgstr "Die Voreinstellung konnte nicht gespeichert werden. Prüfe den Dateinamen und versuche es erneut."
 
 #: libs/s25main/ingameWindows/iwMapGenerator.cpp:81
 msgid "Far"
@@ -1900,6 +2030,10 @@ msgstr "Nahrung"
 msgid "Forester"
 msgstr "Forsthaus"
 
+#: libs/s25main/addons/AddonForesterFarmFieldAvoidance.h:15
+msgid "Foresters avoid farm field spots"
+msgstr "Förster meiden mögliche Felder"
+
 #: libs/s25main/gameData/BuildingBriefs.cpp:79
 msgid "Forges sword and shield. Without it you never get a new soldier."
 msgstr "Schmiedet Schwert und Schild. Ohne sie bekommst du nie einen neuen Soldaten."
@@ -2025,6 +2159,10 @@ msgstr "Erstatte Baumaterialien, wenn ein Gebäude abgerissen wird und das Notfa
 #: libs/s25main/addons/AddonRefundMaterials.h:18
 msgid "Get building materials back when a building is destroyed."
 msgstr "Erstatte Baumaterial zurück, wenn Gebäude abgerissen werden."
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1850
+msgid "Give up your own slot and play the chosen player's tribe together with them"
+msgstr "Gib deinen eigenen Platz auf und spiele das Volk des ausgewählten Spielers gemeinsam mit ihm"
 
 #: libs/s25main/QuickStartGame.cpp:58
 msgid "Given map or replay (%1%) does not exist!"
@@ -2270,6 +2408,18 @@ msgstr "Verbesserte Allianz"
 msgid "Increase the durability of geologist signs by a factor."
 msgstr "Haltbarkeit der Geologenschilder per Faktor erhöhen"
 
+#: libs/s25main/addons/AddonForesterReachRadius.h:24
+msgid "Increase the radius in which the forester plants trees."
+msgstr "Vergrößert den Bereich, in dem der Förster Bäume pflanzt."
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:25
+msgid "Increase the radius in which the stonemason searches for stone."
+msgstr "Vergrößert den Bereich, in dem der Steinmetz nach Steinen sucht."
+
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:24
+msgid "Increase the radius in which the woodcutter searches for trees."
+msgstr "Vergrößert den Bereich, in dem der Holzfäller nach Bäumen sucht."
+
 #: libs/s25main/addons/AddonExhaustibleWater.h:21
 msgid "Inexhaustible"
 msgstr "Unerschöpflich"
@@ -2321,6 +2471,16 @@ msgstr "Intro"
 #: libs/s25main/drivers/DriverWrapper.cpp:106
 msgid "Invalid API version!"
 msgstr "Ungültige API-Version!"
+
+#: libs/s25main/ingameWindows/iwSave.cpp:130
+#: libs/s25main/ingameWindows/iwSave.cpp:134
+msgid "Invalid Filename"
+msgstr "Ungültiger Dateiname"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:217
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:221
+msgid "Invalid Name"
+msgstr "Ungültiger Name"
 
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:94
 #: libs/s25main/network/GameClient.cpp:1479
@@ -2402,10 +2562,18 @@ msgstr "Der Bau kleiner Ruderboote sowie riesiger Transportschiffe ist nur in ei
 msgid "Japanese"
 msgstr "Japaner"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1849
+msgid "Join"
+msgstr "Beitreten"
+
 #: libs/s25main/desktops/dskDirectIP.cpp:28
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:41
 msgid "Join Game"
 msgstr "Spiel beitreten"
+
+#: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:69
+msgid "Join as a co-player of the host instead of taking a slot of your own. The host must allow co-players."
+msgstr "Spiele als Mitspieler im Volk des Gastgebers, ohne einen eigenen Platz zu belegen. Der Gastgeber muss Mitspieler erlauben."
 
 #: libs/s25main/gameData/PortraitConsts.h:21
 msgid "Julius"
@@ -2454,6 +2622,18 @@ msgstr "Landschaft"
 #: libs/s25main/desktops/dskOptions.cpp:200
 msgid "Language:"
 msgstr "Sprache:"
+
+#: libs/s25main/gameData/GoodConsts.cpp:47
+msgid "Leather"
+msgstr "Leder"
+
+#: libs/s25main/gameData/JobConsts.cpp:58
+msgid "Leatherworker"
+msgstr "Rüstungsmacher"
+
+#: libs/s25main/ingameWindows/iwTransport.cpp:71
+msgid "Leatherworking"
+msgstr "Rüstungsherstellung"
 
 #: libs/s25main/gameData/BuildingConsts.cpp:25
 msgid "Leatherworks"
@@ -2546,9 +2726,23 @@ msgstr ""
 "Wachturm: 2\n"
 "Festung: 1"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:279
+#: libs/s25main/ingameWindows/iwAddons.cpp:51
+msgid "Load"
+msgstr "Laden"
+
 #: libs/s25main/ingameWindows/iwOptionsWindow.cpp:96
 msgid "Load 'ReadMe' file"
 msgstr "'Lies mich'-Datei laden"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:279
+#: libs/s25main/ingameWindows/iwAddons.cpp:52
+msgid "Load Addon Preset"
+msgstr "Erweiterungsvoreinstellung laden"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:292
+msgid "Load Failed"
+msgstr "Laden fehlgeschlagen"
 
 #: libs/s25main/desktops/dskSinglePlayer.cpp:41
 msgid "Load game"
@@ -2615,6 +2809,11 @@ msgstr "Lokaler Spieler %1%"
 #: libs/s25main/desktops/dskGameLobby.cpp:218
 msgid "Lock teams:"
 msgstr "Teams sperren:"
+
+#: libs/s25main/desktops/dskOptions.cpp:355
+#: libs/s25main/ingameWindows/iwSettings.cpp:77
+msgid "Lock window size:"
+msgstr "Fenstergröße sperren:"
 
 #: libs/s25main/addons/AddonBool.cpp:29 libs/s25main/addons/AddonList.cpp:37
 msgid "Locked"
@@ -2707,7 +2906,7 @@ msgstr "Macht Gold ohne Berg - die zweite Goldquelle neben dem Goldbergwerk."
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:36
 msgid "Makes leather for the leatherworks - the second of the three buildings that make your soldiers tougher."
-msgstr "Gerbt Leather für die Lederverarbeitung - das zweite der drei Gebäude, die deine Soldaten zäher machen."
+msgstr "Gerbt Leder für die Lederverarbeitung - das zweite der drei Gebäude, die deine Soldaten zäher machen."
 
 # ACHTUNG, ABSICHT: dieser Katalog benennt die beiden Fleischwaren seit jeher umgekehrt zum
 # englischen Original - GoodType::Ham heisst hier "Fleisch", GoodType::Meat heisst "Schinken".
@@ -3139,6 +3338,10 @@ msgstr "Keine Katapulte"
 msgid "No change"
 msgstr "Keine Veränderung"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1820
+msgid "No co-players yet"
+msgstr "Noch keine Mitspieler"
+
 #: libs/s25main/ingameWindows/iwAIDebug.cpp:154
 msgid "No current job"
 msgstr "Aktuell kein Auftrag"
@@ -3186,6 +3389,10 @@ msgstr "Niemand kann angreifen oder angegriffen werden."
 #: libs/s25main/addons/AddonStatisticsVisibility.h:24
 msgid "Nobody else but you"
 msgstr "Niemand, außer dir"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1828
+msgid "Nobody to play together with"
+msgstr "Niemand zum gemeinsamen Spielen"
 
 #: libs/s25main/gameTypes/PactTypes.cpp:9
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:89
@@ -3254,6 +3461,10 @@ msgstr "Benachrichtige Verbündete an dieser Position"
 #: libs/s25main/ingameWindows/iwAction.cpp:391
 msgid "Number of attackers"
 msgstr "Anzahl der Angreifer"
+
+#: libs/s25main/SavedFile.cpp:153
+msgid "Number of players (%1%) exceeds maximum allowed of %2%!"
+msgstr "Die Anzahl der Spieler (%1%) überschreitet die erlaubte Höchstzahl von %2%!"
 
 #: libs/s25main/addons/AddonNumScoutsExploration.h:18
 msgid "Number of scouts required for exploration expedition"
@@ -3336,6 +3547,10 @@ msgstr "Ein Stück zurück"
 msgid "Only %1% local views are supported, ignoring the additional local player(s) starting at slot %2%\n"
 msgstr "Es werden nur %1% lokale Ansichten unterstützt, die zusätzlichen lokalen Spieler ab Slot %2% werden ignoriert\n"
 
+#: libs/s25main/desktops/dskGameInterface.cpp:188
+msgid "Only %1% local views are supported, ignoring the remaining shared views\n"
+msgstr "Es werden nur %1% lokale Ansichten unterstützt. Die übrigen gemeinsamen Ansichten werden ignoriert\n"
+
 #: libs/s25main/gameData/BuildingBriefs.cpp:143
 msgid "Only in a mountain, and only where a geologist has found coal. The mountain runs out one day."
 msgstr "Nur in einem Berg, und nur dort, wo ein Geologe Kohle gefunden hat. Der Berg ist eines Tages leer."
@@ -3397,6 +3612,10 @@ msgstr "Auftrag der Baustelle"
 msgid "Other"
 msgstr "Andere"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:257
+msgid "Others may join a player instead of taking their own slot and play that tribe together"
+msgstr "Andere können einem Spieler beitreten und dessen Volk gemeinsam mit ihm spielen, ohne einen eigenen Platz zu belegen"
+
 #: libs/s25main/figures/nofAttacker.cpp:222
 msgid "Our headquarters was destroyed!"
 msgstr "Unser Hauptquartier wurde zerstört!"
@@ -3414,6 +3633,10 @@ msgstr "Auslastung: aus"
 
 msgid "Output: on"
 msgstr "Auslastung: an"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:231
+msgid "Overwrite Preset"
+msgstr "Voreinstellung überschreiben"
 
 #: libs/s25main/desktops/dskSelectMap.cpp:106
 msgid "Own maps"
@@ -3479,10 +3702,26 @@ msgstr "Planierer"
 msgid "Plants new trees, so your woodcutters never run out. Build one next to every pair of woodcutters."
 msgstr "Pflanzt neue Bäume, damit deinen Holzfällern nie das Holz ausgeht. Bau einen zu je zwei Holzfällern."
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1825
+msgid "Play %1%'s tribe"
+msgstr "Im Volk von %1% mitspielen"
+
 #: libs/s25main/desktops/dskSinglePlayer.cpp:47
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:46
 msgid "Play Replay"
 msgstr "Replay abspielen"
+
+#: libs/s25main/desktops/dskSelectMap.cpp:102
+msgid "Play a campaign mission together: the others join your tribe as co-players"
+msgstr "Spielt gemeinsam eine Kampagnenmission: Die anderen treten deinem Volk als Mitspieler bei"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:503
+msgid "Play one tribe together"
+msgstr "Gemeinsam ein Volk spielen"
+
+#: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68
+msgid "Play the host's tribe together"
+msgstr "Im Volk des Gastgebers mitspielen"
 
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:116
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:429
@@ -3537,9 +3776,25 @@ msgstr "Spielername"
 msgid "Playlist:"
 msgstr "Playlist:"
 
+#: libs/s25main/ingameWindows/iwSave.cpp:130
+msgid "Please enter a filename."
+msgstr "Bitte gib einen Dateinamen ein."
+
 #: libs/s25main/ingameWindows/iwDirectIPCreate.cpp:129
 msgid "Please enter a name for the game"
 msgstr "Bitte geben Sie einen Namen für das Spiel an!"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:217
+msgid "Please enter a preset name."
+msgstr "Bitte gib einen Namen für die Voreinstellung ein."
+
+#: libs/s25main/ingameWindows/iwSave.cpp:134
+msgid "Please enter a valid filename."
+msgstr "Bitte gib einen gültigen Dateinamen ein."
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:221
+msgid "Please enter a valid preset name."
+msgstr "Bitte gib einen gültigen Namen für die Voreinstellung ein."
 
 #: libs/s25main/ingameWindows/iwConnecting.cpp:33
 #: libs/s25main/ingameWindows/iwPleaseWait.cpp:18
@@ -3561,6 +3816,18 @@ msgstr ""
 #: libs/s25main/ingameWindows/iwPostWindow.cpp:53
 msgid "Post office"
 msgstr "Post"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:142
+msgid "Preset '%1%' was not found."
+msgstr "Die Voreinstellung '%1%' wurde nicht gefunden."
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:89
+msgid "Preset Name"
+msgstr "Name der Voreinstellung"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:141
+msgid "Preset Not Found"
+msgstr "Voreinstellung nicht gefunden"
 
 #: libs/s25main/input/PlayerBrief.cpp:141
 msgid "Press A for the build menu, or X to put a flag here instead."
@@ -3585,6 +3852,10 @@ msgstr "Drück A, um von hier eine Straße zu bauen. Drück RB für das Flaggenm
 #: libs/s25main/gameData/BuildingBriefs.cpp:32
 msgid "Presses wine, which only the temple uses."
 msgstr "Presst Wein, den nur der Tempel verwendet."
+
+#: libs/s25main/addons/AddonForesterFarmFieldAvoidance.h:16
+msgid "Prevents foresters from planting trees on spots that own farms could use for new fields."
+msgstr "Verhindert, dass Förster Bäume an Stellen pflanzen, die deine Bauernhöfe für neue Felder nutzen könnten."
 
 msgid "Previous"
 msgstr "Vorheriges"
@@ -3752,6 +4023,10 @@ msgstr "Async-Logs von %1% empfangen (%2% Einträge).\n"
 #: libs/s25main/ingameWindows/iwConnecting.cpp:78
 msgid "Receiving Map..."
 msgstr "Prüfe Karte..."
+
+#: libs/s25main/addons/AddonNoArmorDefault.h:18
+msgid "Receiving armor is disabled for military buildings by default."
+msgstr "Die Annahme von Rüstungen ist für Militärgebäude standardmäßig deaktiviert."
 
 #: libs/s25main/addons/AddonNoCoinsDefault.h:18
 msgid "Receiving coins is disabled for military buildings by default."
@@ -3930,6 +4205,20 @@ msgstr "SERVER: Reservierter Eintrag %1% auf Grund von Timeout freigegeben\n"
 msgid "SYSTEM"
 msgstr "SYSTEM"
 
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:208
+#: libs/s25main/ingameWindows/iwAddons.cpp:49
+msgid "Save"
+msgstr "Speichern"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:208
+#: libs/s25main/ingameWindows/iwAddons.cpp:50
+msgid "Save Addon Preset"
+msgstr "Erweiterungsvoreinstellung speichern"
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:258
+msgid "Save Failed"
+msgstr "Speichern fehlgeschlagen"
+
 #: libs/s25main/ingameWindows/iwLobbyConnect.cpp:72
 msgid "Save Password?"
 msgstr "Passwort speichern?"
@@ -4046,6 +4335,10 @@ msgstr "Erkunder aussenden"
 msgid "Send soldiers home"
 msgstr "Soldaten nach Hause schicken"
 
+#: libs/s25main/desktops/dskGameLobby.cpp:1846
+msgid "Send the chosen co-player away"
+msgstr "Den ausgewählten Mitspieler entfernen"
+
 #: libs/s25main/network/GameServer.cpp:1581
 msgid "Sending async logs %1%.\n"
 msgstr "Sende Async-Logs zu %1%.\n"
@@ -4117,7 +4410,7 @@ msgstr "Siedler"
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:53
 msgid "Sews armor, so your soldiers survive longer - the last of the three buildings that make them tougher."
-msgstr "Näht Armor, damit deine Soldaten länger überleben - das letzte der drei Gebäude, die sie zäher machen."
+msgstr "Näht Rüstung, damit deine Soldaten länger überleben - das letzte der drei Gebäude, die sie zäher machen."
 
 #: libs/s25main/gameData/PortraitConsts.h:28
 msgid "Shaka"
@@ -4198,6 +4491,14 @@ msgstr "Landesgröße"
 #: libs/s25main/gameData/BuildingConsts.cpp:13
 msgid "Skinner"
 msgstr "Abdecker"
+
+#: libs/s25main/gameData/GoodConsts.cpp:46
+msgid "Skins"
+msgstr "Tierhäute"
+
+#: libs/s25main/gameData/BuildingConsts.cpp:96
+msgid "Skins are gathered from animal carcasses by the skinner. They are sent to the tannery for leather production. The skinner can also be supplied with pigs for extra skins."
+msgstr "Der Häuter gewinnt Tierhäute aus Tierkadavern. Sie werden zur Gerberei gebracht und dort zu Leder verarbeitet. Der Häuter kann außerdem mit Schweinen versorgt werden, um zusätzliche Tierhäute zu gewinnen."
 
 #: libs/s25main/ingameWindows/iwSkipGFs.cpp:34
 msgid "Skip GameFrames"
@@ -4309,6 +4610,10 @@ msgstr "Geschwindigkeit:"
 #: libs/s25main/GameManager.cpp:168
 msgid "Splash screen couldn't be loaded!"
 msgstr "Startbildschirm konnte nicht geladen werden!"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:562
+msgid "Splitscreen seats (gamepad), one tribe:"
+msgstr "Splitscreen-Plätze (Gamepad), ein Volk:"
 
 #: libs/s25main/desktops/dskGameLobby.cpp:523
 msgid "Splitscreen seats (gamepad):"
@@ -4465,6 +4770,10 @@ msgstr "Fernsehmodus:"
 msgid "Take out of store"
 msgstr "Auslagern"
 
+#: libs/s25main/gameData/JobConsts.cpp:57
+msgid "Tanner"
+msgstr "Gerber"
+
 #: libs/s25main/gameData/BuildingConsts.cpp:18
 msgid "Tannery"
 msgstr "Gerberei"
@@ -4511,6 +4820,10 @@ msgstr "Ein %s mit %s wurde abgeschlossen."
 #: libs/s25main/network/GameClient.cpp:862
 msgid "The Game is not in sync. Checksums of some players don't match."
 msgstr "Das Spiel ist nicht synchron. Die Checksummen einiger Spieler stimmen nicht miteinander überein."
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:81
+msgid "The addon presets folder could not be created. Saving and loading addon presets is unavailable."
+msgstr "Der Ordner für Erweiterungsvoreinstellungen konnte nicht erstellt werden. Erweiterungsvoreinstellungen können daher weder gespeichert noch geladen werden."
 
 #: libs/s25main/gameData/BuildingConsts.cpp:212
 msgid "The armory produces swords and strong shields. This equipment is vital for your soldiers."
@@ -4601,6 +4914,14 @@ msgstr "Die Wachstube ist ein recht komfortabler Platz für das Militär und zud
 msgid "The headquarters represents the center of your realm. The large amount of storage space available means a great many things can be safely stored here. You can release certain merchandise from the headquarters, as and when required or stop its storage. To do this, first choose the corresponding icon followed by the desired merchandise or job symbol. On the third page, you can adjust the number of reserve soldiers who are responsible for guarding the headquarters. There are two values given: the first value indicates the current number of men, the second value indicates the desired number. "
 msgstr "Das Hauptquartier stellt das Zentrum Ihres Reiches dar. Durch das große Angebot an Lagerraum lassen sich hier viele Dinge sicher aufbewahren. Sie können bei Bedarf bestimmte Waren aus dem Hauptquartier entfernen lassen oder deren Einlagerung stoppen. Wählen Sie dazu zuerst den entsprechenden Button, dann das gewünschte Waren- oder Berufssymbol. Auf der dritten Seite stellen Sie die Reserve an Soldaten ein, die das Hauptquartier bewachen sollen. Der erste Wert gibt die momentane, der zweite Wert die gewünschte Besetzung an. "
 
+#: libs/s25main/network/ClientError.cpp:21
+msgid "The host removed you from the game."
+msgstr "Der Gastgeber hat dich aus dem Spiel entfernt."
+
+#: libs/s25main/gameData/BuildingConsts.cpp:178
+msgid "The leatherworker crafts armor from finely tanned leather. The armor is then transported to military buildings to bolster your soldiers defense. An armored soldier can withstand an additional hit in battle and sometimes survives a catapult strike, but the armor is lost once struck."
+msgstr "Der Rüstungsmacher fertigt aus sorgfältig gegerbtem Leder Rüstungen. Sie werden zu Militärgebäuden gebracht und stärken die Verteidigung deiner Soldaten. Ein gerüsteter Soldat hält im Kampf einen zusätzlichen Treffer aus und überlebt manchmal einen Katapulttreffer. Nach einem Treffer ist die Rüstung jedoch verloren."
+
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:113
 msgid "The merchandise statistics window allows you to check the quantities of your merchandise. By clicking the left mouse button you can switch the display of individual goods on and off. These can displayed over four different time periods. To delete all displays, click on the wastebasket button."
 msgstr "In der Warenstatistik können Sie die Entwicklung Ihrer Warenmenge einsehen. Mit der linken Maustaste können Sie die Anzeige einzelner Waren ein- und ausschalten. Zusätzlich stehen Ihnen vier verschieden lange Zeitzonen zur Verfügung. Um alle Anzeigen zu löschen, drücken Sie den \"Papierkorb\"-Button."
@@ -4627,6 +4948,10 @@ msgstr "Der Spieler '%s' bietet Ihnen einen %s an."
 msgid "The player '%s' want to cancel the '%s' between you both prematurely. Do you agree?"
 msgstr "%s möchte euren %s vor Ablauf beenden. Einverstanden?"
 
+#: libs/s25main/network/ClientError.cpp:22
+msgid "The player you played together with left the game."
+msgstr "Der Spieler, dessen Volk du mitgespielt hast, hat das Spiel verlassen."
+
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:341
 msgid "The playlist was saved!"
 msgstr "Die Playlist wurde gespeichert!"
@@ -4649,6 +4974,10 @@ msgstr "Der Weg ist zu kurz - verlängere ihn zuerst."
 #: libs/s25main/desktops/dskLobby.cpp:226
 msgid "The selected game was not found anymore."
 msgstr "Das ausgewählte Spiel konnte nicht mehr gefunden werden."
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:293
+msgid "The selected preset could not be loaded. The file may be corrupted or have an invalid format."
+msgstr "Die ausgewählte Voreinstellung konnte nicht geladen werden. Die Datei ist möglicherweise beschädigt oder hat ein ungültiges Format."
 
 #: libs/s25main/desktops/dskOptions.cpp:672
 msgid "The selected video driver does not support GUI scaling! Setting won't be used."
@@ -4692,6 +5021,10 @@ msgstr "Das Lagergebäude erspart lange Transportwege und eignet sich ebenso zur
 msgid "The strongest guard post: nine soldiers, and it claims the most land of all."
 msgstr "Der stärkste Wachposten: neun Soldaten, und er beansprucht das meiste Land."
 
+#: libs/s25main/gameData/BuildingConsts.cpp:133
+msgid "The tanner works animal skins to form leather. Before tanning; the skins are cured, scraped and stretched on wooden frames made from boards. Leather is used to produce armor at the leatherworks."
+msgstr "Der Gerber verarbeitet Tierhäute zu Leder. Vor dem Gerben werden die Häute haltbar gemacht, abgeschabt und auf Holzrahmen aus Brettern gespannt. Aus dem Leder werden in der Rüstungswerkstatt Rüstungen hergestellt."
+
 #: libs/s25main/gameData/BuildingConsts.cpp:122
 msgid "The temple servant sacrifices wine and food granting a blessing of gold, iron ore, coal or granite. This allows your iron founder and minter to continue working when mines become exhausted. The desired mineral can be selected by toggling the output button."
 msgstr "Der Tempeldiener opfert Wein und Nahrung für den Segen von Gold, Eisenerz, Kohle oder Granit. Dies erlaubt den Gießern und Prägern auch ohne Minen weiterzuarbeiten. Das gewünschte Mineral kann über den Ausgabe-Button ausgewählt werden."
@@ -4699,6 +5032,10 @@ msgstr "Der Tempeldiener opfert Wein und Nahrung für den Segen von Gold, Eisene
 #: libs/s25main/ingameWindows/iwTransport.cpp:108
 msgid "The transport priority of a type of merchandise can be determined here.The higher the priority of an item in the list, the quicker it is transported by helpers."
 msgstr "Die Transportpriorität eines Warentyps kann hier bestimmt werden. Je höher die Ware in der Rangliste steht, desto schneller wird sie von den Gehilfen weitertransportiert."
+
+#: libs/s25main/desktops/dskIntro.cpp:43
+msgid "The video %1% of the original game was not found (folder VIDEO)."
+msgstr "Das Video %1% des Originalspiels wurde nicht gefunden (Ordner VIDEO)."
 
 #: libs/s25main/gameData/BuildingConsts.cpp:98
 msgid "The watchtower with its large amount of space is best suited for stationing a large number of your troops. Using the gold coin button you can stop the delivery of gold coins to the soldiers stationed here. However, without gold coins the soldiers here can not train and improve their skills."
@@ -5197,9 +5534,19 @@ msgstr "Was du mit der Straße unter dem Zeiger tun kannst."
 msgid "What you see on the map"
 msgstr "Was auf der Karte zu sehen ist"
 
+#: libs/s25main/desktops/dskMainMenu.cpp:50
+#: libs/s25main/ingameWindows/iwChangelog.cpp:12
+msgid "What's new"
+msgstr "Was ist neu?"
+
 #: libs/s25main/desktops/dskOptions.cpp:298
 msgid "Window pinning"
 msgstr ""
+
+#: libs/s25main/desktops/dskOptions.cpp:351
+#: libs/s25main/ingameWindows/iwSettings.cpp:72
+msgid "Window size:"
+msgstr "Fenstergröße:"
 
 #: libs/s25main/desktops/dskOptions.cpp:336
 #: libs/s25main/ingameWindows/iwSettings.cpp:69
@@ -5359,6 +5706,10 @@ msgstr "Du hast diese Stelle nie gesehen. Schick von einer deiner Flaggen einen 
 msgid "You have never seen this place. Send out a scout from one of your flags."
 msgstr "Du hast diese Stelle nie gesehen. Schick von einer deiner Flaggen einen Späher aus."
 
+#: libs/s25main/desktops/dskCampaignVictory.cpp:17
+msgid "You have successfully completed chapter"
+msgstr "Du hast das Kapitel erfolgreich abgeschlossen"
+
 #: libs/s25main/desktops/dskOptions.cpp:684
 #: libs/s25main/ingameWindows/iwSettings.cpp:113
 msgid "You need to restart your game to change the screen resolution!"
@@ -5367,6 +5718,10 @@ msgstr "Um die Auflösung zu ändern muss das Spiel neu gestartet werden!"
 #: libs/s25main/desktops/dskOptions.cpp:692
 msgid "You need to restart your game to change the video or audio driver!"
 msgstr "Um die Video- oder Audio-Treiber zu ändern muss das Spiel neu gestartet werden!"
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1807
+msgid "You play together with %1%"
+msgstr "Du spielst gemeinsam mit %1%"
 
 #: libs/s25main/ai/aijh/AIPlayerJH.cpp:395
 msgid "You win"
@@ -5387,9 +5742,17 @@ msgstr "Deine Grenze wächst nur dann nach außen, wenn du in ihre Nähe einen W
 msgid "Your building"
 msgstr "Dein Gebäude"
 
+#: libs/s25main/network/ClientError.cpp:26
+msgid "Your computer fell too far behind the others, so you were removed from the game."
+msgstr "Dein Computer ist zu weit hinter die anderen zurückgefallen. Deshalb wurdest du aus dem Spiel entfernt."
+
 #: libs/s25main/input/PlayerBrief.cpp:167
 msgid "Your flag"
 msgstr "Deine Flagge"
+
+#: libs/s25main/network/ClientError.cpp:24
+msgid "Your game went out of sync with the others (async), so you were removed from it."
+msgstr "Dein Spiel ist nicht mehr mit den anderen synchron (async). Deshalb wurdest du aus dem Spiel entfernt."
 
 #: libs/s25main/ingameWindows/iwPadSystemMenu.cpp
 msgid "Your messages: why a mine stopped, where ore was found, who is attacking - and the diary of the campaign."
@@ -5515,6 +5878,10 @@ msgstr "Ödland"
 #: data/RTTR/gamedata/world/winterworld.lua:8
 msgid "winterworld"
 msgstr "Winterwelt"
+
+#: libs/s25main/ingameWindows/iwWares.cpp:225
+msgid "with armor)"
+msgstr "mit Rüstung)"
 
 #~ msgid "Coming soon"
 #~ msgstr "Kommt Bald"

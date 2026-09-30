@@ -54,7 +54,7 @@ std::vector<AI::Info> ParseAIOptions(const std::vector<std::string>& aiOptions)
 }
 
 bool QuickStartGame(const boost::filesystem::path& mapOrReplayPath, const std::vector<std::string>& ais,
-                    const unsigned numLocalPlayers)
+                    const unsigned numLocalPlayers, const bool sharePlayer)
 {
     if(!exists(mapOrReplayPath))
     {
@@ -95,7 +95,9 @@ bool QuickStartGame(const boost::filesystem::path& mapOrReplayPath, const std::v
            && GAMECLIENT.HostGame(csi, {mapOrReplayPath, MapType::OldMap})))
     {
         GAMECLIENT.SetAIBattlePlayers(std::move(aiInfos));
-        if(numLocalPlayers > 1)
+        if(numLocalPlayers > 1 && sharePlayer)
+            GAMECLIENT.SetSharedLocalViews(numLocalPlayers - 1);
+        else if(numLocalPlayers > 1)
         {
             std::vector<uint8_t> additionalLocalPlayers;
             for(unsigned i = 1; i < numLocalPlayers; i++)
