@@ -636,3 +636,27 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Local Debug build dir `build/dbg` (Test_splitscreen only) reproduces Debug-only asserts; keep it.
 - Released v0.1.9 (per-player start goods incl. Minimal/Minimal+, controller Back/skip everywhere) from 2572261e2
   after every CI job was green.
+
+## 2026-09-30 — Sol companion: real member cannot claim an extra local slot
+- Branch `sol/coop-member-local-slot-policy`, based on origin/master 6c0ba04a6. M3b policy is to reject
+  additional distinct player slots on a network member; shared local views remain a separate M3c item.
+  The existing GameClient guard is unchanged. coop-net gains `--extra-local-slot`, installed in the
+  connection-finished callback before subsequent start messages (Connect clears pending requests), and reports whether loading/started callbacks
+  fired when LocalPlayerSetup is returned. Host mode rejects the test option as a setup error.
+- Two real localhost host/member CTest cases use the same topology: host slot 0, spare dummy-AI slot 1,
+  member of player 0. A normal member finishes GF 1000 in sync. Requesting the otherwise valid slot 1
+  exits specifically with LocalPlayerSetup before either loading or starting; the rejected member has
+  no game result, the host removes it and finishes GF 1000 with checksums compared through that frame.
+  Actual starting member roster and spare-slot start goods are asserted; unrelated failures cannot pass.
+- Both Debug cases pass (22.32 s). Negative control removes only the request from a scratch checker:
+  both processes then succeed (0;0), and the refusal checker fails at the intended LocalPlayerSetup
+  expectation. The checked-in harness/guard are unchanged by that countercheck. Existing real-member
+  regressions and branch CI are recorded in the PR. Own build/debug, GCC12/Werror, at most two jobs.
+- Read-only exact gpt-6.1-sol review found a possible lobby/start race in initial harness instrumentation;
+  fixed by setting the request in the connection-finished callback rather than after Run returns.
+  A per-port process lock also covers concurrent invocations from different build directories.
+- After the callback fix, both cases pass three times each (65.86 s); negative control again fails at
+  the expected refusal assertion (0;0 without the request). Existing MemberOrders, MemberAndSecondPlayer,
+  MemberFallsBehind and MemberDesyncDetected all pass (48.78 s). Review confirmed the callback ordering
+  fix; port lock wait now covers a complete prior invocation and its CTest timeout allows both runs.
+  Static validation, clang-format10 and diff checks pass. All branch CI jobs are required before handoff.

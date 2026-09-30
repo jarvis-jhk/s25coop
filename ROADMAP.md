@@ -110,7 +110,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   13 commits, ~40k lines of code plus the language catalogues moved into the tree):
   - ☑ a) merged as is (PR #2, 2026-09-30): all our tests and its Test_splitscreen pass locally and in CI,
     two local players seen in the real client under Xvfb (`--local-players 2`, a building placed from the second view).
-  - ☐ b) coop member + local players: forbid or define the combination (a member client with extra local slots).
+  - ☑ b) coop member + additional distinct local player slots: forbidden by the pure-local-only guard.
+    Real host/member Debug regressions prove refusal before loading/starting, removal of the member and continued
+    host play; an ordinary member in the same topology finishes in sync (Sol companion, 2026-09-30).
   - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
