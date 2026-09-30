@@ -550,3 +550,24 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   and diff checks pass. Opus owns review/integration; no primary checkout/build edits or master push/merge.
 - Final combined replay/controller/Options checks and the full Test_splitscreen ctest pass (56.05 s).
   Final gpt-6.1-sol fixture/lifecycle review found no actionable issues.
+
+
+## 2026-09-30 — Sol companion: initial and cleared table selection
+- Branch `sol/table-initial-selection`, based on origin/master fbe3a4ab9. ctrlTable now starts with
+  std::nullopt instead of the engaged unsigned -1 sentinel. Both keyboard/controller arrow paths
+  share MoveSelection: first Up or Down selects row zero in a nonempty unselected table, including
+  after DeleteAllItems/reload; empty tables remain unselected. Already selected movement is unchanged.
+- Six new driver-event/WindowManager keyboard+mouse regressions cover initial selection/activation,
+  Up/Down entry with both input devices, clear/refill, empty-to-one-row lifecycle with pad focus acquired
+  normally, mixed-input navigation and clamping over 40 rows, scroll visibility, and mouse selection
+  followed by keyboard/controller movement and A activation. No direct selection/focus/activation
+  injection. The custom desktop records the real table callbacks.
+- Four new cases fail on the old implementation at the initial-selection, first-Up, clear/refill and
+  empty-table assertions. Existing pure-control activation test's sentinel assertion was corrected;
+  obsolete sentinel comments removed from that file and existing campaign driver tests.
+- All six new cases pass. Full Test_splitscreen (58.73 s) and full Test_UI (1.55 s) pass together.
+  Core and driver tests: GCC12 Release/O3/Werror; UI-only generated compile blocks temporarily used O1
+  with Werror because unchanged testComboBox.cpp trips Boost 1.74/Turtle basic_cstring::rfind's
+  -Warray-bounds at O3. No source/CMake/third-party workaround committed; build.ninja restored afterward.
+  At most two jobs, own build/dev/userdata/temp paths. clang-format10 and diff checks pass. Exact
+  gpt-6.1-sol read-only patch/control/fixture review: no actionable findings. Opus owns integration.

@@ -127,7 +127,7 @@ static int Compare(const std::string& a, const std::string& b, ctrlTable::SortTy
 ctrlTable::ctrlTable(Window* parent, unsigned id, const DrawPoint& pos, const Extent& size, TextureColor tc,
                      const glFont* font, Columns columns)
     : Window(parent, id, pos, elMax(size, Extent(20, 30))), tc(tc), font(font), columns_(std::move(columns)),
-      selection_(-1), sortColumn_(-1), sortDir_(TableSortDir::Ascending)
+      selection_(std::nullopt), sortColumn_(-1), sortDir_(TableSortDir::Ascending)
 {
     // We use unsigned short when handling the column count
     if(columns_.size() > std::numeric_limits<unsigned short>::max())
@@ -485,12 +485,17 @@ void ctrlTable::ResetButtonWidths()
 
 void ctrlTable::MoveSelection(const int delta)
 {
-    if(delta < 0)
+    if(delta == 0 || rows_.empty())
+        return;
+    // An unselected table starts at its first row in either direction, including after a reload.
+    if(!HasValidSelection())
+        SetSelection(0u);
+    else if(delta < 0)
     {
-        if(selection_.value_or(0u) > 0u)
-            SetSelection(*selection_ - 1);
-    } else if(delta > 0)
-        SetSelection(selection_.value_or(0u) + 1u);
+        if(*selection_ > 0u)
+            SetSelection(*selection_ - 1u);
+    } else
+        SetSelection(*selection_ + 1u);
 }
 
 bool ctrlTable::Msg_KeyDown(const KeyEvent& ke)
@@ -503,11 +508,6 @@ bool ctrlTable::Msg_KeyDown(const KeyEvent& ke)
     }
 }
 
-/// ACHTUNG: selection_ wird im Konstruktor mit -1 belegt (siehe Initialisierungsliste). Das ist
-/// ein std::optional<unsigned>, also ist es DA und enthaelt 4294967295. GetSelection().has_value()
-/// ist damit von Anfang an true. Bestehender Fehler im Baum, hier bewusst NICHT geaendert (das
-/// wuerde das Verhalten fuer den Maus-und-Tastatur-Spieler verschieben); der Fokuspfad muss ihn
-/// deshalb selbst abfangen.
 bool ctrlTable::HasValidSelection() const
 {
     return selection_ && *selection_ < rows_.size();
