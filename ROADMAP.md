@@ -136,7 +136,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   and physical-input regressions cover all seven focusable controls, window/confirmation precedence,
   mouse/A/keyboard behavior and B bursts stopping at Multiplayer (Sol companion, 2026-09-30).
   Create game/map selection handles controller B through its original Back route, with four-context,
-  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
+  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Music playlist track
+  reordering now refreshes playback; cancelled additions keep playback intact. Controller regressions
+  cover song activation, removal, confirmed/cancelled input, repeat/random controls and saved files.
+  Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.

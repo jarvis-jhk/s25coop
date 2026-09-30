@@ -759,3 +759,26 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   Test_splitscreen passes (80.3 s) and all CoopNet_Member* incl. MemberLocalSlots_normal/extra pass.
   Local run needs `USER=root TMPDIR=/app/agent/data/siedler/tmp` (see above).
 - PR #12 (lobby Back) still waits for its CI before handoff.
+
+## 2026-09-30 — Sol companion: music playlist changes reach playback
+- Branch `sol/music-playlist-controller`, based on master 91676d5c8; separate from Create Game PR #15.
+  A successful track Up/Down now marks the playlist changed, so closing applies the new order to
+  active playback as well as saving the file. Merely opening/cancelling Add Track or Add Directory
+  no longer marks it changed; confirmed input still does so at the existing Msg_Input path.
+- Nine cases enter the real music window from Options using driver pad events. They cover isolated
+  Up/Down reorders, missing-selection/top/bottom no-ops, selecting a song and removing it, playlist
+  dropdown cancellation before window close, physical-text input cancellation/confirmation for
+  both track and directory additions, repeat/random controls and saved playlist contents.
+  Songs are symbolic built-in ids, exercising the real player queue/current-song state without
+  claiming audible playback. A queued dummy .ogg path is never reached or decoded.
+- Old production fails Up/Down active-playlist/current-song assertions and cancellation's no-start
+  assertion (three cases, six assertions); four initial counterchecks pass. Seven initial fixed
+  cases pass, then all nine final cases pass with 245 assertions. New test glob reconfigured and
+  the suite is present in the binary. Own GCC12 Debug/Werror build/debug, at most two compiler jobs.
+- Read-only exact gpt-6.1-sol review found test-state leakage on early assertions/exceptions. Cleanup
+  now runs in a test-body wrapper on success and exception, never in the fixture destructor; an
+  exception probe proves the production playlist is restored and covers that helper path. The
+  destructor only swaps the captured settings string. No second singleton is constructed.
+- Full Debug Test_splitscreen passes all 435 cases and 37,013 assertions. clang-format10, static
+  validation and diff checks pass. All current-head branch CI is required before tested handoff;
+  Opus owns integration.

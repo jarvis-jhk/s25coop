@@ -3,6 +3,11 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Moving tracks up or down in the music player now updates playback when you close the window.
+  Cancelling Add Track or Add Directory keeps playback as it was.
+
 ## 0.1.9
 
 - Choose the goods each player starts with: every row in the game lobby has a "Goods" button. "Default"
