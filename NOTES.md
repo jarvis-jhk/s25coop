@@ -667,3 +667,8 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   MenuPadLobbyReturnTests pass again (0.80 s), including singleton shutdown assertions. Formatting,
   static validation and diff checks pass. Prior full Debug suite passed 84.11 s; fresh branch CI,
   including coverage and Clang-Tidy, remains required before handoff.
+- Clang-Tidy follow-up: `expectLobby()` only observes the static desktop accessor, real client
+  and loopback peer; made it const to satisfy readability-make-member-function-const. Debug
+  Test_splitscreen rebuilt with two compiler jobs; all six MenuPadLobbyReturnTests pass with
+  1,630 assertions (0.75 s). Static validation and diff checks pass. New-head CI must all pass
+  before PR #12 is handed back as tested.

@@ -234,7 +234,7 @@ struct LobbyReturnFixture : rttr::test::MenuPadFixture
         BOOST_FAIL("Expected lobby button missing"); // LCOV_EXCL_LINE
     }
 
-    void expectLobby()
+    void expectLobby() const
     {
         BOOST_TEST_REQUIRE(desktopAs<dskLobby>() != nullptr);
         BOOST_TEST(client.IsLoggedIn());
