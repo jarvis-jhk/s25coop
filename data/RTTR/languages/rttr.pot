@@ -5655,3 +5655,397 @@ msgstr ""
 
 msgid "Hides every symbol and every text of this seat, so you can just look at your land. The camera and the zoom keep working. B brings everything back."
 msgstr ""
+
+#: libs/s25main/SavedFile.cpp:153
+msgid "Number of players (%1%) exceeds maximum allowed of %2%!"
+msgstr ""
+
+#: libs/s25main/addons/AddonArmorCapturedBld.h:17
+msgid "Armor on captured buildings"
+msgstr ""
+
+#: libs/s25main/addons/AddonArmorCapturedBld.h:18
+msgid "Change the armor setting for captured military buildings."
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterFarmFieldAvoidance.h:15
+msgid "Foresters avoid farm field spots"
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterFarmFieldAvoidance.h:16
+msgid ""
+"Prevents foresters from planting trees on spots that own farms could use for "
+"new fields."
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:23
+msgid "Adjust forester's range"
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:24
+msgid "Increase the radius in which the forester plants trees."
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+33%"
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+66%"
+msgstr ""
+
+#: libs/s25main/addons/AddonForesterReachRadius.h:25
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:32
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:25
+msgid "+150%"
+msgstr ""
+
+#: libs/s25main/addons/AddonLeather.h:17
+msgid "Enable leather economy"
+msgstr ""
+
+#: libs/s25main/addons/AddonLeather.h:18
+msgid "Allows to build the leather economy buildings."
+msgstr ""
+
+#: libs/s25main/addons/AddonNoArmorDefault.h:17
+msgid "Disable armor by default"
+msgstr ""
+
+#: libs/s25main/addons/AddonNoArmorDefault.h:18
+msgid "Receiving armor is disabled for military buildings by default."
+msgstr ""
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:24
+msgid "Adjust stonemason's range"
+msgstr ""
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:25
+msgid "Increase the radius in which the stonemason searches for stone."
+msgstr ""
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:28
+msgid "+25%"
+msgstr ""
+
+#: libs/s25main/addons/AddonStonemasonReachRadius.h:30
+msgid "+75%"
+msgstr ""
+
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:23
+msgid "Adjust woodcutter's range"
+msgstr ""
+
+#: libs/s25main/addons/AddonWoodcutterReachRadius.h:24
+msgid "Increase the radius in which the woodcutter searches for trees."
+msgstr ""
+
+#: libs/s25main/coop/CoopLobby.cpp:43
+msgid "%1% (with %2%)"
+msgstr ""
+
+#: libs/s25main/desktops/dskCampaignVictory.cpp:17
+msgid "You have successfully completed chapter"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameInterface.cpp:188
+msgid ""
+"Only %1% local views are supported, ignoring the remaining shared views\n"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:255
+msgid "Allow co-players"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:257
+msgid ""
+"Others may join a player instead of taking their own slot and play that "
+"tribe together"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:503
+msgid "Play one tribe together"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:562
+msgid "Splitscreen seats (gamepad), one tribe:"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1807
+msgid "You play together with %1%"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1820
+msgid "No co-players yet"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1820
+#: libs/s25main/desktops/dskGameLobby.cpp:1830
+msgid "Co-players are not allowed"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1825
+msgid "Play %1%'s tribe"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1828
+msgid "Nobody to play together with"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1846
+msgid "Send the chosen co-player away"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1849
+msgid "Join"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp:1850
+msgid ""
+"Give up your own slot and play the chosen player's tribe together with them"
+msgstr ""
+
+#: libs/s25main/desktops/dskIntro.cpp:43
+msgid "The video %1% of the original game was not found (folder VIDEO)."
+msgstr ""
+
+#: libs/s25main/desktops/dskMainMenu.cpp:50
+#: libs/s25main/ingameWindows/iwChangelog.cpp:12
+msgid "What's new"
+msgstr ""
+
+#: libs/s25main/desktops/dskOptions.cpp:342
+#: libs/s25main/ingameWindows/iwSettings.cpp:62
+msgid "Borderless window"
+msgstr ""
+
+#: libs/s25main/desktops/dskOptions.cpp:351
+#: libs/s25main/ingameWindows/iwSettings.cpp:72
+msgid "Window size:"
+msgstr ""
+
+#: libs/s25main/desktops/dskOptions.cpp:355
+#: libs/s25main/ingameWindows/iwSettings.cpp:77
+msgid "Lock window size:"
+msgstr ""
+
+#: libs/s25main/desktops/dskSelectMap.cpp:101
+msgid "Campaign together..."
+msgstr ""
+
+#: libs/s25main/desktops/dskSelectMap.cpp:102
+msgid ""
+"Play a campaign mission together: the others join your tribe as co-players"
+msgstr ""
+
+#: libs/s25main/gameData/BuildingConsts.cpp:96
+msgid ""
+"Skins are gathered from animal carcasses by the skinner. They are sent to "
+"the tannery for leather production. The skinner can also be supplied with "
+"pigs for extra skins."
+msgstr ""
+
+#: libs/s25main/gameData/BuildingConsts.cpp:133
+msgid ""
+"The tanner works animal skins to form leather. Before tanning; the skins are "
+"cured, scraped and stretched on wooden frames made from boards. Leather is "
+"used to produce armor at the leatherworks."
+msgstr ""
+
+#: libs/s25main/gameData/BuildingConsts.cpp:178
+msgid ""
+"The leatherworker crafts armor from finely tanned leather. The armor is then "
+"transported to military buildings to bolster your soldiers defense. An "
+"armored soldier can withstand an additional hit in battle and sometimes "
+"survives a catapult strike, but the armor is lost once struck."
+msgstr ""
+
+#: libs/s25main/gameData/GoodConsts.cpp:46
+msgid "Skins"
+msgstr ""
+
+#: libs/s25main/gameData/GoodConsts.cpp:47
+msgid "Leather"
+msgstr ""
+
+#: libs/s25main/gameData/GoodConsts.cpp:48
+msgid "Armor"
+msgstr ""
+
+#: libs/s25main/gameData/JobConsts.cpp:57
+msgid "Tanner"
+msgstr ""
+
+#: libs/s25main/gameData/JobConsts.cpp:58
+msgid "Leatherworker"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:80
+msgid "Addon Presets Unavailable"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:81
+msgid ""
+"The addon presets folder could not be created. Saving and loading addon "
+"presets is unavailable."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:89
+msgid "Preset Name"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:100
+msgid "Delete"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:141
+msgid "Preset Not Found"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:142
+msgid "Preset '%1%' was not found."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:179
+msgid "Delete Preset"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:179
+msgid "Are you sure you want to delete preset '%1%'?"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
+msgid "Delete Failed"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
+msgid "Failed to delete the selected preset."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:208
+#: libs/s25main/ingameWindows/iwAddons.cpp:50
+msgid "Save Addon Preset"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:208
+#: libs/s25main/ingameWindows/iwAddons.cpp:49
+msgid "Save"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:217
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:221
+msgid "Invalid Name"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:217
+msgid "Please enter a preset name."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:221
+msgid "Please enter a valid preset name."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:231
+msgid "Overwrite Preset"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:232
+msgid "A preset named '%1%' already exists. Do you want to overwrite it?"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:258
+msgid "Save Failed"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:258
+msgid "Failed to save the preset. Please check the filename and try again."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:279
+#: libs/s25main/ingameWindows/iwAddons.cpp:52
+msgid "Load Addon Preset"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:279
+#: libs/s25main/ingameWindows/iwAddons.cpp:51
+msgid "Load"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:292
+msgid "Load Failed"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwAddonPresets.cpp:293
+msgid ""
+"The selected preset could not be loaded. The file may be corrupted or have "
+"an invalid format."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68
+msgid "Play the host's tribe together"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:69
+msgid ""
+"Join as a co-player of the host instead of taking a slot of your own. The "
+"host must allow co-players."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwMilitaryBuilding.cpp:88
+msgid "Armor delivery"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwSave.cpp:130
+#: libs/s25main/ingameWindows/iwSave.cpp:134
+msgid "Invalid Filename"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwSave.cpp:130
+msgid "Please enter a filename."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwSave.cpp:134
+msgid "Please enter a valid filename."
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwTransport.cpp:71
+msgid "Leatherworking"
+msgstr ""
+
+#: libs/s25main/ingameWindows/iwWares.cpp:225
+msgid "with armor)"
+msgstr ""
+
+#: libs/s25main/network/ClientError.cpp:20
+msgid "Co-players are not allowed."
+msgstr ""
+
+#: libs/s25main/network/ClientError.cpp:21
+msgid "The host removed you from the game."
+msgstr ""
+
+#: libs/s25main/network/ClientError.cpp:22
+msgid "The player you played together with left the game."
+msgstr ""
+
+#: libs/s25main/network/ClientError.cpp:24
+msgid ""
+"Your game went out of sync with the others (async), so you were removed from "
+"it."
+msgstr ""
+
+#: libs/s25main/network/ClientError.cpp:26
+msgid ""
+"Your computer fell too far behind the others, so you were removed from the "
+"game."
+msgstr ""
+
+#: libs/s25main/network/GameClient.cpp:2286
+msgid "Disabled AI for current player"
+msgstr ""
+
+#: libs/s25main/network/GameClient.cpp:2290
+msgid "Enabled AI for current player"
+msgstr ""
