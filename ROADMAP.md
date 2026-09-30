@@ -50,7 +50,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☑ Replay-based regression: same seed twice → same final checksum (ctest `CoopHeadless_Deterministic`);
   `ai-battle --check-replay <rpl>` replays a recording without AIs, compares every recorded checksum and the final
   state, exit 3 on async (ctest `CoopHeadless_ReplayInSync`, incl. a wrong-seed run that must be caught). Since
-  2026-09-27. Not covered: replaying through the real GameClient (needs the video mock setup of the UI tests).
+  2026-09-27. The existing splitscreen network-roundtrip test also replays through the real GameClient/mock video.
+  `ClientReplayChecksumTests` now adds a clean re-encoded recording with identical final GF/checksum and a
+  corrupted-checksum control: one desync callback, paused playback and no normal completion. Disabling
+  the production checksum verifier fails that regression (Sol companion, 2026-09-30).
 
 ## M1 — The official campaign, done properly (single group)
 
