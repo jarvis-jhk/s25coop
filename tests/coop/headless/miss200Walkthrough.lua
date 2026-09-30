@@ -6,11 +6,24 @@
 -- mission's own script, with player 0 a dummy AI, so everything that happens comes from here, through the same
 -- command path as a network player. It works through the mission's goals the way a player would, and asserts
 -- that the mission's own triggers fire in order: building counts (onGameFrame), a conquered spot (onOccupied)
--- and a geologist's find (onResourceFound).
+-- and a geologist's find (onResourceFound). It then expands to the arc through real barracks and roads;
+-- the mission must finish through its own onOccupied callback, without calling MissionEvent from the test.
 
 local P = 0
 local missionOnResourceFound = onResourceFound
 local ironAt = nil -- first iron a geologist found
+local missionOnOccupied = onOccupied
+local arcOccupied = false
+
+function onOccupied(p, x, y, ...)
+    if p == P and x == 14 and y == 8 then
+        arcOccupied = true
+        rttr:Log("walkthrough: arc occupied at gf " .. rttr:GetGF())
+    end
+    if missionOnOccupied then
+        return missionOnOccupied(p, x, y, ...)
+    end
+end
 
 function onResourceFound(p, x, y, rIdx, q, ...)
     if p == P and rIdx == RES_IRON and ironAt == nil then
@@ -115,7 +128,28 @@ local steps = {
 
 local step = 1
 local goals = { [2] = "forester unlocked", [3] = "barracks unlocked", [4] = "(34,28) occupied", [5] = "iron found",
-                [6] = "iron industry built", [7] = "(39,19) occupied" }
+                [6] = "iron industry built", [7] = "(39,19) occupied", [16] = "arc explored", [99] = "arc occupied; mission won" }
+
+local expansion = nil
+
+local function expandToArc(gf)
+    if not fired(7) or arcOccupied then
+        return
+    end
+    local p = rttr:GetPlayer(P)
+    if expansion then
+        -- A completed barracks without a soldier cannot claim any land. Wait for both completion and new
+        -- territory before choosing the next site, or all sites would be placed on the same old frontier.
+        if count(BLD_BARRACKS) <= expansion.buildings or p:GetStatisticsValue(STAT_COUNTRY) <= expansion.country then
+            return
+        end
+        expansion = nil
+    end
+    assert(count(BLD_BARRACKS) < 8, "eight barracks did not reach the arc")
+    expansion = { buildings = count(BLD_BARRACKS), country = p:GetStatisticsValue(STAT_COUNTRY) }
+    rttr:Log("walkthrough: gf " .. gf .. " -> expand to the arc")
+    build(BLD_BARRACKS, 14, 8, 40)
+end
 
 function onTestFrame(gf)
     if hqX == nil then
@@ -130,6 +164,8 @@ function onTestFrame(gf)
         rttr:Log("walkthrough: gf " .. gf .. " -> " .. s[1])
         s[3]()
         step = step + 1
+    elseif not s then
+        expandToArc(gf)
     end
 end
 
@@ -140,10 +176,18 @@ function onTestEnd(gf)
         rttr:Log("walkthrough: building " .. tostring(b) .. ": " .. p:GetNumBuildings(b) .. " built, "
                  .. p:GetNumBuildingSites(b) .. " sites")
     end
-    for e = 1, 7 do
+    local lastIndex = 0
+    for _, e in ipairs({ 1, 2, 3, 4, 5, 6, 7, 16, 99 }) do
         assert(fired(e), "mission event " .. e .. " (" .. (goals[e] or "start") .. ") never fired in " .. gf
                    .. " frames; fired: " .. firedList())
+        local index = 1
+        while eHist[index] ~= e do
+            index = index + 1
+        end
+        assert(index > lastIndex, "mission event " .. e .. " fired out of order; fired: " .. firedList())
+        lastIndex = index
     end
     assert(ironAt ~= nil, "no iron reported")
-    assert(count(BLD_BARRACKS) == 2, "expected two barracks, got " .. count(BLD_BARRACKS))
+    assert(arcOccupied, "the arc was never occupied through the game world")
+    assert(count(BLD_BARRACKS) > 2, "no expansion beyond the tutorial barracks")
 end

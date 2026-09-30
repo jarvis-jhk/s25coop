@@ -445,3 +445,23 @@ feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Min
 Next: M3 c
 step 3 (seat colour per view in focus ring and brief stripe; road preview of shared views). Jan's Deck/Mint feedback
 on 0.1.5–0.1.7 still open.
+
+## 2026-09-30 — Sol companion: MISS200 walkthrough reaches real victory
+- Branch `sol/miss200-victory-walkthrough`, separate checkout/build, no primary-checkout or master changes.
+- `miss200Walkthrough.lua` now waits for tutorial event 7, then builds and connects successive barracks towards
+  the arc. Each expansion waits for a completed barracks AND territorial gain (a soldier entering); no resources,
+  mission flags or direct `MissionEvent` calls are injected. The real world occupies (14,8), the mission explores
+  it (16) and wins (99). Required events 1–7, 16 and 99 must appear in order; optional geologist events may interleave.
+- `checkWalkthrough.cmake` requires exit 0 and exactly `Campaign progress: roman=2` followed by `TEST PASSED`.
+  Its negative control disables only the mission's arc victory branch and requires exit 2 specifically for the
+  missing event 99. Local S2-data gate preserved; no original map data is added to the repository.
+- Built `ai-battle` in the companion's own `build/dev` (GCC 12 Release, Ninja, ccache, `-j 2`). Lua 5.2 syntax and
+  static validation passed. The new positive/negative test passed on both the existing CD map and the distinct
+  GOG 1.5.1 map. CD: arc occupied at GF 27554, seven barracks, normal mission resources, `roman=2`.
+  All seven relevant existing tests passed: five `CoopHeadless_*`, MISS200 smoke and campaign-progress tests.
+  Contract probes also reject an always-successful binary and a success result without campaign progress.
+- Runtime environment here needs `USER=root`; own `RTTR_USERDATA_DIR` and `TMPDIR` keep logs and temporary files
+  local to this checkout. Initial setup needed a full build; subsequent slices can reuse that local cache.
+- Read-only review on exactly Sol 6.1 found no actionable defects; its suggestion to wait for event 7 before
+  expanding was adopted. Opus owns review/integration of the PR. Next independent slices: campaign controller
+  Back routing and the controller exit from the victory screen; shared-view presentation stays with Opus.
