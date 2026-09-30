@@ -445,3 +445,20 @@ feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Min
 Next: M3 c
 step 3 (seat colour per view in focus ring and brief stripe; road preview of shared views). Jan's Deck/Mint feedback
 on 0.1.5–0.1.7 still open.
+
+
+## 2026-09-30 — Sol companion: campaign controller return routes
+- PR #4, branch `sol/campaign-controller-navigation`: chooser B now follows the existing Back action,
+  returning local campaigns to Singleplayer and network campaigns to Create game with their original context.
+- Chapter/campaign victory screens accept controller input: focused Continue for A, B/Start via ShowMenu.
+  Pickup and navigation leave the screen visible; mouse/keyboard exits and recorded progress are preserved.
+- Driver-event regressions exercise Direct-IP, LAN and lobby chooser entry/return and all three victory exits
+  for chapter and whole-campaign completion. No desktop-handler/focus injection or original S2 files needed.
+- Both new bug regressions fail on the old implementation; the mouse/keyboard countercheck passes there.
+  All seven campaign UI cases and the full Test_splitscreen ctest pass with the fixes (full suite: 55.16 s).
+  GCC12 Release/Werror, checkout-local build/dev and userdata/temp paths, Ninja/ccache, at most two jobs;
+  clang-format10 and diff checks pass. Read-only gpt-6.1-sol diff review: no actionable findings; sandbox
+  source reads were unavailable. No primary-checkout/build changes, master push or self-merge.
+- Documentation scopes were initially held by per-player-start-wares; acquired after its completion to
+  add these notes/status on the same PR. Opus owns review/integration. Next useful independent work:
+  controller Back from map selection and controller skip from the intro; the broad M3 navigation item stays open.

@@ -28,9 +28,9 @@ original Settlers II assets and a physical controller are not required.
 
 Branch: `sol/campaign-controller-navigation`. This is an M3 controller-navigation
 slice. It does not complete the wider main-menu/all-dialogs roadmap item. Primary
-integration and player changelog remain with Opus. `NOTES.md` and `ROADMAP.md` were
-claimed by `opus/per-player-start-wares` during this slice, so their session/status
-update is supplied here for integration rather than editing those claimed files.
+integration and player changelog remain with Opus. `NOTES.md` and `ROADMAP.md` were initially claimed by `opus/per-player-start-wares`.
+After that task completed, their scopes were acquired and the corresponding session
+notes/status added on this branch. The wider M3 controller-navigation item remains open.
 
 Validation on the companion checkout: the old implementation fails the network Back
 and controller-victory regressions, while the keyboard/mouse countercheck passes.

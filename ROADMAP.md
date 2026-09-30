@@ -107,7 +107,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
-- ☐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+- ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  Campaign chooser Back now retains local/network context; chapter/campaign victory screens support
+  A/B/Start, with driver-event regressions (Sol PR #4). Remaining dialogs and menu paths stay open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
