@@ -8,6 +8,10 @@
 #include "WindowManager.h"
 #include "desktops/dskMainMenu.h"
 
+namespace {
+constexpr unsigned ID_btContinue = 0;
+}
+
 dskCampaignVictory::dskCampaignVictory()
     : Desktop(LOADER.GetImageN(ResourceId{SETTINGS.campaigns.getCompletedCampaign() ? "setup895" : "setup896"}, 0))
 {
@@ -18,6 +22,21 @@ dskCampaignVictory::dskCampaignVictory()
                   + std::to_string(*SETTINGS.campaigns.getCompletedChapter() + 1) + ".",
                 COLOR_YELLOW, FontStyle::CENTER, LargeFont);
     SETTINGS.campaigns.resetCompletionStatus();
+    // A needs a focusable control; use the same exit route as mouse and keyboard input.
+    AddTextButton(ID_btContinue, DrawPoint(300, 575), Extent(200, 22), TextureColor::Green2, _("Continue"), NormalFont);
+}
+
+bool dskCampaignVictory::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button == PadButton::B || button == PadButton::Start)
+        return ShowMenu();
+    return false;
+}
+
+void dskCampaignVictory::Msg_ButtonClick(const unsigned ctrl_id)
+{
+    if(ctrl_id == ID_btContinue)
+        ShowMenu();
 }
 
 bool dskCampaignVictory::Msg_LeftDown(const MouseCoords&)

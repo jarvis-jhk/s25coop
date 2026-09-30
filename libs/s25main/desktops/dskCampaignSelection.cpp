@@ -102,7 +102,7 @@ bool dskCampaignSelection::Msg_PadCommand(unsigned, const PadButton button)
 {
     if(button != PadButton::B)
         return false;
-    WINDOWMANAGER.Switch(std::make_unique<dskSinglePlayer>());
+    Msg_ButtonClick(ID_btBack);
     return true;
 }
 

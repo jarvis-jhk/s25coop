@@ -484,4 +484,20 @@ on 0.1.5–0.1.7 still open.
   state and nation/team/colour locks are UI-only upstream too (matters only against a modified client).
 - ROADMAP: M6 (S3/S4 rules as add-ons, presets Classic/Comfort/Age of Gods/Dark Tribe, AI artwork) and M7 (AI HD
   graphics remake, original always selectable, free asset set) added at Jan's request.
-Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
+Next: M3 c step 3. Sol PR #4 (campaign controller routes) reviewed, merged: pad suite green after merge.
+
+## 2026-09-30 — Sol companion: campaign controller return routes
+- PR #4, branch `sol/campaign-controller-navigation`: chooser B now follows the existing Back action,
+  returning local campaigns to Singleplayer and network campaigns to Create game with their original context.
+- Chapter/campaign victory screens accept controller input: focused Continue for A, B/Start via ShowMenu.
+  Pickup and navigation leave the screen visible; mouse/keyboard exits and recorded progress are preserved.
+- Driver-event regressions exercise Direct-IP, LAN and lobby chooser entry/return and all three victory exits
+  for chapter and whole-campaign completion. No desktop-handler/focus injection or original S2 files needed.
+- Both new bug regressions fail on the old implementation; the mouse/keyboard countercheck passes there.
+  All seven campaign UI cases and the full Test_splitscreen ctest pass with the fixes (full suite: 55.16 s).
+  GCC12 Release/Werror, checkout-local build/dev and userdata/temp paths, Ninja/ccache, at most two jobs;
+  clang-format10 and diff checks pass. Read-only gpt-6.1-sol diff review: no actionable findings; sandbox
+  source reads were unavailable. No primary-checkout/build changes, master push or self-merge.
+- Documentation scopes were initially held by per-player-start-wares; acquired after its completion to
+  add these notes/status on the same PR. Opus owns review/integration. Next useful independent work:
+  controller Back from map selection and controller skip from the intro; the broad M3 navigation item stays open.

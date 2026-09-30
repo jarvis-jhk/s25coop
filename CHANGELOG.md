@@ -12,6 +12,8 @@ and the game will show the new sections after an update.
   and carpenter, a little iron, ore and coal, 2 generals and a donkey, and not a single helper.
   "Minimal+" adds 8 boards, 6 stones, a shovel, 8 iron and 5 soldiers, for a player who needs a head start.
   Both can also be picked for all players with the game's starting goods setting.
+- Controller: the campaign victory screen can now be left with A, B or Start, and B in the campaign list of
+  a network game goes back to where you came from instead of the single-player menu.
 
 ## 0.1.8
 
