@@ -218,8 +218,6 @@ struct LobbyReturnFixture : rttr::test::MenuPadFixture
     {
         for(unsigned i = 0; i < 25 && focused(0) != target; ++i)
             press(pad, PadButton::RightShoulder);
-        for(unsigned i = 0; i < 25 && focused(0) != target; ++i)
-            press(pad, PadButton::LeftShoulder);
         BOOST_TEST_REQUIRE(focused(0) == target);
     }
 

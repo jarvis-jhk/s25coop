@@ -660,3 +660,10 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   are independent checks. Optional seat comparisons use explicit parentheses for GCC9/Boost1.73.
 - PR remains a draft until every branch CI job passes. Opus owns integration; no primary checkout,
   build, master push or self-merge. Next useful independent slice: replay-browser controller flow.
+- CI follow-up (forwarded by Opus): gcc-10 coverage on 7b6774a reported one unexecuted reachable
+  helper fallback at line 222. Every exercised focus target is reached from its known entry point
+  with RightShoulder; removed the unused reverse retry instead of marking it LCOV-excluded. No
+  production behavior or test cases changed. Rebuilt Debug Test_splitscreen and all six affected
+  MenuPadLobbyReturnTests pass again (0.80 s), including singleton shutdown assertions. Formatting,
+  static validation and diff checks pass. Prior full Debug suite passed 84.11 s; fresh branch CI,
+  including coverage and Clang-Tidy, remains required before handoff.
