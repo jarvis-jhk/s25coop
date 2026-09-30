@@ -164,13 +164,13 @@ namespace {
     {
         if(!current)
             return START_WARES_ORDER.front();
-        const auto it = std::find(START_WARES_ORDER.begin(), START_WARES_ORDER.end(), *current);
-        if(it == START_WARES_ORDER.end())
-            return std::nullopt;
-        const auto next = std::next(it);
-        if(next == START_WARES_ORDER.end())
-            return std::nullopt;
-        return *next;
+        // By index: std::array iterators are pointers in libstdc++ but not in MSVC's library
+        for(unsigned i = 0; i + 1u < START_WARES_ORDER.size(); ++i)
+        {
+            if(START_WARES_ORDER[i] == *current)
+                return START_WARES_ORDER[i + 1u];
+        }
+        return std::nullopt;
     }
 
     /// The names in the game's combo box, in enum order

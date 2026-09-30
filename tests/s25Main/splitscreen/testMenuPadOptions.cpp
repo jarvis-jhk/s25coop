@@ -21,6 +21,7 @@
 
 #include "Loader.h"
 #include "MenuPadFixture.h"
+#include "RttrConfig.h"
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
@@ -32,6 +33,7 @@
 #include "desktops/dskOptions.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
+#include "files.h"
 #include "helpers/containerUtils.h"
 #include "helpers/optional_io.h"
 #include "ingameWindows/iwMsgbox.h"
@@ -39,9 +41,12 @@
 #include "input/PadRouter.h"
 #include "rttr/test/ConfigOverride.hpp"
 #include "rttr/test/TmpFolder.hpp"
+#include <boost/nowide/fstream.hpp>
 #include <boost/test/unit_test.hpp>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace {
@@ -211,9 +216,10 @@ BOOST_FIXTURE_TEST_CASE(BUsesTheExistingSaveActionFromAnyFocusedControl, Options
     press(pad, PadButton::B);
     BOOST_TEST_REQUIRE(desktopAs<dskMainMenu>() != nullptr);
     BOOST_TEST(SETTINGS.lobby.name == "CouchPlayer");
-    Settings persisted;
-    persisted.Load();
-    BOOST_TEST(persisted.lobby.name == "CouchPlayer");
+    // Read the saved file itself: a second Settings object would end the SETTINGS singleton when it is destroyed
+    boost::nowide::ifstream persisted(RTTRCONFIG.ExpandPath(s25::resources::config));
+    const std::string savedIni((std::istreambuf_iterator<char>(persisted)), std::istreambuf_iterator<char>());
+    BOOST_TEST(savedIni.find("CouchPlayer") != std::string::npos);
     frame();
     BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
     BOOST_TEST(video.padEvents_.empty());
