@@ -164,10 +164,13 @@ namespace {
     {
         if(!current)
             return START_WARES_ORDER.front();
-        auto it = std::find(START_WARES_ORDER.begin(), START_WARES_ORDER.end(), *current);
-        if(it == START_WARES_ORDER.end() || ++it == START_WARES_ORDER.end())
+        const auto it = std::find(START_WARES_ORDER.begin(), START_WARES_ORDER.end(), *current);
+        if(it == START_WARES_ORDER.end())
             return std::nullopt;
-        return *it;
+        const auto next = std::next(it);
+        if(next == START_WARES_ORDER.end())
+            return std::nullopt;
+        return *next;
     }
 
     /// The names in the game's combo box, in enum order

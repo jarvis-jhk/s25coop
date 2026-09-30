@@ -550,3 +550,20 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   and diff checks pass. Opus owns review/integration; no primary checkout/build edits or master push/merge.
 - Final combined replay/controller/Options checks and the full Test_splitscreen ctest pass (56.05 s).
   Final gpt-6.1-sol fixture/lifecycle review found no actionable issues.
+
+## 2026-09-30 — Sol companion: controller Back from Options
+- Branch `sol/options-controller-back`, based on origin/master af5da6dfe. B calls the existing Back
+  action, so settings persistence, local/proxy port validation and video/audio driver warnings remain
+  on one code path. Start remains inert; shared input routing is unchanged.
+- Five new mock-video-driver regressions exercise B from another focused control with a keyboard-edited
+  player name saved and reloaded from temporary userdata, open portrait dropdown cancellation without
+  committing its tentative selection, and the Music player overlay closing before Options can leave.
+  Invalid local AND proxy ports retain their custom confirmation dialog; B cannot dismiss it. After A
+  acknowledges the error, physical-keyboard correction followed by B saves and leaves successfully.
+- With the new tests but the old implementation, four cases fail precisely at Options return or port
+  validation; existing three cases and Start countercheck pass. All eight MenuPadOptionsTests cases
+  pass with the fix. No direct desktop-handler, focus-state or controller activation injection.
+- GCC12 Release/Werror, own build/dev and temporary userdata, Ninja/ccache and at most two jobs.
+  clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only review of diff plus input/Back context:
+  no findings. Opus owns review/integration; no master push, self-merge or primary checkout changes.
+- Full Test_splitscreen ctest passes (all 8 Options cases included; 56.93 s).
