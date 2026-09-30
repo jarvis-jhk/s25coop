@@ -423,5 +423,23 @@ feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Min
   seats on a campaign's AI slots) → M3 b/c.
 - M3 c design written: doc/coop/SharedLocalViews.md (several local views on ONE player; only a few explicit guards
   block it — commands, windows and pads are already keyed right).
-Next: M3 c step 1 is on branch feature/shared-views (GameClient shared views, `--share-player`, test); step 2 lobby
-seats "together" in progress there. Jan's Deck/Mint feedback on 0.1.5/0.1.6 still open.
+- Released v0.1.7 (splitscreen) — package checked: binary starts, rttr-de.mo and CHANGELOG inside.
+- Branch feature/shared-views (CI running at session end; merge to master once green — nothing else pending there):
+  1. `GameClient::SetSharedLocalViews(n)`: n extra views on the MAIN player (no slot, no registration; commands go by
+     player id anyway). CreateViews appends them without the duplicate check. CLI `--local-players 2 --share-player`.
+     Test SplitscreenGameTests/TwoSharedViewsControlOnePlayer; by hand under Xvfb a site placed in the right view
+     showed in both views.
+  2. Lobby seat panel checkbox "Play one tribe together" (at 400,340, id at the enum end): seats become shared views,
+     no slot touched; toggling stands everybody up first. Campaign (`GameClient::SetHostingCampaign`, set in
+     dskCampaignMissionSelection::StartServer, cleared by Stop) and one-player maps: always together, box read-only.
+     Tests MenuPadSeatTests/ATogetherSeatSharesTheHostsTribe, CampaignSeatsAreAlwaysTogether. Codex: 2 points, both
+     rejected (router slot on stand-up is the existing behaviour; the lobby cannot change the map).
+  3. Translations: rttr.pot lacked all our texts, so msgmerge turned new German entries into obsolete ones. Recipe for
+     new texts: `xgettext --from-code=UTF-8 -k_ -kgettext_noop -k__ -C --no-wrap -f <list of libs/extras sources>`,
+     `msgcomm --unique` against rttr.pot, append the new entries to rttr.pot verbatim (msgcat rewraps everything),
+     build (msgmerge updates all 28 .po), German via `msgmerge -C <translated compendium>` with the build's flags.
+     88 texts added, all German (Codex).
+- The panel is only visible with a pad plugged in; Xvfb has no pad, so step 2 is covered by the tests only.
+Next: merge feature/shared-views (+ CHANGELOG 0.1.8 "play one tribe together on one screen", release); then M3 c
+step 3 (seat colour per view in focus ring and brief stripe; road preview of shared views). Jan's Deck/Mint feedback
+on 0.1.5–0.1.7 still open.
