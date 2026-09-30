@@ -6,6 +6,7 @@
 #include "LocalGameFixture.h"
 #include "Replay.h"
 #include "ai/AIPlayer.h"
+#include "buildings/noBaseBuilding.h"
 #include "desktops/PlayerView.h"
 #include "desktops/dskGameInterface.h"
 #include "drivers/VideoDriverWrapper.h"
@@ -25,6 +26,7 @@
 #include "rttr/test/LogAccessor.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -644,6 +646,70 @@ BOOST_AUTO_TEST_CASE(ValidateAdditionalLocalPlayersRejectsLockedSavegameSlots)
     mapLobby.getPlayer(1).ps = PlayerState::AI;
     mapLobby.getPlayer(2).ps = PlayerState::Locked;
     BOOST_TEST(GameClient::ValidateAdditionalLocalPlayers(mapLobby, 0, {2}, false) == std::string());
+}
+
+
+/// s25coop, couch coop (doc/coop/SharedLocalViews.md): with shared views, two local views control
+/// the SAME player. Both views are real views on player 0 with their own viewer, no slot is taken
+/// over, and an order given from either view lands in player 0's world after the full network
+/// roundtrip.
+BOOST_FIXTURE_TEST_CASE(TwoSharedViewsControlOnePlayer, LocalGameFixture)
+{
+    hostAndEnterLobby();
+    BOOST_TEST_REQUIRE(GAMECLIENT.GetGameLobby()->getNumPlayers() >= 3u);
+    GAMECLIENT.SetSharedLocalViews(1);
+    lobby().SetPlayerState(1, PlayerState::AI, AI::Info(AI::Type::Dummy));
+    lobby().SetPlayerState(2, PlayerState::AI, AI::Info(AI::Type::Dummy));
+    pumpUntil(
+      [] {
+          const auto lobby = GAMECLIENT.GetGameLobby();
+          return lobby->getPlayer(1).ps == PlayerState::AI && lobby->getPlayer(2).ps == PlayerState::AI;
+      },
+      "lobby to apply the player configuration");
+    startGame();
+
+    // No slot was taken: player 1 is still an AI, and only player 0 is local
+    BOOST_TEST(GAMECLIENT.IsLocalHumanPlayer(0));
+    BOOST_TEST(!GAMECLIENT.IsLocalHumanPlayer(1));
+    BOOST_TEST(GAMECLIENT.GetAdditionalLocalPlayers().empty());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+
+    auto desktop = std::make_unique<dskGameInterface>(ci().game, GAMECLIENT.GetNWFInfo(), GAMECLIENT.GetPlayerId(),
+                                                      /*initOGL*/ false);
+    BOOST_TEST_REQUIRE(desktop->GetNumViews() == 2u);
+    BOOST_TEST(desktop->GetPlayerView(0).GetPlayerId() == 0u);
+    BOOST_TEST(desktop->GetPlayerView(1).GetPlayerId() == 0u);
+    BOOST_TEST((&desktop->GetPlayerView(0).GetViewer() != &desktop->GetPlayerView(1).GetViewer()));
+
+    // Two building sites near player 0's HQ, one ordered from each view
+    const MapPoint hq = world().GetPlayer(0).GetHQPos();
+    std::vector<MapPoint> spots;
+    for(const MapPoint pt : world().GetPointsInRadius(hq, 6))
+    {
+        if(spots.size() < 2u && world().GetBQ(pt, 0) >= BuildingQuality::Hut
+           && std::none_of(spots.begin(), spots.end(),
+                           [&](const MapPoint other) { return world().CalcDistance(pt, other) < 3; }))
+            spots.push_back(pt);
+    }
+    BOOST_TEST_REQUIRE(spots.size() == 2u);
+    const unsigned startGF = GAMECLIENT.GetGFNumber();
+    for(unsigned viewIdx = 0; viewIdx < 2u; ++viewIdx)
+    {
+        const dskGameInterface::ViewScope scope(viewIdx);
+        BOOST_TEST(GAMECLIENT.SetBuildingSite(spots[viewIdx], BuildingType::Woodcutter));
+    }
+    pumpUntilGF(startGF + 40);
+
+    for(const MapPoint pt : spots)
+    {
+        const auto* site = world().GetSpecObj<noBaseBuilding>(pt);
+        BOOST_TEST_REQUIRE(site != static_cast<const noBaseBuilding*>(nullptr));
+        BOOST_TEST(site->GetPlayer() == 0u);
+    }
+    BOOST_TEST(ci().numErrors == 0u);
+    BOOST_TEST(ci().numAsync == 0u);
+    desktop.reset();
+    world().SetGameInterface(nullptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

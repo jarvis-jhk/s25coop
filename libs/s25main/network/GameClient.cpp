@@ -262,6 +262,7 @@ void GameClient::Stop()
 
     aiBattlePlayers_.clear();
     additionalLocalPlayers_.clear();
+    sharedLocalViews_ = 0;
 }
 
 std::shared_ptr<GameLobby> GameClient::GetGameLobby()
@@ -442,6 +443,7 @@ void GameClient::ExitGame()
     hasExplicitActingPlayer_ = false;
     windowOwnerPlayerId_.reset();
     additionalLocalPlayers_.clear();
+    sharedLocalViews_ = 0;
 }
 
 unsigned GameClient::GetGFNumber() const
@@ -2079,9 +2081,10 @@ bool GameClient::SetupLocalPlayers()
     // beobachtete Slot ist im Replay aber oft eine KI.
     if(IsReplayModeOn())
     {
-        if(!additionalLocalPlayers_.empty())
+        if(!additionalLocalPlayers_.empty() || sharedLocalViews_ > 0)
             LOG.write("Ignoring additional local players: replay mode\n");
         additionalLocalPlayers_.clear();
+        sharedLocalViews_ = 0;
         return true;
     }
 
@@ -2123,8 +2126,8 @@ bool GameClient::SetupLocalPlayers()
 
     // F4: Ergebnis der Registrierung melden und den Getter darauf nachfuehren (F2).
     RefreshAdditionalLocalPlayers();
-    LOG.write("Local players: main slot %1%, %2% additional local slot(s)\n") % unsigned(GetPlayerId())
-      % additionalLocalPlayers_.size();
+    LOG.write("Local players: main slot %1%, %2% additional local slot(s), %3% shared view(s)\n")
+      % unsigned(GetPlayerId()) % additionalLocalPlayers_.size() % sharedLocalViews_;
     return allRegistered;
 }
 

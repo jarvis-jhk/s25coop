@@ -484,7 +484,8 @@ int RunProgram(po::variables_map& options)
 
         if(options.count("map"))
         {
-            if(!QuickStartGame(options["map"].as<std::string>(), aiPlayers, numLocalPlayers))
+            if(!QuickStartGame(options["map"].as<std::string>(), aiPlayers, numLocalPlayers,
+                               options.count("share-player") > 0))
                 return 1;
         }
 
@@ -536,6 +537,7 @@ int main(int argc, char** argv)
         ("map,m", po::value<std::string>(),"Map to load")
         ("ai", po::value<std::vector<std::string>>(),"AI player(s) to add")
         ("local-players", po::value<unsigned>()->default_value(1),"Number of local human players (splitscreen, debug)")
+        ("share-player", "With --local-players: all local players control the same player (couch coop)")
         ("version", "Show version information and exit")
         ("convert-sounds", "Convert sounds and exit")
         ;
