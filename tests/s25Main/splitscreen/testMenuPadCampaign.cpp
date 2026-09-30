@@ -41,8 +41,10 @@
 #include "controls/ctrlTable.h"
 #include "desktops/dskCampaignMissionSelection.h"
 #include "desktops/dskCampaignSelection.h"
+#include "desktops/dskCampaignVictory.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskMainMenu.h"
+#include "desktops/dskSelectMap.h"
 #include "desktops/dskSinglePlayer.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
@@ -106,6 +108,7 @@ struct EmptyDesktop : Desktop
 struct CampaignPadFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
 {
     bfs::path campaignDir;
+    CampaignSettings oldCampaigns = SETTINGS.campaigns;
 
     CampaignPadFixture()
     {
@@ -143,6 +146,8 @@ struct CampaignPadFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFix
                     << "    maps = { \"PadMissionOne.SWD\", \"PadMissionTwo.SWD\" }\n"
                     << "}\n";
     }
+
+    ~CampaignPadFixture() override { SETTINGS.campaigns = oldCampaigns; }
 
     /// Ein Frame in derselben Reihenfolge wie GameManager::Run: erst Client und Server, dann
     /// zeichnen.
@@ -463,6 +468,86 @@ BOOST_FIXTURE_TEST_CASE(ArrowKeysAndMouseKeepWorkingOnTheCampaignTable, Campaign
     mouseClick(table->GetDrawPos() + Position(20, 40));
     frame();
     BOOST_TEST((table->GetSelection() != selBeforeClick || table->GetNumRows() == 1u));
+}
+
+// Exercise the real controller route from Create game, including the three network contexts.
+BOOST_FIXTURE_TEST_CASE(NetworkCampaignBackReturnsToCreateGame, CampaignPadFixture)
+{
+    constexpr PadDeviceId pad = 45;
+    for(const auto type : {ServerType::Direct, ServerType::LAN, ServerType::Lobby})
+    {
+        padInput().Reset();
+        WINDOWMANAGER.Switch(std::make_unique<dskSelectMap>(CreateServerInfo(type, 12345, "PadNetworkCampaign")));
+        frame();
+        pickUp(pad);
+        for(unsigned i = 0; i < 20 && focusedId(0) != 20u; ++i)
+            press(pad, NextCtrl);
+        BOOST_TEST_REQUIRE(focusedId(0) == 20u); // Campaign together...
+        press(pad, Activate);
+        BOOST_TEST_REQUIRE(desktopAs<dskCampaignSelection>() != nullptr);
+        auto* table = campaignTable();
+        BOOST_TEST_REQUIRE(frameUntil([table] { return table->GetNumRows() > 0; }));
+        dismissMessageBoxes(pad);
+
+        press(pad, Back);
+        BOOST_TEST_REQUIRE(desktopAs<dskSelectMap>() != nullptr);
+        BOOST_TEST(video.padEvents_.empty());
+
+        // The mouse Back button has the same destination, and the network campaign entry remains available.
+        mouseClick(Position(650, 455));
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<dskCampaignSelection>() != nullptr);
+        table = campaignTable();
+        BOOST_TEST_REQUIRE(frameUntil([table] { return table->GetNumRows() > 0; }));
+        dismissMessageBoxes(pad);
+        mouseClick(Position(450, 570));
+        frame();
+        BOOST_TEST(desktopAs<dskSelectMap>() != nullptr);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(ControllerCanLeaveBothVictoryScreens, CampaignPadFixture)
+{
+    constexpr PadDeviceId pad = 46;
+    for(const bool campaignCompleted : {false, true})
+    {
+        for(const auto exitButton : {Activate, Back, PadButton::Start})
+        {
+            SETTINGS.campaigns.setChapterCompleted("pad-victory", 0);
+            if(campaignCompleted)
+                SETTINGS.campaigns.setCampaignCompleted("pad-victory");
+            const auto savedProgress = SETTINGS.campaigns.createSaveData();
+            padInput().Reset();
+            WINDOWMANAGER.Switch(std::make_unique<dskCampaignVictory>());
+            frame();
+            pickUp(pad);
+            BOOST_TEST_REQUIRE(desktopAs<dskCampaignVictory>() != nullptr);
+            // Merely picking up the controller must not dismiss the victory screen.
+            BOOST_TEST(!SETTINGS.campaigns.shouldShowVictoryScreen());
+            press(pad, PadButton::DpadLeft);
+            BOOST_TEST_REQUIRE(desktopAs<dskCampaignVictory>() != nullptr);
+            press(pad, exitButton);
+            BOOST_TEST_REQUIRE(desktopAs<dskMainMenu>() != nullptr);
+            BOOST_TEST(video.padEvents_.empty());
+            BOOST_TEST((SETTINGS.campaigns.createSaveData() == savedProgress));
+        }
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(MouseAndKeyboardCanStillLeaveVictoryScreen, CampaignPadFixture)
+{
+    for(const bool useMouse : {false, true})
+    {
+        SETTINGS.campaigns.setChapterCompleted("pad-victory", 0);
+        WINDOWMANAGER.Switch(std::make_unique<dskCampaignVictory>());
+        frame();
+        if(useMouse)
+            mouseClick(Position(20, 20));
+        else
+            pressKey(KeyType::Escape);
+        frame();
+        BOOST_TEST(desktopAs<dskMainMenu>() != nullptr);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
