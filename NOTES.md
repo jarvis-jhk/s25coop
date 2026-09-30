@@ -759,3 +759,27 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   Test_splitscreen passes (80.3 s) and all CoopNet_Member* incl. MemberLocalSlots_normal/extra pass.
   Local run needs `USER=root TMPDIR=/app/agent/data/siedler/tmp` (see above).
 - PR #12 (lobby Back) still waits for its CI before handoff.
+
+## 2026-09-30 — Sol companion: cancel Create Game from the controller
+- Branch `sol/create-game-controller-cancel`, based on master 91676d5c8 after PR #12 integration.
+  Create Game uses the existing NoRightClick cancellation policy: B, Escape, Alt+W and the title
+  close button discard the form through the same Close method as visible Back. Right-click stays
+  inert; shared input routing and required custom confirmations are unchanged.
+- Seven driver-event/physical-input regressions cover both Direct-IP and LAN, all four pad focus
+  targets, keyboard focus in each of three text fields, invalid name/port, valid Start into map
+  selection, mouse/A Back, title close, Escape/Alt+W, regular/custom modal overlays, inert Start
+  and navigation, right-click, and B bursts stopping at the original network desktop.
+  The original parent must survive without map-selection transition and the real client remains
+  Stopped; tests never construct another singleton or call UI handlers/focus/activation directly.
+- Updated the existing network and real-loopback lobby tests' explicit old Custom-close expectations
+  in the same slice. The online lobby remains authenticated after form cancellation and its proxy
+  warning still needs confirmation. Text fields intentionally cannot take pad focus; their keyboard
+  input is tested through physical mouse focus and key events. New CMake source glob reconfigured.
+- All 21 affected cases pass (2,278 assertions). Full GCC12 Debug/Werror Test_splitscreen passes
+  all 433 cases. At most two compiler jobs, own build/debug, USER=root and same-mount TMPDIR.
+  Original production dialog makes six new and three existing cases fail specifically at missing
+  cancellation (exit 201, 63 assertions); valid Start still passes. Final source restored and rebuilt.
+- clang-format10, static validation, diff checks and agent TypeScript check pass. Exact gpt-6.1-sol
+  read-only review requested title-close coverage (added); final review finds no actionable bugs.
+  Stopped is corroborated by the same parent and absence of map-selection transition; Close only
+  queues removal and saves window state. All branch CI jobs are required before tested handoff.

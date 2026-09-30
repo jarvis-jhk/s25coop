@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(BClosesJoinDialogBeforeLeavingDirectIP, NetworkMenuRetur
     expectMultiplayer();
 }
 
-BOOST_FIXTURE_TEST_CASE(BRetainsCreateDialogUntilItsExplicitBackAction, NetworkMenuReturnFixture)
+BOOST_FIXTURE_TEST_CASE(BCancelsCreateDialogBeforeLeavingNetworkMenu, NetworkMenuReturnFixture)
 {
     for(const bool lan : {false, true})
     {
@@ -141,10 +141,6 @@ BOOST_FIXTURE_TEST_CASE(BRetainsCreateDialogUntilItsExplicitBackAction, NetworkM
         auto* create = dynamic_cast<iwDirectIPCreate*>(WINDOWMANAGER.GetTopMostWindow());
         BOOST_TEST_REQUIRE(create != nullptr);
         press(pad, PadButton::B);
-        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == create);
-        BOOST_TEST_REQUIRE(isMenu(lan));
-        focusUntil(create->GetCtrl<ctrlButton>(8)); // The window's explicit Back action.
-        press(pad, PadButton::A);
         BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         BOOST_TEST_REQUIRE(isMenu(lan));
         press(pad, PadButton::B);
@@ -231,14 +227,6 @@ BOOST_FIXTURE_TEST_CASE(KeyboardEscapeRetainsExistingMenuAndWindowBehavior, Netw
         auto* create = dynamic_cast<iwDirectIPCreate*>(WINDOWMANAGER.GetTopMostWindow());
         BOOST_TEST_REQUIRE(create != nullptr);
         WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Escape));
-        frame();
-        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == create);
-        BOOST_TEST_REQUIRE(isMenu(lan));
-        MouseCoords mc(create->GetDrawPos() + Position(180, 250));
-        mc.ldown = true;
-        WINDOWMANAGER.Msg_LeftDown(mc);
-        mc.ldown = false;
-        WINDOWMANAGER.Msg_LeftUp(mc);
         frame();
         BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         BOOST_TEST_REQUIRE(isMenu(lan));
