@@ -648,7 +648,6 @@ BOOST_AUTO_TEST_CASE(ValidateAdditionalLocalPlayersRejectsLockedSavegameSlots)
     BOOST_TEST(GameClient::ValidateAdditionalLocalPlayers(mapLobby, 0, {2}, false) == std::string());
 }
 
-
 /// s25coop, couch coop (doc/coop/SharedLocalViews.md): with shared views, two local views control
 /// the SAME player. Both views are real views on player 0 with their own viewer, no slot is taken
 /// over, and an order given from either view lands in player 0's world after the full network

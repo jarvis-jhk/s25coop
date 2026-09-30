@@ -1390,7 +1390,7 @@ msgstr "Ausgewählte löschen"
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:25
 msgid "Delivers skins for the tannery - the first of three buildings that make your soldiers tougher."
-msgstr "Liefert Skins für die Gerberei - das erste von drei Gebäuden, die deine Soldaten zäher machen."
+msgstr "Liefert Tierhäute für die Gerberei - das erste von drei Gebäuden, die deine Soldaten zäher machen."
 
 #: libs/s25main/addons/AddonDemolishBldWORes.h:14
 msgid "Demolish building when out of resources"
@@ -2906,7 +2906,7 @@ msgstr "Macht Gold ohne Berg - die zweite Goldquelle neben dem Goldbergwerk."
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:36
 msgid "Makes leather for the leatherworks - the second of the three buildings that make your soldiers tougher."
-msgstr "Gerbt Leather für die Lederverarbeitung - das zweite der drei Gebäude, die deine Soldaten zäher machen."
+msgstr "Gerbt Leder für die Lederverarbeitung - das zweite der drei Gebäude, die deine Soldaten zäher machen."
 
 # ACHTUNG, ABSICHT: dieser Katalog benennt die beiden Fleischwaren seit jeher umgekehrt zum
 # englischen Original - GoodType::Ham heisst hier "Fleisch", GoodType::Meat heisst "Schinken".
@@ -4410,7 +4410,7 @@ msgstr "Siedler"
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:53
 msgid "Sews armor, so your soldiers survive longer - the last of the three buildings that make them tougher."
-msgstr "Näht Armor, damit deine Soldaten länger überleben - das letzte der drei Gebäude, die sie zäher machen."
+msgstr "Näht Rüstung, damit deine Soldaten länger überleben - das letzte der drei Gebäude, die sie zäher machen."
 
 #: libs/s25main/gameData/PortraitConsts.h:28
 msgid "Shaka"
