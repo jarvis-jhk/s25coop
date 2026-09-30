@@ -708,6 +708,15 @@ static bool validatePort(const std::string& sPort, uint16_t& outPort)
     return static_cast<bool>(port);
 }
 
+bool dskOptions::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::B)
+        return false;
+    // Keep validation, persistence and driver-change warnings identical to the visible Back button.
+    Msg_ButtonClick(ID_btBack);
+    return true;
+}
+
 void dskOptions::Msg_ButtonClick(const unsigned ctrl_id)
 {
     switch(ctrl_id)

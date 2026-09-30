@@ -113,6 +113,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
   Campaign chooser Back now retains local/network context; chapter/campaign victory screens support
   A/B/Start, with driver-event regressions (Sol PR #4). Remaining dialogs and menu paths stay open.
+  Options handles controller B through its existing save/validate/Back action; driver-event tests cover
+  saved text, cancelled dropdown selection, music overlay and both invalid-port confirmations.
   Create game/map selection handles controller B through its original Back route, with four-context,
   mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many

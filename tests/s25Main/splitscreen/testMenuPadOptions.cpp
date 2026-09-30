@@ -24,15 +24,24 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlComboBox.h"
+#include "controls/ctrlEdit.h"
+#include "controls/ctrlGroup.h"
 #include "controls/ctrlOptionGroup.h"
 #include "desktops/dskMainMenu.h"
 #include "desktops/dskOptions.h"
+#include "driver/KeyEvent.h"
+#include "driver/MouseCoords.h"
 #include "helpers/containerUtils.h"
+#include "helpers/optional_io.h"
+#include "ingameWindows/iwMsgbox.h"
+#include "ingameWindows/iwMusicPlayer.h"
 #include "input/PadRouter.h"
 #include "rttr/test/ConfigOverride.hpp"
 #include "rttr/test/TmpFolder.hpp"
 #include <boost/test/unit_test.hpp>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 namespace {
@@ -79,6 +88,49 @@ struct OptionsPadFixture : rttr::test::MenuPadFixture
             press(pad, NextCtrl);
         }
         return focused(0) == target; // LCOV_EXCL_LINE
+    }
+};
+
+struct OptionsReturnFixture : OptionsPadFixture
+{
+    decltype(SETTINGS.lobby) savedLobby = SETTINGS.lobby;
+    decltype(SETTINGS.server) savedServer = SETTINGS.server;
+    ProxySettings savedProxy = SETTINGS.proxy;
+
+    ~OptionsReturnFixture() override
+    {
+        WINDOWMANAGER.Switch(std::make_unique<Desktop>(nullptr));
+        frame();
+        SETTINGS.lobby = savedLobby;
+        SETTINGS.server = savedServer;
+        SETTINGS.proxy = savedProxy;
+    }
+
+    template<class T>
+    static T& controlAt(const DrawPoint pos)
+    {
+        for(auto* group : desktopAs<dskOptions>()->GetCtrls<ctrlGroup>())
+        {
+            for(auto* ctrl : group->GetCtrls<T>())
+            {
+                if(ctrl->GetPos() == pos)
+                    return *ctrl;
+            }
+        }
+        throw std::runtime_error("Expected options control not found");
+    }
+
+    void typeInto(ctrlEdit& edit, const std::string& text)
+    {
+        // Route text through the same mouse focus and keyboard relay as a physical keyboard.
+        WINDOWMANAGER.Msg_LeftDown(MouseCoords(edit.GetDrawRect().getOrigin() + DrawPoint(5, 5)));
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::End));
+        const auto length = edit.GetText().size();
+        for(size_t i = 0; i < length; ++i)
+            WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Backspace));
+        for(const unsigned char c : text)
+            WINDOWMANAGER.Msg_KeyDown(KeyEvent(c));
+        BOOST_TEST_REQUIRE(edit.GetText() == text);
     }
 };
 
@@ -147,6 +199,97 @@ BOOST_FIXTURE_TEST_CASE(ThePadFindsTheWayBackFromTheOptions, OptionsPadFixture)
     for(int i = 0; i < 5; ++i)
         frame();
     BOOST_TEST(desktopAs<dskMainMenu>() != nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(BUsesTheExistingSaveActionFromAnyFocusedControl, OptionsReturnFixture)
+{
+    toOptions();
+    pickUp(pad);
+    auto& name = controlAt<ctrlEdit>(DrawPoint(280, 70));
+    typeInto(name, "CouchPlayer");
+    BOOST_TEST_REQUIRE(focusUntil(&controlAt<ctrlComboBox>(DrawPoint(280, 100))));
+    press(pad, PadButton::B);
+    BOOST_TEST_REQUIRE(desktopAs<dskMainMenu>() != nullptr);
+    BOOST_TEST(SETTINGS.lobby.name == "CouchPlayer");
+    Settings persisted;
+    persisted.Load();
+    BOOST_TEST(persisted.lobby.name == "CouchPlayer");
+    frame();
+    BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+    BOOST_TEST(video.padEvents_.empty());
+}
+
+BOOST_FIXTURE_TEST_CASE(BCancelsTheDropdownBeforeSavingAndLeaving, OptionsReturnFixture)
+{
+    toOptions();
+    pickUp(pad);
+    auto& portrait = controlAt<ctrlComboBox>(DrawPoint(280, 100));
+    BOOST_TEST_REQUIRE(focusUntil(&portrait));
+    const auto selected = portrait.GetSelection();
+    const auto originalPortrait = SETTINGS.lobby.portraitIndex;
+    press(pad, PadButton::A);
+    BOOST_TEST_REQUIRE(portrait.IsListOpen());
+    press(pad, PadButton::DpadDown);
+    BOOST_TEST_REQUIRE(portrait.GetSelection() != selected);
+    press(pad, PadButton::B);
+    BOOST_TEST_REQUIRE(desktopAs<dskOptions>() != nullptr);
+    BOOST_TEST(!portrait.IsListOpen());
+    BOOST_TEST(portrait.GetSelection() == selected);
+    BOOST_TEST(SETTINGS.lobby.portraitIndex == originalPortrait);
+    press(pad, PadButton::B);
+    BOOST_TEST(desktopAs<dskMainMenu>() != nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(BClosesTheMusicWindowBeforeLeavingTheOptions, OptionsReturnFixture)
+{
+    toOptions();
+    pickUp(pad);
+    const auto tabButtons = tabs().GetCtrls<ctrlButton>();
+    BOOST_TEST_REQUIRE(focusUntil(tabButtons.back()));
+    press(pad, PadButton::A);
+    auto& musicButton = controlAt<ctrlButton>(DrawPoint(280, 220));
+    BOOST_TEST_REQUIRE(focusUntil(&musicButton));
+    press(pad, PadButton::A);
+    BOOST_TEST_REQUIRE(dynamic_cast<iwMusicPlayer*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr);
+    press(pad, PadButton::B);
+    BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+    BOOST_TEST_REQUIRE(desktopAs<dskOptions>() != nullptr);
+    press(pad, PadButton::B);
+    BOOST_TEST(desktopAs<dskMainMenu>() != nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(BRetainsPortValidationAndItsRequiredConfirmation, OptionsReturnFixture)
+{
+    for(const bool proxy : {false, true})
+    {
+        SETTINGS.server.localPort = proxy ? 12345 : 0;
+        SETTINGS.proxy.port = proxy ? 0 : 1080;
+        padInput().Reset();
+        toOptions();
+        pickUp(pad);
+        press(pad, PadButton::B);
+        auto* error = dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow());
+        BOOST_TEST_REQUIRE(error != nullptr);
+        BOOST_TEST_REQUIRE(desktopAs<dskOptions>() != nullptr);
+        press(pad, PadButton::B);
+        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == error);
+        press(pad, PadButton::A);
+        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        BOOST_TEST_REQUIRE(desktopAs<dskOptions>() != nullptr);
+        auto& port = controlAt<ctrlEdit>(proxy ? DrawPoint(480, 270) : DrawPoint(280, 200));
+        typeInto(port, proxy ? "1080" : "12345");
+        press(pad, PadButton::B);
+        BOOST_TEST_REQUIRE(desktopAs<dskMainMenu>() != nullptr);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(StartDoesNotSaveOrLeaveOptions, OptionsReturnFixture)
+{
+    toOptions();
+    pickUp(pad);
+    press(pad, PadButton::Start);
+    BOOST_TEST(desktopAs<dskOptions>() != nullptr);
+    BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
