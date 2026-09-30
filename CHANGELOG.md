@@ -3,6 +3,16 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.7
+
+- Splitscreen: up to four players on one screen, each with their own gamepad and their own view.
+  Plug in the controllers, start a single-player game, and in the lobby every player presses A
+  to take a seat.
+- The menus, the lobby and the campaign screens work with a gamepad; mouse and keyboard work as before.
+- Build with a gamepad through a ring menu, with hints on screen that say what each button does.
+- TV mode: a larger, readable interface for playing on a television.
+- German texts for all of the above.
+
 ## 0.1.6
 
 - Continue a campaign together: the host loads the saved game under "Create game" → "Load", and the co-players

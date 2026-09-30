@@ -395,3 +395,33 @@ yet; port it from ai-battle). Then step 5 robustness.
   Rule: avoid nested ternaries, local clang-format 14 does not catch CI's 10.
 Next: wait for Jan's test of 0.1.5/0.1.6 on Deck/Mint; meanwhile M3 (splitscreen/gamepad: derneuere's branch) or M1 presentation, whichever Jan's
 feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Mint feedback still open.
+
+## 2026-09-30 — work session: M3 a, derneuere's splitscreen merged
+- No issues. Master CI for e1ec5cd had been cancelled by the NOTES push (again) — re-run, green.
+- Merged derneuere/s25client `splitscreen-gamepad` (13 commits, ~40k lines + language catalogues moved from the
+  external/languages submodule into data/RTTR/languages) via PR #2 (branch merge/splitscreen; `merge/*` branches do not
+  trigger CI, a PR does). 5 conflicts (both sides kept; our IsBuildingEnabled null guard kept).
+- Adaptations: `WindowManager::Close(id, owner)` / `CloseAll(id)` on newer upstream code; our co-player lobby ids moved
+  to the END of the dskGameLobby enum (the splitscreen tests hard-code the ids before them — keep new ids at the end);
+  ctrlEdit takes a space as Char event (upstream 3d758c8cd); iwMsgbox cannot be closed with pad B (CloseBehavior::Custom)
+  — A presses its harmless button; -Werror/-Wunused-lambda-capture and 43 clang-tidy findings in the new code; 58 files
+  reformatted with clang-format 10.
+- clang-format 10 now available locally: /app/agent/data/siedler/cf10w/clang_format/data/bin/clang-format (PyPI wheel).
+  Run it on every changed file before pushing — no more "CI formatting" commits.
+- CI-only failure found: windows alive at a test's end die in the fixture destructor after the body's `bool alive`
+  flags → stack smashing (gcc Debug) / access violation (MSVC). Our Release build never shows it. Lessons: tests that
+  pass a stack flag into a window must keep the flag alive past the fixture; ASan does not run stably in this container
+  (ASLR, `setarch -R` not permitted → endless DEADLYSIGNAL; one run filled 11 GB of log — always cap the output).
+  Upstream's TestEventManager is deleted through EventManager without a virtual dtor (ASan new-delete-type-mismatch);
+  upstream bug, not ours.
+- Local tests: `TMPDIR=/app/agent/data/siedler/tmp` is needed, boost copy_file fails across filesystems into /tmp.
+- Tested: full local ctest (82 incl. Test_splitscreen 153 cases, all Coop*), and by hand under Xvfb 1280x800:
+  `s25client --map …/GreenPlains.SWD --local-players 2` → lobby "Local player 2" → two views side by side, a click in
+  the right view opened player 2's action window and placed a yellow building site. Screens: data/siedler/sstest/.
+- Codex review of the overlap: splitscreen is local-only (seat panel only in single-player lobbies), so it does not
+  meet coop members; the `--local-players` CLI can still reach odd combinations (member client with extra slots, local
+  seats on a campaign's AI slots) → M3 b/c.
+- M3 c design written: doc/coop/SharedLocalViews.md (several local views on ONE player; only a few explicit guards
+  block it — commands, windows and pads are already keyed right).
+Next: M3 c step 1 is on branch feature/shared-views (GameClient shared views, `--share-player`, test); step 2 lobby
+seats "together" in progress there. Jan's Deck/Mint feedback on 0.1.5/0.1.6 still open.
