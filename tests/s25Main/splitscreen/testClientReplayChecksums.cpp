@@ -36,7 +36,9 @@ std::optional<unsigned> copyRecording(const boost::filesystem::path& sourcePath,
     {
         auto command = source.ReadCommand();
         visit(composeVisitor(
+                // LCOV_EXCL_START: the recorded test replay carries no chat
                 [&](const Replay::ChatCommand& chat) { target.AddChatCommand(*gf, chat.player, chat.dest, chat.msg); },
+                // LCOV_EXCL_STOP
                 [&](Replay::GameCommand& game) {
                     numGameCommands += game.cmds.gcs.size();
                     // Zero is the legacy marker for "no checksum"; retain the valid marker and

@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE(EmptyTablesStayUnselectedUntilTheyHaveRows, TableSelecti
         BOOST_TEST(*dsk.table.GetSelection() == 0u);
         for(const bool down : {false, true})
             move(controller, down);
-        BOOST_TEST(dsk.table.GetSelection() == 0u);
+        BOOST_TEST((dsk.table.GetSelection() == 0u));
     }
 }
 
@@ -151,13 +151,13 @@ BOOST_FIXTURE_TEST_CASE(MixedInputsClampAtTheEdgesAndScrollIntoView, TableSelect
 {
     auto& dsk = enter(40);
     move(true, true);
-    BOOST_TEST_REQUIRE(dsk.table.GetSelection() == 0u);
+    BOOST_TEST_REQUIRE((dsk.table.GetSelection() == 0u));
     move(false, false);
-    BOOST_TEST(dsk.table.GetSelection() == 0u);
+    BOOST_TEST((dsk.table.GetSelection() == 0u));
     for(unsigned i = 1; i < 40; ++i)
     {
         move(i % 2 == 0, true);
-        BOOST_TEST_REQUIRE(dsk.table.GetSelection() == i);
+        BOOST_TEST_REQUIRE((dsk.table.GetSelection() == i));
     }
     const auto& scrollbar = *dsk.table.GetCtrl<ctrlScrollBar>(0);
     BOOST_TEST(scrollbar.GetScrollPos() > 0u);
@@ -166,11 +166,11 @@ BOOST_FIXTURE_TEST_CASE(MixedInputsClampAtTheEdgesAndScrollIntoView, TableSelect
     const auto callbacks = dsk.selections.size();
     move(true, true);
     move(false, true);
-    BOOST_TEST(dsk.table.GetSelection() == 39u);
+    BOOST_TEST((dsk.table.GetSelection() == 39u));
     BOOST_TEST(dsk.selections.size() == callbacks);
     for(unsigned i = 39; i > 0; --i)
         move(i % 2 == 0, false);
-    BOOST_TEST(dsk.table.GetSelection() == 0u);
+    BOOST_TEST((dsk.table.GetSelection() == 0u));
     BOOST_TEST(scrollbar.GetScrollPos() == 0u);
 }
 
@@ -184,11 +184,11 @@ BOOST_FIXTURE_TEST_CASE(MouseSelectionStillFeedsKeyboardAndControllerNavigation,
     WINDOWMANAGER.Msg_LeftDown(mc);
     mc.ldown = false;
     WINDOWMANAGER.Msg_LeftUp(mc);
-    BOOST_TEST_REQUIRE(dsk.table.GetSelection() == 1u);
+    BOOST_TEST_REQUIRE((dsk.table.GetSelection() == 1u));
     move(false, false);
-    BOOST_TEST(dsk.table.GetSelection() == 0u);
+    BOOST_TEST((dsk.table.GetSelection() == 0u));
     move(true, true);
-    BOOST_TEST(dsk.table.GetSelection() == 1u);
+    BOOST_TEST((dsk.table.GetSelection() == 1u));
     press(pad, PadButton::A);
     BOOST_TEST_REQUIRE(dsk.chosen.size() == 1u);
     BOOST_TEST(dsk.chosen.front() == 1u);

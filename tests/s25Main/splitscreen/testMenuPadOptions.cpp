@@ -122,7 +122,7 @@ struct OptionsReturnFixture : OptionsPadFixture
                     return *ctrl;
             }
         }
-        throw std::runtime_error("Expected options control not found");
+        throw std::runtime_error("Expected options control not found"); // LCOV_EXCL_LINE
     }
 
     void typeInto(ctrlEdit& edit, const std::string& text)
@@ -236,11 +236,11 @@ BOOST_FIXTURE_TEST_CASE(BCancelsTheDropdownBeforeSavingAndLeaving, OptionsReturn
     press(pad, PadButton::A);
     BOOST_TEST_REQUIRE(portrait.IsListOpen());
     press(pad, PadButton::DpadDown);
-    BOOST_TEST_REQUIRE(portrait.GetSelection() != selected);
+    BOOST_TEST_REQUIRE((portrait.GetSelection() != selected));
     press(pad, PadButton::B);
     BOOST_TEST_REQUIRE(desktopAs<dskOptions>() != nullptr);
     BOOST_TEST(!portrait.IsListOpen());
-    BOOST_TEST(portrait.GetSelection() == selected);
+    BOOST_TEST((portrait.GetSelection() == selected));
     BOOST_TEST(SETTINGS.lobby.portraitIndex == originalPortrait);
     press(pad, PadButton::B);
     BOOST_TEST(desktopAs<dskMainMenu>() != nullptr);

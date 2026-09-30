@@ -67,7 +67,7 @@ struct PlayerMenuReturnFixture : rttr::test::MenuPadFixture
                 return;
             }
         }
-        BOOST_FAIL("Expected player-menu button missing");
+        BOOST_FAIL("Expected player-menu button missing"); // LCOV_EXCL_LINE
     }
 
     void expectMainMenu()
