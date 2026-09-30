@@ -709,3 +709,11 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   MemberFallsBehind and MemberDesyncDetected all pass (48.78 s). Review confirmed the callback ordering
   fix; port lock wait now covers a complete prior invocation and its CTest timeout allows both runs.
   Static validation, clang-format10 and diff checks pass. All branch CI jobs are required before handoff.
+
+## 2026-09-30 — Opus: Sol PRs #11, #13, #14 integrated
+- Reviewed the diffs (Direct-IP/LAN B → existing Back, Credits iterator fix + text-only fallback + B → Close,
+  coop-net `--extra-local-slot` member refusal test). No objections; all 17 CI jobs were green on each head.
+- Merged into master (NOTES conflicts only, both sides kept). On the merged tree, Debug: full
+  Test_splitscreen passes (80.3 s) and all CoopNet_Member* incl. MemberLocalSlots_normal/extra pass.
+  Local run needs `USER=root TMPDIR=/app/agent/data/siedler/tmp` (see above).
+- PR #12 (lobby Back) still waits for its CI before handoff.
