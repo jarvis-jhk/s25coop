@@ -28,6 +28,7 @@ public:
     /// Splitscreenpartie. Ihre Tabelle ist eine Fokusstation (ctrlTable::CanFocus), deren
     /// Hoch/Runter das Control selbst als Wertaenderung verbraucht.
     bool WantsPadInput() const override { return true; }
+    bool Msg_PadCommand(unsigned slot, PadButton button) override;
 
 private:
     void Draw_() override;

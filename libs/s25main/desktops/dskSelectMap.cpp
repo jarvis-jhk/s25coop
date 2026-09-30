@@ -253,6 +253,14 @@ void dskSelectMap::Msg_TableSelectItem(const unsigned ctrl_id, const std::option
     txtMapPath.SetPos(DrawPoint(txtXPos, txtMapPath.GetPos().y));
 }
 
+bool dskSelectMap::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::B)
+        return false;
+    GoBack();
+    return true;
+}
+
 void dskSelectMap::GoBack() const
 {
     if(csi.type == ServerType::Local)

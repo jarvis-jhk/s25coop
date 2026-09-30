@@ -50,7 +50,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☑ Replay-based regression: same seed twice → same final checksum (ctest `CoopHeadless_Deterministic`);
   `ai-battle --check-replay <rpl>` replays a recording without AIs, compares every recorded checksum and the final
   state, exit 3 on async (ctest `CoopHeadless_ReplayInSync`, incl. a wrong-seed run that must be caught). Since
-  2026-09-27. Not covered: replaying through the real GameClient (needs the video mock setup of the UI tests).
+  2026-09-27. The splitscreen regression `SecondLocalPlayerCommandsTakeTheFullNetworkRoundtrip` also records
+  and replays through the real GameClient with the mock video driver, checking every recorded checksum,
+  error/async callbacks and replay completion. A negative checksum control on that path remains open.
 
 ## M1 — The official campaign, done properly (single group)
 
@@ -111,6 +113,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
   Campaign chooser Back now retains local/network context; chapter/campaign victory screens support
   A/B/Start, with driver-event regressions (Sol PR #4). Remaining dialogs and menu paths stay open.
+  Create game/map selection handles controller B through its original Back route, with four-context,
+  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
