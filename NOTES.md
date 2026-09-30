@@ -636,3 +636,27 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Local Debug build dir `build/dbg` (Test_splitscreen only) reproduces Debug-only asserts; keep it.
 - Released v0.1.9 (per-player start goods incl. Minimal/Minimal+, controller Back/skip everywhere) from 2572261e2
   after every CI job was green.
+
+## 2026-09-30 — Sol companion: safe text credits and controller Back
+- Branch `sol/credits-controller-back`, based on origin/master 6c0ba04a6. Credits now opts into pad
+  input; B follows the existing Close action to Main menu. Start stays inert and shared routing is
+  unchanged, including regular-window and required-confirmation precedence.
+- Driver-event entry from Main menu exposed a real resource-failure crash: the iterator initialized
+  to the empty entries vector's end became invalid when the vector grew, then early resource-load
+  failure left it dereferenced in DrawCredit. A local Debug/gdb trace confirmed the null access through
+  glFont::Draw. Credits now sets the iterator after the final entry and keeps text browsing available
+  without optional world/game graphics; decorative bobs are drawn only after their assets load.
+- Seven physical-input regressions cover Main-menu entry/B return, regular window first, custom
+  acknowledgement required before B, inert Start/navigation, mouse/A Back, B bursts and Main-menu
+  Quit safety. Isolated missing GAME data and missing world data remain browsable through 40 forward
+  keyboard and 40 backward mouse page changes (including wrapping), a background left click and B.
+  No singleton construction, focus injection or direct desktop-handler calls; runtime resources remain
+  local, original game data is neither needed nor committed. Fixtures restore only captured state.
+- All seven targeted Debug cases pass. Exact gpt-6.1-sol read-only patch/context review found no
+  actionable iterator, fallback, routing or overlay bug; repository inspection was blocked by its
+  sandbox, and it did not independently verify rendering or resource-cache isolation. Local tests
+  and CI are the runtime gates. Countercheck and complete Debug suite evidence are recorded below.
+- Without only the B handler (safe text fallback and pad opt-in retained), five cases fail specifically
+  at return-to-Main; Start/navigation and existing mouse/A Back pass. Final seven targeted cases pass,
+  and full Debug Test_splitscreen passes (88.34 s). Static validation, clang-format10 and diff checks
+  pass. All branch CI jobs remain required before tested handoff; Opus owns integration.
