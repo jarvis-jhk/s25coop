@@ -13,7 +13,8 @@ and the game will show the new sections after an update.
   "Minimal+" adds 8 boards, 6 stones, a shovel, 8 iron and 5 soldiers, for a player who needs a head start.
   Both can also be picked for all players with the game's starting goods setting.
 - Controller: the campaign victory screen can now be left with A, B or Start, and B in the campaign list of
-  a network game goes back to where you came from instead of the single-player menu. B on the map selection and in the options goes back too (options are saved as with the Back button).
+  a network game goes back to where you came from instead of the single-player menu. B on the map selection, in the options and in the single- and multiplayer menus goes back too (options are
+  saved as with the Back button), and A, B or Start skips the intro video.
 
 ## 0.1.8
 
