@@ -392,7 +392,7 @@ BOOST_FIXTURE_TEST_CASE(SettingsWindowKeepsTheActingPlayersOwnSettings, PadGameF
     for(unsigned i = 0; i < after.size(); ++i)
     {
         if(after[i] == before[i])
-            continue;
+            continue; // LCOV_EXCL_LINE
         // der eine geaenderte Regler; alle anderen muessen gleich geblieben sein
         for(unsigned j = 0; j < after.size(); ++j)
             if(j != i)

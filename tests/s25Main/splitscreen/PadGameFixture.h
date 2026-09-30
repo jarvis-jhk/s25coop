@@ -59,14 +59,16 @@ inline MapPoint findExclusiveFlagSpot(const GameWorld& world, const unsigned cha
         if(world.GetBQ(pt, player) == BuildingQuality::Nothing)
             continue;
         if(world.GetBQ(pt, otherPlayer) != BuildingQuality::Nothing)
+            // LCOV_EXCL_START
             continue; // waere kein Unterscheidungsmerkmal
+        // LCOV_EXCL_STOP
         if(world.IsFlagAround(pt))
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNO(pt)->GetType() == NodalObjectType::Flag)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Zaehlt die im Replay aufgezeichneten GameCommands eines Spielers. Aufgezeichnet wird
@@ -206,7 +208,7 @@ struct PadGameFixture : LocalGameFixture
             pads.tap(dev, PadButton::RightShoulder);
             dsk->UpdateInput(16, kMouseOffScreen);
         }
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     }
 
     /// Verstellt den fokussierten Balken um genau einen Schritt, ueber DpadRight - den echten

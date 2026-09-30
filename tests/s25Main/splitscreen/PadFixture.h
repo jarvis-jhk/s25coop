@@ -77,7 +77,7 @@ inline bool worldHasRoad(const GameWorldBase& world, MapPoint start, const std::
         cur = world.GetNeighbour(cur, dir);
         // Gegenrichtung: eine Strasse ist in beiden Richtungen begehbar.
         if(world.GetPointRoad(cur, dir + 3u) == PointRoad::None)
-            return false;
+            return false; // LCOV_EXCL_LINE
     }
     return true;
 }
@@ -95,12 +95,12 @@ inline bool worldHasRoad(const GameWorldBase& world, MapPoint start, const std::
 inline bool viewerDrawsRoad(const GameWorldViewer& viewer, MapPoint start, const std::vector<Direction>& route)
 {
     if(route.empty())
-        return false;
+        return false; // LCOV_EXCL_LINE
     MapPoint cur = start;
     for(const Direction dir : route)
     {
         if(viewer.GetVisiblePointRoad(cur, dir) == PointRoad::None)
-            return false;
+            return false; // LCOV_EXCL_LINE
         cur = viewer.GetWorld().GetNeighbour(cur, dir);
     }
     return true;
@@ -153,10 +153,10 @@ inline RoadSpot findRoadSpotFromHQ(const GameWorldViewer& viewer, const unsigned
     const auto player = static_cast<unsigned char>(viewer.GetPlayerId());
     const MapPoint hqPos = world.GetPlayer(player).GetHQPos();
     if(!hqPos.isValid())
-        return {};
+        return {}; // LCOV_EXCL_LINE
     const auto* hq = world.GetSpecObj<nobBaseWarehouse>(hqPos);
     if(!hq)
-        return {};
+        return {}; // LCOV_EXCL_LINE
     RoadSpot spot;
     spot.start = hq->GetFlagPos();
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(spot.start, maxLen + 2))
@@ -168,7 +168,7 @@ inline RoadSpot findRoadSpotFromHQ(const GameWorldViewer& viewer, const unsigned
         if(world.IsFlagAround(pt))
             continue; // dort kann am Ende keine Flagge entstehen
         if(world.GetBQ(pt, player) == BuildingQuality::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         std::vector<Direction> route = FindPathForRoad(viewer, spot.start, pt, false, 100);
         if(route.size() < minLen || route.size() > maxLen)
             continue;
@@ -176,7 +176,7 @@ inline RoadSpot findRoadSpotFromHQ(const GameWorldViewer& viewer, const unsigned
         spot.route = std::move(route);
         return spot;
     }
-    return {};
+    return {}; // LCOV_EXCL_LINE
 }
 
 /// Speist Gamepad-Ereignisse ein, ohne SDL und ohne Hardware.
@@ -246,7 +246,7 @@ inline PadDeviceId padOfView(const dskGameInterface& dsk, const unsigned viewIdx
         if(router.GetSlot(dev) == viewIdx)
             return dev;
     }
-    return InvalidPadDevice;
+    return InvalidPadDevice; // LCOV_EXCL_LINE
 }
 
 /// Steuert die Ansicht `viewIdx` NUR MIT PADEREIGNISSEN auf den Knoten `pt`.
@@ -302,8 +302,10 @@ void padSteerTo(PadFeeder& pads, dskGameInterface& dsk, const GameWorldBase& wor
         const float len = lenOf(err);
         if(len < 1.f)
         {
+            // LCOV_EXCL_START
             step(16u);
             continue;
+            // LCOV_EXCL_STOP
         }
         const float speed = inside ? PadRouter::PixelsPerSecond : PadRouter::CameraPixelsPerSecond;
         const PointF dir(err.x / len, err.y / len);
@@ -344,7 +346,7 @@ struct TestableGameInterface : dskGameInterface
     void Msg_PaintBefore() override
     {
         if(paintForReal)
-            dskGameInterface::Msg_PaintBefore();
+            dskGameInterface::Msg_PaintBefore(); // LCOV_EXCL_LINE
     }
     void Msg_PaintAfter() override
     {

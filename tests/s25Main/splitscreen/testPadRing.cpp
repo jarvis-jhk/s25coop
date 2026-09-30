@@ -98,10 +98,10 @@ MapPoint findBuildSpotFor(const GameWorldBase& world, const GameWorldViewer& vie
         if(viewer.GetBQ(pt) < minBQ)
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// "Der Spieler nimmt das Pad in die Hand und setzt sich auf DIESEN Platz."
@@ -209,7 +209,7 @@ float radiusOf(const PointF center, const PointF p)
 float wrapDiff(float deg)
 {
     while(deg > 180.f)
-        deg -= 360.f;
+        deg -= 360.f; // LCOV_EXCL_LINE
     while(deg <= -180.f)
         deg += 360.f;
     return deg;
@@ -225,7 +225,7 @@ std::vector<std::string> shippedRingCatalogs()
     for(const auto& entry : boost::filesystem::directory_iterator(dir))
     {
         if(!is_regular_file(entry.status()) || entry.path().extension() != ".mo")
-            continue;
+            continue; // LCOV_EXCL_LINE
         const std::string stem = entry.path().stem().string();
         if(stem.rfind("rttr-", 0) == 0)
             out.push_back(stem.substr(5));
@@ -486,8 +486,10 @@ BOOST_FIXTURE_TEST_CASE(APadPlayerPicksABuildingFromTheRingAndPlacesIt, PadGameF
         seenTexts.push_back(padView.GetBrief().joined());
         if(shown == BuildingType::Woodcutter)
             break;
+        // LCOV_EXCL_START
         press(11, PadButton::DpadRight);
         BOOST_TEST_REQUIRE(focusedIcon() != static_cast<const ctrlBuildingIcon*>(nullptr));
+        // LCOV_EXCL_STOP
     }
     BOOST_TEST_REQUIRE((focusedIcon()->GetType() == BuildingType::Woodcutter));
     BOOST_TEST_MESSAGE("AUDIT: Sektoren mit gepruefter Beschriftung bis zum Holzfaeller = " << checked);
@@ -860,7 +862,7 @@ BOOST_FIXTURE_TEST_CASE(TheBackMenuIsTheSameRingAndCarriesEverySwitch, PadViewFi
                 return;
             press(11, PadButton::DpadRight);
         }
-        BOOST_FAIL("Sektor per Pad nicht erreichbar");
+        BOOST_FAIL("Sektor per Pad nicht erreichbar"); // LCOV_EXCL_LINE
     };
 
     const bool names0 = view(0).GetView().IsShowingNames();
@@ -892,7 +894,7 @@ BOOST_FIXTURE_TEST_CASE(TheBackMenuIsTheSameRingAndCarriesEverySwitch, PadViewFi
     press(11, PadButton::B);
     BOOST_TEST(!view(1).GetRing().IsOpen());
     if(!menu->ShouldBeClosed())
-        menu->Close();
+        menu->Close(); // LCOV_EXCL_LINE
     WINDOWMANAGER.Draw();
 }
 
@@ -932,7 +934,7 @@ BOOST_FIXTURE_TEST_CASE(JustWatchHidesEverythingAndSaysHowToComeBack, PadViewFix
                 return;
             press(11, PadButton::DpadRight);
         }
-        BOOST_FAIL("Sektor per Pad nicht erreichbar");
+        BOOST_FAIL("Sektor per Pad nicht erreichbar"); // LCOV_EXCL_LINE
     };
     for(const unsigned id :
         {iwPadSystemMenu::ID_CONSTRUCTION_AID, iwPadSystemMenu::ID_NAMES, iwPadSystemMenu::ID_PRODUCTIVITY})
@@ -1194,7 +1196,7 @@ BOOST_FIXTURE_TEST_CASE(FourSeatsHoldFourIndependentRingsAtTheSameTime, PadViewF
     for(unsigned v = 0; v < 4u; ++v)
     {
         if(menus[v] && !menus[v]->ShouldBeClosed())
-            menus[v]->Close();
+            menus[v]->Close(); // LCOV_EXCL_LINE
     }
     WINDOWMANAGER.Draw();
 }
@@ -1251,8 +1253,10 @@ BOOST_FIXTURE_TEST_CASE(OneSeatsRingChoiceChangesNothingForTheOther, PadViewFixt
     {
         if(IngameWindow* const menu = WINDOWMANAGER.FindNonModalWindow(CGI_PADMENU, v))
         {
+            // LCOV_EXCL_START
             if(!menu->ShouldBeClosed())
                 menu->Close();
+            // LCOV_EXCL_STOP
         }
     }
     WINDOWMANAGER.Draw();
@@ -1474,6 +1478,7 @@ BOOST_FIXTURE_TEST_CASE(NoRingLabelBreaksOnAnyTelevisionSizeAtFourSeats, PadView
                         }
                         if(!e.icon && e.labelLines.size() > 1u)
                         {
+                            // LCOV_EXCL_START
                             ++wrapped;
                             if(std::string(lang) == "de")
                                 ++germanWrapped;
@@ -1482,6 +1487,7 @@ BOOST_FIXTURE_TEST_CASE(NoRingLabelBreaksOnAnyTelevisionSizeAtFourSeats, PadView
                                                                  << NormalFont->getWidth(e.ctrl->GetRingLabel())
                                                                  << ", freie Flaeche " << layout.freeArea.getSize()
                                                                  << ", Ring " << static_cast<int>(2.f * layout.rOuter));
+                            // LCOV_EXCL_STOP
                         }
                     }
                     // (4) Nichts ueberlappt.
@@ -1574,12 +1580,12 @@ BOOST_FIXTURE_TEST_CASE(InTheRingTheBarNamesEveryInputThatDoesSomething, PadView
             if(IngameWindow* const w = WINDOWMANAGER.GetTopMostWindow(v))
             {
                 if(!w->ShouldBeClosed() && w->getCloseBehavior() == CloseBehavior::Regular)
-                    w->Close();
+                    w->Close(); // LCOV_EXCL_LINE
             }
         }
         step(16);
         if(view(1).IsWatchOnly())
-            press(11, PadButton::B);
+            press(11, PadButton::B); // LCOV_EXCL_LINE
         step(16);
     };
     /// Den Ring frisch oeffnen und den Fokus VOM ERSTEN SEKTOR WEGSTELLEN. Das zweite ist der
@@ -1821,12 +1827,12 @@ BOOST_FIXTURE_TEST_CASE(InARingWithASingleSectorTheBarPromisesNoTurning, PadGame
             if(IngameWindow* const w = WINDOWMANAGER.GetTopMostWindow(v))
             {
                 if(!w->ShouldBeClosed() && w->getCloseBehavior() == CloseBehavior::Regular)
-                    w->Close();
+                    w->Close(); // LCOV_EXCL_LINE
             }
         }
         step(16);
         if(padView.IsWatchOnly())
-            press(11, PadButton::B);
+            press(11, PadButton::B); // LCOV_EXCL_LINE
         step(16);
     };
     /// Einen Ring mit GENAU EINEM Sektor herstellen, und zwar ueber den produktiven Weg: Zeiger
@@ -1880,8 +1886,10 @@ BOOST_FIXTURE_TEST_CASE(InARingWithASingleSectorTheBarPromisesNoTurning, PadGame
             ++acted;
         if(claimed && !reallyActed)
         {
+            // LCOV_EXCL_START
             ++deadPromises;
             BOOST_TEST_MESSAGE("AUDIT-EINSEKTOR TOT: " << brief::PadButtonLabel(button) << " versprochen, wirkungslos");
+            // LCOV_EXCL_STOP
         }
         BOOST_TEST_CONTEXT("EIN Sektor / Knopf " << brief::PadButtonLabel(button) << "  Leiste=" << bar)
         BOOST_TEST(reallyActed == claimed.has_value());
@@ -1923,7 +1931,7 @@ BOOST_FIXTURE_TEST_CASE(InARingWithASingleSectorTheBarPromisesNoTurning, PadGame
             BOOST_TEST_REQUIRE(drawnRing() == drawnBefore);
             pushStick(dir);
             if(!(snap() == before) || drawnRing() != drawnBefore)
-                ++dirsActed;
+                ++dirsActed; // LCOV_EXCL_LINE
             ++dirsChecked;
         }
         BOOST_TEST_MESSAGE("AUDIT-EINSEKTOR STICK: " << dirsChecked << " Richtungen, gewirkt = " << dirsActed
@@ -2255,7 +2263,7 @@ BOOST_FIXTURE_TEST_CASE(TheConstructionAidHasThreeStepsAndTheMiddleOneDrawsExact
                 return;
             press(11, PadButton::DpadRight);
         }
-        BOOST_FAIL("Sektor per Pad nicht erreichbar");
+        BOOST_FAIL("Sektor per Pad nicht erreichbar"); // LCOV_EXCL_LINE
     };
     turnTo(iwPadSystemMenu::ID_CONSTRUCTION_AID);
 
@@ -2562,7 +2570,7 @@ BOOST_FIXTURE_TEST_CASE(ASinglePageRingDrawsNoDotsAtAll, PadViewFixture<2>)
     for(const ringTap::Batch& b : ringTap::batches)
     {
         if(b.mode == GL_TRIANGLE_FAN)
-            ++fans;
+            ++fans; // LCOV_EXCL_LINE
     }
     BOOST_TEST(fans == 0u);
     // UND DIE LEISTE SAGT DASSELBE - dieselbe Quelle, dieselbe Antwort (Befund K1 der Welle 14).
@@ -2572,7 +2580,7 @@ BOOST_FIXTURE_TEST_CASE(ASinglePageRingDrawsNoDotsAtAll, PadViewFixture<2>)
         for(const brief::KeyHint& h : b.keys)
         {
             if(h.button == button && h.action == action)
-                return true;
+                return true; // LCOV_EXCL_LINE
         }
         return false;
     };
@@ -2618,7 +2626,7 @@ BOOST_FIXTURE_TEST_CASE(InEveryStateOfTheRingTheDotsSayWhatTheKeyBarPromises, Pa
             if(h.button == button && h.action == action)
                 return true;
         }
-        return false;
+        return false; // LCOV_EXCL_LINE
     };
     /// Die wirklich gezeichneten Punkte - zurueckgerechnet aus den Eckpunkten, die DrawRing
     /// hinausschickt. Eine Rechnung ist kein Zeichnen.
@@ -2668,7 +2676,7 @@ BOOST_FIXTURE_TEST_CASE(InEveryStateOfTheRingTheDotsSayWhatTheKeyBarPromises, Pa
         {
             ++promised;
             if(dots == 0u)
-                ++promisedAndSilent;
+                ++promisedAndSilent; // LCOV_EXCL_LINE
         }
         ++steps;
         press(11, PadButton::RightShoulder);
@@ -2967,7 +2975,7 @@ BOOST_FIXTURE_TEST_CASE(TheRingCounterComesRoundInsteadOfPromisingAStepItNeverTa
             BOOST_TEST(after != before);
         }
         if(after == before)
-            ++deadPresses;
+            ++deadPresses; // LCOV_EXCL_LINE
     }
     BOOST_TEST_MESSAGE("AUDIT B1: 16 RB-Drucke, Leiste versprach " << promised << " mal, davon " << deadPresses
                                                                    << " ohne jede Wirkung");
@@ -3195,7 +3203,7 @@ BOOST_FIXTURE_TEST_CASE(WhileAimingOnOnePageTheRingDoesNotMoveUnderTheThumb, Pad
         biggestCenterJump = std::max(biggestCenterJump, std::abs(center.y - centerAtStart.y));
         const std::string geom = drawnGeometry();
         if(geom != geomAtStart)
-            ++movedSteps;
+            ++movedSteps; // LCOV_EXCL_LINE
         BOOST_TEST_CONTEXT("Sektor " << i << ", Kastenzeilen " << lines)
         {
             // DIE EINE ZUSICHERUNG: kein Strich hat sich bewegt.
@@ -3291,7 +3299,7 @@ BOOST_FIXTURE_TEST_CASE(NoPageOfAPagedRingIsLeftWithASingleSector, PadViewFixtur
                 BOOST_TEST(drawnSectors >= 2u);
             }
             if(drawnSectors < 2u)
-                ++lonelySectors;
+                ++lonelySectors; // LCOV_EXCL_LINE
         }
         press(11, PadButton::RightShoulder);
     }

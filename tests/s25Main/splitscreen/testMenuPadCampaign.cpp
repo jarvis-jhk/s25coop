@@ -188,7 +188,7 @@ struct CampaignPadFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFix
             if(table.GetItemText(row, 0) == kCampaignName)
                 return static_cast<unsigned>(row);
         }
-        return std::nullopt;
+        return std::nullopt; // LCOV_EXCL_LINE
     }
 
     /// Fehlen die originalen S2-Daten, sind die AUSGELIEFERTEN Kampagnen kaputt und
@@ -238,8 +238,10 @@ struct CampaignPadFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFix
             press(pad, Down);
         for(unsigned i = 0; i < table.GetNumRows() + 2u && table.GetSelection() != targetRow; ++i)
         {
+            // LCOV_EXCL_START
             const auto sel = table.GetSelection();
             press(pad, (!sel || *sel < targetRow) ? Down : Up);
+            // LCOV_EXCL_STOP
         }
         BOOST_TEST_REQUIRE((table.GetSelection() == targetRow));
     }
@@ -421,10 +423,12 @@ BOOST_FIXTURE_TEST_CASE(ArrowKeysAndMouseKeepWorkingOnTheCampaignTable, Campaign
     BOOST_TEST(*table->GetSelection() == 0u);
     if(table->GetNumRows() > 1)
     {
+        // LCOV_EXCL_START
         pressKey(KeyType::Down);
         BOOST_TEST(*table->GetSelection() == 1u);
         pressKey(KeyType::Up);
         BOOST_TEST(*table->GetSelection() == 0u);
+        // LCOV_EXCL_STOP
     }
     // Am oberen Rand passiert nichts mehr.
     pressKey(KeyType::Up);

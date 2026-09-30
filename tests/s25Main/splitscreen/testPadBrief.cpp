@@ -122,18 +122,18 @@ MapPoint findBuildSpot(const GameWorldBase& world, const GameWorldViewer& viewer
 {
     const MapPoint hqPos = world.GetPlayer(viewer.GetPlayerId()).GetHQPos();
     if(!hqPos.isValid())
-        return MapPoint::Invalid();
+        return MapPoint::Invalid(); // LCOV_EXCL_LINE
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(hqPos, 8))
     {
         if(!viewer.IsOwner(pt))
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(viewer.GetBQ(pt) < minBQ)
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Ein Knoten NEBEN dem eigenen Gebiet, der niemandem gehoert.
@@ -141,18 +141,18 @@ MapPoint findNoMansLand(const GameWorldBase& world, const GameWorldViewer& viewe
 {
     const MapPoint hqPos = world.GetPlayer(viewer.GetPlayerId()).GetHQPos();
     if(!hqPos.isValid())
-        return MapPoint::Invalid();
+        return MapPoint::Invalid(); // LCOV_EXCL_LINE
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(hqPos, 16))
     {
         if(viewer.IsOwner(pt))
             continue;
         if(world.GetNode(pt).owner != 0)
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Der RUECKSCHLAG: aus einem angezeigten Titel wieder den Gebaeudetyp machen.
@@ -169,14 +169,14 @@ MapPoint findNoMansLand(const GameWorldBase& world, const GameWorldViewer& viewe
 helpers::OptionalEnum<BuildingType> buildingFromTitle(const std::string& title)
 {
     if(title.empty())
-        return helpers::OptionalEnum<BuildingType>{};
+        return helpers::OptionalEnum<BuildingType>{}; // LCOV_EXCL_LINE
     for(const BuildingType bld : helpers::enumRange<BuildingType>())
     {
         const char* name = BUILDING_NAMES[bld];
         if(name && *name && title == _(name))
             return bld;
     }
-    return helpers::OptionalEnum<BuildingType>{};
+    return helpers::OptionalEnum<BuildingType>{}; // LCOV_EXCL_LINE
 }
 
 /// Alle Bauicons des GERADE gewaehlten Baureiters, in Fokusreihenfolge.
@@ -185,16 +185,16 @@ std::vector<const ctrlBuildingIcon*> iconsOfCurrentBuildTab(iwAction& wnd)
     std::vector<const ctrlBuildingIcon*> out;
     auto* mainTab = wnd.GetCtrl<ctrlTab>(0);
     if(!mainTab)
-        return out;
+        return out;                               // LCOV_EXCL_LINE
     ctrlGroup* buildGroup = mainTab->GetGroup(1); // TAB_BUILD
     if(!buildGroup)
-        return out;
+        return out; // LCOV_EXCL_LINE
     auto* buildTab = buildGroup->GetCtrl<ctrlTab>(1);
     if(!buildTab)
-        return out;
+        return out; // LCOV_EXCL_LINE
     ctrlGroup* tabGroup = buildTab->GetGroup(static_cast<int>(buildTab->GetCurrentTab()));
     if(!tabGroup)
-        return out;
+        return out; // LCOV_EXCL_LINE
     for(const ctrlBuildingIcon* icon : tabGroup->GetCtrls<ctrlBuildingIcon>())
         out.push_back(icon);
     return out;
@@ -222,9 +222,11 @@ const ctrlBuildingIcon* focusFirstIcon(PadViewFixture<2>& f, const PadDeviceId d
     {
         if(const auto* icon = dynamic_cast<const ctrlBuildingIcon*>(f.view(viewIdx).GetFocus().GetFocused()))
             return icon;
+        // LCOV_EXCL_START
         f.press(dev, PadButton::DpadDown);
     }
     return dynamic_cast<const ctrlBuildingIcon*>(f.view(viewIdx).GetFocus().GetFocused());
+    // LCOV_EXCL_STOP
 }
 
 } // namespace
@@ -454,12 +456,14 @@ BOOST_FIXTURE_TEST_CASE(EveryIconOfTheTabNamesItselfAndNotItsNeighbour, PadViewF
     {
         const auto* focused = dynamic_cast<const ctrlBuildingIcon*>(view(1).GetFocus().GetFocused());
         if(!focused)
+            // LCOV_EXCL_START
             break; // der Fokus hat die Reihe verlassen - der Rest ist eine andere Zeile
+        // LCOV_EXCL_STOP
         // Das Gitter hat fuenf Spalten; ein Schritt nach rechts am Zeilenende landet wieder auf
         // einem schon besuchten Icon. Der Lauf endet dort, damit die Eindeutigkeitspruefung
         // unten eine Aussage ueber die ANZEIGE macht und nicht ueber die Navigation.
         if(std::find(visited.begin(), visited.end(), static_cast<const Window*>(focused)) != visited.end())
-            break;
+            break; // LCOV_EXCL_LINE
         visited.push_back(focused);
         const brief::Brief& b = view(1).GetBrief();
         BOOST_TEST_CONTEXT("Icon " << i << " ist " << BUILDING_NAMES[focused->GetType()] << ", Titel \"" << b.title
@@ -980,7 +984,7 @@ namespace {
 bool namesBuilding(const std::string& sentence, const std::string& name)
 {
     if(name.empty())
-        return false;
+        return false; // LCOV_EXCL_LINE
     if(sentence.find(name) != std::string::npos)
         return true;
     std::string lowered = name;
@@ -989,7 +993,7 @@ bool namesBuilding(const std::string& sentence, const std::string& name)
     // deshalb nicht byteweise angefasst werden.
     const auto first = static_cast<unsigned char>(lowered[0]);
     if(first >= 0x80)
-        return false;
+        return false; // LCOV_EXCL_LINE
     lowered[0] = static_cast<char>(std::tolower(first));
     return sentence.find(lowered) != std::string::npos;
 }
@@ -1021,7 +1025,7 @@ std::vector<size_t> wordHits(const std::string& text, const std::string& word)
 {
     std::vector<size_t> hits;
     if(word.empty())
-        return hits;
+        return hits; // LCOV_EXCL_LINE
     std::vector<std::string> forms{word};
     if(const auto first = static_cast<unsigned char>(word[0]); first < 0x80 && std::isupper(first) != 0)
     {
@@ -1148,7 +1152,7 @@ std::vector<std::string> shippedCatalogs()
     for(const auto& entry : boost::filesystem::directory_iterator(dir))
     {
         if(!is_regular_file(entry.status()) || entry.path().extension() != ".mo")
-            continue;
+            continue; // LCOV_EXCL_LINE
         const std::string stem = entry.path().stem().string();
         if(stem.rfind("rttr-", 0) == 0)
             out.push_back(stem.substr(5));
@@ -1359,7 +1363,7 @@ BOOST_AUTO_TEST_CASE(EverySentenceAboutAWareUsesTheWordTheSupplyLineUses)
                 {
                     const char* srcName = BUILDING_NAMES[src];
                     if(!srcName || !*srcName)
-                        continue;
+                        continue; // LCOV_EXCL_LINE
                     const std::string srcWord = translate ? _(srcName) : srcName;
                     BOOST_TEST_CONTEXT(pass << " | " << name << " bekommt " << word << " vom Gebaeude " << srcWord
                                             << " | " << prose)

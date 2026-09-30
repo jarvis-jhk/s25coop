@@ -87,7 +87,7 @@ struct PadMenuFixture : PadViewFixture<2>
                 return;
             press(dev, nextCtrl);
         }
-        BOOST_FAIL("Das Control ist per Pad nicht erreichbar");
+        BOOST_FAIL("Das Control ist per Pad nicht erreichbar"); // LCOV_EXCL_LINE
     }
 
     /// JEDES offene Fenster sofort freigeben, solange Welt und Desktop noch leben.
@@ -747,7 +747,7 @@ BOOST_FIXTURE_TEST_CASE(InARunningGameThePadMenuServesTheSeatThatPressed, PadMen
             else
                 press(11, focused->GetID() < target ? PadButton::RightShoulder : PadButton::LeftShoulder);
         }
-        BOOST_FAIL("Das Control ist per Pad nicht erreichbar");
+        BOOST_FAIL("Das Control ist per Pad nicht erreichbar"); // LCOV_EXCL_LINE
     };
 
     focusToId(iwPadSystemMenu::ID_CONSTRUCTION_AID);

@@ -242,7 +242,7 @@ struct KeyHint
     /// Vorgabe Button - jeder bestehende Hinweis bleibt woertlich, was er war.
     KeyInput input = KeyInput::Button;
 
-    friend bool operator==(const KeyHint& a, const KeyHint& b)
+    friend bool operator==(const KeyHint& a, const KeyHint& b) noexcept
     {
         if(a.input != b.input)
             return false;
@@ -252,7 +252,7 @@ struct KeyHint
             return a.action == b.action;
         return a.button == b.button && a.action == b.action;
     }
-    friend bool operator!=(const KeyHint& a, const KeyHint& b) { return !(a == b); }
+    friend bool operator!=(const KeyHint& a, const KeyHint& b) noexcept { return !(a == b); }
 };
 
 /// Ein Klartextblock, wie ihn ein Spieler unter seiner Ansicht liest.

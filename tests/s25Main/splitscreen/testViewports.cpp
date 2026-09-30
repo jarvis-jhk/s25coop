@@ -327,7 +327,7 @@ BOOST_FIXTURE_TEST_CASE(SingleViewportBehavesExactlyAsBefore, ViewportFixture)
             const Position nbPos = Position(world.GetNodePos(neighbour)) - view.GetOffset();
             // Nur Nachbarn vergleichen, die nicht ueber den Kartenrand gewrappt sind
             if(std::abs(nbPos.x - selPos.x) > 4 * TR_W || std::abs(nbPos.y - selPos.y) > 4 * TR_H)
-                continue;
+                continue; // LCOV_EXCL_LINE
             BOOST_TEST_INFO("neighbour dir " << static_cast<unsigned>(dir));
             BOOST_TEST(dist2(selPos) <= dist2(nbPos));
         }

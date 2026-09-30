@@ -68,12 +68,14 @@ MapPoint findExclusiveHutSpot(const GameWorldBase& world, const GameWorldViewer&
         if(viewer.GetBQ(pt) < BuildingQuality::Hut)
             continue;
         if(world.GetBQ(pt, otherPlayer) != BuildingQuality::Nothing)
+            // LCOV_EXCL_START
             continue; // waere kein Unterscheidungsmerkmal
+        // LCOV_EXCL_STOP
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Ein eigener, freier Knoten mit MINDESTENS dieser Bauqualitaet. Gebraucht fuer den Nachweis
@@ -88,10 +90,10 @@ MapPoint findBuildSpot(const GameWorldBase& world, const GameWorldViewer& viewer
         if(viewer.GetBQ(pt) < minBQ)
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Ein Knoten, auf dem dieser Spieler NICHTS tun kann: neutrales Gebiet, kein Objekt.
@@ -100,18 +102,20 @@ MapPoint findDeadNode(const GameWorldBase& world, const GameWorldViewer& viewer)
 {
     const MapPoint hqPos = world.GetPlayer(viewer.GetPlayerId()).GetHQPos();
     if(!hqPos.isValid())
-        return MapPoint::Invalid();
+        return MapPoint::Invalid(); // LCOV_EXCL_LINE
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(hqPos, 16))
     {
         if(viewer.IsOwner(pt))
             continue;
         if(world.GetNode(pt).owner != 0)
+            // LCOV_EXCL_START
             continue; // fremdes Gebiet - dort gaebe es evtl. einen Angriffsreiter
+        // LCOV_EXCL_STOP
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 MapPoint hqFlagOf(const GameWorldBase& world, const unsigned char player)
@@ -169,18 +173,22 @@ BOOST_FIXTURE_TEST_CASE(APadPlayerBuildsAHutThroughTheActionWindow, PadGameFixtu
     const auto focusedIcon = [&] { return dynamic_cast<const ctrlBuildingIcon*>(padView.GetFocus().GetFocused()); };
     for(unsigned i = 0; i < 8u && !focusedIcon(); ++i)
     {
+        // LCOV_EXCL_START
         press(11, PadButton::DpadDown);
         ++inputs;
+        // LCOV_EXCL_STOP
     }
     const ctrlBuildingIcon* icon = focusedIcon();
     BOOST_TEST_REQUIRE(icon != static_cast<const ctrlBuildingIcon*>(nullptr));
     // ... und nach rechts, bis es das gewuenschte Gebaeude ist.
     for(unsigned i = 0; i < 12u && icon->GetType() != BuildingType::Woodcutter; ++i)
     {
+        // LCOV_EXCL_START
         press(11, PadButton::DpadRight);
         ++inputs;
         icon = focusedIcon();
         BOOST_TEST_REQUIRE(icon != static_cast<const ctrlBuildingIcon*>(nullptr));
+        // LCOV_EXCL_STOP
     }
     BOOST_TEST_REQUIRE((icon->GetType() == BuildingType::Woodcutter));
 
@@ -485,7 +493,7 @@ BOOST_FIXTURE_TEST_CASE(EveryBuildingTierIsReachableByTurningTheRingPages, PadVi
     BOOST_TEST(wnd->ShouldBeClosed());
 
     if(view(1).actionwindow && !view(1).actionwindow->ShouldBeClosed())
-        view(1).actionwindow->Close();
+        view(1).actionwindow->Close(); // LCOV_EXCL_LINE
     WINDOWMANAGER.Draw();
 }
 

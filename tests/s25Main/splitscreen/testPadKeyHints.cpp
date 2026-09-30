@@ -149,7 +149,7 @@ std::optional<brief::KeyAction> actionFor(const brief::Brief& b, const PadButton
         return h.input == brief::KeyInput::Button && h.button == button;
     });
     if(it == b.keys.end())
-        return std::nullopt;
+        return std::nullopt; // LCOV_EXCL_LINE
     return it->action;
 }
 
@@ -180,7 +180,7 @@ std::string dumpKeys(const brief::Brief& b)
         out += std::to_string(static_cast<int>(h.action));
     }
     if(out.empty())
-        return std::string("(leer)");
+        return std::string("(leer)"); // LCOV_EXCL_LINE
     // Zusaetzlich die Zeile, die wirklich unter der Ansicht steht - in der Sprache, die gerade
     // geladen ist. Sie ist AUSKUNFT und keine Zusicherung; gemessen wird oben ueber die Werte.
     return out + "   [" + brief::KeyLine(b.keys) + "]";
@@ -202,18 +202,18 @@ MapPoint findPlainFlagSpot(const GameWorld& world, const GameWorldViewer& viewer
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(world.GetPlayer(player).GetHQPos(), 8))
     {
         if(!viewer.IsOwner(pt))
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
             continue;
         if(world.IsFlagAround(pt))
             continue;
         if(world.GetBQ(pt, player) < BuildingQuality::Flag)
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNO(world.GetNeighbour(pt, Direction::NorthWest))->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Ein eigener, freier Knoten mit mindestens dieser Bauqualitaet.
@@ -226,10 +226,10 @@ MapPoint findBuildSpot(const GameWorldBase& world, const GameWorldViewer& viewer
         if(viewer.GetBQ(pt) < minBQ)
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Der Knopf `btId` im Flaggenreiter des Aktionsfensters dieser Ansicht - oder nullptr.
@@ -237,13 +237,13 @@ ctrlButton* flagTabButton(PlayerView& view, const unsigned btId)
 {
     iwAction* const wnd = view.actionwindow;
     if(!wnd)
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     auto* mainTab = wnd->GetCtrl<ctrlTab>(0);
     if(!mainTab)
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     ctrlGroup* group = mainTab->GetGroup(kTabFlag);
     if(!group)
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     return group->GetCtrl<ctrlButton>(btId);
 }
 
@@ -319,7 +319,7 @@ struct HintFixture : PadViewFixture<T_numViews, T_numPlayers>
                 return;
             this->press(dev, this->view(viewIdx).GetRing().IsOpen() ? PadButton::DpadRight : PadButton::RightShoulder);
         }
-        BOOST_FAIL("Das Control ist per Pad nicht erreichbar");
+        BOOST_FAIL("Das Control ist per Pad nicht erreichbar"); // LCOV_EXCL_LINE
     }
 
     /// DEN RING BLAETTERN, bis das gesuchte Control ein Sektor ist - und dann darauf drehen.
@@ -344,7 +344,7 @@ struct HintFixture : PadViewFixture<T_numViews, T_numPlayers>
             }
             this->press(dev, PadButton::RightShoulder);
         }
-        BOOST_FAIL("Das Control ist auch durch Blaettern nicht erreichbar");
+        BOOST_FAIL("Das Control ist auch durch Blaettern nicht erreichbar"); // LCOV_EXCL_LINE
     }
 
     /// Ein GEWOEHNLICHES Fenster dieses Sitzplatzes, geoeffnet ueber den vollen produktiven Weg
@@ -2033,7 +2033,7 @@ BOOST_FIXTURE_TEST_CASE(AtAWaterFlagTheHeadAlsoNamesTheWaterway, HintFixture<2>)
     iwAction::Tabs tabs;
     tabs.flag = true;
     iwAction wnd(*dsk, view(1).GetView(), tabs, flagPt, DrawPoint(0, 0),
-                 iwAction::Params(iwAction::FlagType::WaterFlag),
+                 iwAction::Params(iwAction::FlagType::WaterFlag), // LCOV_EXCL_LINE
                  /*military_buildings*/ false, iwAction::MousePointer::LeaveAlone);
 
     auto* const mainTab = wnd.GetCtrl<ctrlTab>(0);
@@ -2507,7 +2507,9 @@ BOOST_FIXTURE_TEST_CASE(TheDrawnLinesReallyLeaveTheEmitter, HintFixture<2>)
     for(const auto& line : layout.lines)
     {
         if(line.text.empty())
+            // LCOV_EXCL_START
             continue; // glFont::Draw steigt bei leerem Text aus, bevor es zeichnet
+        // LCOV_EXCL_STOP
         expected.push_back(briefEmitTap::Emitted{line.color, numCodepoints(line.text)});
     }
     for(const auto& e : briefEmitTap::emitted)

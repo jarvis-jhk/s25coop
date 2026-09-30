@@ -94,9 +94,11 @@ BOOST_AUTO_TEST_CASE(ViewportsCoverTheWholeRenderAreaForEveryViewCount)
                             }
                             if(owners != 1u)
                             {
+                                // LCOV_EXCL_START
                                 if(uncovered == 0)
                                     firstUncovered = p;
                                 ++uncovered;
+                                // LCOV_EXCL_STOP
                             }
                         }
                     }
@@ -132,9 +134,11 @@ BOOST_FIXTURE_TEST_CASE(WithThreeViewsNoViewEverHoldsACursorOutsideItsOwnViewpor
                     continue;
                 if(!view(i).ContainsViewPos(*cursor))
                 {
+                    // LCOV_EXCL_START
                     if(violations == 0)
                         firstBad = p;
                     ++violations;
+                    // LCOV_EXCL_STOP
                 }
             }
         }

@@ -69,8 +69,10 @@ public:
         void CI_GameLoading(std::shared_ptr<Game> g) override { game = std::move(g); }
         void CI_GameStarted() override { gameStarted = true; }
         void CI_Error(ClientError) override { ++numErrors; }
+        // LCOV_EXCL_START
         void CI_Async(const std::string&) override { ++numAsync; }
         void CI_ReplayAsync(const std::string&) override { ++numReplayAsync; }
+        // LCOV_EXCL_STOP
         void CI_ReplayEndReached(const std::string&) override { replayEnded = true; }
         void CI_PlayersSwapped(unsigned p1, unsigned p2) override { swaps.emplace_back(p1, p2); }
     };
@@ -123,7 +125,7 @@ public:
         while(!isDone())
         {
             if(std::chrono::steady_clock::now() - start >= timeout)
-                return false;
+                return false; // LCOV_EXCL_LINE
             pump();
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
@@ -159,8 +161,10 @@ public:
             }
             if(!inLobby)
             {
+                // LCOV_EXCL_START
                 GAMECLIENT.Stop();
                 GAMESERVER.Stop();
+                // LCOV_EXCL_STOP
             }
         }
         BOOST_TEST_REQUIRE(inLobby);

@@ -32,8 +32,8 @@ enum
 iwObservate::iwObservate(GameWorldView& gwv, const MapPoint selectedPt)
     : IngameWindow(CGI_OBSERVATION, IngameWindow::posAtMouse, SmallWndSize, _("Observation window"), nullptr, false,
                    CloseBehavior::NoRightClick),
-      parentView(gwv),
-      view(new GameWorldView(gwv.GetViewer(), Position(GetDrawPos() * DrawPoint(10, 15)), GetSize() - Extent::all(20))),
+      parentView(gwv), view(std::make_unique<GameWorldView>(gwv.GetViewer(), Position(GetDrawPos() * DrawPoint(10, 15)),
+                                                            GetSize() - Extent::all(20))),
       selectedPt(selectedPt), lastWindowPos(Point<unsigned short>::Invalid()), isScrolling(false), zoomLvl(0),
       followMovableId(0)
 {
@@ -64,6 +64,8 @@ iwObservate::iwObservate(GameWorldView& gwv, const MapPoint selectedPt)
     using namespace std::chrono_literals;
     AddTimer(ID_tmrUpdateFollow, 1s)->Stop();
 }
+
+iwObservate::~iwObservate() = default;
 
 void iwObservate::Msg_ButtonClick(const unsigned ctrl_id)
 {

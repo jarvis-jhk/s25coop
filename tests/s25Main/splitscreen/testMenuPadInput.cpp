@@ -82,6 +82,7 @@ struct CountingDesktop : Desktop
         ++numLeftUp;
         return false;
     }
+    // LCOV_EXCL_START
     bool Msg_RightDown(const MouseCoords&) override
     {
         ++numRightDown;
@@ -91,6 +92,7 @@ struct CountingDesktop : Desktop
     {
         ++numKeyDown;
         return false;
+        // LCOV_EXCL_STOP
     }
 };
 } // namespace

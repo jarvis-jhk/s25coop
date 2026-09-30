@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE(MouseAndPadEndInTheSameState)
     padCombo->StepValue(Position(0, 1));
     padCombo->Activate();
 
-    BOOST_TEST(padCombo->GetSelection() == mouseCombo->GetSelection());
+    BOOST_TEST((padCombo->GetSelection() == mouseCombo->GetSelection()));
     BOOST_TEST(padCombo->IsListOpen() == mouseCombo->IsListOpen());
     BOOST_TEST(padParent.comboSelected == mouseParent.comboSelected, boost::test_tools::per_element());
     BOOST_TEST_REQUIRE(padParent.comboSelected.size() == 1u);

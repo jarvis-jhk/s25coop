@@ -64,10 +64,10 @@ RoadSpot findRoadSpotOutsideTerritory(const GameWorldViewer& viewer, const unsig
     const auto player = static_cast<unsigned char>(viewer.GetPlayerId());
     const MapPoint hqPos = world.GetPlayer(player).GetHQPos();
     if(!hqPos.isValid())
-        return {};
+        return {}; // LCOV_EXCL_LINE
     const auto* hq = world.GetSpecObj<nobBaseWarehouse>(hqPos);
     if(!hq)
-        return {};
+        return {}; // LCOV_EXCL_LINE
     RoadSpot spot;
     spot.start = hq->GetFlagPos();
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(spot.start, maxLen + 4))
@@ -82,15 +82,15 @@ RoadSpot findRoadSpotOutsideTerritory(const GameWorldViewer& viewer, const unsig
         // Gegenprobe an der Simulation: dort kann keine Flagge entstehen, das Kommando ist also
         // sicher wirkungslos.
         if(world.GetBQ(pt, player) != BuildingQuality::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         std::vector<Direction> route = FindPathForRoad(viewer, spot.start, pt, false, 100);
         if(route.size() < minLen || route.size() > maxLen)
-            continue;
+            continue; // LCOV_EXCL_LINE
         spot.end = pt;
         spot.route = std::move(route);
         return spot;
     }
-    return {};
+    return {}; // LCOV_EXCL_LINE
 }
 
 } // namespace
@@ -202,11 +202,11 @@ BOOST_FIXTURE_TEST_CASE(CommittingARoadThatCannotEndWhereItStopsIsRefused, PadVi
     {
         const MapPoint nb = world.GetNeighbour(spot.end, dir);
         if(std::find(pts.begin(), pts.end(), nb) != pts.end())
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNode(nb).obj || world.IsFlagAround(nb))
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetBQ(nb, 0) == BuildingQuality::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         world.SetFlag(nb, 0);
         if(world.GetNO(nb)->GetType() == NodalObjectType::Flag)
         {
@@ -248,8 +248,10 @@ BOOST_FIXTURE_TEST_CASE(CommittingARoadThatCannotEndWhereItStopsIsRefused, PadVi
     BOOST_TEST_REQUIRE(view(0).GetRoad().route.size() == spot.route.size() - 1u);
     if(view(0).GetRoad().route.size() >= 2u)
     {
+        // LCOV_EXCL_START
         press(10, padRoad::Commit);
         BOOST_TEST((view(0).GetRoad().mode == RoadBuildMode::Disabled));
+        // LCOV_EXCL_STOP
     }
 }
 

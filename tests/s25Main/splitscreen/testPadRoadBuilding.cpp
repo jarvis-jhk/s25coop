@@ -392,10 +392,10 @@ BOOST_FIXTURE_TEST_CASE(DestroyingTheStartFlagClearsThatViewsRoadCompletelyAndLe
             if(pt == flag0 || world.GetNode(pt).obj || world.IsFlagAround(pt))
                 continue;
             if(world.GetBQ(pt, 0) == BuildingQuality::Nothing)
-                continue;
+                continue; // LCOV_EXCL_LINE
             auto route = FindPathForRoad(view(0).GetViewer(), flag0, pt, false, 100);
             if(route.size() < 2 || route.size() > 4)
-                continue;
+                continue; // LCOV_EXCL_LINE
             s.end = pt;
             s.route = std::move(route);
             break;

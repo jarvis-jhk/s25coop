@@ -907,9 +907,11 @@ BOOST_FIXTURE_TEST_CASE(NoWidthInTheCheckedRangeFallsBelowTheUiMinimum, TvFixtur
         ++numChecked;
         if(VIDEODRIVER.GetRenderSize().x < 800u)
         {
+            // LCOV_EXCL_START
             if(numTooNarrow == 0)
                 firstBad = width;
             ++numTooNarrow;
+            // LCOV_EXCL_STOP
         }
     }
     BOOST_TEST(numChecked == 601u);

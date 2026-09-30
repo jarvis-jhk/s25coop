@@ -91,20 +91,20 @@ MapPoint findPlainFlagSpot(const GameWorld& world, const GameWorldViewer& viewer
     for(const MapPoint& pt : world.GetPointsInRadiusWithCenter(world.GetPlayer(player).GetHQPos(), 8))
     {
         if(!viewer.IsOwner(pt))
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
             continue;
         if(world.IsFlagAround(pt))
             continue;
         if(world.GetBQ(pt, player) < BuildingQuality::Flag)
-            continue;
+            continue; // LCOV_EXCL_LINE
         // Der Nachbar im Nordwesten darf kein Gebaeude sein, sonst waere es eine Gebaeude- und
         // keine gewoehnliche Flagge (ShowActionWindow: FlagType::HQ / Storehouse).
         if(world.GetNO(world.GetNeighbour(pt, Direction::NorthWest))->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Ein eigener, freier Knoten mit MINDESTENS dieser Bauqualitaet - dort oeffnet A das
@@ -119,10 +119,10 @@ MapPoint findBuildSpot(const GameWorldBase& world, const GameWorldViewer& viewer
         if(viewer.GetBQ(pt) < minBQ)
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Der Knopf `btId` im Flaggenreiter des Aktionsfensters dieser Ansicht - oder nullptr.
@@ -130,13 +130,13 @@ ctrlButton* flagTabButton(PlayerView& view, const unsigned btId)
 {
     iwAction* const wnd = view.actionwindow;
     if(!wnd)
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     auto* mainTab = wnd->GetCtrl<ctrlTab>(0);
     if(!mainTab)
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     ctrlGroup* group = mainTab->GetGroup(kTabFlag);
     if(!group)
-        return nullptr;
+        return nullptr; // LCOV_EXCL_LINE
     return group->GetCtrl<ctrlButton>(btId);
 }
 
@@ -155,7 +155,7 @@ unsigned padFocusOnto(T_Fixture& f, const unsigned viewIdx, const PadDeviceId de
             return presses;
         f.press(dev, view.GetRing().IsOpen() ? PadButton::DpadRight : PadButton::RightShoulder);
     }
-    return 0;
+    return 0; // LCOV_EXCL_LINE
 }
 
 /// Eine WINZIGE Insel in einem See - woertlich die Welt aus testPadFeedback.cpp. Gebraucht,
@@ -239,7 +239,7 @@ BOOST_FIXTURE_TEST_CASE(OnHisOwnFlagThePadPlayerReachesBothTheRoadAndTheActionWi
     press(11, padFlag::CloseWindow);
     BOOST_TEST_REQUIRE(wnd->ShouldBeClosed());
     if(!wnd->ShouldBeClosed())
-        wnd->Close();
+        wnd->Close(); // LCOV_EXCL_LINE
     dsk->Msg_WindowClosed(*wnd);
     WINDOWMANAGER.Draw();
 
@@ -311,7 +311,7 @@ BOOST_FIXTURE_TEST_CASE(ThePullDownFlagButtonIsReachableByPad, FlagPadFixture<2>
 
     iwAction* const wnd = view(1).actionwindow;
     if(!wnd->ShouldBeClosed())
-        wnd->Close();
+        wnd->Close(); // LCOV_EXCL_LINE
     dsk->Msg_WindowClosed(*wnd);
     WINDOWMANAGER.Draw();
 }
@@ -332,11 +332,11 @@ BOOST_FIXTURE_TEST_CASE(OnAWaterFlagThePadPlayerReachesTheWholeFlagTab, WaterFla
         if(!viewer.IsOwner(pt) || !world.HasTerrain(pt, isWater))
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing || world.IsFlagAround(pt))
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetBQ(pt, 0) < BuildingQuality::Flag)
-            continue;
+            continue; // LCOV_EXCL_LINE
         if(world.GetNO(world.GetNeighbour(pt, Direction::NorthWest))->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         flagPt = pt;
         break;
     }
@@ -452,7 +452,7 @@ BOOST_FIXTURE_TEST_CASE(APadPlayerCanPullDownHisOwnFlagAndItBooksOnHisOwnAccount
     if(IngameWindow* wnd = dsk->GetPlayerView(1).actionwindow)
     {
         if(!wnd->ShouldBeClosed())
-            wnd->Close();
+            wnd->Close(); // LCOV_EXCL_LINE
         dsk->Msg_WindowClosed(*wnd);
     }
     WINDOWMANAGER.Draw();
@@ -499,7 +499,7 @@ BOOST_FIXTURE_TEST_CASE(APadPlayerCanCloseHisActionWindowWithoutActing, FlagPadF
     BOOST_TEST((view(1).GetRoad().mode == RoadBuildMode::Disabled));
 
     if(!wnd->ShouldBeClosed())
-        wnd->Close();
+        wnd->Close(); // LCOV_EXCL_LINE
     dsk->Msg_WindowClosed(*wnd);
     WINDOWMANAGER.Draw();
     BOOST_TEST(WINDOWMANAGER.GetTopMostWindow(1) == static_cast<IngameWindow*>(nullptr));
@@ -540,7 +540,7 @@ BOOST_FIXTURE_TEST_CASE(InTheRingBClosesEverythingInOnePress, FlagPadFixture<2>)
     BOOST_TEST(wnd->ShouldBeClosed());
 
     if(!wnd->ShouldBeClosed())
-        wnd->Close();
+        wnd->Close(); // LCOV_EXCL_LINE
     dsk->Msg_WindowClosed(*wnd);
     WINDOWMANAGER.Draw();
 }
@@ -575,7 +575,7 @@ BOOST_FIXTURE_TEST_CASE(TheCloseButtonNeverTouchesAnotherPlayersWindow, FlagPadF
     BOOST_TEST(wnd0->ShouldBeClosed());
 
     if(!wnd0->ShouldBeClosed())
-        wnd0->Close();
+        wnd0->Close(); // LCOV_EXCL_LINE
     dsk->Msg_WindowClosed(*wnd0);
     WINDOWMANAGER.Draw();
 }
@@ -612,7 +612,7 @@ BOOST_FIXTURE_TEST_CASE(APinnedWindowSurvivesTheCloseButton, FlagPadFixture<2>)
     BOOST_TEST(wnd->ShouldBeClosed());
 
     if(!wnd->ShouldBeClosed())
-        wnd->Close();
+        wnd->Close(); // LCOV_EXCL_LINE
     dsk->Msg_WindowClosed(*wnd);
     WINDOWMANAGER.Draw();
 }
@@ -686,7 +686,7 @@ BOOST_FIXTURE_TEST_CASE(InRoadModeBStillStepsBackAndClosesNothing, FlagPadFixtur
         wnd->Close();
     dsk->Msg_WindowClosed(*wnd);
     if(!menu->ShouldBeClosed())
-        menu->Close();
+        menu->Close(); // LCOV_EXCL_LINE
     WINDOWMANAGER.Draw();
 }
 

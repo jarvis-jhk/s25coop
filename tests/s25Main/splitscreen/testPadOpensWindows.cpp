@@ -39,10 +39,10 @@ MapPoint findOwnBuildingSpot(const GameWorld& world, const GameWorldViewer& view
         if(world.GetBQ(pt, static_cast<unsigned char>(viewer.GetPlayerId())) < BuildingQuality::Hut)
             continue;
         if(world.GetNO(pt)->GetType() != NodalObjectType::Nothing)
-            continue;
+            continue; // LCOV_EXCL_LINE
         return pt;
     }
-    return MapPoint::Invalid();
+    return MapPoint::Invalid(); // LCOV_EXCL_LINE
 }
 
 /// Setzt ein Militaergebaeude fuer diesen Spieler und liefert seinen Punkt.

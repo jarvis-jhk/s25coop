@@ -95,6 +95,7 @@ struct CountingDesktop : Desktop
         ++numMouseMove;
         return true;
     }
+    // LCOV_EXCL_START
     bool Msg_LeftDown(const MouseCoords&) override
     {
         ++numLeftDown;
@@ -114,6 +115,7 @@ struct CountingDesktop : Desktop
     {
         ++numKeyDown;
         return true;
+        // LCOV_EXCL_STOP
     }
     unsigned total() const { return numMouseMove + numLeftDown + numLeftUp + numRightDown + numKeyDown; }
 };

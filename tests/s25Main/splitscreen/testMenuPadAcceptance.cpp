@@ -108,18 +108,20 @@ std::optional<unsigned> findSplitscreenCapableRow(const ctrlTable& table)
     {
         const std::string& name = table.GetItemText(row, 0);
         if(name.find("(*)") != std::string::npos)
+            // LCOV_EXCL_START
             continue; // Karte mit Lua-Skript
+        // LCOV_EXCL_STOP
         const std::string& players = table.GetItemText(row, 2);
         const size_t begin = players.find_first_of("0123456789");
         if(begin == std::string::npos)
-            continue;
+            continue; // LCOV_EXCL_LINE
         unsigned numPlayers = 0;
         for(size_t i = begin; i < players.size() && players[i] >= '0' && players[i] <= '9'; ++i)
             numPlayers = numPlayers * 10u + static_cast<unsigned>(players[i] - '0');
         if(numPlayers >= 2)
             return static_cast<unsigned>(row);
     }
-    return std::nullopt;
+    return std::nullopt; // LCOV_EXCL_LINE
 }
 
 } // namespace

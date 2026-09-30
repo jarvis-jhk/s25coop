@@ -7,6 +7,7 @@
 #include "IngameWindow.h"
 #include "gameTypes/MapCoordinates.h"
 #include <boost/signals2.hpp>
+#include <memory>
 
 class GameWorldView;
 struct MouseCoords;
@@ -16,8 +17,8 @@ class iwObservate : public IngameWindow
 {
     /// View of parent GUI element
     GameWorldView& parentView;
-    /// View shown in this window
-    GameWorldView* view;
+    /// View shown in this window (s25coop: owned; it was a raw new that was never deleted)
+    std::unique_ptr<GameWorldView> view;
 
     const MapPoint selectedPt;
     DrawPoint lastWindowPos;
@@ -35,6 +36,7 @@ class iwObservate : public IngameWindow
 
 public:
     iwObservate(GameWorldView& gwv, MapPoint selectedPt);
+    ~iwObservate() override;
 
 private:
     void DrawBackground() override;

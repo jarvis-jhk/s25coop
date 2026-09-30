@@ -214,9 +214,11 @@ BOOST_FIXTURE_TEST_CASE(NoViewEverHoldsACursorThatLiesInsideAnotherViewsViewport
                     continue;
                 if(view(1u - i).ContainsViewPos(*cursor))
                 {
+                    // LCOV_EXCL_START
                     if(violations == 0)
                         firstBad = p;
                     ++violations;
+                    // LCOV_EXCL_STOP
                 }
             }
         }

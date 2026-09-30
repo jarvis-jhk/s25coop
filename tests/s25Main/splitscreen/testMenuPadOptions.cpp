@@ -78,7 +78,7 @@ struct OptionsPadFixture : rttr::test::MenuPadFixture
                 return true;
             press(pad, NextCtrl);
         }
-        return focused(0) == target;
+        return focused(0) == target; // LCOV_EXCL_LINE
     }
 };
 

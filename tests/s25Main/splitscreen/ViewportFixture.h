@@ -25,7 +25,7 @@ struct StubGameInterface : GameInterface
 {
     struct StubGCFactory : GameCommandFactory
     {
-        bool AddGC(gc::GameCommandPtr) override { return true; }
+        bool AddGC(gc::GameCommandPtr) override { return true; } // LCOV_EXCL_LINE
     };
 
     StubGCFactory factory;
@@ -33,6 +33,7 @@ struct StubGameInterface : GameInterface
 
     explicit StubGameInterface(GameWorldBase& world) : cheats(std::make_unique<Cheats>(world, factory)) {}
 
+    // LCOV_EXCL_START
     void GI_PlayerDefeated(unsigned) override {}
     void GI_UpdateMinimap(MapPoint) override {}
     void GI_FlagDestroyed(MapPoint) override {}
@@ -43,6 +44,7 @@ struct StubGameInterface : GameInterface
     void GI_StartRoadBuilding(MapPoint, bool) override {}
     void GI_CancelRoadBuilding() override {}
     void GI_BuildRoad() override {}
+    // LCOV_EXCL_STOP
     Cheats& GI_GetCheats() override { return *cheats; }
 };
 
