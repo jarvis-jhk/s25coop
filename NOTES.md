@@ -503,6 +503,8 @@ Next: M3 c step 3. Sol PR #4 (campaign controller routes) reviewed, merged: pad 
   controller Back from map selection and controller skip from the intro; the broad M3 navigation item stays open.
 
 Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
+- Integrated Sol PR #12 (online-lobby controller B) as 2a2891fde: all 17 CI jobs green on ea7f175ff; own
+  Debug rerun of the six MenuPadLobbyReturn cases passes (1630 assertions). Change mirrors dskMultiPlayer B.
 
 
 ## 2026-09-30 — Sol companion: controller Back from Create game
