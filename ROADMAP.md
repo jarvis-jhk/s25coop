@@ -115,6 +115,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  Credits supports controller B to Main menu; its text pages stay usable when optional game graphics
+  or world data are unavailable, with physical-input and missing-resource regressions (Sol companion, 2026-09-30).
   Campaign chooser Back now retains local/network context; chapter/campaign victory screens support
   A/B/Start, with driver-event regressions (Sol PR #4). Remaining dialogs and menu paths stay open.
   Options handles controller B through its existing save/validate/Back action; driver-event tests cover

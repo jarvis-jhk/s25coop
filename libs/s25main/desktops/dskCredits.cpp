@@ -270,12 +270,12 @@ dskCredits::dskCredits() : Desktop(LOADER.GetImageN("setup013", 0)), itCurEntry(
     entry.lines.push_back(_("Thank you!"));
     entries.push_back(entry);
 
+    // Building entries invalidates the initial end iterator. Text credits do not need the optional game graphics.
+    itCurEntry = entries.begin();
     WorldDescription worldDesc;
     GameDataLoader gdLoader(worldDesc);
     if(!gdLoader.Load())
     {
-        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), _("Failed to load game data"), this, MsgboxButton::Ok,
-                                                      MsgboxIcon::ExclamationRed, 0));
         return;
     }
 
@@ -285,12 +285,10 @@ dskCredits::dskCredits() : Desktop(LOADER.GetImageN("setup013", 0)), itCurEntry(
 
     if(!LOADER.LoadFilesAtGame(worldDesc.get(DescIdx<LandscapeDesc>(0)).mapGfxPath, false, nations, {}))
     {
-        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), _("Failed to load game resources"), this,
-                                                      MsgboxButton::Ok, MsgboxIcon::ExclamationRed, 0));
         return;
     }
 
-    this->itCurEntry = entries.begin();
+    drawBobs_ = true;
 
     if(LOADER.sng_lst.size() > 8)
         LOADER.sng_lst[8]->Play(-1);
@@ -303,7 +301,8 @@ void dskCredits::Draw_()
     Desktop::Draw_();
     if(itCurEntry != entries.end())
     {
-        DrawBobs();
+        if(drawBobs_)
+            DrawBobs();
         DrawCredit();
     }
 }
@@ -499,6 +498,13 @@ bool dskCredits::Msg_KeyDown(const KeyEvent&)
 {
     GotoNextPage();
     return true;
+}
+
+bool dskCredits::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::B)
+        return false;
+    return Close();
 }
 
 bool dskCredits::Msg_LeftUp(const MouseCoords&)
