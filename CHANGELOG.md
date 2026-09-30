@@ -3,6 +3,13 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.8
+
+- Play one tribe together on one screen: in the lobby, tick "Play one tribe together", and every
+  player who presses A on their controller gets their own view of the SAME tribe. Campaign
+  missions always work this way.
+- The game is now fully in German when your system is set to German, including all co-op texts.
+
 ## 0.1.7
 
 - Splitscreen: up to four players on one screen, each with their own gamepad and their own view.

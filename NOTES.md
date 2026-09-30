@@ -424,7 +424,8 @@ feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Min
 - M3 c design written: doc/coop/SharedLocalViews.md (several local views on ONE player; only a few explicit guards
   block it — commands, windows and pads are already keyed right).
 - Released v0.1.7 (splitscreen) — package checked: binary starts, rttr-de.mo and CHANGELOG inside.
-- Branch feature/shared-views (CI running at session end; merge to master once green — nothing else pending there):
+- Branch feature/shared-views, merged to master after CI was green (one extra round: a pad-brief test demands the German
+  ware word in purpose sentences — derneuere's German used English ware names; run the FULL ctest after .po changes):
   1. `GameClient::SetSharedLocalViews(n)`: n extra views on the MAIN player (no slot, no registration; commands go by
      player id anyway). CreateViews appends them without the duplicate check. CLI `--local-players 2 --share-player`.
      Test SplitscreenGameTests/TwoSharedViewsControlOnePlayer; by hand under Xvfb a site placed in the right view
@@ -440,6 +441,7 @@ feedback points at. Jan's Deck/Mint feedback on 0.1.5 still open. Jan's Deck/Min
      build (msgmerge updates all 28 .po), German via `msgmerge -C <translated compendium>` with the build's flags.
      88 texts added, all German (Codex).
 - The panel is only visible with a pad plugged in; Xvfb has no pad, so step 2 is covered by the tests only.
-Next: merge feature/shared-views (+ CHANGELOG 0.1.8 "play one tribe together on one screen", release); then M3 c
+- Released v0.1.8 (couch coop in the lobby, German texts).
+Next: M3 c
 step 3 (seat colour per view in focus ring and brief stripe; road preview of shared views). Jan's Deck/Mint feedback
 on 0.1.5–0.1.7 still open.

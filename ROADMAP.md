@@ -105,8 +105,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     two local players seen in the real client under Xvfb (`--local-players 2`, a building placed from the second view).
   - ☐ b) coop member + local players: forbid or define the combination (a member client with extra local slots).
   - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
-    Design: doc/coop/SharedLocalViews.md. Steps (branch feature/shared-views, CI pending 2026-09-30): ◐ 1 GameClient views ≠ slots + CLI `--share-player` + test · ◐ 2 lobby seat "together
-    with seat 1" (campaign: only that) · 3 seat colours per view, road-preview/settings polish.
+    Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
+    with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
 - ☐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
