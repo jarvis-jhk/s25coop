@@ -1648,6 +1648,7 @@ struct TvModeGuard
         SETTINGS.video.tvMode = true;
         SETTINGS.video.tvSafeAreaPercent = tv::SAFE_AREA_PERCENT_DEFAULT;
     }
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~TvModeGuard()
     {
         SETTINGS.video.tvMode = oldMode;

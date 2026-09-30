@@ -65,8 +65,8 @@ void checkEveryViewOwnsItsOwnWindowOfTheSameType()
 {
     BOOST_TEST_CONTEXT("numViews = " << T_numViews)
     {
-        PadViewFixture<T_numViews> f;
         std::array<bool, T_numViews> alive{};
+        PadViewFixture<T_numViews> f;
         std::array<OwnedWnd*, T_numViews> wnds{};
         for(unsigned i = 0; i < T_numViews; ++i)
             wnds[i] = &openFor(i, CGI_MAINSELECTION, alive[i], DrawPoint(10 + 10 * i, 10 + 10 * i));
@@ -102,6 +102,19 @@ void checkEveryViewOwnsItsOwnWindowOfTheSameType()
     }
 }
 
+/// The alive flags an OwnedWnd writes in its destructor. Windows still open at the end of a test
+/// die in the fixture destructor, after the test body's locals: flags declared in the body would
+/// then be written after their lifetime (stack smashing on gcc, access violation on MSVC). As a
+/// base listed before the fixture they are destroyed after it.
+struct AliveFlags
+{
+    bool alive0 = false, alive1 = false, ignored = false, aliveShared = false, aliveParent = false, aliveChild = false;
+    std::array<bool, 4> alive{};
+};
+template<unsigned T_numViews>
+struct OwnershipFixture : AliveFlags, PadViewFixture<T_numViews>
+{};
+
 } // namespace
 
 BOOST_AUTO_TEST_SUITE(WindowOwnershipTests)
@@ -111,9 +124,8 @@ BOOST_AUTO_TEST_SUITE(WindowOwnershipTests)
 /// Vor dem Fensterbesitz schluesselten ToggleWindow/ReplaceWindow/Close ausschliesslich ueber
 /// die global vergebene GUI_ID (gameData/const_gui_ids.h). Oeffnete Spieler 1 sein
 /// Militaerfenster, fand FindNonModalWindow das von Spieler 0 und schloss es.
-BOOST_FIXTURE_TEST_CASE(TwoViewsHoldTheSameWindowTypeOpenAtTheSameTime, PadViewFixture<2>)
+BOOST_FIXTURE_TEST_CASE(TwoViewsHoldTheSameWindowTypeOpenAtTheSameTime, OwnershipFixture<2>)
 {
-    bool alive0 = false, alive1 = false;
     OwnedWnd& w0 = openFor(0, CGI_MAINSELECTION, alive0, DrawPoint(10, 10));
     OwnedWnd& w1 = openFor(1, CGI_MAINSELECTION, alive1, DrawPoint(300, 10));
     WINDOWMANAGER.Draw();
@@ -135,9 +147,8 @@ BOOST_FIXTURE_TEST_CASE(TwoViewsHoldTheSameWindowTypeOpenAtTheSameTime, PadViewF
 
 /// Die schaerfere Haelfte: der Besitzer ist Teil des SCHLUESSELS und nicht bloss ein
 /// zusaetzliches Feld. Schaltet Spieler 0 sein Fenster aus, bleibt das von Spieler 1 offen.
-BOOST_FIXTURE_TEST_CASE(TogglingClosesOnlyTheTogglingViewsOwnWindow, PadViewFixture<2>)
+BOOST_FIXTURE_TEST_CASE(TogglingClosesOnlyTheTogglingViewsOwnWindow, OwnershipFixture<2>)
 {
-    bool alive0 = false, alive1 = false, ignored = false;
     OwnedWnd& w1 = *toggleFor(1, CGI_MAINSELECTION, alive1, DrawPoint(300, 10));
     BOOST_TEST_REQUIRE(toggleFor(0, CGI_MAINSELECTION, alive0, DrawPoint(10, 10)) != static_cast<OwnedWnd*>(nullptr));
     WINDOWMANAGER.Draw();
@@ -153,9 +164,8 @@ BOOST_FIXTURE_TEST_CASE(TogglingClosesOnlyTheTogglingViewsOwnWindow, PadViewFixt
     BOOST_TEST(w1.paints == before + 1);
 }
 
-BOOST_FIXTURE_TEST_CASE(ClosingOneViewsWindowLeavesTheOtherViewsWindowUntouched, PadViewFixture<2>)
+BOOST_FIXTURE_TEST_CASE(ClosingOneViewsWindowLeavesTheOtherViewsWindowUntouched, OwnershipFixture<2>)
 {
-    bool alive0 = false, alive1 = false;
     OwnedWnd& w0 = openFor(0, CGI_MAINSELECTION, alive0, DrawPoint(10, 10));
     OwnedWnd& w1 = openFor(1, CGI_MAINSELECTION, alive1, DrawPoint(300, 10));
     WINDOWMANAGER.Draw();
@@ -198,9 +208,8 @@ BOOST_FIXTURE_TEST_CASE(CloseHitsOneViewWhileCloseAllHitsEveryView, PadViewFixtu
 
 /// Skalierung, und zugleich der Beweis, dass der Schluessel nicht bloss "Haupt- oder
 /// Nichthauptspieler" unterscheidet.
-BOOST_FIXTURE_TEST_CASE(FourViewsHoldFourWindowsOfTheSameTypeOpen, PadViewFixture<4>)
+BOOST_FIXTURE_TEST_CASE(FourViewsHoldFourWindowsOfTheSameTypeOpen, OwnershipFixture<4>)
 {
-    std::array<bool, 4> alive{};
     std::array<OwnedWnd*, 4> wnds{};
     for(unsigned i = 0; i < 4; ++i)
         wnds[i] = &openFor(i, CGI_MAINSELECTION, alive[i], DrawPoint(10 + 150 * i, 10));
@@ -231,9 +240,8 @@ BOOST_AUTO_TEST_CASE(EveryViewOwnsItsOwnWindowForOneTwoAndFourViews)
 /// Y betritt das oberste Fenster DIESES Spielers. Ohne Besitzerbezug landete Spieler 1 im
 /// Fenster von Spieler 0 - und verstellte es anschliessend in seinem eigenen Namen, weil die
 /// Klammer aus Phase 4b auf ihn selbst zeigt.
-BOOST_FIXTURE_TEST_CASE(EachViewEntersItsOwnTopMostWindowWithY, PadViewFixture<2>)
+BOOST_FIXTURE_TEST_CASE(EachViewEntersItsOwnTopMostWindowWithY, OwnershipFixture<2>)
 {
-    bool alive0 = false, alive1 = false;
     OwnedWnd& w0 = openFor(0, CGI_MAINSELECTION, alive0, DrawPoint(10, 10));
     OwnedWnd& w1 = openFor(1, CGI_MAINSELECTION, alive1, DrawPoint(300, 10));
     WINDOWMANAGER.Draw();
@@ -255,9 +263,8 @@ BOOST_FIXTURE_TEST_CASE(EachViewEntersItsOwnTopMostWindowWithY, PadViewFixture<2
 
 /// Ein Fenster ohne Besitzer gehoert dem Bildschirm: Nachrichtenboxen, Chat, Systemfenster.
 /// Es darf NICHT je Ansicht vervielfacht werden und jeder muss es bedienen koennen.
-BOOST_FIXTURE_TEST_CASE(AWindowWithoutAnOwnerCanBeEnteredFromEveryView, PadViewFixture<2>)
+BOOST_FIXTURE_TEST_CASE(AWindowWithoutAnOwnerCanBeEnteredFromEveryView, OwnershipFixture<2>)
 {
-    bool aliveShared = false;
     // Ohne jede Klammer erzeugt - genau so entstehen iwMsgbox aus CI_Error und iwVictory.
     auto& shared = WINDOWMANAGER.Show(std::make_unique<OwnedWnd>(CGI_MSGBOX, aliveShared, DrawPoint(100, 100)));
     WINDOWMANAGER.Draw();
@@ -280,9 +287,8 @@ BOOST_FIXTURE_TEST_CASE(AWindowWithoutAnOwnerCanBeEnteredFromEveryView, PadViewF
 ///
 /// Gemessen ueber den MAUSpfad, nicht ueber das Pad: der Mauspfad hatte bis hierher gar keine
 /// Klammer, und genau dort ist die Vererbung neu.
-BOOST_FIXTURE_TEST_CASE(AWindowOpenedFromInsideAnotherWindowInheritsItsOwner, PadViewFixture<2>)
+BOOST_FIXTURE_TEST_CASE(AWindowOpenedFromInsideAnotherWindowInheritsItsOwner, OwnershipFixture<2>)
 {
-    bool aliveParent = false, aliveChild = false;
     OwnedWnd& parent = openFor(1, CGI_MAINSELECTION, aliveParent, DrawPoint(300, 100));
     parent.OpenChildOnClick(CGI_HELP, aliveChild);
     WINDOWMANAGER.Draw();

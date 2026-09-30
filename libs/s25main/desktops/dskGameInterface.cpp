@@ -1609,7 +1609,7 @@ void dskGameInterface::RefreshBrief(PlayerView& view)
     keys.canOpenObjectWindow = CanOpenObjectWindow(view, pt);
     // Der Wasserweg haengt an GENAU derselben Bedingung wie PadStartRoad(waterRoad = true):
     // eigene Flagge, Flaggenart Wasser.
-    if(const noFlag* const flag = view.GetViewer().GetWorld().GetSpecObj<noFlag>(pt))
+    if(const auto* const flag = view.GetViewer().GetWorld().GetSpecObj<noFlag>(pt))
         keys.canStartWaterway =
           flag->GetPlayer() == static_cast<unsigned char>(view.GetPlayerId()) && flag->GetFlagType() == FlagType::Water;
 
@@ -2902,7 +2902,7 @@ bool dskGameInterface::PadStartRoad(PlayerView& view, const bool waterRoad)
     // starten; die Simulation faenge das erst nach einem Netzwerkumlauf ab
     // (world/GameWorld.cpp:196-201) - mit einer stillen ConstructionFailed-Notiz und ohne
     // jede Rueckmeldung an den Spieler.
-    const noFlag* const flag = view.GetViewer().GetWorld().GetSpecObj<noFlag>(pt);
+    const auto* const flag = view.GetViewer().GetWorld().GetSpecObj<noFlag>(pt);
     if(!flag || flag->GetPlayer() != static_cast<unsigned char>(view.GetPlayerId()))
         return false;
     // Wasserwege gibt es nur an einer Wasserflagge - dieselbe Bedingung, unter der iwAction den
@@ -2997,7 +2997,7 @@ bool dskGameInterface::IsRoadTargetAllowed(const PlayerView& view, const MapPoin
     // Eine EIGENE Flagge bleibt auch dann ein zulaessiges Ziel, wenn sie nach einer
     // Gebietsverschiebung nicht mehr im Inneren liegt: GameWorld::BuildRoad laesst eine Strasse
     // an einer Flagge des eigenen Spielers ausdruecklich enden, ohne die Bauqualitaet zu fragen.
-    const noFlag* const flag = viewer.GetWorld().GetSpecObj<noFlag>(pt);
+    const auto* const flag = viewer.GetWorld().GetSpecObj<noFlag>(pt);
     return flag && flag->GetPlayer() == static_cast<unsigned char>(view.GetPlayerId());
 }
 
@@ -3006,7 +3006,7 @@ bool dskGameInterface::CanRoadEndAt(const PlayerView& view, const MapPoint pt) c
     const GameWorldViewer& viewer = view.GetViewer();
     // WOERTLICH die Endpunktregel von GameWorld::BuildRoad (world/GameWorld.cpp:222-241),
     // gelesen auf dem Viewer DIESES Spielers - also auf dem Bild, das er vor sich hat.
-    if(const noFlag* const flag = viewer.GetWorld().GetSpecObj<noFlag>(pt))
+    if(const auto* const flag = viewer.GetWorld().GetSpecObj<noFlag>(pt))
         return flag->GetPlayer() == static_cast<unsigned char>(view.GetPlayerId());
     return viewer.GetBQ(pt) != BuildingQuality::Nothing && !viewer.GetWorld().IsFlagAround(pt);
 }
@@ -3071,7 +3071,7 @@ void dskGameInterface::Run()
     const bool drawMouse = WINDOWMANAGER.FindWindowAtPos(mousePos) == nullptr;
 
     // Vergangene Zeit seit dem letzten Frame. Der erste Frame zaehlt als 0 ms.
-    const unsigned now = static_cast<unsigned>(VIDEODRIVER.GetTickCount());
+    const auto now = static_cast<unsigned>(VIDEODRIVER.GetTickCount());
     const unsigned elapsedMs = (lastInputTick_ == 0 || now < lastInputTick_) ? 0u : now - lastInputTick_;
     lastInputTick_ = now;
 
@@ -3924,7 +3924,7 @@ dskGameInterface::RingLayout dskGameInterface::LayoutRing(const PlayerView& view
     }
     // 6 ist der Abstand zwischen Ringkante und Wort (LayoutRingLabel::gap) - dieselbe Zahl,
     // nicht eine zweite.
-    const float textFit = static_cast<float>(freeW - 2 * (maxLabelW + 6));
+    const auto textFit = static_cast<float>(freeW - 2 * (maxLabelW + 6));
     const float widthLimit =
       anyText ? std::max(0.20f * static_cast<float>(freeW), std::min(0.34f * static_cast<float>(freeW), textFit)) :
                 0.5f * static_cast<float>(freeW);

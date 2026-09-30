@@ -656,18 +656,18 @@ void dskGameLobby::OnSeatButton(const unsigned seat, const unsigned slot)
         // sonst verlaere der Host seine Einstellung (BEFUND 2).
         seats_[seat].taken = false;
         seats_[seat].device = InvalidPadDevice;
-    } else if(mySeat < seats_.size())
-        return; // ein Pad sitzt auf genau einem Platz
+    } else if(mySeat < seats_.size()                                              // ein Pad sitzt auf genau einem Platz
+              || (seats_[seat].taken && seats_[seat].device != InvalidPadDevice)) // besetzt
+        return;
     else if(!seats_[seat].taken)
     {
         seats_[seat].taken = true;
         seats_[seat].device = device;
-    } else if(seats_[seat].device == InvalidPadDevice)
+    } else
     {
         // Ein Sitz, den --local-players belegt hat, bekommt jetzt sein Pad.
         seats_[seat].device = device;
-    } else
-        return; // besetzt
+    }
 
     ApplyLocalSeats();
 }

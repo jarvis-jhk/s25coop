@@ -263,7 +263,7 @@ BOOST_FIXTURE_TEST_CASE(SteppingBackRemovesExactlyOneSegmentAndRestoresItsBuildi
         aimAt(0, pts[i]);
         press(10, padRoad::Extend);
     }
-    const unsigned full = static_cast<unsigned>(view(0).GetRoad().route.size());
+    const auto full = static_cast<unsigned>(view(0).GetRoad().route.size());
     BOOST_TEST_REQUIRE(full == spot.route.size());
     BOOST_TEST_REQUIRE(view(0).GetViewer().IsOnRoad(pts.back()));
 
@@ -552,6 +552,7 @@ BOOST_FIXTURE_TEST_CASE(ARoadUnderConstructionIsInvisibleInTheOtherPlayersView, 
     BOOST_TEST_REQUIRE(s0.isValid());
     const std::vector<MapPoint> p0 = roadPoints(world, s0.start, s0.route);
     std::vector<BuildingQuality> bqInOther;
+    bqInOther.reserve(p0.size());
     for(const MapPoint& pt : p0)
         bqInOther.push_back(view(1).GetViewer().GetBQ(pt));
 

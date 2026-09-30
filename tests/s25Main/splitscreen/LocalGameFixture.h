@@ -76,8 +76,7 @@ public:
     };
 
     LocalGameFixture()
-        : userData_(), userDataOverride_("USERDATA", userData_),
-          gameManager_(LOG, SETTINGS, VIDEODRIVER, AUDIODRIVER, WINDOWMANAGER)
+        : userDataOverride_("USERDATA", userData_), gameManager_(LOG, SETTINGS, VIDEODRIVER, AUDIODRIVER, WINDOWMANAGER)
     {
         uiHelper::initGUITests();
         boost::filesystem::create_directories(RTTRCONFIG.ExpandPath(s25::folders::mapsPlayed));
@@ -95,6 +94,7 @@ public:
                                      mapPath_);
     }
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~LocalGameFixture()
     {
         GAMECLIENT.RemoveInterface(&ci_);

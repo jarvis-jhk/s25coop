@@ -685,7 +685,7 @@ brief::AttackMenuButtons ReadAttackMenuButtons(const ctrlTab& mainTab, const uns
 brief::Brief iwAction::GetPadBrief(const Window* const focused) const
 {
     using brief::ActionBrief;
-    const brief::Brief none;
+    brief::Brief none;
     if(!focused)
         return none;
     const auto* const mainTab = GetCtrl<ctrlTab>(0);

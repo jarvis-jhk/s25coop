@@ -331,6 +331,7 @@ struct ScreenSetting
           oldMousePos(VIDEODRIVER.GetMousePos())
     {}
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~ScreenSetting()
     {
         SETTINGS.video.tvMode = oldTvMode;
@@ -1087,7 +1088,7 @@ BOOST_FIXTURE_TEST_CASE(FourSeatsHoldFourIndependentRingsAtTheSameTime, PadViewF
     // Jeder Sitzplatz bekommt sein eigenes Pad und zielt auf SEINE eigene HQ-Flagge.
     for(unsigned v = 0; v < 4u; ++v)
     {
-        const PadDeviceId dev = static_cast<PadDeviceId>(20 + v);
+        const auto dev = static_cast<PadDeviceId>(20 + v);
         seatPad(*this, dev, v);
         const MapPoint hqPos = worldFixture.world.GetPlayer(v).GetHQPos();
         const auto* hq = worldFixture.world.GetSpecObj<nobBaseWarehouse>(hqPos);
@@ -1208,7 +1209,7 @@ BOOST_FIXTURE_TEST_CASE(OneSeatsRingChoiceChangesNothingForTheOther, PadViewFixt
 {
     for(unsigned v = 0; v < 2u; ++v)
     {
-        const PadDeviceId dev = static_cast<PadDeviceId>(20 + v);
+        const auto dev = static_cast<PadDeviceId>(20 + v);
         seatPad(*this, dev, v);
         const MapPoint hqPos = worldFixture.world.GetPlayer(v).GetHQPos();
         const auto* hq = worldFixture.world.GetSpecObj<nobBaseWarehouse>(hqPos);
@@ -1433,7 +1434,7 @@ BOOST_FIXTURE_TEST_CASE(NoRingLabelBreaksOnAnyTelevisionSizeAtFourSeats, PadView
         restartDesktop();
         for(unsigned v = 0; v < 4u; ++v)
         {
-            const PadDeviceId dev = static_cast<PadDeviceId>(30 + v);
+            const auto dev = static_cast<PadDeviceId>(30 + v);
             seatPad(*this, dev, v);
             aimPadAt(dev, v, hqFlagOf(worldFixture.world, static_cast<unsigned char>(v)));
         }
@@ -1445,7 +1446,7 @@ BOOST_FIXTURE_TEST_CASE(NoRingLabelBreaksOnAnyTelevisionSizeAtFourSeats, PadView
             for(const BqMode bq : {BqMode::Off, BqMode::Cursor, BqMode::All})
                 for(unsigned v = 0; v < 4u; ++v)
                 {
-                    const PadDeviceId dev = static_cast<PadDeviceId>(30 + v);
+                    const auto dev = static_cast<PadDeviceId>(30 + v);
                     gwv(v).SetBqMode(bq);
                     press(dev, PadButton::Back);
                     BOOST_TEST_REQUIRE(view(v).GetRing().IsOpen());

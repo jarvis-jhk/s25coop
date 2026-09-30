@@ -238,13 +238,13 @@ std::optional<std::vector<unsigned>> FocusPath::TargetFor(const Dir dir) const
     return best->path;
 }
 
-bool FocusPath::Activate()
+bool FocusPath::Activate() // NOLINT(readability-make-member-function-const)
 {
     Window* focused = GetFocused();
     return focused && focused->Activate();
 }
 
-bool FocusPath::Cancel()
+bool FocusPath::Cancel() // NOLINT(readability-make-member-function-const)
 {
     Window* focused = GetFocused();
     return focused && focused->CancelInput();

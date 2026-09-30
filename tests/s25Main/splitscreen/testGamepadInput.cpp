@@ -20,7 +20,6 @@
 #include <tuple>
 #include <vector>
 
-using rttr::test::PadFeeder;
 using rttr::test::PadViewFixture;
 
 namespace {

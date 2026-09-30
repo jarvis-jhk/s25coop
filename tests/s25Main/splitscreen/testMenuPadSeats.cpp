@@ -30,7 +30,6 @@ namespace {
 
 constexpr PadButton Activate = PadButton::A;
 constexpr PadButton Back = PadButton::B;
-constexpr PadButton NextCtrl = PadButton::RightShoulder;
 constexpr PadButton PrevCtrl = PadButton::LeftShoulder;
 
 /// Zwei Control-Ids aus dskGameLobby.cpp, das sie in einem anonymen namespace fuehrt.

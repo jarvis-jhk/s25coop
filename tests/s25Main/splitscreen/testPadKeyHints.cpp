@@ -2044,7 +2044,7 @@ BOOST_FIXTURE_TEST_CASE(AtAWaterFlagTheHeadAlsoNamesTheWaterway, HintFixture<2>)
     BOOST_TEST_REQUIRE(group->GetCtrl<ctrlButton>(kFlagBtWaterway) != static_cast<ctrlButton*>(nullptr));
 
     // Der Reiterkopf traegt als Kennung seine Position im ctrlTab.
-    Window* const head = mainTab->GetCtrl<Window>(0);
+    auto* const head = mainTab->GetCtrl<Window>(0);
     BOOST_TEST_REQUIRE(head != static_cast<Window*>(nullptr));
     const brief::Brief b = wnd.GetPadBrief(head);
     BOOST_TEST_MESSAGE("AUDIT: Reiterkopf an einer Wasserflagge = " << b.joined());

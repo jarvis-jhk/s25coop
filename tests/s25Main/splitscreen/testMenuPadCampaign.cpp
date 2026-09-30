@@ -320,7 +320,7 @@ BOOST_FIXTURE_TEST_CASE(ACampaignMissionIsStartedWithPadInputOnly, CampaignPadFi
     press(pad, Activate);
 
     // --- 5. Ab hier laeuft eine echte Loopbackverbindung --------------------------------------
-    BOOST_TEST_REQUIRE(frameUntil([this] { return desktopAs<dskGameLobby>() != nullptr; }),
+    BOOST_TEST_REQUIRE(frameUntil([] { return desktopAs<dskGameLobby>() != nullptr; }),
                        "the lobby to appear after hosting the campaign mission");
     frame();
 

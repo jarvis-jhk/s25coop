@@ -49,6 +49,7 @@ struct MenuPadFixture : uiHelper::Fixture
         // (dskMainMenu.cpp:56-58). Die laege ueber dem Menue und faenge den Fokus ab.
         SETTINGS.global.submitDebugData = SubmitDebugData::Yes;
     }
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     virtual ~MenuPadFixture()
     {
         SETTINGS.global.submitDebugData = oldSubmitDebugData_;

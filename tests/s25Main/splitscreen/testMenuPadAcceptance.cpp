@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(TwoLocalPlayersStartASplitscreenGameWithPadsOnly, MenuPa
     press(padHost, Activate);
 
     // Ab hier laeuft eine echte Loopbackverbindung. iwConnecting traegt den Uebergang.
-    BOOST_TEST_REQUIRE(frameUntil([this] { return desktopAs<dskGameLobby>() != nullptr; }),
+    BOOST_TEST_REQUIRE(frameUntil([] { return desktopAs<dskGameLobby>() != nullptr; }),
                        "the lobby to appear after hosting");
     frame();
     BOOST_TEST_REQUIRE(!!GAMECLIENT.GetGameLobby());
@@ -291,7 +291,7 @@ BOOST_FIXTURE_TEST_CASE(ASinglePadStillProducesAnOrdinarySinglePlayerGame, MenuP
         press(padHost, (!sel || *sel < *targetRow) ? Down : Up);
     }
     press(padHost, Activate);
-    BOOST_TEST_REQUIRE(frameUntil([this] { return desktopAs<dskGameLobby>() != nullptr; }), "the lobby to appear");
+    BOOST_TEST_REQUIRE(frameUntil([] { return desktopAs<dskGameLobby>() != nullptr; }), "the lobby to appear");
     frame();
 
     // NIEMAND nimmt einen zweiten Sitz. Der Zuordnungsbildschirm steht da, tut aber nichts.

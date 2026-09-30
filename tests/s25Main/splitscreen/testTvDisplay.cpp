@@ -107,6 +107,7 @@ struct TvFixture
         oldMousePos = VIDEODRIVER.GetMousePos();
     }
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~TvFixture()
     {
         SETTINGS.video.tvMode = oldTvMode;

@@ -42,12 +42,9 @@
 
 using rttr::test::findExclusiveFlagSpot;
 using rttr::test::formatMilitary;
-using rttr::test::LocalGameFixture;
 using rttr::test::numGCsForPlayer;
-using rttr::test::PadFeeder;
 using rttr::test::PadGameFixture;
 using rttr::test::readMilitary;
-using rttr::test::TestableGameInterface;
 
 using rttr::test::FlagButtonWnd;
 
@@ -410,8 +407,8 @@ BOOST_FIXTURE_TEST_CASE(SettingsWindowKeepsTheActingPlayersOwnSettings, PadGameF
       WINDOWMANAGER.Show(std::make_unique<iwMilitary>(dsk->GetPlayerView(0).GetViewer(), GAMECLIENT)));
     const auto bars = mainWnd.GetCtrls<ctrlProgress>();
     BOOST_TEST_REQUIRE(bars.size() == zeroSettings.size());
-    for(unsigned i = 0; i < bars.size(); ++i)
-        BOOST_TEST(unsigned(bars[i]->GetPosition()) == 0u);
+    for(const auto* bar : bars)
+        BOOST_TEST(unsigned(bar->GetPosition()) == 0u);
     WINDOWMANAGER.CloseNow(&mainWnd);
 
     // --- Z4: Und der Spielzustand des Hauptspielers erst recht.

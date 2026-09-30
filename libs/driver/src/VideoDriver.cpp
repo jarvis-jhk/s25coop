@@ -135,7 +135,7 @@ unsigned VideoDriver::largestScaleFittingTheUi() const
     // erzeugt (SetNewSize/setGuiScalePercent). Sie SCHNEIDET AB - Extent ist Point<unsigned>
     // und wird aus PointF konstruiert -, deshalb darf hier nicht gerundet werden.
     const auto fits = [&](const unsigned percent) {
-        const Extent viewSize = GuiScale(percent).screenToView<Extent>(renderSize_);
+        const auto viewSize = GuiScale(percent).screenToView<Extent>(renderSize_);
         return viewSize.x >= minUiSize.x && viewSize.y >= minUiSize.y;
     };
     // Startwert aus der reinen Rechnung, ABGERUNDET. Genau hier stand vorher iround, und das

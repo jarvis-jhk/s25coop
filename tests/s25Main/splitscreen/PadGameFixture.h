@@ -142,7 +142,10 @@ struct PadGameFixture : LocalGameFixture
     }
 
     /// Ein Frame Eingabe. Die Maus liegt bewusst ausserhalb jeder Ansicht.
-    void step(const unsigned elapsedMs) { dsk->UpdateInput(elapsedMs, kMouseOffScreen); }
+    void step(const unsigned elapsedMs) // NOLINT(readability-make-member-function-const)
+    {
+        dsk->UpdateInput(elapsedMs, kMouseOffScreen);
+    }
 
     /// Nimmt Pad `dev` in die Hand und steuert seinen Zeiger auf `pt` - ueber den PADPFAD.
     ///

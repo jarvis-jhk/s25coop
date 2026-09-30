@@ -45,6 +45,7 @@ struct ScopedScrollMode
     {
         SETTINGS.interface.mapScrollMode = mode;
     }
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~ScopedScrollMode() { SETTINGS.interface.mapScrollMode = old_; }
 };
 } // namespace
