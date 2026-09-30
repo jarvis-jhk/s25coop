@@ -27,15 +27,25 @@ to the original as possible. First target: the official campaign already in RttR
   over and finishing other people's work is explicitly allowed.
 
 ## How changes get in (Jan, 2026-09-26)
-- Code is written on Opus 5.5. Every non-trivial change is then reviewed by Codex (GPT-6 Sol):
-  `codex exec -m gpt-6-sol "Review the diff of <range> in this repo for bugs ..."` in the repo
-  (codex is logged in on Jan's ChatGPT subscription). Its sandbox cannot start in this container, so pipe
-  the diff in: `git diff <range> | codex exec -m gpt-6-sol "Review this diff (on stdin) ..."`. Address or consciously reject each point.
+- Code is written on Opus 5.5. Every non-trivial change is then reviewed read-only by Codex, model
+  exactly `gpt-6.1-sol` (Jan, 2026-09-30). Its sandbox cannot start in this container, so pipe the diff in:
+  `git diff <range> | codex exec -m gpt-6.1-sol "Review this diff (on stdin) ..."`. Address or consciously reject each point.
+  Never launch an EDITING Codex process in this checkout or in siedler-sol.
 - Nothing is merged to master (and no fork branch is taken over) until JARVIS has tested it
   itself, by running it, not just "it compiles". Where that is not possible yet, the first job
   is to build the tooling that makes it possible (M0.5 in ROADMAP.md): a headless runner that
   plays campaigns at high speed, injects inputs, and asserts on game state and Lua triggers.
 - Each PR/merge notes in its description how it was tested and what the review found.
+
+## Second worker: Sol in lane siedler-sol (Jan, 2026-09-30)
+Full rules: /app/agent/data/siedler/WORKERS.md. In short: Sol works only in
+/app/agent/data/work/siedler-sol on `sol/<task>` branches and opens PRs; Opus (this checkout) keeps
+its workload and schedules, reviews, tests and merges Sol's PRs. Before editing code, run
+`npx tsx /app/agent/scripts/siedler-claim.ts list` and claim task + file scopes
+(`claim --owner opus --task <slug> --scope <path> ...`); a refused claim means pick other work; add
+scopes before touching more files; release when finished; keep claims across quota pauses.
+Implementation to delegate goes to lane `siedler-sol` via the report API (kind feature). Never touch
+Sol's checkout or build dir.
 
 ## Target experience (Jan, 2026-09-26)
 Main menu, e.g. Deck on a TV with four controllers: every player presses A once, the menu shows
@@ -48,8 +58,8 @@ many slots as there are players.
 ## Quota: use it, do not waste it (Jan, 2026-09-26)
 - Jan WANTS his weekly Claude and Codex quota used — what is left at the weekly reset is lost.
   The quota filler (schedule below) runs extra sessions when the week is behind pace; its gate
-  is `node /app/agent/data/siedler/quota-gate.mjs`. Hand well-scoped sub-tasks, research and all
-  reviews to Codex so that subscription is used too.
+  is `node /app/agent/data/siedler/quota-gate.mjs`. Hand well-scoped sub-tasks to lane siedler-sol
+  (report API) and reviews to read-only Codex so that subscription is used too.
 - Waste is the thing to avoid: never start something that cannot be finished within a few
   sessions — split it in ROADMAP.md first; leave every session at a finished, pushed state.
 - Do not rebuild the whole tree needlessly; keep a build dir under `build/` (gitignored), use
