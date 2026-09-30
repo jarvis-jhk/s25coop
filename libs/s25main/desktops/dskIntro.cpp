@@ -148,6 +148,17 @@ void dskIntro::finish()
         WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
 }
 
+bool dskIntro::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::A && button != PadButton::B && button != PadButton::Start)
+        return false;
+    // Start reaches the desktop even when a window owns focus; never bypass its confirmation.
+    if(WINDOWMANAGER.GetTopMostWindow())
+        return false;
+    finish();
+    return true;
+}
+
 bool dskIntro::Msg_LeftUp(const MouseCoords&)
 {
     if(!video_.isOpen())

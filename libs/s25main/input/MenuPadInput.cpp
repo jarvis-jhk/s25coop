@@ -152,6 +152,11 @@ void MenuPadInput::OnPadButton(const unsigned slot, const PadButton button, cons
     {
         if(desktop_)
             desktop_->Msg_PadCommand(slot, button);
+    } else if(button == PadButton::A && !rootWnd_ && !focus_[slot].GetFocused())
+    {
+        // Videos have no controls. A can confirm the desktop itself only when no window owns input.
+        if(desktop_)
+            desktop_->Msg_PadCommand(slot, button);
     } else
         focus_[slot].OnPadButton(button, down);
     actingSlot_ = NoSlot;
