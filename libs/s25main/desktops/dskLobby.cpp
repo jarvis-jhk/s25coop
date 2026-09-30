@@ -104,6 +104,14 @@ void dskLobby::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResult /*m
         WINDOWMANAGER.Switch(std::make_unique<dskMultiPlayer>());
 }
 
+bool dskLobby::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::B)
+        return false;
+    Msg_ButtonClick(ID_btBack);
+    return true;
+}
+
 void dskLobby::Msg_ButtonClick(const unsigned ctrl_id)
 {
     switch(ctrl_id)

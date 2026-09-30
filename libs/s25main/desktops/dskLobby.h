@@ -23,6 +23,7 @@ private:
 
 public:
     dskLobby();
+    bool Msg_PadCommand(unsigned slot, PadButton button) override;
     ~dskLobby();
 
     void UpdatePlayerList();

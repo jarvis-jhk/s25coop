@@ -637,6 +637,46 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Released v0.1.9 (per-player start goods incl. Minimal/Minimal+, controller Back/skip everywhere) from 2572261e2
   after every CI job was green.
 
+
+## 2026-09-30 — Sol companion: controller Back disconnects from the online lobby
+- Branch `sol/lobby-controller-back`, initially based on 2572261e2 and brought up to current master
+  6c0ba04a6 for documentation. B invokes the existing disconnect/Back action; overlays keep precedence.
+- Six regressions use driver pad events and physical keyboard/mouse. All five focusable controls,
+  Create's explicit Back, required proxy confirmation, regular server-info B/Escape cancellation,
+  mouse/A Back, edited chat through inert Start/navigation and B bursts are covered. The parent stays
+  Multiplayer until a new B press; the real LobbyClient is logged out and its TCP connection closed.
+- A test peer listens only on 127.0.0.1 with an ephemeral port. The actual singleton authenticates,
+  receives both lists and decodes server-info replies through its production network path; no public
+  lobby service or direct client/UI handler, focus, activation or selection-state injection is used.
+  The wire header is little endian, while Serializer payloads are big endian. Four-byte peer reads
+  exercise partial headers/bodies. EOF/reset are both valid shutdowns when list replies are unread;
+  at most one protocol Dead is observed. No singleton is constructed; Stop cleanup is explicit in
+  tests/entry, and the fixture destructor restores only a saved proxy enum reference.
+- Five old-production cases fail specifically at missing Multiplayer return (exit 201), while
+  mouse/A Back succeeds. All six fixed cases pass (0.81 s); full Debug Test_splitscreen passes (84.11 s).
+  GCC12 Debug/Werror, own build/debug, ccache, at most two compiler jobs. Static validation,
+  clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only patch/context review found no
+  concrete bugs or flaky assumptions; repository sandbox access was unavailable, so runtime and CI
+  are independent checks. Optional seat comparisons use explicit parentheses for GCC9/Boost1.73.
+- PR remains a draft until every branch CI job passes. Opus owns integration; no primary checkout,
+  build, master push or self-merge. Next useful independent slice: replay-browser controller flow.
+- CI follow-up (forwarded by Opus): gcc-10 coverage on 7b6774a reported one unexecuted reachable
+  helper fallback at line 222. Every exercised focus target is reached from its known entry point
+  with RightShoulder; removed the unused reverse retry instead of marking it LCOV-excluded. No
+  production behavior or test cases changed. Rebuilt Debug Test_splitscreen and all six affected
+  MenuPadLobbyReturnTests pass again (0.80 s), including singleton shutdown assertions. Formatting,
+  static validation and diff checks pass. Prior full Debug suite passed 84.11 s; fresh branch CI,
+  including coverage and Clang-Tidy, remains required before handoff.
+- Clang-Tidy follow-up: `expectLobby()` only observes the static desktop accessor, real client
+  and loopback peer; made it const to satisfy readability-make-member-function-const. Debug
+  Test_splitscreen rebuilt with two compiler jobs; all six MenuPadLobbyReturnTests pass with
+  1,630 assertions (0.75 s). Static validation and diff checks pass. New-head CI must all pass
+  before PR #12 is handed back as tested.
+- Reconciled NOTES/ROADMAP with master 31e92b247 after Opus integrated PRs #11/#13/#14;
+  retained both documentation sides. Lobby implementation and its tests are byte-identical
+  to c6fcad5a2. Reconfigured/rebuilt Debug with two jobs and ran the full combined suite:
+  all 426 cases and 36,772 assertions pass, with USER=root and TMPDIR on the data mount.
+  Static validation/diff checks pass. All CI is required again on the resulting merge head.
 ## 2026-09-30 — Sol companion: controller Back from network menus
 - Branch `sol/network-menu-controller-back`, based on origin/master 2572261e2. Direct-IP and LAN B
   invoke the existing Back action to Multiplayer; Start and shared input routing are unchanged.
