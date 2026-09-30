@@ -336,23 +336,20 @@ BOOST_AUTO_TEST_CASE(TableStepAndActivate)
     putMouseFarAway();
 
     BOOST_TEST(!table->CanFocus());
-    // ctrlTable belegt selection_ im Konstruktor mit -1. Als std::optional<unsigned> ist das
-    // BELEGT und enthaelt 4294967295 - has_value() ist also true, obwohl nichts ausgewaehlt ist.
-    // Bestehender Fehler im Baum; Activate() darf darauf nicht hereinfallen.
-    BOOST_TEST(table->GetSelection().has_value());
+    BOOST_TEST(!table->GetSelection());
     BOOST_TEST(!table->Activate());
 
     for(int i = 0; i < 5; i++)
         table->AddRow({"Zeile " + std::to_string(i)});
     BOOST_TEST(table->CanFocus());
-    // Immer noch der Unsinnswert -> weiterhin kein Activate.
+    // Adding rows does not select or activate one automatically.
     BOOST_TEST(!table->Activate());
     BOOST_TEST(wnd.tableChosen.empty());
 
     BOOST_TEST(!table->StepValue(Position(1, 0)));
     BOOST_TEST(table->StepValue(Position(0, 1)));
     BOOST_TEST_REQUIRE(table->GetSelection().has_value());
-    BOOST_TEST(*table->GetSelection() == 0u); // (unsigned)-1 + 1 == 0, exakt wie die Pfeiltaste
+    BOOST_TEST(*table->GetSelection() == 0u); // First arrow selects row zero.
     BOOST_TEST(table->StepValue(Position(0, 1)));
     BOOST_TEST(*table->GetSelection() == 1u);
     BOOST_TEST(table->Activate());
@@ -360,8 +357,7 @@ BOOST_AUTO_TEST_CASE(TableStepAndActivate)
     BOOST_TEST(wnd.tableChosen.back() == 1u);
 }
 
-// Die Pfeiltasten der Tabelle duerfen sich NICHT geaendert haben: dskSelectMap, dskLAN und
-// dskLobby haengen daran, und dort sitzt der Maus-und-Tastatur-Spieler.
+// Keyboard navigation keeps working without controller focus.
 BOOST_AUTO_TEST_CASE(TableArrowKeysAreUnchanged)
 {
     RecordingWnd wnd;
@@ -370,9 +366,7 @@ BOOST_AUTO_TEST_CASE(TableArrowKeysAreUnchanged)
     for(int i = 0; i < 5; i++)
         table->AddRow({"Zeile " + std::to_string(i)});
 
-    // Kein Fokus, nirgends gesetzt - und die Taste wirkt trotzdem. Genau wie heute.
-    // Die Zahlen sind die des Ist-Zustands: selection_ startet als (unsigned)-1, das erste
-    // Runter laeuft also auf 0 ueber. Genau dieses Verhalten friert der Fall ein.
+    // No focus: the keyboard still enters at row zero and then moves through the rows.
     BOOST_TEST(table->Msg_KeyDown(KeyEvent{KeyType::Down}));
     BOOST_TEST_REQUIRE(table->GetSelection().has_value());
     BOOST_TEST(*table->GetSelection() == 0u);

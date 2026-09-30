@@ -232,12 +232,7 @@ struct CampaignPadFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFix
     /// selbst als Wertaenderung (ctrlTable::StepValue), es wandert also kein Fokus.
     void selectRow(const PadDeviceId pad, ctrlTable& table, const unsigned targetRow)
     {
-        // ctrlTable belegt selection_ im Konstruktor mit (unsigned)-1. Als std::optional ist
-        // das BELEGT, has_value() ist also von Anfang an true, und der Wert liegt ausserhalb
-        // jeder Zeilenzahl. Bestehender Fehler im Baum, bewusst nicht angefasst (er wuerde das
-        // Verhalten des Tastaturspielers verschieben). RUNTER laeuft darauf ueber und landet
-        // auf Zeile 0, HOCH prallt an SetSelection ab - der Spieler faengt hier also immer mit
-        // Runter an, und genau das tut der Test auch.
+        // Select the first row before moving to the requested entry.
         const auto initial = table.GetSelection();
         if(!initial || *initial >= table.GetNumRows())
             press(pad, Down);
@@ -421,8 +416,7 @@ BOOST_FIXTURE_TEST_CASE(ArrowKeysAndMouseKeepWorkingOnTheCampaignTable, Campaign
     }
     BOOST_TEST_REQUIRE(focused(0) == nullptr); // wirklich kein Pad im Spiel
 
-    // Genau das dokumentierte Verhalten des Ist-Zustands: selection_ startet als (unsigned)-1,
-    // das erste Runter laeuft darauf ueber und landet auf Zeile 0.
+    // An unselected table enters at row zero with the first arrow key.
     pressKey(KeyType::Down);
     BOOST_TEST_REQUIRE(!!table->GetSelection());
     BOOST_TEST(*table->GetSelection() == 0u);

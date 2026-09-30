@@ -168,7 +168,11 @@ void dskCampaignSelection::showCampaignInfo(const bool show)
 
 void dskCampaignSelection::showCampaignMissionSelectionScreen()
 {
-    const auto& campaign = campaigns_.at(GetCtrl<ctrlTable>(ID_Table)->GetSelection().value());
+    const auto selection = GetCtrl<ctrlTable>(ID_Table)->GetSelection();
+    // Next can be pressed before a row was chosen
+    if(!selection || *selection >= campaigns_.size())
+        return;
+    const auto& campaign = campaigns_[*selection];
     WINDOWMANAGER.Switch(std::make_unique<dskCampaignMissionSelection>(csi_, campaign));
 }
 

@@ -94,7 +94,7 @@ protected:
     void Draw_() override;
     /// Aus Msg_KeyDown herausgezogen, damit Tastatur- und Padpfad denselben Code nehmen.
     void MoveSelection(int delta);
-    /// selection_ startet als optional MIT Wert (unsigned)-1, siehe ctrlTable.cpp.
+    /// Both a selection and a current row are required before activation.
     bool HasValidSelection() const;
 
     /// Setzt die Breite und Position der Buttons ohne Scrolleiste
