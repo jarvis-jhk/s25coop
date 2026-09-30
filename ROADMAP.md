@@ -121,6 +121,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   saved text, cancelled dropdown selection, music overlay and both invalid-port confirmations.
   Table navigation starts at row zero on the first Up/Down, initially and after clearing/reloading;
   keyboard, controller and mouse regressions cover activation, scrolling and empty-table behavior.
+  Singleplayer/Multiplayer handle controller B through their existing Back actions; all focused actions,
+  replay/login overlays, missing-save confirmation and a no-Main-menu-quit countercheck are covered.
   Create game/map selection handles controller B through its original Back route, with four-context,
   mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many

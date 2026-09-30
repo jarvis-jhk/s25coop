@@ -587,3 +587,23 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   -Warray-bounds at O3. No source/CMake/third-party workaround committed; build.ninja restored afterward.
   At most two jobs, own build/dev/userdata/temp paths. clang-format10 and diff checks pass. Exact
   gpt-6.1-sol read-only patch/control/fixture review: no actionable findings. Opus owns integration.
+
+
+## 2026-09-30 — Sol companion: controller Back from player menus
+- Branch `sol/player-menu-controller-back`, based on origin/master 0eff660d7. Singleplayer and
+  Multiplayer handle B through their existing visible Back actions, returning to Main menu. Start
+  stays inert and shared input routing is unchanged.
+- Six mock-video-driver regressions cover B from every focused action (six Singleplayer buttons,
+  four Multiplayer buttons), Play Replay and lobby-login windows closing before the underlying menu,
+  the real missing-save error retaining required confirmation, Start/navigation counterchecks, existing
+  mouse/controller-A Back routes, and a queued B burst plus a fresh B remaining on Main menu without
+  activating an action or Quit. The test checks GLOBALVARS.notdone, the actual flag cleared by Quit,
+  immediately and a frame later, and presses B with Main-menu Quit focused. The fixture restores
+  the flag afterward. Userdata is temporary; no external lobby connection is attempted.
+- Four new cases fail old code at the return-to-Main assertion; existing Back via mouse/A and inert
+  Start/navigation counterchecks pass. No direct handler, focus or control-activation injection.
+- All six final cases pass, including the direct quit-flag assertions. Full Test_splitscreen passes
+  (61.22 s). GCC12 Release/O3/Werror, own build/dev and userdata, Ninja/ccache and at most two jobs.
+  clang-format10 and diff checks pass. Read-only exact gpt-6.1-sol reviews: no concrete handler/routing
+  bugs; follow-up with Main menu, frame/deferred-switch and pending-button source also finds no issues.
+  No primary checkout/build changes, master push or self-merge; Opus owns integration.

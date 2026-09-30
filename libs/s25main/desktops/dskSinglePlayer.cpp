@@ -51,6 +51,14 @@ dskSinglePlayer::dskSinglePlayer()
     AddImage(11, DrawPoint(20, 20), LOADER.GetImageN("logo", 0));
 }
 
+bool dskSinglePlayer::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::B)
+        return false;
+    Msg_ButtonClick(8); // The existing Back action.
+    return true;
+}
+
 void dskSinglePlayer::Msg_ButtonClick(const unsigned ctrl_id)
 {
     switch(ctrl_id)
