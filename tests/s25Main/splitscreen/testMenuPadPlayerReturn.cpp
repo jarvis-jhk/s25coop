@@ -29,7 +29,8 @@ struct PlayerMenuReturnFixture : rttr::test::MenuPadFixture
     const bool wasRunning = GLOBALVARS.notdone;
 
     PlayerMenuReturnFixture() { GLOBALVARS.notdone = true; }
-    ~PlayerMenuReturnFixture() override { GLOBALVARS.notdone = wasRunning; }
+    // GLOBALVARS already exists (the constructor used it), so restoring the flag cannot throw
+    ~PlayerMenuReturnFixture() override { GLOBALVARS.notdone = wasRunning; } // NOLINT(bugprone-exception-escape)
 
     void enter(const bool multiplayer)
     {
