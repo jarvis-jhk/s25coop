@@ -624,3 +624,39 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   clang-format10 and diff checks pass. Read-only exact gpt-6.1-sol reviews: no concrete handler/routing
   bugs; follow-up with Main menu, frame/deferred-switch and pending-button source also finds no issues.
   No primary checkout/build changes, master push or self-merge; Opus owns integration.
+
+## 2026-09-30 — Opus: Sol PRs #4–#10 integrated, master CI repaired, 0.1.9
+- Merged Sol PRs #4 (campaign chooser B/victory exits), #5 (map selection B), #6 (Stop ends replay mode),
+  #7 (Options B), #8 (tables start unselected; campaign Next guarded), #9 (intro skip), #10 (player menus B).
+- Master CI broke several ways that Sol's local Release/GCC 12 runs cannot see — fixed on master:
+  `Settings persisted;` in a test ended the SETTINGS singleton (Debug assert at exit, every Linux job);
+  optional == value inside BOOST_TEST needs double parentheses on GCC 9 / Boost 1.73; the gcc-10 coverage gate
+  needs LCOV_EXCL on unreachable test lines; clang-tidy (exception-escape in fixture destructors, branch-clone,
+  qualified-auto vs MSVC iterators in my own lobby code). Sol was told all of it via the report API.
+- Local Debug build dir `build/dbg` (Test_splitscreen only) reproduces Debug-only asserts; keep it.
+- Released v0.1.9 (per-player start goods incl. Minimal/Minimal+, controller Back/skip everywhere) from 2572261e2
+  after every CI job was green.
+
+
+## 2026-09-30 — Sol companion: controller Back disconnects from the online lobby
+- Branch `sol/lobby-controller-back`, initially based on 2572261e2 and brought up to current master
+  6c0ba04a6 for documentation. B invokes the existing disconnect/Back action; overlays keep precedence.
+- Six regressions use driver pad events and physical keyboard/mouse. All five focusable controls,
+  Create's explicit Back, required proxy confirmation, regular server-info B/Escape cancellation,
+  mouse/A Back, edited chat through inert Start/navigation and B bursts are covered. The parent stays
+  Multiplayer until a new B press; the real LobbyClient is logged out and its TCP connection closed.
+- A test peer listens only on 127.0.0.1 with an ephemeral port. The actual singleton authenticates,
+  receives both lists and decodes server-info replies through its production network path; no public
+  lobby service or direct client/UI handler, focus, activation or selection-state injection is used.
+  The wire header is little endian, while Serializer payloads are big endian. Four-byte peer reads
+  exercise partial headers/bodies. EOF/reset are both valid shutdowns when list replies are unread;
+  at most one protocol Dead is observed. No singleton is constructed; Stop cleanup is explicit in
+  tests/entry, and the fixture destructor restores only a saved proxy enum reference.
+- Five old-production cases fail specifically at missing Multiplayer return (exit 201), while
+  mouse/A Back succeeds. All six fixed cases pass (0.81 s); full Debug Test_splitscreen passes (84.11 s).
+  GCC12 Debug/Werror, own build/debug, ccache, at most two compiler jobs. Static validation,
+  clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only patch/context review found no
+  concrete bugs or flaky assumptions; repository sandbox access was unavailable, so runtime and CI
+  are independent checks. Optional seat comparisons use explicit parentheses for GCC9/Boost1.73.
+- PR remains a draft until every branch CI job passes. Opus owns integration; no primary checkout,
+  build, master push or self-merge. Next useful independent slice: replay-browser controller flow.
