@@ -41,7 +41,14 @@ uint8_t Replay::GetLatestMinorVersion() const
     // 8.2: Set correct initial distributions if replay starts without savegame for leather addon (see GameClient.cpp
     //      StartReplay function for detailed description)
     // 8.3  Remove invalid fish for replays started from start (i.e. map instead of savegame)
-    return 3;
+    // 8.4  s25coop: per-player start goods
+    return 4;
+}
+
+int Replay::GetPlayerInfoVersion() const
+{
+    const uint8_t minor = GetMinorVersion();
+    return minor >= 4 ? 2 : (minor >= 1 ? 1 : 0);
 }
 
 uint8_t Replay::GetLatestMajorVersion() const

@@ -6049,3 +6049,35 @@ msgstr ""
 #: libs/s25main/network/GameClient.cpp:2290
 msgid "Enabled AI for current player"
 msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Minimal+"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "V. low"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Lots"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min."
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min.+"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods at start for this player: "
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "as set for the game"
+msgstr ""

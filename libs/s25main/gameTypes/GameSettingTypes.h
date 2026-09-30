@@ -43,11 +43,14 @@ enum class StartWares : uint8_t
     VLow,
     Low,
     Normal,
-    ALot
+    ALot,
+    // s25coop: the bare-minimum loadouts (appended so saved settings keep their values)
+    Minimal,
+    MinimalPlus
 };
 constexpr auto maxEnumValue(StartWares)
 {
-    return StartWares::ALot;
+    return StartWares::MinimalPlus;
 }
 
 enum class Exploration : uint8_t

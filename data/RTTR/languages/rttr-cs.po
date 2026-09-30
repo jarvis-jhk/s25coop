@@ -2226,6 +2226,14 @@ msgstr "Zlatý důl"
 msgid "Gold:"
 msgstr "Zlato:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods at start for this player: "
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:241
 msgid "Goods at start:"
 msgstr "Počáteční suroviny:"
@@ -2860,6 +2868,10 @@ msgstr "Připojení k serveru ztraceno!"
 msgid "Lost land by this building"
 msgstr "Díky této budově jsme ztratili území"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Lots"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:245
 msgid "Low"
 msgstr "Málo"
@@ -3111,6 +3123,14 @@ msgstr "Mlýn"
 msgid "Miller"
 msgstr "Mlynář"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min."
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min.+"
+msgstr ""
+
 #: libs/s25main/gameData/JobConsts.cpp:30
 msgid "Miner"
 msgstr "Horník"
@@ -3126,6 +3146,10 @@ msgstr "Minimální"
 #: libs/s25main/addons/AddonMilitaryControl.h:21
 msgid "Minimal Control"
 msgstr "Minimální kontrola"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Minimal+"
+msgstr ""
 
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:34
 msgid "Minimum strength"
@@ -5358,6 +5382,10 @@ msgstr "Použít UPnP"
 msgid "Username:"
 msgstr "Uživatelské jméno"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "V. low"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwStatistics.cpp:147
 #: libs/s25main/ingameWindows/iwStatistics.cpp:244
 msgid "Vanquished enemies"
@@ -5793,6 +5821,10 @@ msgstr "Přiblížit"
 #: libs/s25main/desktops/dskCredits.cpp:121
 msgid "all developers who contributed via Github"
 msgstr "všichni vývojáři, kteří přispěli prostřednictvím Github"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "as set for the game"
+msgstr ""
 
 msgid "build a road from it"
 msgstr ""

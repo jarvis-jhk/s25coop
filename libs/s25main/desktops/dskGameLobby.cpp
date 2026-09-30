@@ -29,6 +29,7 @@
 #include "desktops/dskLAN.h"
 #include "desktops/dskLobby.h"
 #include "desktops/dskSinglePlayer.h"
+#include "helpers/EnumRange.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwAddons.h"
@@ -126,12 +127,79 @@ enum CtrlIds
     ID_btCoop,
     ID_txtCoop,
     ID_chkSeatsTogether,
+    /// s25coop: per-player start goods
+    ID_txtColStartWares,
+    ID_btStartWares,
 };
 template<typename T>
 constexpr T nextEnumValue(T value)
 {
     return T((rttr::enum_cast(value) + 1) % helpers::NumEnumValues_v<T>);
 }
+
+namespace {
+    /// s25coop: the order a player's start goods button cycles through, from the least to the most
+    constexpr std::array START_WARES_ORDER = {StartWares::Minimal, StartWares::MinimalPlus, StartWares::VLow,
+                                              StartWares::Low,     StartWares::Normal,      StartWares::ALot};
+    static_assert(START_WARES_ORDER.size() == helpers::NumEnumValues_v<StartWares>);
+
+    /// Where the player row's columns go. The start goods need a column of their own; in a game over the network,
+    /// where the ready and ping columns take the room, everything right of the name moves 50 px left for it
+    struct RowLayout
+    {
+        int shift;
+        unsigned nameWidth;
+        int goodsX;
+        unsigned goodsWidth;
+    };
+    RowLayout rowLayout(const bool singlePlayer)
+    {
+        if(singlePlayer)
+            return {0, 180, 454, 100};
+        return {-50, 130, 495, 60};
+    }
+
+    /// Game setting -> Minimal -> ... -> A lot -> game setting
+    std::optional<StartWares> nextStartWares(const std::optional<StartWares> current)
+    {
+        if(!current)
+            return START_WARES_ORDER.front();
+        const auto* it = std::find(START_WARES_ORDER.begin(), START_WARES_ORDER.end(), *current);
+        if(it == START_WARES_ORDER.end() || ++it == START_WARES_ORDER.end())
+            return std::nullopt;
+        return *it;
+    }
+
+    /// The names in the game's combo box, in enum order
+    std::string startWaresName(const StartWares startWares)
+    {
+        switch(startWares)
+        {
+            case StartWares::VLow: return _("Very Low");
+            case StartWares::Low: return _("Low");
+            case StartWares::Normal: return _("Normal");
+            case StartWares::ALot: return _("A lot");
+            case StartWares::Minimal: return _("Minimal");
+            case StartWares::MinimalPlus: return _("Minimal+");
+        }
+        return "";
+    }
+
+    /// Short enough for the player row
+    std::string startWaresShortName(const StartWares startWares)
+    {
+        switch(startWares)
+        {
+            case StartWares::VLow: return _("V. low");
+            case StartWares::Low: return _("Low");
+            case StartWares::Normal: return _("Normal");
+            case StartWares::ALot: return _("Lots");
+            case StartWares::Minimal: return _("Min.");
+            case StartWares::MinimalPlus: return _("Min.+");
+        }
+        return "";
+    }
+} // namespace
 
 std::array NATION_ORDER = {
   Nation::Romans, Nation::Vikings, Nation::Japanese, Nation::Africans, Nation::Babylonians,
@@ -197,15 +265,24 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
 
     AddText(ID_txtGameName, DrawPoint(400, 5), GAMECLIENT.GetGameName(), COLOR_YELLOW, FontStyle::CENTER, LargeFont);
 
-    AddText(ID_txtColName, DrawPoint(125, 40), _("Player Name"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
-    AddText(ID_txtColRace, DrawPoint(262, 40), _("Race"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
-    AddText(ID_txtColColor, DrawPoint(369, 40), _("Color"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
-    AddText(ID_txtColTeam, DrawPoint(419, 40), _("Team"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
+    const RowLayout layout = rowLayout(IsSinglePlayer());
+    AddText(ID_txtColName, DrawPoint(30 + layout.nameWidth / 2, 40), _("Player Name"), COLOR_YELLOW, FontStyle::CENTER,
+            NormalFont);
+    AddText(ID_txtColRace, DrawPoint(262 + layout.shift, 40), _("Race"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
+    AddText(ID_txtColColor, DrawPoint(369 + layout.shift, 40), _("Color"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
+    AddText(ID_txtColTeam, DrawPoint(419 + layout.shift, 40), _("Team"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
 
     if(!IsSinglePlayer())
     {
-        AddText(ID_txtColReady, DrawPoint(479, 40), _("Ready?"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
-        AddText(ID_txtColPing, DrawPoint(530, 40), _("Ping"), COLOR_YELLOW, FontStyle::CENTER, NormalFont);
+        AddText(ID_txtColReady, DrawPoint(471 + layout.shift, 40), _("Ready?"), COLOR_YELLOW, FontStyle::CENTER,
+                NormalFont);
+        AddText(ID_txtColPing, DrawPoint(524 + layout.shift, 40), _("Ping"), COLOR_YELLOW, FontStyle::CENTER,
+                NormalFont);
+    }
+    if(!gameLobby_->isSavegame())
+    {
+        AddText(ID_txtColStartWares, DrawPoint(layout.goodsX + layout.goodsWidth / 2, 40), _("Goods"), COLOR_YELLOW,
+                FontStyle::CENTER, NormalFont);
     }
     if(gameLobby_->isHost() && !gameLobby_->isSavegame())
         AddText(ID_txtColSwap, DrawPoint(0, 40), _("Swap"), COLOR_YELLOW, FontStyle::LEFT, NormalFont);
@@ -276,10 +353,8 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
     AddText(ID_txtGoods, DrawPoint(400, 375), _("Goods at start:"), COLOR_YELLOW, FontStyle{}, NormalFont);
     combo = AddComboBox(ID_cbGoods, DrawPoint(600, 370), Extent(180, 20), TextureColor::Grey, NormalFont, 100,
                         readonlySettings);
-    combo->AddItem(_("Very Low"));
-    combo->AddItem(_("Low"));
-    combo->AddItem(_("Normal"));
-    combo->AddItem(_("A lot"));
+    for(const auto startWares : helpers::enumRange<StartWares>())
+        combo->AddItem(startWaresName(startWares));
 
     AddText(ID_txtGoals, DrawPoint(400, 345), _("Goals:"), COLOR_YELLOW, FontStyle{}, NormalFont);
     combo = AddComboBox(ID_cbGoals, DrawPoint(600, 340), Extent(180, 20), TextureColor::Grey, NormalFont, 100,
@@ -1012,6 +1087,7 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
     const JoinPlayerInfo& player = gameLobby_->getPlayer(row);
 
     unsigned cy = 80 + row * 30;
+    const RowLayout layout = rowLayout(IsSinglePlayer());
     TextureColor tc = (row & 1 ? TextureColor::Grey : TextureColor::Green2);
 
     // Alle Controls erstmal zerstören (die ganze Gruppe)
@@ -1043,9 +1119,9 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
 
     // Spielername, beim Hosts Spielerbuttons, aber nich beim ihm selber, er kann sich ja nich selber kicken!
     if(gameLobby_->isHost() && !player.isHost && IsChangeAllowed("playerState"))
-        group->AddTextButton(ID_btPlayerState, DrawPoint(30, cy), Extent(180, 22), tc, name, NormalFont);
+        group->AddTextButton(ID_btPlayerState, DrawPoint(30, cy), Extent(layout.nameWidth, 22), tc, name, NormalFont);
     else
-        group->AddTextDeepening(ID_btPlayerState, DrawPoint(30, cy), Extent(180, 22), tc, name, NormalFont,
+        group->AddTextDeepening(ID_btPlayerState, DrawPoint(30, cy), Extent(layout.nameWidth, 22), tc, name, NormalFont,
                                 COLOR_YELLOW);
     auto* text = group->GetCtrl<ctrlBaseText>(ID_btPlayerState);
 
@@ -1063,6 +1139,8 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
         bool allowColorChange = allowPlayerChange;
         bool allowTeamChange = allowPlayerChange;
         bool allowPortraitChange = allowPlayerChange;
+        // Start goods are a handicap: the host may set them for everybody, a player for itself
+        bool allowStartWaresChange = (gameLobby_->isHost() || IsOwnRow(row)) && !gameLobby_->isSavegame();
         if(lua)
         {
             if(IsOwnRow(row))
@@ -1078,40 +1156,53 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
                 allowTeamChange &= lua->IsChangeAllowed("aiTeam", true);
                 allowPortraitChange &= lua->IsChangeAllowed("aiPortrait", true);
             }
+            // A map that fixes the general settings (a campaign mission sets up its own goods) fixes these too
+            allowStartWaresChange &= lua->IsChangeAllowed("general", true);
         }
 
         if(allowNationChange)
-            group->AddTextButton(ID_btNation, DrawPoint(215, cy), Extent(95, 22), tc, _(NationNames[NATION_ORDER[0]]),
-                                 NormalFont);
+            group->AddTextButton(ID_btNation, DrawPoint(215 + layout.shift, cy), Extent(95, 22), tc,
+                                 _(NationNames[NATION_ORDER[0]]), NormalFont);
         else
-            group->AddTextDeepening(ID_btNation, DrawPoint(215, cy), Extent(95, 22), tc,
+            group->AddTextDeepening(ID_btNation, DrawPoint(215 + layout.shift, cy), Extent(95, 22), tc,
                                     _(NationNames[NATION_ORDER[0]]), NormalFont, COLOR_YELLOW);
 
         const auto& portrait = Portraits[player.portraitIndex];
         if(allowPortraitChange)
-            group->AddImageButton(ID_btPortrait, DrawPoint(315, cy), Extent(34, 22), tc,
+            group->AddImageButton(ID_btPortrait, DrawPoint(315 + layout.shift, cy), Extent(34, 22), tc,
                                   LOADER.GetImageN(portrait.resourceId, portrait.resourceIndex), _(portrait.name));
         else
-            group->AddImageDeepening(ID_btPortrait, DrawPoint(315, cy), Extent(34, 22), tc,
+            group->AddImageDeepening(ID_btPortrait, DrawPoint(315 + layout.shift, cy), Extent(34, 22), tc,
                                      LOADER.GetImageN(portrait.resourceId, portrait.resourceIndex));
 
         if(allowColorChange)
-            group->AddColorButton(ID_btColor, DrawPoint(354, cy), Extent(30, 22), tc, 0);
+            group->AddColorButton(ID_btColor, DrawPoint(354 + layout.shift, cy), Extent(30, 22), tc, 0);
         else
-            group->AddColorDeepening(ID_btColor, DrawPoint(354, cy), Extent(30, 22), tc, 0);
+            group->AddColorDeepening(ID_btColor, DrawPoint(354 + layout.shift, cy), Extent(30, 22), tc, 0);
 
         if(allowTeamChange)
-            group->AddTextButton(ID_btTeam, DrawPoint(394, cy), Extent(50, 22), tc, _("-"), NormalFont);
+            group->AddTextButton(ID_btTeam, DrawPoint(394 + layout.shift, cy), Extent(50, 22), tc, _("-"), NormalFont);
         else
-            group->AddTextDeepening(ID_btTeam, DrawPoint(394, cy), Extent(50, 22), tc, _("-"), NormalFont,
-                                    COLOR_YELLOW);
+            group->AddTextDeepening(ID_btTeam, DrawPoint(394 + layout.shift, cy), Extent(50, 22), tc, _("-"),
+                                    NormalFont, COLOR_YELLOW);
+
+        if(!gameLobby_->isSavegame())
+        {
+            if(allowStartWaresChange)
+                group->AddTextButton(ID_btStartWares, DrawPoint(layout.goodsX, cy), Extent(layout.goodsWidth, 22), tc,
+                                     "", NormalFont);
+            else
+                group->AddTextDeepening(ID_btStartWares, DrawPoint(layout.goodsX, cy), Extent(layout.goodsWidth, 22),
+                                        tc, "", NormalFont, COLOR_YELLOW);
+        }
 
         // Ready (not for AIs and Host)
         if(player.ps == PlayerState::Occupied && !player.isHost)
-            group->AddCheckBox(ID_chkReady, DrawPoint(464, cy), Extent(22, 22), tc, "", nullptr, !IsOwnRow(row));
+            group->AddCheckBox(ID_chkReady, DrawPoint(464 + layout.shift, cy), Extent(22, 22), tc, "", nullptr,
+                               !IsOwnRow(row));
 
-        ctrlVarDeepening* ping = group->AddVarDeepening(ID_txtPing, DrawPoint(505, cy), Extent(50, 22), tc, _("%d"),
-                                                        NormalFont, COLOR_YELLOW, 1, &player.ping); //-V111
+        ctrlVarDeepening* ping = group->AddVarDeepening(ID_txtPing, DrawPoint(500 + layout.shift, cy), Extent(40, 22),
+                                                        tc, _("%d"), NormalFont, COLOR_YELLOW, 1, &player.ping); //-V111
 
         // Move (not for Save games and Host)
         if(gameLobby_->isSavegame() && player.ps == PlayerState::Occupied)
@@ -1139,6 +1230,7 @@ void dskGameLobby::UpdatePlayerRow(const unsigned row)
         ChangeNation(row, player.nation);
         ChangePortrait(row, player.portraitIndex);
         ChangeTeam(row, player.team);
+        ChangeStartWares(row);
         ChangePing(row);
         ChangeReady(row, player.isReady);
         ChangeColor(row, player.color);
@@ -1243,6 +1335,23 @@ void dskGameLobby::Msg_Group_ButtonClick(const unsigned group_id, const unsigned
             }
 
             // Start-Farbe der Minimap ändern
+        }
+        break;
+
+        case ID_btStartWares:
+        {
+            SetPlayerReady(playerId, false);
+
+            if(IsOwnRow(playerId) || gameLobby_->isHost())
+            {
+                JoinPlayerInfo& player = gameLobby_->getPlayer(playerId);
+                player.startWares = nextStartWares(player.startWares);
+                if(gameLobby_->isHost())
+                    lobbyController->SetStartWares(playerId, player.startWares);
+                else
+                    GAMECLIENT.Command_SetStartWares(player.startWares);
+                ChangeStartWares(playerId);
+            }
         }
         break;
 
@@ -1613,6 +1722,24 @@ void dskGameLobby::ChangeTeam(const unsigned player, const Team team)
     constexpr helpers::EnumArray<const char*, Team> teams = {"-", "?", "1", "2", "3", "4", "1-2", "1-3", "1-4"};
 
     GetCtrl<ctrlGroup>(ID_grpPlayerStart + player)->GetCtrl<ctrlBaseText>(ID_btTeam)->SetText(teams[team]);
+}
+
+void dskGameLobby::ChangeStartWares(const unsigned player)
+{
+    auto* ctrl = GetCtrl<ctrlGroup>(ID_grpPlayerStart + player)->GetCtrl<ctrlBaseText>(ID_btStartWares);
+    if(!ctrl)
+        return;
+    const std::optional<StartWares> startWares = gameLobby_->getPlayer(player).startWares;
+    const bool narrow = rowLayout(IsSinglePlayer()).goodsWidth < 90;
+    std::string text = _("Default");
+    if(startWares)
+        text = narrow ? startWaresShortName(*startWares) : startWaresName(*startWares);
+    ctrl->SetText(text);
+    if(auto* button = GetCtrl<ctrlGroup>(ID_grpPlayerStart + player)->GetCtrl<ctrlTextButton>(ID_btStartWares))
+    {
+        button->SetTooltip(_("Goods at start for this player: ")
+                           + (startWares ? startWaresName(*startWares) : _("as set for the game")));
+    }
 }
 
 void dskGameLobby::ChangeReady(const unsigned player, const bool ready)

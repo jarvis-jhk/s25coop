@@ -114,11 +114,16 @@ endif()
 if(NOT WIN32)
     set(coopNetMap ${PROJECT_SOURCE_DIR}/data/RTTR/MAPS/NEW/KARTE06-fix.swd)
     function(add_coop_net_test name port expect)
-        string(REPLACE ";" "|" joinArgs "${ARGN}")
+        cmake_parse_arguments(PARSE_ARGV 3 arg "" "MATCH" "")
+        string(REPLACE ";" "|" joinArgs "${arg_UNPARSED_ARGUMENTS}")
+        set(matchArg)
+        if(DEFINED arg_MATCH)
+            set(matchArg "-DMATCH=${arg_MATCH}")
+        endif()
         add_test(NAME ${name}
                  COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=${port}
                          -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DEXPECT=${expect}
-                         "-DJOIN_ARGS=${joinArgs}" -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetGame.cmake)
+                         "-DJOIN_ARGS=${joinArgs}" ${matchArg} -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetGame.cmake)
         set_tests_properties(${name} PROPERTIES TIMEOUT 200 RUN_SERIAL TRUE)
     endfunction()
     add_coop_net_test(CoopNet_TwoClientsInSync 13710 0)
@@ -126,6 +131,10 @@ if(NOT WIN32)
     add_coop_net_test(CoopNet_DesyncDetected 13711 3 --desync-at 300)
     # ... also in the last frames before the end: the run must not end before their checksums were compared
     add_coop_net_test(CoopNet_DesyncAtEndDetected 13712 3 --desync-at 999)
+    # Start goods chosen per player in the lobby: the joiner (player 1) picks the minimal ones, the host keeps the
+    # game's normal ones, and both worlds agree on it
+    add_coop_net_test(CoopNet_StartWaresPerPlayer 13717 0 --start-wares minimal
+        MATCH "Start goods: p0 boards 44 stones 68 helpers [1-9][0-9]*; p1 boards 2 stones 4 helpers 0;")
 
     # Members (M2 steps 1+2): a client that controls player 0 together with the host
     function(add_coop_member_test name port secondPlayer expect)

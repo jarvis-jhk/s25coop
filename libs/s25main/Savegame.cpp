@@ -7,6 +7,7 @@
 #include "s25util/BinaryFile.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/nowide/fstream.hpp>
+#include <algorithm>
 
 std::string Savegame::GetSignature() const
 {
@@ -16,7 +17,13 @@ std::string Savegame::GetSignature() const
 uint8_t Savegame::GetLatestMinorVersion() const
 {
     // 4.1: Portraits support
-    return 1;
+    // 4.2: s25coop: per-player start goods
+    return 2;
+}
+
+int Savegame::GetPlayerInfoVersion() const
+{
+    return std::min<int>(GetMinorVersion(), 2);
 }
 
 uint8_t Savegame::GetLatestMajorVersion() const

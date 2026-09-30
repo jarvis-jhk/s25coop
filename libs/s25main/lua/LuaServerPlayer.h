@@ -6,6 +6,7 @@
 
 #include "LuaPlayerBase.h"
 #include "SafeEnum.h"
+#include "gameTypes/GameSettingTypes.h"
 #include "gameTypes/Nation.h"
 
 struct JoinPlayerInfo;
@@ -26,6 +27,8 @@ public:
 
     void SetNation(lua::SafeEnum<Nation> nat);
     void SetTeam(lua::SafeEnum<Team> team);
+    /// s25coop: this player's own start goods (SWR_*)
+    void SetStartWares(lua::SafeEnum<StartWares> startWares);
     void SetColor(unsigned colorOrIdx);
     void Close();
     void SetAI(unsigned level);

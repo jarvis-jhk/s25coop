@@ -21,6 +21,7 @@
 #include "drivers/AudioDriverWrapper.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "files.h"
+#include "helpers/EnumRange.h"
 #include "lua/LuaInterfaceBase.h"
 #include "lua/LuaInterfaceGame.h"
 #include "network/ClientError.h"
@@ -31,9 +32,11 @@
 #include "random/Random.h"
 #include "world/GameWorld.h"
 #include "gameTypes/BuildingQuality.h"
+#include "gameTypes/GameTypesOutput.h"
 #include "gameTypes/MapDescription.h"
 #include "gameData/GameConsts.h"
 #include "s25util/Log.h"
+#include "s25util/strAlgos.h"
 #include <boost/filesystem.hpp>
 #include <boost/nowide/args.hpp>
 #include <boost/nowide/filesystem.hpp>
@@ -44,6 +47,7 @@
 #include <chrono>
 #include <cstdio>
 #include <optional>
+#include <sstream>
 #include <thread>
 
 namespace bfs = boost::filesystem;
@@ -135,6 +139,8 @@ struct Options
     std::optional<unsigned> stallAtGF;
     /// Log the checksum every this many GFs (0 = never), to find where two processes diverged
     unsigned traceEvery = 0;
+    /// Choose these start goods for our own slot in the lobby
+    std::optional<StartWares> startWares;
     /// Run in the map script's Lua state once the game started; its onTestEnd(gf) is called at maxGF
     bfs::path testScript;
     std::chrono::seconds timeout{300};
@@ -154,6 +160,37 @@ AI::Info parseAI(const std::string& name)
     if(name == "dummy")
         return AI::Info(AI::Type::Dummy);
     throw std::runtime_error("Unknown AI: " + name);
+}
+
+std::optional<StartWares> parseStartWares(const std::string& name)
+{
+    for(const auto value : helpers::enumRange<StartWares>())
+    {
+        std::stringstream s;
+        s << value;
+        // Printed as "StartWares::Minimal"
+        std::string printed = s25util::toLower(s.str());
+        printed = printed.substr(printed.rfind(':') + 1);
+        if(printed == name)
+            return value;
+    }
+    throw std::runtime_error("Unknown start goods: " + name);
+}
+
+/// What each player's HQ holds when the game starts: shows whose start goods were used
+std::string describeStartGoods(const Game& game)
+{
+    std::string result = "Start goods:";
+    for(unsigned i = 0; i < game.world_.GetNumPlayers(); i++)
+    {
+        const GamePlayer& player = game.world_.GetPlayer(i);
+        if(!player.isUsed())
+            continue;
+        const Inventory& inv = player.GetInventory();
+        result += " p" + std::to_string(i) + " boards " + std::to_string(inv[GoodType::Boards]) + " stones "
+                  + std::to_string(inv[GoodType::Stones]) + " helpers " + std::to_string(inv[Job::Helper]) + ";";
+    }
+    return result;
 }
 
 /// What must be equal in every process at the end: the world checksum and the woodcutters (sites included) of each
@@ -234,7 +271,7 @@ int run(Options& opt, Callbacks& cb)
     const auto numClients = static_cast<unsigned>(opt.players);
     auto nextProgress = startTime + 5s;
     unsigned maxNWFLength = 1;
-    std::string stateAtMaxGF;
+    std::string stateAtMaxGF, startGoods;
     unsigned lastTracedGF = 0;
     bool switchRequested = false, switchDone = false, kicked = false, openSlotsClosed = false, swapped = false;
     bool announcedConnected = false;
@@ -345,11 +382,16 @@ int run(Options& opt, Callbacks& cb)
                     lobby->SwapPlayers(GAMECLIENT.GetPlayerId(), *opt.swapWith);
                     swapped = true;
                 }
+                if(opt.startWares)
+                    GAMECLIENT.Command_SetStartWares(opt.startWares);
                 GAMECLIENT.Command_SetReady(true);
                 slotsSet = true;
             } else if(!opt.host && !readySent && !opt.memberOf
                       && (!opt.switchToMember || switchResult.find("refused") != std::string::npos))
             {
+                // Sent before ready: the server handles both in order, so the host never starts without it
+                if(opt.startWares)
+                    GAMECLIENT.Command_SetStartWares(opt.startWares);
                 GAMECLIENT.Command_SetReady(true);
                 readySent = true;
             }
@@ -418,6 +460,8 @@ int run(Options& opt, Callbacks& cb)
                 // What the game interface does when it becomes active: runs the map script's start and unpauses
                 GAMECLIENT.OnGameStart();
                 gameStarted = true;
+                startGoods = describeStartGoods(*cb.game);
+                bnw::cout << startGoods << std::endl;
                 if(!opt.testScript.empty())
                 {
                     if(!cb.game->world_.HasLua())
@@ -505,6 +549,7 @@ int run(Options& opt, Callbacks& cb)
                 result += std::to_string(checkedGF);
                 result += ")\n";
                 result += stateAtMaxGF;
+                result += "\n" + startGoods;
                 if(opt.host)
                 {
                     result += "\nMembers at start: ";
@@ -573,6 +618,7 @@ int main(int argc, char** argv)
         ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
         ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
+        ("start-wares", po::value<std::string>(), "Choose these start goods for our own slot (vlow, low, normal, alot, minimal, minimalplus)")
         ("savegame", po::value<std::string>(), "Host: continue this savegame instead of starting --map")
         ("save", po::value<std::string>(), "Host: save the game to this file at maxGF")
         ("test-script", po::value<std::string>(), "Run this in the map script's Lua state; its onTestEnd(gf) is called at maxGF, then the campaign progress is reported")
@@ -645,6 +691,15 @@ int main(int argc, char** argv)
         opt.stallAtGF = options["stall-at"].as<unsigned>();
     if(options.count("build-at"))
         opt.buildAtGF = options["build-at"].as<unsigned>();
+    try
+    {
+        if(options.count("start-wares"))
+            opt.startWares = parseStartWares(options["start-wares"].as<std::string>());
+    } catch(const std::exception& e)
+    {
+        bnw::cerr << e.what() << std::endl;
+        return SetupError;
+    }
     opt.timeout = std::chrono::seconds(timeoutSec);
     try
     {

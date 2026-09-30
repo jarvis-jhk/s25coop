@@ -5,7 +5,7 @@
 # Network test harness (ROADMAP M2 step 0): a host and a joining client, each coop-net process with its own home folder,
 # play one game over localhost. The server compares both checksums at every network frame.
 # Inputs: COOP_NET (binary), MAP, PORT, MAX_GF, WORK (scratch folder), EXPECT (0 = in sync, 3 = must detect an async),
-# JOIN_ARGS (extra arguments for the client, | separated)
+# JOIN_ARGS (extra arguments for the client, | separated), MATCH (optional: a regex both result files must match)
 string(REPLACE "|" ";" JOIN_ARGS "${JOIN_ARGS}")
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK}/host ${WORK}/join)
@@ -35,6 +35,9 @@ if(EXPECT EQUAL 0)
         file(READ ${WORK}/${role}.txt result)
         if(NOT result MATCHES "Reached GF [0-9]+ in sync")
             message(FATAL_ERROR "${role} did not reach GF ${MAX_GF}: ${result}")
+        endif()
+        if(DEFINED MATCH AND NOT result MATCHES "${MATCH}")
+            message(FATAL_ERROR "${role} result does not match ${MATCH}: ${result}")
         endif()
     endforeach()
 endif()

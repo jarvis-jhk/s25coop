@@ -706,6 +706,22 @@ bool GameClient::OnGameMessage(const GameMessage_Player_Team& msg)
     return true;
 }
 
+/// s25coop: a player's start goods changed
+bool GameClient::OnGameMessage(const GameMessage_Player_StartWares& msg)
+{
+    if(state != ClientState::Config)
+        return true;
+
+    if(msg.player >= gameLobby->getNumPlayers())
+        return true;
+
+    gameLobby->getPlayer(msg.player).startWares = msg.startWares;
+
+    if(ci)
+        ci->CI_PlayerDataChanged(msg.player);
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// color button gedrückt
 /// @param message  Nachricht, welche ausgeführt wird

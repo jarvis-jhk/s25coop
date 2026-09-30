@@ -52,6 +52,10 @@ struct LuaSettingsTestsFixture : public LuaBaseFixture, public IGameLobbyControl
     }
     void SetColor(unsigned playerIdx, unsigned newColor) override { GetJoinPlayer(playerIdx).color = newColor; }
     void SetTeam(unsigned playerIdx, Team newTeam) override { GetJoinPlayer(playerIdx).team = newTeam; }
+    void SetStartWares(unsigned playerIdx, std::optional<StartWares> startWares) override
+    {
+        GetJoinPlayer(playerIdx).startWares = startWares;
+    }
     void SetNation(unsigned playerIdx, Nation newNation) override { GetJoinPlayer(playerIdx).nation = newNation; }
 
     LuaSettingsTestsFixture() : lua(*this, localGameState)
@@ -284,6 +288,10 @@ BOOST_AUTO_TEST_CASE(PlayerSettings)
 
     executeLua("player:SetTeam(TM_TEAM2)");
     BOOST_TEST_REQUIRE(players[0].team == Team::Team2);
+
+    BOOST_TEST_REQUIRE(!players[0].startWares);
+    executeLua("player:SetStartWares(SWR_MINIMAL)");
+    BOOST_TEST_REQUIRE((players[0].startWares == StartWares::Minimal));
 
     executeLua("player:SetName(\"Foo\")");
     BOOST_TEST(isLuaEqual("player:GetName()", "'Foo'"));

@@ -465,3 +465,23 @@ on 0.1.5–0.1.7 still open.
 - Read-only review on exactly Sol 6.1 found no actionable defects; its suggestion to wait for event 7 before
   expanding was adopted. Opus owns review/integration of the PR. Next independent slices: campaign controller
   Back routing and the controller exit from the victory screen; shared-view presentation stays with Opus.
+
+## 2026-09-30 — Opus: per-player start goods (Jan's request), roadmap M6/M7
+- Jan's Lua script (clear HQ, add a few wares) is now a start loadout: `StartWares::Minimal` and `MinimalPlus` (the
+  script's "Cheater" bonus), appended to the enum (old settings keep their values), in `nobHQ::getStartInventory`.
+- Per player: `BasePlayerInfo::startWares` (std::optional, empty = game setting; serialized as 0 / value+1).
+  BasePlayerInfo version 2; Savegame 4.2, Replay 8.4, each maps its minor to the player-info version
+  (`SavedFile::GetPlayerInfoVersion`). New lobby message `NMS_PLAYER_START_WARES` (server/client/coop member
+  ignore), `GameLobbyController::SetStartWares`, Lua `player:SetStartWares(SWR_MINIMAL)`, SWR_MINIMAL(PLUS).
+- Lobby: "Goods" button per row, cycles Default → Minimal → Minimal+ → Very low → … → A lot. Host may set it for
+  any row, a player for its own; locked by the map script's `general`. Network lobby: columns right of the name
+  move 50 px left (name 130 px) to fit; single player keeps upstream widths. German texts added.
+- Tested: Test_integration StartWaresSuite (loadout, per-player HQ, net/serialize round trip), Serialization
+  (savegame + replay keep the field), Test_lua SetStartWares; new ctest CoopNet_StartWaresPerPlayer (joiner picks
+  minimal via `coop-net --start-wares`, both processes report p1 with 2 boards/4 stones/0 helpers, p0 normal, in
+  sync to GF 1000); full ctest. By hand under Xvfb: SP + network lobby, in-game stock exactly the script's wares.
+- Codex (gpt-6.1-sol): 1 point rejected — server does not enforce the Lua lock on start goods; the server has no Lua
+  state and nation/team/colour locks are UI-only upstream too (matters only against a modified client).
+- ROADMAP: M6 (S3/S4 rules as add-ons, presets Classic/Comfort/Age of Gods/Dark Tribe, AI artwork) and M7 (AI HD
+  graphics remake, original always selectable, free asset set) added at Jan's request.
+Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.

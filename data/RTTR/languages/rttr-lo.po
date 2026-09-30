@@ -2226,6 +2226,14 @@ msgstr "ບໍ່ແຮ່ຄຳ"
 msgid "Gold:"
 msgstr "ຄຳ:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods at start for this player: "
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:241
 msgid "Goods at start:"
 msgstr "ສິນຄ້າຕອນເລີ່ມ:"
@@ -2860,6 +2868,10 @@ msgstr "ຂາດການເຊື່ອມຕໍ່ກັບເຊີບເວ
 msgid "Lost land by this building"
 msgstr "ສູນເສຍດິນແດນຍ້ອນອາຄານນີ້"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Lots"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:245
 msgid "Low"
 msgstr "ຕໍ່າ"
@@ -3111,6 +3123,14 @@ msgstr "ໂຮງສີເຂົ້າ"
 msgid "Miller"
 msgstr "ຄົນສີເຂົ້າ"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min."
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min.+"
+msgstr ""
+
 #: libs/s25main/gameData/JobConsts.cpp:30
 msgid "Miner"
 msgstr "ຄົນງານບໍ່ແຮ່"
@@ -3126,6 +3146,10 @@ msgstr "ໜ້ອຍສຸດ"
 #: libs/s25main/addons/AddonMilitaryControl.h:21
 msgid "Minimal Control"
 msgstr "ການຄວບຄຸມໜ້ອຍສຸດ"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Minimal+"
+msgstr ""
 
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:34
 msgid "Minimum strength"
@@ -5347,6 +5371,10 @@ msgstr "ໃຊ້ UPnP"
 msgid "Username:"
 msgstr "ຊື່ຜູ້ໃຊ້:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "V. low"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwStatistics.cpp:147
 #: libs/s25main/ingameWindows/iwStatistics.cpp:244
 msgid "Vanquished enemies"
@@ -5783,6 +5811,10 @@ msgstr "ຊູມ"
 #: libs/s25main/desktops/dskCredits.cpp:121
 msgid "all developers who contributed via Github"
 msgstr "ນັກພັດທະນາທຸກຄົນທີ່ປະກອບສ່ວນຜ່ານ Github"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "as set for the game"
+msgstr ""
 
 msgid "build a road from it"
 msgstr ""

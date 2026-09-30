@@ -2220,6 +2220,14 @@ msgstr "Goldbergwerk"
 msgid "Gold:"
 msgstr "Gold:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods"
+msgstr "Waren"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods at start for this player: "
+msgstr "Waren zu Beginn für diesen Spieler: "
+
 #: libs/s25main/desktops/dskGameLobby.cpp:241
 msgid "Goods at start:"
 msgstr "Waren zu Beginn:"
@@ -2852,6 +2860,10 @@ msgstr "Verbindung zum Server abgebrochen!"
 msgid "Lost land by this building"
 msgstr "Durch dieses Gebäude haben Sie Land verloren"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Lots"
+msgstr "Viel"
+
 #: libs/s25main/desktops/dskGameLobby.cpp:245
 msgid "Low"
 msgstr "Wenig"
@@ -3111,6 +3123,14 @@ msgstr "Mühle"
 msgid "Miller"
 msgstr "Müller"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min."
+msgstr "Min."
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min.+"
+msgstr "Min.+"
+
 #: libs/s25main/gameData/JobConsts.cpp:30
 msgid "Miner"
 msgstr "Bergarbeiter"
@@ -3126,6 +3146,10 @@ msgstr "Minimal"
 #: libs/s25main/addons/AddonMilitaryControl.h:21
 msgid "Minimal Control"
 msgstr "Minimale Kontrolle"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Minimal+"
+msgstr "Minimal+"
 
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:34
 msgid "Minimum strength"
@@ -5345,6 +5369,10 @@ msgstr "Benutze UPnP"
 msgid "Username:"
 msgstr "Benutzername:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "V. low"
+msgstr "S.wenig"
+
 #: libs/s25main/ingameWindows/iwStatistics.cpp:147
 #: libs/s25main/ingameWindows/iwStatistics.cpp:244
 msgid "Vanquished enemies"
@@ -5780,6 +5808,10 @@ msgstr "Vergrößerung"
 #: libs/s25main/desktops/dskCredits.cpp:121
 msgid "all developers who contributed via Github"
 msgstr "Alle Entwickler die etwas bei Github beigesteuert haben"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "as set for the game"
+msgstr "wie für das Spiel eingestellt"
 
 msgid "build a road from it"
 msgstr "eine Straße von ihr aus bauen"

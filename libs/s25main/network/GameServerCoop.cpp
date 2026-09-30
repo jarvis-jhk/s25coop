@@ -76,6 +76,7 @@ public:
     bool OnGameMessage(const GameMessage_Player_Ready&) override { return true; }
     bool OnGameMessage(const GameMessage_Player_Nation&) override { return true; }
     bool OnGameMessage(const GameMessage_Player_Team&) override { return true; }
+    bool OnGameMessage(const GameMessage_Player_StartWares&) override { return true; }
     bool OnGameMessage(const GameMessage_Player_Color&) override { return true; }
     // Every client confirms a swap; only players have pending swaps to clear (a member follows its player's)
     bool OnGameMessage(const GameMessage_Player_SwapConfirm&) override { return true; }

@@ -2224,6 +2224,14 @@ msgstr "Aranybánya"
 msgid "Gold:"
 msgstr "Arany:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods at start for this player: "
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:241
 msgid "Goods at start:"
 msgstr "Kezdőkészletek:"
@@ -2857,6 +2865,10 @@ msgstr "A kapcsolat megszakadt a szerverrel!"
 msgid "Lost land by this building"
 msgstr "Területet vesztettünk egy épület miatt"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Lots"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:245
 msgid "Low"
 msgstr "Kevés"
@@ -3108,6 +3120,14 @@ msgstr "Malom"
 msgid "Miller"
 msgstr "Molnár"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min."
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min.+"
+msgstr ""
+
 #: libs/s25main/gameData/JobConsts.cpp:30
 msgid "Miner"
 msgstr "Bányász"
@@ -3123,6 +3143,10 @@ msgstr "Minimális"
 #: libs/s25main/addons/AddonMilitaryControl.h:21
 msgid "Minimal Control"
 msgstr "Minimális vezérlés"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Minimal+"
+msgstr ""
 
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:34
 msgid "Minimum strength"
@@ -5341,6 +5365,10 @@ msgstr "UPnP használata"
 msgid "Username:"
 msgstr "Felhasználónév:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "V. low"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwStatistics.cpp:147
 #: libs/s25main/ingameWindows/iwStatistics.cpp:244
 msgid "Vanquished enemies"
@@ -5777,6 +5805,10 @@ msgstr "Nagyítás"
 #: libs/s25main/desktops/dskCredits.cpp:121
 msgid "all developers who contributed via Github"
 msgstr "az összes fejlesztő aki GitHubon közreműködött"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "as set for the game"
+msgstr ""
 
 msgid "build a road from it"
 msgstr ""

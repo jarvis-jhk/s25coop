@@ -2225,6 +2225,14 @@ msgstr "Gold mine"
 msgid "Gold:"
 msgstr "Gold:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods"
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Goods at start for this player: "
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:241
 msgid "Goods at start:"
 msgstr "Starting goods:"
@@ -2858,6 +2866,10 @@ msgstr "Lost connection to server!"
 msgid "Lost land by this building"
 msgstr "This building has taken up land"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Lots"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:245
 msgid "Low"
 msgstr "Low"
@@ -3109,6 +3121,14 @@ msgstr "Mill"
 msgid "Miller"
 msgstr "Miller"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min."
+msgstr ""
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Min.+"
+msgstr ""
+
 #: libs/s25main/gameData/JobConsts.cpp:30
 msgid "Miner"
 msgstr "Miner"
@@ -3124,6 +3144,10 @@ msgstr "Minimal"
 #: libs/s25main/addons/AddonMilitaryControl.h:21
 msgid "Minimal Control"
 msgstr "Minimal Control"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "Minimal+"
+msgstr ""
 
 #: libs/s25main/addons/AddonAdjustMilitaryStrength.h:34
 msgid "Minimum strength"
@@ -5337,6 +5361,10 @@ msgstr "Use UPnP"
 msgid "Username:"
 msgstr "Username:"
 
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "V. low"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwStatistics.cpp:147
 #: libs/s25main/ingameWindows/iwStatistics.cpp:244
 msgid "Vanquished enemies"
@@ -5773,6 +5801,10 @@ msgstr "Zoom"
 #: libs/s25main/desktops/dskCredits.cpp:121
 msgid "all developers who contributed via Github"
 msgstr "all developers who contributed via Github"
+
+#: libs/s25main/desktops/dskGameLobby.cpp
+msgid "as set for the game"
+msgstr ""
 
 msgid "build a road from it"
 msgstr ""

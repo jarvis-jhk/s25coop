@@ -3,6 +3,16 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.9
+
+- Choose the goods each player starts with: every row in the game lobby has a "Goods" button. "Default"
+  uses the game's setting; the other choices are Minimal, Minimal+, Very low, Low, Normal and A lot.
+  The host can set it for everybody, every player for themselves.
+- New start: "Minimal" — 2 wood, 2 boards, 4 stones, one tool each for a metalworker, builder, woodcutter
+  and carpenter, a little iron, ore and coal, 2 generals and a donkey, and not a single helper.
+  "Minimal+" adds 8 boards, 6 stones, a shovel, 8 iron and 5 soldiers, for a player who needs a head start.
+  Both can also be picked for all players with the game's starting goods setting.
+
 ## 0.1.8
 
 - Play one tribe together on one screen: in the lobby, tick "Play one tribe together", and every

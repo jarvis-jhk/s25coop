@@ -126,7 +126,7 @@ Set the settings with a table of keys:
 
 - speed: GS_VERYSLOW, GS_SLOW, GS_NORMAL, GS_FAST, GS_VERYFAST
 - objective: GO_NONE, GO_CONQUER3_4, GO_TOTALDOMINATION
-- startWares: SWR_VLOW, SWR_LOW, SWR_NORMAL, SWR_ALOT
+- startWares: SWR_VLOW, SWR_LOW, SWR_NORMAL, SWR_ALOT, SWR_MINIMAL, SWR_MINIMALPLUS (s25coop)
 - fow: EXP_DISABLED, EXP_CLASSIC, EXP_FOGOFWAR, EXP_FOGOFWAREXPLORED
 - lockedTeams, teamView, randomStartPosition: true/false
 
@@ -227,6 +227,9 @@ Change the players nation.
 
 **SetTeam(Team)**  
 Change the players team.
+
+**SetStartWares(startWares)**  
+s25coop: give this player its own start goods (SWR_*) instead of the game's setting.
 
 **SetColor(color or colorIdx)**  
 Sets the players color by index into the [`PLAYER_COLORS`](https://github.com/Return-To-The-Roots/libutil/blob/master/libs/common/include/s25util/colors.h#L34-L46) array.

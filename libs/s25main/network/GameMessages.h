@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "BasePlayerInfo.h"
 #include "CoopMemberInfo.h"
 #include "GameMessage.h"
 #include "GameMessageInterface.h"
@@ -21,6 +22,7 @@
 #include "s25util/Log.h"
 #include "s25util/Serializer.h"
 #include <chrono>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -696,6 +698,36 @@ public:
     }
 
     bool Run(GameMessageInterface* callback) const override { return callback->OnGameMessage(*this); }
+};
+
+/// s25coop: the start goods of one player (empty = the game's setting)
+class GameMessage_Player_StartWares : public GameMessageWithPlayer
+{
+public:
+    std::optional<StartWares> startWares;
+
+    GameMessage_Player_StartWares() : GameMessageWithPlayer(NMS_PLAYER_START_WARES) {} //-V730
+    GameMessage_Player_StartWares(uint8_t player, std::optional<StartWares> startWares)
+        : GameMessageWithPlayer(NMS_PLAYER_START_WARES, player), startWares(startWares)
+    {}
+
+    void Serialize(Serializer& ser) const override
+    {
+        GameMessageWithPlayer::Serialize(ser);
+        BasePlayerInfo::pushStartWares(ser, startWares);
+    }
+
+    void Deserialize(Serializer& ser) override
+    {
+        GameMessageWithPlayer::Deserialize(ser);
+        startWares = BasePlayerInfo::popStartWares(ser);
+    }
+
+    bool Run(GameMessageInterface* callback) const override
+    {
+        LOG.writeToFile("<<< NMS_PLAYER_START_WARES\n");
+        return callback->OnGameMessage(*this);
+    }
 };
 
 class GameMessage_Map_Info : public GameMessage
