@@ -72,9 +72,19 @@ struct Callbacks : ClientInterface
     bool started = false;
     std::optional<std::string> async;
     std::optional<ClientError> error;
+    std::optional<uint8_t> extraLocalSlot;
     unsigned playersLeft = 0;
 
-    void CI_NextConnectState(ConnectState cs) override { connected |= (cs == ConnectState::Finished); }
+    void CI_NextConnectState(ConnectState cs) override
+    {
+        if(cs == ConnectState::Finished)
+        {
+            connected = true;
+            // Install before Run can decode an immediately following game-start message; Connect clears requests.
+            if(extraLocalSlot)
+                GAMECLIENT.SetAdditionalLocalPlayers({*extraLocalSlot});
+        }
+    }
     void CI_Error(ClientError e) override
     {
         if(!error)
@@ -113,6 +123,8 @@ struct Options
     bfs::path out;
     bfs::path waitFor;
     std::optional<unsigned> desyncAtGF;
+    /// Join: request a distinct local player slot to exercise the network-session guard
+    std::optional<uint8_t> extraLocalSlot;
     /// Join as a member of this player instead of taking a slot
     std::optional<uint8_t> memberOf;
     /// Host: members to wait for before starting
@@ -307,6 +319,9 @@ int run(Options& opt, Callbacks& cb)
         {
             if(finishedAt)
                 break; // Somebody leaving after the end is expected
+            if(*cb.error == ClientError::LocalPlayerSetup)
+                bnw::cerr << "LocalPlayerSetup: loading=" << static_cast<bool>(cb.game) << " started=" << cb.started
+                          << std::endl;
             bnw::cerr << "Client error " << static_cast<int>(*cb.error) << ": " << ClientErrorToStr(*cb.error)
                       << std::endl;
             return cb.async ? Async : Failed;
@@ -605,6 +620,7 @@ int main(int argc, char** argv)
         ("wait-for", po::value<std::string>(), "Join: after maxGF keep running until this file exists (the host's --out)")
         ("desync-at", po::value<unsigned>(), "Test the harness: diverge this process's world at this GF")
         ("member-of", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: control this player together with its client instead of taking a slot")
+        ("extra-local-slot", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: request an additional local player slot (must be rejected in network games)")
         ("members", po::value(&opt.members), "Host: wait for this many members before starting")
         ("members-via-lobby", po::bool_switch(&opt.membersViaLobby), "Host: allow members through the lobby message, as the GUI does")
         ("open-slots", po::value(&opt.openSlots), "Host: leave this many slots after the human ones free, close them once the members are there")
@@ -681,6 +697,15 @@ int main(int argc, char** argv)
         opt.desyncAtGF = options["desync-at"].as<unsigned>();
     if(options.count("member-of"))
         opt.memberOf = static_cast<uint8_t>(options["member-of"].as<unsigned>());
+    if(options.count("extra-local-slot"))
+    {
+        if(opt.host)
+        {
+            bnw::cerr << "--extra-local-slot requires join mode" << std::endl;
+            return SetupError;
+        }
+        opt.extraLocalSlot = static_cast<uint8_t>(options["extra-local-slot"].as<unsigned>());
+    }
     if(options.count("member-of-host"))
         opt.memberOf = COOP_LEADER_HOST;
     if(options.count("switch-to-member"))
@@ -725,6 +750,7 @@ int main(int argc, char** argv)
         setGlobalGameManager(&gameManager);
 
         Callbacks cb;
+        cb.extraLocalSlot = opt.extraLocalSlot;
         GAMECLIENT.SetInterface(&cb);
         if(opt.host)
         {

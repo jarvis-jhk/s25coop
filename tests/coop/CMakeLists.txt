@@ -153,6 +153,22 @@ if(NOT WIN32)
     # A diverged member is caught by the server (its checksums against its leader's) and removed; the game goes on
     add_coop_member_test(CoopNet_MemberDesyncDetected 13715 OFF outofsync --desync-at 300)
 
+    # The same real member connection succeeds normally, but cannot claim the host's spare AI slot locally.
+    foreach(mode IN ITEMS normal extra)
+        if(mode STREQUAL "normal")
+            set(port 13718)
+        else()
+            set(port 13719)
+        endif()
+        set(name CoopNet_MemberLocalSlots_${mode})
+        add_test(NAME ${name}
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=${port}
+                         -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DMODE=${mode}
+                         -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetMemberLocalSlots.cmake)
+        # Allow a preceding independent invocation to release the port before this one's own timeout.
+        set_tests_properties(${name} PROPERTIES TIMEOUT 400 RUN_SERIAL TRUE)
+    endforeach()
+
     # Members in the lobby (M2 step 3): switching from a slot, refusal, kick by the host
     function(add_coop_lobby_test name port mode)
         add_test(NAME ${name}
