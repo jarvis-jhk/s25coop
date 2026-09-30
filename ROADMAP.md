@@ -125,6 +125,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   single-transition/no-input-leak regressions and a locally tested original-movie path.
   Singleplayer/Multiplayer handle controller B through their existing Back actions; all focused actions,
   replay/login overlays, missing-save confirmation and a no-Main-menu-quit countercheck are covered.
+  Direct-IP and the LAN browser handle controller B through their existing Back actions. Eight driver-event
+  and physical-input regressions cover all seven focusable controls, window/confirmation precedence,
+  mouse/A/keyboard behavior and B bursts stopping at Multiplayer (Sol companion, 2026-09-30).
   Create game/map selection handles controller B through its original Back route, with four-context,
   mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many

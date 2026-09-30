@@ -71,6 +71,14 @@ void dskLAN::Msg_PaintBefore()
     discovery.Run();
 }
 
+bool dskLAN::Msg_PadCommand(unsigned, const PadButton button)
+{
+    if(button != PadButton::B)
+        return false;
+    Msg_ButtonClick(ID_btBack);
+    return true;
+}
+
 void dskLAN::Msg_ButtonClick(const unsigned ctrl_id)
 {
     switch(ctrl_id)
