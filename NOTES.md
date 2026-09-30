@@ -485,3 +485,23 @@ on 0.1.5–0.1.7 still open.
 - ROADMAP: M6 (S3/S4 rules as add-ons, presets Classic/Comfort/Age of Gods/Dark Tribe, AI artwork) and M7 (AI HD
   graphics remake, original always selectable, free asset set) added at Jan's request.
 Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
+
+
+## 2026-09-30 — Sol companion: controller Back from Create game
+- Branch `sol/map-selection-controller-back`, based on origin/master be40e1c42 (per-player start goods).
+  dskSelectMap handles B through its existing GoBack action, retaining Local/Direct-IP/LAN/lobby routing
+  and the disconnected-lobby fallback. Other controller buttons retain their navigation behavior.
+- Driver-event tests cover B and mouse Back in four contexts, B closing the regular Load game window
+  before leaving the desktop, and B retaining the custom map-settings dialog that requires confirmation.
+  The initial overlay test assumed a regular close behavior for the map dialog; its actual custom/modal
+  constructor invalidated that assumption, so the tests explicitly distinguish the two kinds of window.
+- BReturnsToTheOriginalMenu fails on the old implementation; mouse Back and unrelated-button controls
+  pass there. All five final MenuPadMapReturnTests cases pass with the fix. GCC12 Release/Werror in the
+  companion build/dev, Ninja/ccache and at most two jobs; clang-format10 and diff checks pass. Final
+  read-only gpt-6.1-sol review of the corrected tests/input-routing source: no actionable findings.
+- Existing SecondLocalPlayerCommandsTakeTheFullNetworkRoundtrip already records and replays through
+  the real GameClient with the mock video driver, checking replay async/error callbacks and completion.
+  The older M0.5 roadmap sentence and duplicate Sol backlog task were stale; both corrected. A negative
+  checksum control for that real-client replay path is a separate useful ready slice.
+- Full Test_splitscreen ctest also passes (54.07 seconds).
+- Opus owns review and integration; no primary checkout/build changes, master push or self-merge.
