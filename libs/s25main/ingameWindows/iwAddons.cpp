@@ -100,7 +100,7 @@ void iwAddons::Close()
 {
     // Close an open save/load preset window: the load window holds a callback into this window,
     // so it must not outlive it
-    WINDOWMANAGER.Close(CGI_ADDON_PRESETS);
+    WINDOWMANAGER.Close(CGI_ADDON_PRESETS, GetOwner());
     IngameWindow::Close();
 }
 

@@ -11,6 +11,7 @@
 #include "ogl/FontStyle.h"
 #include "ogl/SoundEffectItem.h"
 #include "ogl/glFont.h"
+#include <algorithm>
 
 ctrlComboBox::ctrlComboBox(Window* parent, unsigned id, const DrawPoint& pos, const Extent& size, TextureColor tc,
                            const glFont* font, unsigned short max_list_height, bool readonly)
@@ -23,6 +24,15 @@ ctrlComboBox::ctrlComboBox(Window* parent, unsigned id, const DrawPoint& pos, co
         AddImageButton(1, DrawPoint(size.x - size.y, 0), Extent(size.y, size.y), tc, LOADER.GetImageN("io", 34));
 
     Resize(size);
+}
+
+ctrlComboBox::~ctrlComboBox()
+{
+    // Die Sperre einer AUFGEKLAPPTEN Liste liegt beim ELTERNFENSTER, nicht hier. Ohne diese
+    // Zeile bliebe sie nach dem Loeschen des Controls stehen, und mit ihr eine Flaeche, die
+    // keinen Mausklick mehr annimmt.
+    if(GetParent() && IsListOpen())
+        GetParent()->FreeRegion(this);
 }
 
 void ctrlComboBox::Resize(const Extent& newSize)
@@ -85,20 +95,35 @@ bool ctrlComboBox::Msg_LeftDown(const MouseCoords& mc)
     // Irgendwo anders hingeklickt --> Liste ausblenden
     if(!readonly && !IsPointInRect(mc.pos, GetFullDrawRect(list)))
     {
-        // Liste wieder ausblenden
-        ShowList(false);
+        // Der Klick VERWIRFT: was der Spieler beim Blaettern markiert hatte, gilt nicht.
+        // Ausgeloest wird dabei nichts mehr, was darunter liegt - dafuer sperrt eine offene
+        // Liste seit Phase 10 den ganzen Bildschirm (ShowList).
+        if(list->IsVisible())
+            RestoreAndClose();
         return false;
     }
 
     if(!readonly && IsPointInRect(mc.pos, GetDrawRect()))
     {
         // Liste wieder ein/ausblenden
-        ShowList(!list->IsVisible());
+        if(list->IsVisible())
+            RestoreAndClose();
+        else
+            ShowList(true);
         return true;
     }
 
     // Für Button und Liste weiterleiten
-    return RelayMouseMessage(&Window::Msg_LeftDown, mc);
+    const bool ret = RelayMouseMessage(&Window::Msg_LeftDown, mc);
+
+    // FEHLER: ein Klick auf den BEREITS AUSGEWAEHLTEN Eintrag aenderte nichts, also meldete
+    // ctrlList::SetSelection nichts, also lief das einzige ShowList(false) des Auswahlpfads
+    // (Msg_ListSelectItem) nie - die Liste blieb offen stehen, obwohl der Spieler gewaehlt
+    // hatte. Mit der RECHTEN Maustaste ging es, weil Msg_RightDown genau diese Absicherung
+    // seit jeher hat. Hier ist sie fuer die linke.
+    if(!readonly && list->IsVisible() && IsPointInRect(mc.pos, list->GetDrawRect()))
+        ShowList(false);
+    return ret;
 }
 
 bool ctrlComboBox::Msg_LeftUp(const MouseCoords& mc)
@@ -176,6 +201,12 @@ Rect ctrlComboBox::GetFullDrawRect(const ctrlList* list)
 
 void ctrlComboBox::Msg_ListSelectItem(unsigned, const int selection)
 {
+    // BLAETTERN ist noch keine Wahl: die Liste bleibt offen und das Elternfenster hoert nichts.
+    // Nur der Padpfad kommt so herein (StepValue bei offener Liste); der Mausklick auf einen
+    // Eintrag ist unveraendert sofort die Wahl.
+    if(browsing_)
+        return;
+
     // Liste wieder ausblenden
     ShowList(false);
 
@@ -185,6 +216,145 @@ void ctrlComboBox::Msg_ListSelectItem(unsigned, const int selection)
         // Nachricht an übergeordnetes Fenster verschicken
         GetParent()->Msg_ComboSelectItem(GetID(), selection);
     }
+}
+
+bool ctrlComboBox::Activate()
+{
+    if(!CanActivate())
+        return false;
+    auto* list = GetCtrl<ctrlList>(0);
+    if(!list->IsVisible())
+    {
+        // Aufklappen - exakt der Rumpf von Msg_LeftDown beim Klick auf das Feld. Es aendert
+        // sich dabei KEIN Wert.
+        ShowList(true);
+        return true;
+    }
+    // Bestaetigen. Gemeldet wird nur, wenn sich seit dem Aufklappen wirklich etwas geaendert
+    // hat - genau das tut der Mausklick auf einen Listeneintrag auch, weil
+    // ctrlList::SetSelection bei unveraenderter Auswahl nichts meldet.
+    const std::optional<unsigned> chosen = list->GetSelection();
+    ShowList(false);
+    if(chosen && chosen != selectionOnOpen_)
+        GetParent()->Msg_ComboSelectItem(GetID(), *chosen);
+    return true;
+}
+
+bool ctrlComboBox::CancelInput()
+{
+    if(!CanCancelInput())
+        return false;
+    RestoreAndClose();
+    return true;
+}
+
+void ctrlComboBox::OnFocusLost()
+{
+    // Der Fokus wandert weiter, waehrend die Liste noch offen steht - dieselbe Wirkung wie B.
+    // Ohne das bliebe eine Liste sichtbar, die niemand mehr bedient, samt ihrer Sperre.
+    if(IsListOpen())
+        RestoreAndClose();
+}
+
+void ctrlComboBox::RestoreAndClose()
+{
+    auto* list = GetCtrl<ctrlList>(0);
+    // browsing_ haelt Msg_ListSelectItem still: das Zuruecksetzen ist keine Wahl.
+    browsing_ = true;
+    list->SetSelection(selectionOnOpen_);
+    browsing_ = false;
+    list->ScrollToSelection();
+    ShowList(false);
+}
+
+Rect ctrlComboBox::GetBoundaryRect() const
+{
+    Rect result = GetDrawRect();
+    const auto* list = GetCtrl<ctrlList>(0);
+    if(list->IsVisible())
+        result.bottom = list->GetDrawRect().bottom;
+    return result;
+}
+
+void ctrlComboBox::SetVisible(const bool visible)
+{
+    if(!visible && IsListOpen())
+        RestoreAndClose();
+    Window::SetVisible(visible);
+}
+
+bool ctrlComboBox::IsEffectivelyVisible() const
+{
+    for(const Window* wnd = this; wnd; wnd = wnd->GetParent())
+    {
+        if(!wnd->IsVisible())
+            return false;
+    }
+    return true;
+}
+
+Rect ctrlComboBox::GetLockRect() const
+{
+    // Bis zur Wurzel hoch: bei einem Desktop ist das der ganze Bildschirm, bei einem
+    // Ingamefenster das Fenster. Die Liste kann unten darueber hinausragen, deshalb die
+    // Vereinigung.
+    const Window* top = this;
+    while(top->GetParent())
+        top = top->GetParent();
+    Rect result = top->GetDrawRect();
+    const Rect listRect = GetCtrl<ctrlList>(0)->GetDrawRect();
+    result.left = std::min(result.left, listRect.left);
+    result.top = std::min(result.top, listRect.top);
+    result.right = std::max(result.right, listRect.right);
+    result.bottom = std::max(result.bottom, listRect.bottom);
+    return result;
+}
+
+std::optional<Window::ValueRange> ctrlComboBox::GetValueRange() const
+{
+    const auto* list = GetCtrl<ctrlList>(0);
+    if(list->GetNumLines() == 0)
+        return std::nullopt;
+    return ValueRange{list->GetSelection().value_or(0u), list->GetNumLines() - 1u, ValueAxis::Vertical};
+}
+
+bool ctrlComboBox::CanStepValue(const Position& dir) const
+{
+    // Schreibgeschuetzt heisst schreibgeschuetzt - auch fuer das Steuerkreuz. GENAU HIER lag
+    // Befund N8: GetValueRange() liefert hier trotzdem einen Wertebereich, die Leiste haette
+    // also "Steuerkreuz Einstellen" versprochen, und der Druck haette nichts getan.
+    if(readonly)
+        return false;
+    const auto* list = GetCtrl<ctrlList>(0);
+    // AUFGEKLAPPT: das Steuerkreuz blaettert nur, es waehlt nicht. Auch waagerecht
+    // verbraucht - solange die Liste offen ist, soll der Fokus nicht unter ihr wegrutschen
+    // und sie offen zuruecklassen. Heraus fuehren A (bestaetigen), B (verwerfen) und die
+    // Schultertasten (verwerfen ueber OnFocusLost).
+    if(list->IsVisible())
+        return true;
+    return dir.y != 0 && list->GetNumLines() > 0;
+}
+
+void ctrlComboBox::DoStepValue(const Position& dir)
+{
+    auto* list = GetCtrl<ctrlList>(0);
+    if(list->IsVisible())
+    {
+        if(dir.y != 0)
+        {
+            browsing_ = true;
+            list->StepValue(dir);
+            browsing_ = false;
+        }
+        return;
+    }
+    const int last = static_cast<int>(list->GetNumLines()) - 1;
+    const auto& sel = list->GetSelection();
+    int next = (sel ? static_cast<int>(*sel) : (dir.y > 0 ? -1 : last + 1)) + dir.y;
+    next = std::max(0, std::min(last, next));
+    // Bewusst ueber die Liste: das loest Msg_ListSelectItem auf DIESEM Control aus und damit
+    // genau den Weg, den auch ein Mausklick auf einen Listeneintrag nimmt.
+    list->SetSelection(static_cast<unsigned>(next));
 }
 
 void ctrlComboBox::AddItem(const std::string& text)
@@ -228,8 +398,19 @@ void ctrlComboBox::Draw_()
 
 void ctrlComboBox::Msg_PaintAfter()
 {
-    // Draw list now so it is on top of everything
-    GetCtrl<ctrlList>(0)->Draw();
+    // Msg_PaintAfter laeuft auch fuer Controls, die gerade NICHT gezeichnet werden: die
+    // Schleife in Window::Msg_PaintAfter prueft keine Sichtbarkeit. Ein Reiterwechsel in
+    // dskOptions blendet die ganze Gruppe weg (Msg_OptionGroupChange -> ctrlGroup::SetVisible),
+    // ohne dass die Combobox darin davon erfaehrt - ihre offene Liste wuerde also weiter ueber
+    // allem gezeichnet und ihre Sperre bliebe liegen. Das ist die eine Stelle, die es je Frame
+    // zuverlaessig bemerkt.
+    if(IsListOpen() && !IsEffectivelyVisible())
+        RestoreAndClose();
+    else
+    {
+        // Draw list now so it is on top of everything
+        GetCtrl<ctrlList>(0)->Draw();
+    }
     Window::Msg_PaintAfter();
 }
 
@@ -242,13 +423,32 @@ void ctrlComboBox::ShowList(bool show)
     // list field
     list->SetVisible(show);
     // Arrow button
-    GetCtrl<ctrlButton>(1)->SetChecked(show);
+    if(auto* button = GetCtrl<ctrlButton>(1))
+        button->SetChecked(show);
+
+    if(show)
+    {
+        // Womit ist der Spieler hineingegangen? Nur so kann "verwerfen" den alten Wert
+        // zurueckstellen und "bestaetigen" wissen, ob es ueberhaupt etwas zu melden gibt.
+        selectionOnOpen_ = list->GetSelection();
+        // FEHLER: die Liste klappte immer bei Scrollposition 0 auf. Bei den knapp 30 Sprachen
+        // in dskOptions sah der Spieler seine EINGESTELLTE Sprache beim Aufklappen also gar
+        // nicht und wusste nicht, wo er steht.
+        list->ScrollToSelection();
+    }
 
     // Lock/unlock region of extended list
-    if(show)
-        GetParent()->LockRegion(this, list->GetDrawRect());
-    else
-        GetParent()->FreeRegion(this);
+    if(GetParent())
+    {
+        if(show)
+        {
+            // Ein offenes Aufklappmenue ist MODAL. Bisher sperrte es nur seine eigene Flaeche;
+            // ein Klick DANEBEN schloss zwar die Liste, drueckte aber gleichzeitig den Knopf
+            // darunter, weil Window::RelayMouseMessage nicht beim ersten Treffer abbricht.
+            GetParent()->LockRegion(this, GetLockRect());
+        } else
+            GetParent()->FreeRegion(this);
+    }
 
     LOADER.GetSoundN("sound", 113)->Play(255, false);
 }

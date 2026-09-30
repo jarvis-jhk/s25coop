@@ -8,12 +8,14 @@
 #include "Point.h"
 #include "RTTR_Assert.h"
 #include "Settings.h"
+#include "TvDisplay.h"
 #include "WindowManager.h"
 #include "driver/MouseCoords.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "helpers/EnumRange.h"
 #include "helpers/MultiArray.h"
 #include "helpers/containerUtils.h"
+#include "input/FocusPath.h"
 #include "ogl/FontStyle.h"
 #include "ogl/SoundEffectItem.h"
 #include "ogl/glArchivItem_Bitmap.h"
@@ -39,14 +41,41 @@ IngameWindow::IngameWindow(unsigned id, const DrawPoint& pos, const Extent& size
       closeBehavior_(closeBehavior), isModal_(modal), closeme(false), isPinned_(false), isMinimized_(false),
       isMoving(false)
 {
+    // Der Besitzer wird HIER festgelegt und nicht erst in DoShow: MoveToCenter() und
+    // MoveNextToMouse() laufen noch in diesem Konstruktor, und die brauchen ihn (Bildschirm des
+    // Besitzers statt ganzer Bildschirm - der naechste Schritt). Ausserhalb jeder Klammer ist
+    // das SHARED_WINDOW_OWNER, also genau das bisherige Verhalten.
+    ownerIdx_ = WINDOWMANAGER.GetCurrentWindowOwner();
+
     std::fill(buttonStates_.begin(), buttonStates_.end(), ButtonState::Up);
     contentOffset.x = LOADER.GetImageN("resource", 38)->getWidth();     // left border
     contentOffset.y = LOADER.GetImageN("resource", 42)->getHeight();    // title bar
     contentOffsetEnd.x = LOADER.GetImageN("resource", 39)->getWidth();  // right border
     contentOffsetEnd.y = LOADER.GetImageN("resource", 40)->getHeight(); // bottom bar
 
+    // Die gemerkten Fenstereinstellungen (Position, minimiert, angepinnt, "war offen") sind
+    // allein nach GUI_ID geschluesselt (Settings.h). Zwei Fenster derselben Art mit
+    // VERSCHIEDENEN Besitzern teilen sich damit EIN Objekt - PLAN.md fuehrt das als offenen
+    // Punkt aus Phase 4f mit dem Zusatz "Heute unerreichbar".
+    //
+    // Diese Phase macht ihn erreichbar: das Padmenue oeffnet Uebersichtskarte, Postfenster und
+    // Hauptauswahl fuer JEDEN Sitzplatz, und drei davon stehen in Settings.cpp/persistentWindows.
+    // Ohne die Klemme hier verschoeben sich zwei Spieler gegenseitig ihr Postfenster, und
+    // minimierte einer seins, kaeme das des anderen minimiert auf die Welt - ein Padspieler
+    // koennte es dann nicht einmal betreten (ValidateFocus loest den Fokus in minimierten
+    // Fenstern auf).
+    //
+    // Die ehrliche Form, solange es nur EINEN gemerkten Satz gibt: er gehoert dem Sitzplatz,
+    // dem auch die Maus, die Tastatur und die Knopfleiste gehoeren - der Hauptansicht. Fenster
+    // ohne Besitzer (SHARED_WINDOW_OWNER: Nachrichtenboxen, Systemfenster, alles ausserhalb
+    // einer Besitzklammer) behalten ihn ebenfalls, denn das ist der Einzelspielerfall und dort
+    // aendert sich damit KEIN Bit. Nur die Sitzplaetze 1 bis 3 bekommen keinen - ihre Fenster
+    // merken sich nichts und schreiben nichts. Ein Satz je Sitzplatz ist ein eigener Schritt
+    // (er muesste durch Settings::Save/Load).
+    const bool mayUsePersistentSettings = (ownerIdx_ == SHARED_WINDOW_OWNER || ownerIdx_ == 0);
     const auto it = SETTINGS.windows.persistentSettings.find(GetGUIID());
-    windowSettings_ = (it == SETTINGS.windows.persistentSettings.cend() ? nullptr : &it->second);
+    windowSettings_ =
+      (!mayUsePersistentSettings || it == SETTINGS.windows.persistentSettings.cend()) ? nullptr : &it->second;
 
     // For compatibility we treat the given height as the window height, not the content height
     // First we have to make sure the size is not to small
@@ -129,23 +158,42 @@ DrawPoint IngameWindow::GetRightBottomBoundary()
 
 void IngameWindow::SetPos(DrawPoint newPos, bool saveRestorePos)
 {
-    const Extent screenSize = VIDEODRIVER.GetRenderSize();
+    // Der Bereich, in dem ein Fenster liegen DARF. Bei ausgeschaltetem Fernsehmodus ist das
+    // exakt Rect(0, 0, GetRenderSize()) - dann rechnen die vier Zweige unten Zahl fuer Zahl
+    // dasselbe wie vor der Safe Area (tv::WindowBoundsRect -> tv::SafeAreaRect mit 0 Prozent).
+    const Rect bounds = tv::WindowBoundsRect(VIDEODRIVER.GetRenderSize(), GetSize());
+    // Groesste Position, an der das Fenster noch vollstaendig im Kasten liegt.
+    //
+    // Hier stand vorher `newPos.x + GetSize().x >= bounds.right`, und das war in zweierlei
+    // Hinsicht der falsche Rechenraum. Erstens ist GetSize() ein Extent, also UNSIGNED: die
+    // Summe zog die signierte Position mit nach unsigned, der Vergleich gegen die (signierte)
+    // Kante von Rect lief damit vorzeichenlos - genau die Warnung C4018. Zweitens wird SetPos
+    // ausdruecklich mit DrawPoint::MaxElementValue als "klebe an der rechten/unteren Kante"-
+    // Sonderwert aufgerufen (Resize(), restorePos_, posLastOrCenter); newPos + GetSize() liefe
+    // dabei ueber.
+    //
+    // Position minus Groesse ist eine Position, und Point rechnet gemischt vorzeichenbehaftet
+    // (Point.h: "Combining a signed with an unsigned point will result in a signed type").
+    // Damit steht die ganze Klemme in einer Achse, kommt ohne Cast aus und kann nicht
+    // ueberlaufen. Die Bedingung ist zu der alten aequivalent: pos + size >= right <=>
+    // pos >= right - size.
+    const DrawPoint maxPos = bounds.getEndPt() - GetSize();
     DrawPoint newRestorePos = newPos;
     // Too far left or right?
-    if(newPos.x < 0)
-        newRestorePos.x = newPos.x = 0;
-    else if(newPos.x + GetSize().x >= screenSize.x)
+    if(newPos.x < bounds.left)
+        newRestorePos.x = newPos.x = bounds.left;
+    else if(newPos.x >= maxPos.x)
     {
-        newPos.x = screenSize.x - GetSize().x;
+        newPos.x = maxPos.x;
         newRestorePos.x = DrawPoint::MaxElementValue; // make window stick to the right
     }
 
     // Too high or low?
-    if(newPos.y < 0)
-        newRestorePos.y = newPos.y = 0;
-    else if(newPos.y + GetSize().y >= screenSize.y)
+    if(newPos.y < bounds.top)
+        newRestorePos.y = newPos.y = bounds.top;
+    else if(newPos.y >= maxPos.y)
     {
-        newPos.y = screenSize.y - GetSize().y;
+        newPos.y = maxPos.y;
         newRestorePos.y = DrawPoint::MaxElementValue; // make window stick to the bottom
     }
 
@@ -465,9 +513,57 @@ void IngameWindow::DrawBackground()
         background->DrawPart(Rect(GetPos() + DrawPoint(contentOffset), GetIwSize()));
 }
 
+IngameWindow::~IngameWindow()
+{
+    // Backstop fuer die Lebensdauer des Fokus. Der Besitzer loest ihn normalerweise in
+    // dskGameInterface::Msg_WindowClosed auf; beim Desktopwechsel raeumt WindowManager die
+    // Fensterliste aber OHNE diesen Rueckruf (WindowManager::DoDesktopSwitch).
+    for(const FocusRing& ring : focusRings_)
+        ring.focus->OnRootDestroyed(this);
+}
+
+void IngameWindow::AddFocusRing(FocusPath& focus, const unsigned color)
+{
+    RemoveFocusRing(focus); // ein Spieler hat hier hoechstens einen Rahmen
+    focusRings_.push_back(FocusRing{&focus, color});
+}
+
+void IngameWindow::RemoveFocusRing(const FocusPath& focus)
+{
+    helpers::erase_if(focusRings_, [&focus](const FocusRing& ring) { return ring.focus == &focus; });
+}
+
+bool IngameWindow::HasFocusRing(const FocusPath& focus) const
+{
+    return helpers::contains_if(focusRings_, [&focus](const FocusRing& ring) { return ring.focus == &focus; });
+}
+
+void IngameWindow::Msg_PaintAfter()
+{
+    // Rekursiv an die Controls, wie bisher.
+    Window::Msg_PaintAfter();
+    // Der Rahmen liegt UEBER den Controls dieses Fensters und wird von darueberliegenden
+    // Fenstern korrekt verdeckt: WindowManager::Draw ruft je Fenster PaintBefore/Draw/PaintAfter.
+    if(IsMinimized() || !IsVisible())
+        return; // was nicht gezeichnet wird, bekommt auch keinen Rahmen (Befund B3)
+    // !IsVisible() ist neu in Phase 13: das Kreismenue setzt das Fenster, dessen Knoepfe es im
+    // Kreis zeigt, auf UNSICHTBAR und zeichnet stattdessen selbst. Ohne diese Bedingung stuende
+    // der Fokusrahmen des Rings mitten im Bild, um ein Control, das niemand sieht.
+    for(const FocusRing& ring : focusRings_)
+        ring.focus->DrawRing(ring.color);
+}
+
 void IngameWindow::MoveToCenter()
 {
-    SetPos(DrawPoint(VIDEODRIVER.GetRenderSize() - GetSize()) / 2);
+    // Mitte des Kastens, in dem das Fenster liegen darf, nicht der Renderflaeche. Beide sind
+    // identisch, solange der Fernsehmodus aus ist - dann ist die Zeile Zahl fuer Zahl das alte
+    // DrawPoint(GetRenderSize() - GetSize()) / 2.
+    //
+    // (links + rechts - Breite) / 2 statt Ursprung + (Groesse - Breite) / 2: die zweite Form
+    // rechnete die Differenz in einem Extent, also UNSIGNED, und liefe bei einem Fenster
+    // ueber, das breiter ist als der Kasten.
+    const Rect bounds = tv::WindowBoundsRect(VIDEODRIVER.GetRenderSize(), GetSize());
+    SetPos((bounds.getOrigin() + bounds.getEndPt() - GetSize()) / 2);
 }
 
 void IngameWindow::MoveNextToMouse()
@@ -479,7 +575,11 @@ void IngameWindow::MoveNextToMouse()
 
 bool IngameWindow::IsMessageRelayAllowed() const
 {
-    return !isMinimized_ && !isMoving;
+    // !IsVisible() ist neu in Phase 13, aus demselben Grund wie in Msg_PaintAfter: ein Fenster,
+    // das nicht gezeichnet wird, darf keine Maus- und keine Tastaturmeldung bekommen. Sonst
+    // traefe ein Mausklick die Knoepfe des Kreismenues eines PADspielers - an einer Stelle des
+    // Bildschirms, an der fuer den Mausspieler nichts zu sehen ist.
+    return !isMinimized_ && !isMoving && IsVisible();
 }
 
 void IngameWindow::SaveOpenStatus(bool isOpen) const
@@ -519,4 +619,13 @@ bool IngameWindow::StopDragging()
         return true;
     }
     return false;
+}
+
+brief::Brief IngameWindow::GetPadBrief(const Window* /*focused*/) const
+{
+    // Die Vorgabe ist LEER und nicht etwa der Tooltip: brief::ForControl liefert den ohnehin
+    // schon, und zwar fuer jedes Control in jedem Fenster. Wer hier etwas zurueckgibt, sagt
+    // damit "ich weiss ueber dieses Control mehr als sein Tooltip" - alle anderen bleiben, wie
+    // sie sind.
+    return brief::Brief();
 }

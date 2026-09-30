@@ -22,7 +22,8 @@ enum class ClientError
     CoopKicked,
     CoopLeaderLeft,
     CoopOutOfSync,
-    CoopTooFarBehind
+    CoopTooFarBehind,
+    LocalPlayerSetup
 };
 
 const char* ClientErrorToStr(ClientError error);

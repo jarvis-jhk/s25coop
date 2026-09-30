@@ -28,6 +28,25 @@ public:
     };
     using Params = boost_variant2<FlagType, SoldierCount>;
 
+    /// Darf dieses Fenster die EINE echte Maus anfassen?
+    ///
+    /// Der Konstruktor zieht den Mauszeiger seit jeher auf seinen ersten Reiter und Close()
+    /// wieder auf die Klickstelle zurueck. Fuer den Mausspieler ist das eine Bequemlichkeit -
+    /// es ist SEIN Zeiger, und er hat das Fenster gerade selbst aufgeklickt. Deshalb bleibt
+    /// Warp die Vorgabe: Einzelspieler und Mauspfad verhalten sich exakt wie vorher, auch im
+    /// Splitscreen (dort oeffnet ContextClick das Fenster fuer die Ansicht UNTER der Maus, es
+    /// ist also weiterhin der Zeiger dessen, der geklickt hat).
+    ///
+    /// Oeffnet dagegen ein PADspieler dieses Fenster, gehoert der Mauszeiger einem ANDEREN
+    /// Menschen am selben Bildschirm. Ihn dorthin zu reissen waere ein Eingriff in dessen
+    /// Partie - deshalb LeaveAlone fuer den Padpfad. Dieselbe Begruendung, aus der der Padpfad
+    /// das iwRoadWindow gar nicht erst benutzt.
+    enum class MousePointer
+    {
+        Warp,
+        LeaveAlone
+    };
+
     enum class BuildTab
     {
         Hut,
@@ -71,12 +90,28 @@ private:
 
 public:
     iwAction(GameInterface& gi, GameWorldView& gwv, const Tabs& tabs, MapPoint selectedPt, const DrawPoint& mousePos,
-             Params params, bool military_buildings);
+             Params params, bool military_buildings, MousePointer mousePointer = MousePointer::Warp);
 
     void Close() override;
 
     /// Gibt zurück, auf welchen Punkt es sich bezieht
     const MapPoint& GetSelectedPt() const { return selectedPt; }
+
+    /// KLARTEXT ZU EINEM KNOPF DIESES FENSTERS - der Befund von Phase 12.
+    ///
+    /// GEMESSEN: jeder Knopf in diesem Fenster traegt einen Tooltip, und bei allen ausser den
+    /// Gebaeudeicons ist er ein reiner Name von einem bis vier Woertern ("Straße bauen",
+    /// "Gelehrten rufen"). Kein einziger sagt, was die Handlung bewirkt oder was sie
+    /// voraussetzt. Der Padspieler bekommt genau diesen Tooltip als Klartext (brief::ForControl)
+    /// und weiss danach so viel wie vorher.
+    ///
+    /// Die Zuordnung Knopf -> Text steht HIER, weil hier auch die Knopfnummern stehen: die
+    /// Reiterkennungen und die IDs 1..5 des Flaggenreiters sind eine Sache dieser
+    /// Uebersetzungseinheit. Der TEXT selbst steht in brief::ForAction und ist damit ohne
+    /// Fenster, ohne Partie und ohne Grafik pruefbar.
+    ///
+    /// Reine Anzeige - kein Zustand, kein GameCommand.
+    brief::Brief GetPadBrief(const Window* focused) const override;
 
 private:
     void Msg_Group_ButtonClick(unsigned group_id, unsigned ctrl_id) override;

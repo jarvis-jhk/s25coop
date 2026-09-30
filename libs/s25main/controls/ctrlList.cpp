@@ -7,6 +7,7 @@
 #include "ctrlScrollBar.h"
 #include "driver/MouseCoords.h"
 #include "ogl/glFont.h"
+#include <algorithm>
 
 ctrlList::ctrlList(Window* parent, unsigned id, const DrawPoint& pos, const Extent& size, TextureColor tc,
                    const glFont* font)
@@ -30,6 +31,60 @@ void ctrlList::SetSelection(const std::optional<unsigned>& selection)
         if(selection && GetParent())
             GetParent()->Msg_ListSelectItem(GetID(), *selection);
     }
+}
+
+bool ctrlList::Activate()
+{
+    if(!CanActivate())
+        return false;
+    // Entspricht dem Doppelklick im Mauspfad (Msg_LeftUp).
+    GetParent()->Msg_ListChooseItem(GetID(), *selection_);
+    return true;
+}
+
+std::optional<Window::ValueRange> ctrlList::GetValueRange() const
+{
+    if(lines.empty())
+        return std::nullopt;
+    return ValueRange{selection_.value_or(0u), static_cast<unsigned>(lines.size() - 1u), ValueAxis::Vertical};
+}
+
+bool ctrlList::CanStepValue(const Position& dir) const
+{
+    // Waagerecht wandert der Fokus weiter; eine leere Liste hat nichts zu blaettern.
+    return dir.y != 0 && !lines.empty();
+}
+
+void ctrlList::DoStepValue(const Position& dir)
+{
+    const int last = static_cast<int>(lines.size()) - 1;
+    int next = (selection_ ? static_cast<int>(*selection_) : (dir.y > 0 ? -1 : last + 1)) + dir.y;
+    next = std::max(0, std::min(last, next));
+    if(!selection_ || static_cast<int>(*selection_) != next)
+    {
+        SetSelection(static_cast<unsigned>(next));
+        // Die Auswahl kann aus dem Sichtbereich laufen - die Scrollleiste muss mit.
+        ScrollToSelection();
+    }
+    // Verbraucht, auch am Rand: der Fokus soll nicht aus der Liste springen. Das steht in
+    // CanStepValue, das hier auch am Rand true sagt.
+}
+
+void ctrlList::ScrollToSelection()
+{
+    if(!selection_ || *selection_ >= lines.size() || pagesize == 0)
+        return;
+    auto* scrollbar = GetCtrl<ctrlScrollBar>(0);
+    if(!scrollbar)
+        return;
+    // Bewusst SetScrollPos und nicht Scroll: die Liste liest die Position selbst beim Zeichnen,
+    // eine Meldung nach oben gibt es beim Mauspfad an dieser Stelle auch nicht.
+    const int sel = static_cast<int>(*selection_);
+    const int pos = scrollbar->GetScrollPos();
+    if(sel < pos)
+        scrollbar->SetScrollPos(static_cast<unsigned short>(sel));
+    else if(sel >= pos + static_cast<int>(pagesize))
+        scrollbar->SetScrollPos(static_cast<unsigned short>(sel - static_cast<int>(pagesize) + 1));
 }
 
 bool ctrlList::Msg_MouseMove(const MouseCoords& mc)

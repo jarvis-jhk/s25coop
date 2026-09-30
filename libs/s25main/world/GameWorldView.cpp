@@ -38,7 +38,7 @@
 #include <cmath>
 
 GameWorldView::GameWorldView(const GameWorldViewer& gwv, const Position& pos, const Extent& size)
-    : selPt(0, 0), show_bq(SETTINGS.ingame.showBQ), show_names(SETTINGS.ingame.showNames),
+    : selPt(0, 0), bqMode_(SETTINGS.ingame.showBQ ? BqMode::All : BqMode::Off), show_names(SETTINGS.ingame.showNames),
       show_productivity(SETTINGS.ingame.showProductivity), offset(0, 0), lastOffset(0, 0), gwv(gwv), origin_(pos),
       size_(size), zoomFactor_(1.f), targetZoomFactor_(1.f), zoomSpeed_(0.f)
 {
@@ -97,10 +97,29 @@ float GameWorldView::SetZoomFactor(float zoomFactor, bool smoothTransition /* = 
     if(!smoothTransition)
     {
         zoomFactor_ = targetZoomFactor_;
+        // Eine noch laufende weiche Zoomfahrt anhalten. Ohne das schoebe SetNextZoomFactor im
+        // naechsten Draw() mit der alten Geschwindigkeit weiter, obwohl das Ziel schon erreicht
+        // ist - beim Padzoom (jeden Frame ein Sprung auf ein neues Ziel) waere das ein Zittern.
+        zoomSpeed_ = 0.f;
         updateEffectiveZoomFactor();
         CalcFxLx();
     }
     return targetZoomFactor_;
+}
+
+float GameWorldView::SetZoomFactorAt(const float zoomFactor, const Position& anchorViewPos)
+{
+    // Erst messen, wo der Anker JETZT in der Welt liegt ...
+    const Position before = ViewPosToMap(anchorViewPos);
+    // ... dann sofort umschalten (kein smoothTransition: der Padtrigger liefert ohnehin jeden
+    // Frame einen kleinen Schritt, DAS ist hier die Weichzeichnung - und nur so ist der Anker
+    // ueberhaupt festzuhalten, weil eine laufende Animation ihn jeden Frame neu verschoebe) ...
+    const float result = SetZoomFactor(zoomFactor, false);
+    // ... und den Unterschied in den Scrollstand schieben.
+    const Position after = ViewPosToMap(anchorViewPos);
+    if(before != after)
+        MoveBy(before - after);
+    return result;
 }
 
 float GameWorldView::GetCurrentTargetZoomFactor() const
@@ -121,6 +140,65 @@ Position GameWorldView::ViewPosToMap(Position pos) const
     return pos;
 }
 
+Position GameWorldView::MapPosToView(Position pos) const
+{
+    if(effectiveZoomFactor_ != 1.f) //-V550
+    {
+        PointF diff(size_.x - size_.x / effectiveZoomFactor_, size_.y - size_.y / effectiveZoomFactor_);
+        diff /= 2.f;
+        pos = Position((PointF(pos) - diff) * effectiveZoomFactor_);
+    }
+    return pos + origin_;
+}
+
+void GameWorldView::UpdateSelection()
+{
+    if(!cursorPos_)
+    {
+        selPt = MapPoint::Invalid();
+        selPtOffset = Position(0, 0);
+        return;
+    }
+
+    // Genau die Umrechnung, die frueher in Draw() stand (origin_ abziehen, dann die
+    // Zoomkorrektur) - ViewPosToMap macht beides.
+    const Position cursor = ViewPosToMap(*cursorPos_);
+
+    const TerrainRenderer& terrainRenderer = gwv.GetTerrainRenderer();
+    const auto& world = GetWorld();
+    int shortestDistToCursor = 100000;
+    // Reihenfolge und Metrik bewusst identisch zur alten Schleife in Draw(): erste Fundstelle
+    // des Minimums gewinnt, damit sich der selektierte Punkt nicht veraendert.
+    for(const int y : helpers::range(firstPt.y, lastPt.y + 1))
+    {
+        for(const int x : helpers::range(firstPt.x, lastPt.x + 1))
+        {
+            Position curOffset;
+            const MapPoint curPt = terrainRenderer.ConvertCoords(Position(x, y), &curOffset);
+            const DrawPoint curPos = world.GetNodePos(curPt) - offset + curOffset;
+
+            Position dist = cursor - curPos;
+            dist *= dist;
+            if(std::abs(dist.x) + std::abs(dist.y) < shortestDistToCursor)
+            {
+                selPt = curPt;
+                selPtOffset = curOffset;
+                shortestDistToCursor = std::abs(dist.x) + std::abs(dist.y);
+            }
+        }
+    }
+}
+
+Rect GameWorldView::GetScissorRect() const
+{
+    const auto windowSize = VIDEODRIVER.GetWindowSize();
+    const auto& guiScale = VIDEODRIVER.getGuiScale();
+    const auto screenOrigin = guiScale.viewToScreen(origin_);
+    const auto screenSize = guiScale.viewToScreen(size_);
+    return Rect(screenOrigin.x, static_cast<int>(windowSize.height) - (screenOrigin.y + screenSize.y),
+                static_cast<unsigned>(screenSize.x), static_cast<unsigned>(screenSize.y));
+}
+
 struct ObjectBetweenLines
 {
     noBase& obj;
@@ -132,15 +210,14 @@ void GameWorldView::Draw(const RoadBuildState& rb, const MapPoint selected, bool
 {
     SetNextZoomFactor();
 
-    const auto windowSize = VIDEODRIVER.GetWindowSize();
-    const auto& guiScale = VIDEODRIVER.getGuiScale();
-    const auto screenOrigin = guiScale.viewToScreen(origin_);
-    const auto screenSize = guiScale.viewToScreen(size_);
-    glScissor(screenOrigin.x, windowSize.height - (screenOrigin.y + screenSize.y), screenSize.x, screenSize.y);
+    // Der selektierte Punkt kommt aus dem Zeiger DIESER Ansicht und wird ohne jeden GL-Aufruf
+    // berechnet. Frueher stand hier VIDEODRIVER.GetMousePos() - eine globale Abfrage, die bei
+    // mehreren Ansichten allen dieselbe Auswahl gegeben haette.
+    UpdateSelection();
 
-    int shortestDistToMouse = 100000;
-    Position mousePos = VIDEODRIVER.GetMousePos();
-    mousePos -= Position(origin_);
+    const auto scissor = GetScissorRect();
+    glScissor(scissor.left, scissor.top, scissor.getSize().x, scissor.getSize().y);
+
     if(effectiveZoomFactor_ != 1.f) //-V550
     {
         glMatrixMode(GL_PROJECTION);
@@ -150,8 +227,6 @@ void GameWorldView::Draw(const RoadBuildState& rb, const MapPoint selected, bool
         PointF diff(size_.x - size_.x / effectiveZoomFactor_, size_.y - size_.y / effectiveZoomFactor_);
         diff = diff / 2.f;
         glTranslatef(-diff.x, -diff.y, 0.f);
-        // Also adjust mouse
-        mousePos = Position(PointF(mousePos) / effectiveZoomFactor_ + diff);
         glMatrixMode(GL_MODELVIEW);
     }
 
@@ -178,15 +253,6 @@ void GameWorldView::Draw(const RoadBuildState& rb, const MapPoint selected, bool
             const MapPoint curPt = terrainRenderer.ConvertCoords(Position(x, y), &curOffset);
             const DrawPoint curPos = world.GetNodePos(curPt) - offset + curOffset;
 
-            Position mouseDist = mousePos - curPos;
-            mouseDist *= mouseDist;
-            if(std::abs(mouseDist.x) + std::abs(mouseDist.y) < shortestDistToMouse)
-            {
-                selPt = curPt;
-                selPtOffset = curOffset;
-                shortestDistToMouse = std::abs(mouseDist.x) + std::abs(mouseDist.y);
-            }
-
             const Visibility visibility = gwv.GetVisibility(curPt);
 
             DrawBoundaryStone(curPt, curPos, visibility);
@@ -197,8 +263,11 @@ void GameWorldView::Draw(const RoadBuildState& rb, const MapPoint selected, bool
                 DrawMovingFiguresFromBelow(terrainRenderer, Position(x, y), objsBetweenRows);
                 DrawFigures(curPt, curPos, objsBetweenRows);
 
-                if(show_bq)
-                    DrawConstructionAid(curPt, curPos);
+                // OHNE BEDINGUNG - die Entscheidung steckt IN DrawConstructionAid
+                // (ShouldDrawConstructionAid). Eine Bedingung hier waere eine zweite Abschrift
+                // derselben Regel, und der Nachweis, der den Zeichner misst, liefe an ihr
+                // vorbei. Dieselbe Linie wie EmitRing und EmitBriefLines (Befund N7).
+                DrawConstructionAid(curPt, curPos);
                 if(resourceRevealMode != Cheats::ResourceRevealMode::Nothing)
                     DrawResource(curPt, curPos, resourceRevealMode);
             } else if(visibility == Visibility::FogOfWar)
@@ -238,6 +307,7 @@ void GameWorldView::Draw(const RoadBuildState& rb, const MapPoint selected, bool
     }
     glPopMatrix();
 
+    const auto windowSize = VIDEODRIVER.GetWindowSize();
     glScissor(0, 0, windowSize.width, windowSize.height);
 }
 
@@ -511,8 +581,28 @@ constexpr auto getBqImgs()
     return imgs;
 }
 
+bool GameWorldView::ShouldDrawConstructionAid(const MapPoint& pt) const
+{
+    switch(GetBqMode())
+    {
+        case BqMode::Off: return false;
+        // GENAU EIN Knoten: der, auf den der Zeiger DIESER Ansicht zeigt. selPt kommt aus
+        // UpdateSelection, das Draw() als erstes ruft - es ist also im selben Bild aktuell, und
+        // vier Spieler haben vier davon.
+        //
+        // Ohne Zeiger ist selPt MapPoint::Invalid(); dann trifft kein einziger Knoten, und die
+        // Ansicht zeigt in dieser Stufe gar nichts. Das ist richtig so: die Stufe heisst "nur
+        // am Zeiger", und wo keiner ist, ist auch nichts zu zeigen.
+        case BqMode::Cursor: return pt == selPt;
+        case BqMode::All: return true;
+    }
+    return false;
+}
+
 void GameWorldView::DrawConstructionAid(const MapPoint& pt, const DrawPoint& curPos)
 {
+    if(!ShouldDrawConstructionAid(pt))
+        return;
     BuildingQuality bq = gwv.GetBQ(pt);
     if(bq != BuildingQuality::Nothing)
     {
@@ -621,8 +711,46 @@ void GameWorldView::DrawResource(const MapPoint& pt, DrawPoint curPos, const Che
 
 void GameWorldView::ToggleShowBQ()
 {
-    show_bq = !show_bq;
+    // Gegen den SICHTBAREN Zustand gekippt, nicht gegen das gespeicherte Feld: sieht der Mensch
+    // die Bauhilfe (weil sie erzwungen ist) und drueckt auf "aus", muss sie ausgehen. Der Zwang
+    // faellt dabei weg - ein ausdruecklicher Wille schlaegt eine Bequemlichkeitsvorgabe.
+    SetBqMode(IsShowingBQ() ? BqMode::Off : BqMode::All);
+}
+
+void GameWorldView::CycleBqMode()
+{
+    // Gegen den SICHTBAREN Zustand gekippt, aus demselben Grund wie oben.
+    switch(GetBqMode())
+    {
+        case BqMode::Off: SetBqMode(BqMode::Cursor); break;
+        case BqMode::Cursor: SetBqMode(BqMode::All); break;
+        case BqMode::All: SetBqMode(BqMode::Off); break;
+    }
+}
+
+void GameWorldView::SetBqMode(const BqMode mode)
+{
+    bqMode_ = mode;
+    forcedBqMode_ = BqMode::Off;
+    // Ein ausdrueckliches "aus" bleibt stehen, bis derselbe Mensch wieder etwas anderes sagt -
+    // siehe die Begruendung an bqExplicitlyOff_.
+    bqExplicitlyOff_ = (mode == BqMode::Off);
     SaveIngameSettingsValues();
+    onHudSettingsChanged();
+}
+
+void GameWorldView::ForceShowBQ()
+{
+    // Der Wille des Menschen schlaegt die Bequemlichkeitsvorgabe. Ohne diese Zeile ist der
+    // Bauhilfe-Schalter im Ring wirkungslos, sobald der Spieler das naechste Mal A auf Bauland
+    // drueckt - und das ist die haeufigste Handlung des Spiels.
+    if(bqExplicitlyOff_ || forcedBqMode_ != BqMode::Off)
+        return;
+    // CURSOR UND NICHT ALL - das ist der eigentliche Fix des Befundes. Die Begruendung steht
+    // ausfuehrlich an BqMode: der Klartextkasten, den Phase 9 danebengestellt hat, beschreibt
+    // genau diesen einen Knoten.
+    forcedBqMode_ = BqMode::Cursor;
+    // BEWUSST OHNE SaveIngameSettingsValues() - siehe die Begruendung an der Deklaration.
     onHudSettingsChanged();
 }
 
@@ -652,7 +780,12 @@ void GameWorldView::ToggleShowNamesAndProductivity()
 
 void GameWorldView::CopyHudSettingsTo(GameWorldView& other, bool copyBQ) const
 {
-    other.show_bq = (copyBQ ? show_bq : false);
+    // Beide Bauhilfe-Felder gehen denselben Weg, sonst koennte der Zwang ueber eine Kopie in
+    // eine Ansicht sickern, deren SaveIngameSettingsValues ihn dann doch in die ini schriebe.
+    // Der einzige Aufrufer (iwObservate) uebergibt copyBQ == false, dort ist beides aus.
+    other.bqMode_ = (copyBQ ? bqMode_ : BqMode::Off);
+    other.forcedBqMode_ = (copyBQ ? forcedBqMode_ : BqMode::Off);
+    other.bqExplicitlyOff_ = (copyBQ ? bqExplicitlyOff_ : false);
     other.show_names = show_names;
     other.show_productivity = show_productivity;
 }
@@ -742,13 +875,27 @@ void GameWorldView::CalcFxLx()
 void GameWorldView::Resize(const Extent& newSize)
 {
     size_ = newSize;
+    // effectiveZoomFactor_ haengt an VIDEODRIVER.getGuiScale() (updateEffectiveZoomFactor unten).
+    // Resize ist der einzige Weg, auf dem eine geaenderte GuiScale bei der Ansicht ankommt
+    // (VideoDriver::setGuiScalePercent -> WindowResized -> Desktop::Msg_ScreenResize -> Resize),
+    // sonst rechnete CalcFxLx danach mit einem veralteten Faktor weiter, bis der Zoom das naechste
+    // Mal verstellt wird - SetNextZoomFactor kehrt bei unveraendertem Ziel sofort zurueck.
+    updateEffectiveZoomFactor();
     CalcFxLx();
 }
 
 void GameWorldView::SaveIngameSettingsValues() const
 {
+    // BEFUND K3 der Welle 14: SETTINGS ist EINE Datei fuer ALLE Sitzplaetze. Wer sie nicht
+    // besitzt, schreibt sie auch nicht - die ausfuehrliche Begruendung steht an
+    // persistsHudSettings_. Die Sperre sitzt HIER und nicht bei den vier Umschaltern: sonst
+    // gaebe es sie viermal, und der fuenfte Umschalter haette sie vergessen.
+    if(!persistsHudSettings_)
+        return;
     auto& ingameSettings = SETTINGS.ingame;
-    ingameSettings.showBQ = show_bq;
+    // Die ini kennt nur Ja/Nein. `Cursor` und `All` gehen beide als "ja" hinein und kommen
+    // beim naechsten Start beide als `All` zurueck - siehe die Begruendung an bqMode_.
+    ingameSettings.showBQ = (bqMode_ != BqMode::Off);
     ingameSettings.showNames = show_names;
     ingameSettings.showProductivity = show_productivity;
 }

@@ -36,6 +36,23 @@ public:
     bool Msg_LeftDown(const MouseCoords& mc) override;
     bool Msg_LeftUp(const MouseCoords& mc) override;
 
+    /// Fokusnavigation. Deckt ctrlTextButton, ctrlImageButton, ctrlColorButton und
+    /// ctrlBuildingIcon mit ab - alle vier erben von hier.
+    bool CanFocus() const override;
+    bool Activate() override;
+    /// Die Vorbedingung von Activate(), und zwar DIESELBE - Activate() steigt damit ein.
+    ///
+    /// Die letzte Frage ist seit Befund P3 dabei: ein Klick geht an den ELTERNTEIL
+    /// (Msg_ButtonClick), und nur der weiss, ob er mit dieser Kennung ueberhaupt etwas anfaengt.
+    /// Gemessen war das der bereits gewaehlte Reiterkopf - dort stand "A Waehlen", und der Druck
+    /// setzte in ctrlTab::SetSelection Schritt fuer Schritt dieselben Werte noch einmal.
+    /// Vorgabe von WouldChildClickDoAnything ist "ja"; fuer jeden Knopf ausser einem
+    /// Reiterkopf aendert sich damit nichts.
+    bool CanActivate() const override
+    {
+        return isEnabled && IsVisible() && GetParent() && GetParent()->WouldChildClickDoAnything(GetID());
+    }
+
 protected:
     /// Zeichnet Grundstruktur des Buttons
     void Draw_() override;

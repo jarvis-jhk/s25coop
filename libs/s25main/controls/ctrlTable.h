@@ -73,8 +73,29 @@ public:
     void Msg_ScrollShow(unsigned ctrl_id, bool visible) override;
     bool Msg_KeyDown(const KeyEvent& ke) override;
 
+    /// Fokusnavigation. Msg_KeyDown bleibt bewusst OHNE Fokuspruefung - die Pfeiltasten in
+    /// dskSelectMap/dskLAN/dskLobby muessen fuer den Maus-und-Tastatur-Spieler unveraendert
+    /// funktionieren.
+    bool CanFocus() const override { return GetNumRows() > 0 && IsVisible(); }
+    /// Eine LEERE Tabelle nimmt keinen Fokus an (CanFocus verlangt Zeilen) - ohne diese Zeile
+    /// stiege die Fokussammlung dann in sie hinein und machte ihre SORTIERKOEPFE zu
+    /// Fokusstationen. In dskCampaignSelection ist eine dieser Spalten 0 breit; der Fokus
+    /// verschwaende dort fuer den Spieler sichtbar im Nichts, weil FocusPath::DrawRing bei
+    /// leerem Rechteck nichts zeichnet.
+    bool IsFocusLeaf() const override { return true; }
+    bool Activate() override;
+    /// Dieselbe Vorbedingung, die Activate() prueft - siehe ctrlButton::CanActivate.
+    bool CanActivate() const override { return IsVisible() && GetParent() && HasValidSelection(); }
+    bool CanStepValue(const Position& dir) const override;
+    void DoStepValue(const Position& dir) override;
+    std::optional<ValueRange> GetValueRange() const override;
+
 protected:
     void Draw_() override;
+    /// Aus Msg_KeyDown herausgezogen, damit Tastatur- und Padpfad denselben Code nehmen.
+    void MoveSelection(int delta);
+    /// selection_ startet als optional MIT Wert (unsigned)-1, siehe ctrlTable.cpp.
+    bool HasValidSelection() const;
 
     /// Setzt die Breite und Position der Buttons ohne Scrolleiste
     void ResetButtonWidths();

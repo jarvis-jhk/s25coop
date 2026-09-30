@@ -19,6 +19,7 @@
 #include "helpers/pointerContainerUtils.h"
 #include "helpers/reverse.h"
 #include "ingameWindows/IngameWindow.h"
+#include "input/MenuPadInput.h"
 #include "ogl/FontStyle.h"
 #include "ogl/SoundEffectItem.h"
 #include "ogl/glFont.h"
@@ -39,14 +40,34 @@ constexpr std::make_unsigned_t<T> square(T x)
 } // namespace
 
 WindowManager::WindowManager()
-    : cursor_(Cursor::Hand), disable_mouse(false), lastMousePos(Position::Invalid()), curRenderSize(0, 0),
-      lastLeftClickTime(0), lastLeftClickPos(0, 0)
+    : curWindowOwner_(SHARED_WINDOW_OWNER), ownerObserver_(nullptr), cursor_(Cursor::Hand), disable_mouse(false),
+      lastMousePos(Position::Invalid()), curRenderSize(0, 0), lastLeftClickTime(0), lastLeftClickPos(0, 0),
+      padInput_(std::make_unique<MenuPadInput>()), lastPadTick_(0), hasPadTick_(false)
 {}
 
 WindowManager::~WindowManager() = default;
 
+void WindowManager::setWindowOwner(const unsigned ownerIdx)
+{
+    curWindowOwner_ = ownerIdx;
+    if(ownerObserver_)
+        ownerObserver_->OnWindowOwnerChanged(ownerIdx);
+}
+
+WindowManager::ScopedWindowOwner::ScopedWindowOwner(WindowManager& wm, const unsigned ownerIdx)
+    : wm_(wm), previous_(wm.curWindowOwner_)
+{
+    wm_.setWindowOwner(ownerIdx);
+}
+
+WindowManager::ScopedWindowOwner::~ScopedWindowOwner()
+{
+    wm_.setWindowOwner(previous_);
+}
+
 void WindowManager::CleanUp()
 {
+    padInput_->Reset();
     windows.clear();
     curDesktop.reset();
     nextdesktop.reset();
@@ -83,6 +104,20 @@ void WindowManager::Draw()
     if(!curDesktop)
         return;
 
+    // Vor dem Zeichnen, damit dieser Frame schon zeigt, was das Pad gerade ausgeloest hat -
+    // dieselbe Stellung, die dskGameInterface mit Msg_PaintBefore -> Run -> UpdateInput hat.
+    PumpPadInput();
+    // Ein Padknopf kann den Desktop gewechselt haben (Hauptmenue -> Einzelspieler). Der Wechsel
+    // ist nur VORGEMERKT; ihn erst im naechsten Frame zu vollziehen hiesse, diesen Frame noch
+    // den alten Desktop zu zeichnen - genau das, was WindowManager::Draw fuer den Mauspfad
+    // oben schon vermeidet.
+    if(nextdesktop)
+    {
+        DoDesktopSwitch();
+        if(!curDesktop)
+            return;
+    }
+
     curDesktop->Msg_PaintBefore();
     curDesktop->Draw();
     curDesktop->Msg_PaintAfter();
@@ -91,6 +126,11 @@ void WindowManager::Draw()
     CloseMarkedIngameWnds();
     for(auto& wnd : windows)
     {
+        // Ein Fenster zeichnet nicht nur - hier feuern auch seine Timer (ctrlTimer -> Msg_Timer),
+        // und daraus koennen Kommandos entstehen (TransmitSettingsIgwAdapter sendet aus einem
+        // 2-Sekunden-Timer). Ohne diese Klammer buchte das auf den Hauptspieler, egal wem das
+        // Fenster gehoert.
+        const ScopedWindowOwner ownerScope(*this, wnd->GetOwner());
         // If the window is not minimized, call paintAfter
         if(!wnd->IsMinimized())
             wnd->Msg_PaintBefore();
@@ -100,8 +140,63 @@ void WindowManager::Draw()
             wnd->Msg_PaintAfter();
     }
 
+    // Der Fokusrahmen der Padnavigation liegt UEBER allem, was er umrahmen kann - genau die
+    // Stellung, die IngameWindow::Msg_PaintAfter ihm innerhalb eines Fensters gibt
+    // (IngameWindow.cpp:520-530). Ohne benutztes Pad zeichnet DrawRings nichts.
+    padInput_->DrawRings();
+
     DrawToolTip();
     DrawCursor();
+}
+
+void WindowManager::PumpPadInput()
+{
+    // NUR abholen, wenn der aktuelle Desktop es will. Waehrend einer Partie liefert
+    // dskGameInterface hier false und holt selbst ab (dskGameInterface::UpdateInput); es gibt
+    // damit keinen Frame, in dem zwei Stellen dieselbe Warteschlange leeren.
+    if(!curDesktop || !curDesktop->WantsPadInput())
+    {
+        // Die Uhr wieder anhalten: sonst kaeme nach einer Stunde Partie der erste Menueframe
+        // mit einer Stunde elapsedMs an, und die Wiederholrate der Fokusnavigation saehe einen
+        // Sprung, den niemand ausgeloest hat.
+        hasPadTick_ = false;
+        return;
+    }
+    IVideoDriver* const driver = VIDEODRIVER.GetDriver();
+    if(!driver)
+        return;
+
+    const unsigned now = VIDEODRIVER.GetTickCount();
+    const unsigned elapsedMs = (hasPadTick_ && now >= lastPadTick_) ? now - lastPadTick_ : 0u;
+    lastPadTick_ = now;
+    hasPadTick_ = true;
+
+    padEvents_.clear();
+    driver->FetchPadEvents(padEvents_);
+
+    // Wurzel der Navigation: das oberste Fenster, das noch lebt - sonst der Desktop. Ohne diese
+    // Zeile bliebe der Padpfad an jeder Nachrichtenbox und an iwConnecting stehen, also mitten
+    // auf dem Weg von der Kartenauswahl in die Lobby.
+    IngameWindow* topWnd = nullptr;
+    for(auto it = windows.rbegin(); it != windows.rend(); ++it)
+    {
+        if(!(*it)->ShouldBeClosed())
+        {
+            topWnd = it->get();
+            break;
+        }
+    }
+    padInput_->Pump(padEvents_, elapsedMs, curDesktop.get(), topWnd);
+}
+
+void WindowManager::NotifyPadDevices(const std::vector<PadEvent>& events)
+{
+    PadRouter& router = padInput_->GetRouter();
+    for(const PadEvent& ev : events)
+    {
+        if(ev.type == PadEvent::Type::Connected || ev.type == PadEvent::Type::Disconnected)
+            router.OnEvent(ev);
+    }
 }
 
 bool WindowManager::IsDesktopActive() const
@@ -137,15 +232,32 @@ void WindowManager::RelayKeyboardMessage(KeyboardMsgHandler msg, const KeyEvent&
             return !wnd->ShouldBeClosed() && !(escape && wnd->IsPinned());
         });
         if(itActiveWnd != windows.rend() && (*itActiveWnd)->getCloseBehavior() != CloseBehavior::Custom)
-            (*itActiveWnd)->Close();
-    } else if(!CALL_MEMBER_FN(*windows.back(), msg)(ke)) // send to active window
-    {
-        // If not handled yet, relay to active window
-        if(!windows.back()->RelayKeyboardMessage(msg, ke))
         {
-            // If message was not handled send to desktop
-            CALL_MEMBER_FN(*curDesktop, msg)(ke);
-            curDesktop->RelayKeyboardMessage(msg, ke);
+            // BEFUND B: auch das SCHLIESSEN gehoert dem Besitzer. Close() ist bei den
+            // Wirtschaftsfenstern kein blosses Vormerken, sondern die Stelle, an der die
+            // aufgelaufenen Einstellungen gesendet werden (TransmitSettingsIgwAdapter::Close).
+            // Ohne diese Klammer lief dieser Zweig - anders als der else-Zweig darunter -
+            // ungeklammert, und der handelnde Spieler waere der Hauptspieler gewesen.
+            // Einzelspieler: der Besitzer ist 0 oder SHARED_WINDOW_OWNER, also unveraendert.
+            const ScopedWindowOwner ownerScope(*this, (*itActiveWnd)->GetOwner());
+            (*itActiveWnd)->Close();
+        }
+    } else
+    {
+        // Ab hier handelt der Besitzer des Fensters, in das zugestellt wird - nicht der
+        // Hauptspieler. Damit erbt auch jedes Fenster, das von hier aus geoeffnet wird, den
+        // Besitzer des ausloesenden Fensters.
+        IngameWindow& target = *windows.back();
+        const ScopedWindowOwner ownerScope(*this, target.GetOwner());
+        if(!CALL_MEMBER_FN(target, msg)(ke)) // send to active window
+        {
+            // If not handled yet, relay to active window
+            if(!target.RelayKeyboardMessage(msg, ke))
+            {
+                // If message was not handled send to desktop
+                CALL_MEMBER_FN(*curDesktop, msg)(ke);
+                curDesktop->RelayKeyboardMessage(msg, ke);
+            }
         }
     }
 }
@@ -156,6 +268,13 @@ void WindowManager::RelayMouseMessage(MouseMsgHandler msg, const MouseCoords& mc
         window = getActiveWindow();
     if(window)
     {
+        // Dasselbe fuer den Mauspfad: der BESITZ des Fensters schlaegt die Geometrie. Ein
+        // Fenster, das ueber dem Viewport eines anderen liegt, wirkt weiterhin fuer seinen
+        // Besitzer. Ist das Ziel der Desktop, bleibt die Klammer, wie sie ist - dort entscheidet
+        // der Desktop selbst, wem die Eingabe gehoert.
+        std::optional<ScopedWindowOwner> ownerScope;
+        if(const auto* iw = dynamic_cast<const IngameWindow*>(window))
+            ownerScope.emplace(*this, iw->GetOwner());
         // If no sub-window/control handled the message, let the window itself handle it
         if(!window->RelayMouseMessage(msg, mc))
             CALL_MEMBER_FN(*window, msg)(mc);
@@ -216,6 +335,27 @@ IngameWindow* WindowManager::FindWindowAtPos(const Position& pos) const
     // Fenster durchgehen ( von hinten nach vorn, da die vordersten ja zuerst geprüft werden müssen !! )
     for(const auto& window : helpers::reverse(windows))
     {
+        // WAS NICHT GEZEICHNET WIRD, DARF DIE MAUS NICHT FANGEN (Befund K3, Phase 13).
+        //
+        // Der GEMESSENE Fehler: das Kreismenue eines Padspielers setzt das Fenster, dessen
+        // Knoepfe es im Kreis zeigt, auf SetVisible(false) und laesst es mit unveraendertem
+        // Rechteck im Stapel stehen. Diese Schleife fragte die Sichtbarkeit nicht. Bei zwei
+        // Sitzplaetzen liegt das unsichtbare Ringfenster mitten in der Karte, die der Mensch an
+        // der Maus dort sieht. Sein Rechtsklick landete im Fenster - Msg_RightDown schliesst
+        // das gefundene Fenster VOR jedem Weiterreichen -, kam auf der Karte nie an und riss
+        // dem Padspieler nebenbei den Ring weg. Der Linksklick wurde nach derselben Kette
+        // verschluckt.
+        //
+        // FUER DEN HEUTIGEN EINZELSPIELER AENDERT DAS NICHTS: ein unsichtbares IngameWindow
+        // entsteht an genau EINER Stelle im ganzen Baum, naemlich beim Oeffnen des Rings
+        // (dskGameInterface::OpenRing). Ohne Pad gibt es keinen Ring, also kein unsichtbares
+        // Fenster - die Bedingung hier trifft dann nie zu.
+        //
+        // Im Fensterinneren gilt dieselbe Regel schon laenger: Window::RelayMouseMessage prueft
+        // visible_, IngameWindow::IsMessageRelayAllowed prueft IsVisible(). Nur dieser Einstieg
+        // fragte nicht - und er ist der einzige, der ohne Weiterreichen schliesst.
+        if(!window->IsVisible())
+            continue;
         // FensterRect für Kollisionsabfrage
         Rect window_rect = window->GetDrawRect();
 
@@ -231,10 +371,11 @@ IngameWindow* WindowManager::FindWindowAtPos(const Position& pos) const
     return nullptr;
 }
 
-IngameWindow* WindowManager::FindNonModalWindow(unsigned id) const
+IngameWindow* WindowManager::FindNonModalWindow(unsigned id, unsigned owner) const
 {
-    auto itWnd = helpers::find_if(
-      windows, [id](const auto& wnd) { return !wnd->ShouldBeClosed() && !wnd->IsModal() && wnd->GetID() == id; });
+    auto itWnd = helpers::find_if(windows, [id, owner](const auto& wnd) {
+        return !wnd->ShouldBeClosed() && !wnd->IsModal() && wnd->GetID() == id && wnd->GetOwner() == owner;
+    });
     return itWnd == windows.end() ? nullptr : itWnd->get();
 }
 
@@ -335,7 +476,12 @@ void WindowManager::Msg_RightDown(const MouseCoords& mc)
             if(foundWindow->getCloseBehavior() == CloseBehavior::Regular)
             {
                 if(!foundWindow->IsPinned())
+                {
+                    // Dieselbe Klammer wie im Tastaturpfad (BEFUND B): der Rechtsklick schliesst
+                    // im Namen des Fensterbesitzers, nicht im Namen des Hauptspielers.
+                    const ScopedWindowOwner ownerScope(*this, foundWindow->GetOwner());
                     foundWindow->Close();
+                }
                 return;
             }
         }
@@ -445,11 +591,25 @@ IngameWindow* WindowManager::GetTopMostWindow() const
         return windows.back().get();
 }
 
+IngameWindow* WindowManager::GetTopMostWindow(const unsigned owner) const
+{
+    for(const auto& wnd : helpers::reverse(windows))
+    {
+        if(wnd->GetOwner() == owner || wnd->GetOwner() == SHARED_WINDOW_OWNER)
+            return wnd.get();
+    }
+    return nullptr;
+}
+
 void WindowManager::DoClose(IngameWindow* window)
 {
     const auto it = helpers::findPtr(windows, window);
 
     RTTR_Assert(it != windows.end());
+
+    // Auch das Schliessen gehoert dem Besitzer: Msg_WindowClosed und alles, was ein Fenster
+    // beim Aufraeumen noch ausloest, laeuft in seinem Namen.
+    const ScopedWindowOwner ownerScope(*this, window->GetOwner());
 
     SetToolTip(nullptr, "");
 
@@ -459,6 +619,10 @@ void WindowManager::DoClose(IngameWindow* window)
     // Remove from list and notify parent, hold onto it till parent is notified
     const auto tmpHolder = std::move(*it);
     windows.erase(it);
+    // Die Padnavigation kann in genau diesem Fenster gestanden haben. Deterministisch hier
+    // abmelden, statt sich auf einen Destruktor-Backstop zu verlassen: FocusPath::GetRoot ist
+    // ein roher Zeiger, und der naechste Frame vergliche ihn mit einer neuen Wurzel.
+    padInput_->OnRootDestroyed(tmpHolder.get());
     if(isActiveWnd)
     {
         if(windows.empty())
@@ -469,12 +633,21 @@ void WindowManager::DoClose(IngameWindow* window)
     curDesktop->Msg_WindowClosed(*tmpHolder);
 }
 
+void WindowManager::Close(const unsigned id, const unsigned owner)
+{
+    for(auto& wnd : windows)
+    {
+        if(wnd->GetID() == id && wnd->GetOwner() == owner && !wnd->ShouldBeClosed())
+            wnd->Close();
+    }
+}
+
 /**
- *  Closes _ALL_ windows with the given ID
+ *  Closes _ALL_ windows with the given ID, in every view
  *
  *  @param[in] id ID of the window to be closed
  */
-void WindowManager::Close(unsigned id)
+void WindowManager::CloseAll(const unsigned id)
 {
     for(auto& wnd : windows)
     {
@@ -503,6 +676,15 @@ void WindowManager::DoDesktopSwitch()
     // If we have a current desktop close all windows
     if(curDesktop)
         windows.clear();
+
+    // Der Fokus der Padnavigation gehoert immer in den Bildschirm, der gerade da ist. Beim
+    // Desktopwechsel wird die gesamte Fensterliste geraeumt, ohne dass Msg_WindowClosed laeuft -
+    // ohne diese Zeile hinge jeder Fokus an einer Wurzel, die es nicht mehr gibt. Der
+    // GERAETEBESTAND bleibt bewusst stehen: wer im Hauptmenue sein Pad in der Hand hatte, hat es
+    // in der Kartenauswahl immer noch.
+    padInput_->ClearFocus();
+    if(curDesktop)
+        padInput_->OnRootDestroyed(curDesktop.get());
 
     // Do the switch
     curDesktop = std::move(nextdesktop);

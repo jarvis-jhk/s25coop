@@ -6,6 +6,7 @@
 
 #include "GuiScale.h"
 #include "KeyEvent.h"
+#include "PadEvent.h"
 #include "Point.h"
 #include "VideoMode.h"
 #include "exportImport.h"
@@ -91,6 +92,36 @@ public:
 
     // Display the problem to the gamer
     virtual void ShowErrorMessage(const std::string& title, const std::string& message) = 0;
+
+    /// Holt die seit dem letzten Aufruf aufgelaufenen Gamepad-Ereignisse ab und leert `out`
+    /// vorher. Standard: keine - ein Treiber ohne Gamepadunterstuetzung (WinAPI, Mockup) meldet
+    /// schlicht nichts und braucht keine Zeile Code.
+    ///
+    /// Bewusst eine ABHOLNAHT und bewusst NICHT ueber VideoDriverLoaderInterface: dessen
+    /// einziger Implementierer im ganzen Baum ist der WindowManager - ein Singleton mit genau
+    /// einem Desktop, einem Fokus und einem Cursor (WindowManager.h:35). Vier Spieler koennen
+    /// sich diesen einen Zustand nicht teilen. Da die Pad-Ereignisse hier abgeholt statt
+    /// zugestellt werden, bleibt VideoDriverLoaderInterface.h unveraendert und der
+    /// Maus-/Tastaturpfad strukturell unberuehrt.
+    ///
+    /// Achsen reisen als Ereignis, werden aber vom Empfaenger als ZUSTAND gehalten: SDL feuert
+    /// SDL_CONTROLLERAXISMOTION nur bei Aenderung, ein auf Anschlag gehaltener Stick erzeugt
+    /// also genau ein Ereignis und danach nichts mehr.
+    ///
+    /// Neu in DRIVERAPIVERSION 9.
+    virtual void FetchPadEvents(std::vector<PadEvent>& out) { out.clear(); }
+
+    /// Hoehe der logischen Leinwand, gegen die die EMPFOHLENE GUI-Skalierung gerechnet wird.
+    /// 0 (Standard) = altes Verhalten: die Empfehlung kommt aus getDpiScale().
+    ///
+    /// Warum das hier und nicht beim Aufrufer steht: die Empfehlung wird auch TREIBERINTERN
+    /// gebraucht - setGuiScalePercent(0) und jedes SetNewSize holen sie sich aus
+    /// getGuiScaleRange(). Saesse die Regel im Spielcode, bliebe die Automatik beim alten Wert
+    /// stehen, sobald sich die Fenstergroesse aendert.
+    ///
+    /// Neu in DRIVERAPIVERSION 10.
+    virtual void setUiReferenceHeight(unsigned) {}
+    virtual unsigned getUiReferenceHeight() const { return 0; }
 };
 
 class VideoDriverLoaderInterface;

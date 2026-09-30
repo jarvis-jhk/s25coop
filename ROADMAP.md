@@ -98,8 +98,13 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 
 ## M3 — Splitscreen, controller and Steam Deck UI
 
-- ☐ Merge derneuere's `splitscreen-gamepad` (local 1–4 players, gamepads, radial build menu,
-  couch lobby), adapted so local players can share the one campaign player.
+- ◐ Merge derneuere's `splitscreen-gamepad` (local 1–4 players, gamepads, radial build menu,
+  couch lobby), adapted so local players can share the one campaign player. Split (2026-09-30; the branch is
+  13 commits, ~40k lines of code plus the language catalogues moved into the tree):
+  - ◐ a) merge as is on branch `merge/splitscreen`: conflicts resolved, builds, all our tests and its
+    Test_splitscreen pass locally, CI green (clang-tidy/format/coverage gates), splitscreen seen under Xvfb; then master.
+  - ☐ b) coop member + local players: forbid or define the combination (a member client with extra local slots).
+  - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
 - ☐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.

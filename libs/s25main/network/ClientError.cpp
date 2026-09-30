@@ -24,6 +24,7 @@ const char* ClientErrorToStr(ClientError error)
             return _("Your game went out of sync with the others (async), so you were removed from it.");
         case ClientError::CoopTooFarBehind:
             return _("Your computer fell too far behind the others, so you were removed from the game.");
+        case ClientError::LocalPlayerSetup: return _("Could not set up the requested additional local players!");
         default: return _("Unknown error!");
     }
 }

@@ -19,6 +19,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 class ctrlBuildingIcon;
@@ -106,6 +107,161 @@ public:
     bool IsMouseOver() const;
     /// Check if the given mouse position inside the boundary of this control.
     bool IsMouseOver(const MouseCoords& mousePos) const;
+
+    // --- Fokusnavigation (Phase 4) --------------------------------------------------------
+    // Alle Vorgaben tun nichts. Die grosse Mehrheit der Controlklassen bleibt damit
+    // unveraendert, und ein Programm, das nie Activate() ruft, verhaelt sich bit-identisch zu
+    // vorher. Insbesondere wird KEIN Msg_*-Handler und KEIN Draw_() angefasst: der Mauspfad
+    // kennt den Fokus nicht und darf ihn nie kennen (harte Randbedingung Einzelspieler).
+
+    /// Kann dieses Control den Fokus eines Eingabegeraets annehmen?
+    virtual bool CanFocus() const { return false; }
+
+    /// Steigt die Fokussammlung in die KINDER dieses Controls ab, solange es selbst keinen
+    /// Fokus annehmen kann? Vorgabe: ja - genau daran haengen ctrlGroup, ctrlOptionGroup und
+    /// ctrlTab, die selbst nie fokussierbar sind.
+    ///
+    /// false heisst "Blatt, auch wenn gerade nicht fokussierbar". Eine LEERE Tabelle braucht
+    /// das: sie kann selbst keinen Fokus annehmen (CanFocus verlangt Zeilen), und ohne diese
+    /// Bremse wuerden ihre SORTIERKOEPFE zu Fokusstationen - darunter in dskCampaignSelection
+    /// eine Spalte der Breite 0, um die kein Rahmen zu sehen ist (FocusPath::DrawRing steigt
+    /// bei leerem Rechteck aus). Der Fokus verschwaende dort sichtbar im Nichts.
+    virtual bool IsFocusLeaf() const { return CanFocus(); }
+
+    // --- Das Kreismenue (Phase 13) ---------------------------------------------------------
+    //
+    // Der Ring zeigt die Controls eines Fensters im Kreis. Er braucht dafuer je Eintrag genau
+    // zwei Auskuenfte: ein BILD, wenn es eins gibt, und einen KURZEN TEXT, wenn es keins gibt.
+    // Beide Vorgaben sind leer, also aendert sich fuer jede Klasse, die sie nicht
+    // ueberschreibt, gar nichts - dieselbe Bauform wie CanFocus/Activate darueber.
+    //
+    // WARUM DER TEXT VOM CONTROL KOMMT und nicht aus einer Tabelle im Ring: sonst gaebe es zwei
+    // Zeichenketten fuer denselben Knopf, und die eine (der Ring) veraltete neben der anderen
+    // (der Knopf). "Der Ring sagt es" und "der Knopf tut es" sind so dieselbe Zeile Quelltext -
+    // woertlich der Massstab, den Phase 12 fuer die Tastenhinweisleiste gesetzt hat.
+
+    /// Das Bild, mit dem dieser Eintrag im Ring steht. nullptr = keins, dann traegt der Sektor
+    /// den Text aus GetRingLabel().
+    virtual ITexture* GetRingIcon() const { return nullptr; }
+    /// Der kurze Text, mit dem dieser Eintrag im Ring steht. Leer = keiner.
+    virtual std::string GetRingLabel() const { return std::string(); }
+
+    /// B-Knopf auf dem FOKUSSIERTEN Control: eine begonnene, noch nicht bestaetigte Eingabe
+    /// verwerfen - eine aufgeklappte Liste zuklappen und den alten Wert stehen lassen.
+    /// true = verbraucht; der Aufrufer schliesst dann NICHT das Fenster (MenuPadInput).
+    /// Die Vorgabe tut nichts, also bleibt B ueberall sonst genau das, was es war.
+    virtual bool CancelInput() { return false; }
+
+    /// Der Fokus VERLAESST dieses Control. Ein Ereignis, kein Zustand: das Control merkt sich
+    /// nichts ueber den Fokus und weiss weiterhin nicht, wer ihn hatte. Gebraucht wird es von
+    /// Controls, die waehrend der Bedienung etwas AUFGEKLAPPT haben - laeuft der Fokus weiter,
+    /// muss das wieder zu, sonst bleibt eine offene Liste samt gesperrter Region stehen.
+    virtual void OnFocusLost() {}
+
+    /// "Benutzen" - genau die Wirkung, die heute der Mausklick hat, aber OHNE Mausposition.
+    /// Bewusst nicht ueber Msg_LeftUp: das prueft IsMouseOver(mc) (controls/ctrlButton.cpp) und
+    /// liest damit den globalen Maus-Singleton, von dem es nur einen gibt.
+    /// true = es ist etwas passiert.
+    virtual bool Activate() { return false; }
+
+    /// WUERDE Activate() jetzt etwas tun? Reine Frage, ohne es zu tun.
+    ///
+    /// Gebraucht von der Tastenhinweisleiste (brief::HintsFor): sie muss VOR dem Druck sagen,
+    /// ob A auf diesem Control etwas bewirkt. Bis Phase 12 versprach sie dort blind "A Waehlen",
+    /// auch auf einem Schieberegler oder einer Bildlaufleiste - beide haben gar kein Activate(),
+    /// und der Druck lief ins Leere. Ein Hinweis, der luegt, ist schlimmer als keiner.
+    ///
+    /// KEINE ZWEITE RECHNUNG: jede Klasse, die Activate() ueberschreibt, ueberschreibt auch
+    /// diese Frage, und ihr Activate() steigt mit genau diesem Aufruf ein. Damit koennen die
+    /// beiden nicht auseinanderlaufen.
+    virtual bool CanActivate() const { return false; }
+
+    /// WUERDE ein Klick auf das eigene Kind mit dieser Kennung ueberhaupt etwas aendern?
+    ///
+    /// BEFUND P3, gemessen: "A Waehlen" stand auf dem BEREITS GEWAEHLTEN Reiterkopf, und der
+    /// ist die erste Fokusstation nach Y in jedem Aktionsfenster - das Allererste also, was ein
+    /// Padspieler dort liest und ausprobiert. Ein Druck lief durch ctrlTab::SetSelection und
+    /// setzte Schritt fuer Schritt genau dieselben Werte noch einmal; der Zustand blieb Zeichen
+    /// fuer Zeichen derselbe.
+    ///
+    /// Gefragt wird der ELTERNTEIL und nicht der Knopf, weil nur er weiss, was sein
+    /// Msg_ButtonClick mit dieser Kennung anfaengt. Die Vorgabe ist "ja": jeder andere Knopf
+    /// verhaelt sich damit bit-identisch zu vorher.
+    ///
+    /// KEINE ZWEITE RECHNUNG, und das ist der Grund fuer den Schnitt an dieser Stelle:
+    /// ctrlButton::CanActivate fragt sie, und ctrlButton::Activate steigt mit CanActivate ein.
+    /// Wo die Antwort false ist, GESCHIEHT also wirklich nichts - die Leiste sagt nicht voraus,
+    /// was der Knopf tun wird, sondern liest dieselbe Bedingung, an der er abbricht.
+    virtual bool WouldChildClickDoAnything(unsigned /*ctrlId*/) const { return true; }
+
+    /// WUERDE CancelInput() jetzt etwas verwerfen? Dieselbe Regel wie oben: wer CancelInput()
+    /// ueberschreibt, ueberschreibt auch diese Frage und steigt damit ein.
+    ///
+    /// Die Leiste braucht sie, weil B auf einem Control mit offener Eingabe (aufgeklappte
+    /// Liste) NICHT das Fenster verlaesst, sondern nur die Liste zuklappt.
+    virtual bool CanCancelInput() const { return false; }
+
+    enum class ValueAxis
+    {
+        Horizontal,
+        Vertical
+    };
+    struct ValueRange
+    {
+        unsigned value;
+        unsigned max;
+        ValueAxis axis;
+    };
+
+    /// Traegt dieses Control einen kontinuierlichen Wert (Analogmodus)? nullopt = nein.
+    ///
+    /// NICHT die Frage, an der das Steuerkreuz haengt - dafuer gibt es CanStepValue. Der
+    /// Unterschied ist BEFUND N8 und gemessen: ctrlMapSelection verbraucht das Steuerkreuz,
+    /// hat aber keinen Wertebereich, und eine schreibgeschuetzte Auswahlliste hat einen
+    /// Wertebereich, verbraucht das Steuerkreuz aber nicht. Wer wissen will, ob der Knopf
+    /// wirkt, fragt CanStepValue; wer den WERT braucht (Anzeige, Analogstick), fragt hier.
+    virtual std::optional<ValueRange> GetValueRange() const { return std::nullopt; }
+    /// Wert setzen UND wie ein Mausklick nach oben melden. false, wenn es keinen Wert gibt.
+    virtual bool SetValue(unsigned /*value*/) { return false; }
+
+    /// WUERDE ein Rasterschritt in diese Richtung von DIESEM Control verbraucht? Reine Frage.
+    /// dir ist (-1|0|+1, -1|0|+1).
+    ///
+    /// BEFUND N8: die Tastenhinweisleiste fragte frueher GetValueRange() und der Knopf wirkte
+    /// in StepValue() - zwei Funktionen ohne gemeinsame Bedingung, die nachweislich
+    /// auseinanderlaufen koennen. Jetzt ist es EINE Bedingung, und sie kann gar nicht mehr
+    /// auseinanderlaufen: StepValue ist unten NICHT MEHR VIRTUELL und liefert woertlich das
+    /// Ergebnis dieser Frage.
+    virtual bool CanStepValue(const Position& /*dir*/) const { return false; }
+    /// Die WIRKUNG des Rasterschrittes. Wird ausschliesslich von StepValue gerufen, und nur
+    /// dann, wenn CanStepValue(dir) true gesagt hat - eine Ueberschreibung darf also davon
+    /// ausgehen und muss die Vorbedingung nicht ein zweites Mal pruefen.
+    virtual void DoStepValue(const Position& /*dir*/) {}
+    /// Einen Rasterschritt. true = verbraucht, der Fokus wandert dann NICHT weiter.
+    ///
+    /// BEWUSST NICHT VIRTUELL - das ist die Erledigung von Befund N8. Eine Klasse, die den
+    /// Schritt annimmt, sagt in CanStepValue, WANN sie ihn annimmt, und in DoStepValue, WAS
+    /// dann geschieht. Damit ist "die Leiste nennt den Knopf" und "der Knopf wirkt" nicht
+    /// mehr aehnlich, sondern dieselbe Zeile Quelltext.
+    bool StepValue(const Position& dir)
+    {
+        if(!CanStepValue(dir))
+            return false;
+        DoStepValue(dir);
+        return true;
+    }
+    /// Braucht dieses Control Freitext, solange es den Fokus hat?
+    virtual bool WantsTextInput() const { return false; }
+
+    /// Control, auf dem ein NEU hinzukommendes Eingabegeraet seinen Fokus beginnen soll.
+    /// nullptr = das erste fokussierbare Control (Vorgabe).
+    ///
+    /// Sitzt hier und nicht nur beim Desktop, weil die Wurzel der Menuenavigation genauso oft
+    /// ein Fenster ist: iwConnecting traegt den Uebergang in die Lobby, iwMsgbox jede
+    /// Rueckfrage. Eine Rueckfrage, deren Fokus auf der ZERSTOERENDEN Antwort begaenne, waere
+    /// keine Rueckfrage - iwMsgbox nennt deshalb dieselbe Vorgabeantwort, auf die es auch den
+    /// Mauszeiger stellt.
+    virtual Window* GetPadEntryCtrl(unsigned /*slot*/) { return nullptr; }
 
     /// Set the position for the window
     void SetPos(const DrawPoint& newPos);

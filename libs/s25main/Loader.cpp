@@ -37,6 +37,7 @@
 #include "gameData/MilitaryConsts.h"
 #include "gameData/NationConsts.h"
 #include "libsiedler2/ArchivItem_Font.h"
+#include "libsiedler2/ArchivItem_Ini.h"
 #include "libsiedler2/ArchivItem_Palette.h"
 #include "libsiedler2/ArchivItem_PaletteAnimation.h"
 #include "libsiedler2/ArchivItem_Text.h"
@@ -153,8 +154,15 @@ glArchivItem_Bitmap* Loader::GetNationIcon(Nation nation, BuildingType bld)
 {
     if(bld == BuildingType::Charburner)
         return LOADER.GetImageN("charburner", rttr::enum_cast(nation) * 8 + 8);
-    else
-        return convertChecked<glArchivItem_Bitmap*>(nationIcons_[nation]->get(rttr::enum_cast(bld)));
+    // nationIcons_ fuellt ausschliesslich LoadFilesAtGame. Ohne Originaldaten - und damit in
+    // JEDER Testumgebung - steht dort ein Nullzeiger, und `->get()` griff darauf zu. Der
+    // einzige bisherige Aufrufer im Zeichenweg (ctrlBuildingIcon::Draw_) prueft das Ergebnis
+    // schon auf nullptr, also war die Absicht immer "es kann keins geben"; nur die Abfrage
+    // fehlte eine Ebene zu tief. GEMESSEN in Phase 13 an einem Zugriff auf Adresse 0x8, sobald
+    // das Kreismenue nach dem Gebaeudebild fragt.
+    if(!nationIcons_[nation])
+        return nullptr;
+    return convertChecked<glArchivItem_Bitmap*>(nationIcons_[nation]->get(rttr::enum_cast(bld)));
 }
 
 ITexture* Loader::GetBuildingTex(Nation nation, BuildingType bld)
@@ -430,6 +438,11 @@ void Loader::LoadDummyMapFiles()
     pushRange(440, 484);
     pushRange(500, 527);
     pushRange(560, 561);
+    // Waren-, Berufs- und Rahmensymbole. Ohne sie stuerzt jedes Gebaeudefenster schon im
+    // Konstruktor ab: iwBuilding/iwMilitaryBuilding/iwWares holen ihre Symbole ueber
+    // GetWareTex/GetJobTex/GetMapTexture aus genau diesem Archiv (WARES_TEX_MAP_OFFSET = 2250,
+    // Berufe ab 2300, Symbolrahmen 2298/2299, HQ-Reserve 2321..2325).
+    pushRange(2250, 2400);
 
     for(const auto j : helpers::range(0, 6))
     {
@@ -453,6 +466,32 @@ void Loader::LoadDummySoundFiles()
         auto snd = std::make_unique<glArchivItem_Sound_Wave>();
         archive.set(id, std::move(snd));
     }
+}
+
+void Loader::LoadDummyMapSelectionFiles()
+{
+    libsiedler2::Archiv& archive = files_["selmap"].archive;
+    if(!archive.empty())
+        return;
+    archive.alloc(5);
+    for(const auto i : helpers::range(5u))
+    {
+        auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
+        libsiedler2::PixelBufferBGRA buffer(16, 16);
+        bmp->create(buffer);
+        archive.set(i, std::move(bmp));
+    }
+}
+
+void Loader::LoadDummyLanguageFiles()
+{
+    libsiedler2::Archiv& archive = files_["languages"].archive;
+    if(archive.find("Languages"))
+        return;
+    auto ini = std::make_unique<libsiedler2::ArchivItem_Ini>("Languages");
+    ini->setValue("English", "en");
+    ini->setValue("German", "de");
+    archive.push(std::move(ini));
 }
 
 namespace {

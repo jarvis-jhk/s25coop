@@ -39,6 +39,9 @@ public:
     unsigned GetNumLines() const { return static_cast<unsigned>(lines.size()); }
     const std::optional<unsigned>& GetSelection() const { return selection_; };
     void SetSelection(const std::optional<unsigned>& selection);
+    /// Scrollt so, dass die aktuelle Auswahl sichtbar ist. Ohne Auswahl passiert nichts.
+    /// Meldet NICHTS nach oben - es aendert sich nur, welcher Ausschnitt gezeichnet wird.
+    void ScrollToSelection();
 
     bool Msg_MouseMove(const MouseCoords& mc) override;
     bool Msg_LeftDown(const MouseCoords& mc) override;
@@ -46,6 +49,18 @@ public:
     bool Msg_LeftUp(const MouseCoords& mc) override;
     bool Msg_WheelUp(const MouseCoords& mc) override;
     bool Msg_WheelDown(const MouseCoords& mc) override;
+
+    /// Fokusnavigation: Zeilenauswahl ist der Rasterschritt auf der Y-Achse (CanStepValue/
+    /// DoStepValue), Bestaetigen ist Activate.
+    /// Dieselbe Trennung, die es beim Mauspfad zwischen Klick (Msg_ListSelectItem) und
+    /// Doppelklick (Msg_ListChooseItem) schon gibt.
+    bool CanFocus() const override { return !lines.empty() && IsVisible(); }
+    bool Activate() override;
+    /// Dieselbe Vorbedingung, die Activate() prueft - siehe ctrlButton::CanActivate.
+    bool CanActivate() const override { return !lines.empty() && IsVisible() && GetParent() && selection_; }
+    bool CanStepValue(const Position& dir) const override;
+    void DoStepValue(const Position& dir) override;
+    std::optional<ValueRange> GetValueRange() const override;
 
 protected:
     void Draw_() override;

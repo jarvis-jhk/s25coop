@@ -32,6 +32,11 @@ public:
     bool Msg_LeftDown(const MouseCoords& mc) override;
     bool Msg_MouseMove(const MouseCoords& mc) override;
 
+    bool CanFocus() const override { return !readonly && IsVisible(); }
+    bool Activate() override;
+    /// Dieselbe Vorbedingung, die Activate() prueft - siehe ctrlButton::CanActivate.
+    bool CanActivate() const override { return !readonly && IsVisible() && GetParent(); }
+
 protected:
     void Draw_() override;
 
