@@ -567,3 +567,23 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only review of diff plus input/Back context:
   no findings. Opus owns review/integration; no master push, self-merge or primary checkout changes.
 - Full Test_splitscreen ctest passes (all 8 Options cases included; 56.93 s).
+
+
+## 2026-09-30 — Sol companion: controller skip from Intro
+- Branch `sol/intro-controller-skip`, based on origin/master d47547fe0. Intro accepts pad input;
+  A/B/Start use its existing idempotent finish path. Missing-video page retains its focused Back button.
+  MenuPadInput offers A to the desktop only without a focused control AND without a top window, so a
+  controls-free video can accept confirm. Focused-control activation and window ownership are preserved.
+  Intro explicitly refuses Start while a window is present, preventing confirmation bypass.
+- Seven mock-video-driver cases cover missing-video A/B/Start, pickup swallowing, a multi-button skip
+  burst with one transition and no destination click/command, regular overlay-first B, required dialog
+  acknowledgement before skipping, mouse/keyboard counterchecks, and controls-free A fallback with
+  focused-control/window precedence. The optional seventh case decodes the actual original intro and
+  exercises all three controller exits; RTTR_COOP_S2_DIR is supplied locally, originals never committed.
+- With the tests and old implementation, six cases fail at pad acceptance/transition/overlay or
+  controls-free A fallback; mouse/keyboard countercheck passes. Original movie was also exercised in
+  that negative run. Exact gpt-6.1-sol read-only patch/fixture/routing/intro review: no actionable findings.
+- All seven cases pass with originals, all six unconditional cases pass without them, and full
+  Test_splitscreen with the original-video case enabled passes (59.96 s). GCC12 Release/O3/Werror,
+  own build/dev and temporary game path; at most two compiler jobs. clang-format10/diff checks pass.
+  No primary checkout/build changes, master push or self-merge; Opus owns integration.

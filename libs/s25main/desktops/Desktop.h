@@ -41,7 +41,8 @@ public:
     /// Slot bleibt es schlicht unversorgt und wirkungslos, bis der Bildschirm mehr anbietet.
     /// Genau das tut der Zuordnungsbildschirm der Lobby - und nur er.
     virtual unsigned GetNumPadSlots() const { return 1; }
-    /// Knopf, den die Fokusnavigation nicht verbraucht: B (zurueck) und Start (Vorgabeaktion).
+    /// Knopf, den die Fokusnavigation nicht verbraucht: B (zurueck), Start (Vorgabeaktion)
+    /// oder A ohne fokussiertes Control und ohne Fenster, z.B. um ein Video zu ueberspringen.
     /// true = verbraucht.
     virtual bool Msg_PadCommand(unsigned /*slot*/, PadButton /*button*/) { return false; }
     /// Control, auf dem ein NEU hinzugekommenes Pad seinen Fokus beginnen soll.

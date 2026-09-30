@@ -17,7 +17,7 @@ class glArchivItem_Bitmap_Raw;
 class glArchivItem_Sound_Wave;
 
 /// Plays one video of the original game (VIDEO/INTRO.SMK by default) full screen.
-/// Any key or click skips it. Without the video it says what is missing.
+/// Any key, click or controller confirm/back/start skips it. Without the video it says what is missing.
 class dskIntro : public Desktop
 {
 public:
@@ -29,6 +29,9 @@ public:
 
     /// Whether the original video exists and can be played, e.g. to enable the Intro button
     static bool isAvailable(const std::string& videoFile = "INTRO.SMK");
+
+    bool WantsPadInput() const override { return true; }
+    bool Msg_PadCommand(unsigned slot, PadButton button) override;
 
     bool Msg_LeftUp(const MouseCoords& mc) override;
     bool Msg_RightUp(const MouseCoords& mc) override;
