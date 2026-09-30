@@ -672,3 +672,88 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   Test_splitscreen rebuilt with two compiler jobs; all six MenuPadLobbyReturnTests pass with
   1,630 assertions (0.75 s). Static validation and diff checks pass. New-head CI must all pass
   before PR #12 is handed back as tested.
+- Reconciled NOTES/ROADMAP with master 31e92b247 after Opus integrated PRs #11/#13/#14;
+  retained both documentation sides. Lobby implementation and its tests are byte-identical
+  to c6fcad5a2. Reconfigured/rebuilt Debug with two jobs and ran the full combined suite:
+  all 426 cases and 36,772 assertions pass, with USER=root and TMPDIR on the data mount.
+  Static validation/diff checks pass. All CI is required again on the resulting merge head.
+## 2026-09-30 — Sol companion: controller Back from network menus
+- Branch `sol/network-menu-controller-back`, based on origin/master 2572261e2. Direct-IP and LAN B
+  invoke the existing Back action to Multiplayer; Start and shared input routing are unchanged.
+- Eight regressions inject mock-driver pad events and physical keyboard/mouse input. They cover all
+  seven focusable desktop controls, Join closing before the desktop leaves, Create retaining its
+  explicit Back requirement, required proxy-warning confirmation, inert Start/navigation, mouse/A
+  Back, keyboard Escape parity and B bursts staying at Multiplayer until a new press.
+- A synthetic listed LAN row makes the table focusable; this checks Back, not discovery/Connect.
+  Empty tables intentionally cannot take focus. Shoulder navigation goes both ways, since the
+  existing focus list does not wrap. No direct handler, focus or selection-state injection.
+  Userdata is temporary; no public lobby connection. The proxy fixture restores an existing enum
+  reference, avoiding a singleton lookup in its destructor; no singleton is constructed in tests.
+- All eight cases pass in Debug. Rebuilding the four original production files makes five cases
+  fail specifically on the missing return, while mouse/A, keyboard and inert-navigation controls
+  pass (exit 201, 27 failed assertions). Final production files restored byte-for-byte and rebuilt.
+  Full Debug Test_splitscreen passes (80.21 seconds), including the final eight cases.
+  After adding explicit parentheses to the optional seat comparison for Boost 1.73, it passes again (79.32 s).
+- GCC12 Debug/Werror, own build/debug, ccache and at most two compiler jobs. Static validation,
+  clang-format10 and diff checks pass. Exact gpt-6.1-sol read-only final patch/context review found
+  no actionable issues; its repository sandbox could not initialize, so runtime verification is
+  the independent local run. CMake reconfigured after adding the test (add_testcase's source glob
+  does not track new files automatically).
+- Branch CI must finish before handoff as tested; Opus owns review/integration. No primary
+  checkout/build changes, master push or self-merge. Next independent menu slice: online-lobby Back.
+
+## 2026-09-30 — Sol companion: safe text credits and controller Back
+- Branch `sol/credits-controller-back`, based on origin/master 6c0ba04a6. Credits now opts into pad
+  input; B follows the existing Close action to Main menu. Start stays inert and shared routing is
+  unchanged, including regular-window and required-confirmation precedence.
+- Driver-event entry from Main menu exposed a real resource-failure crash: the iterator initialized
+  to the empty entries vector's end became invalid when the vector grew, then early resource-load
+  failure left it dereferenced in DrawCredit. A local Debug/gdb trace confirmed the null access through
+  glFont::Draw. Credits now sets the iterator after the final entry and keeps text browsing available
+  without optional world/game graphics; decorative bobs are drawn only after their assets load.
+- Seven physical-input regressions cover Main-menu entry/B return, regular window first, custom
+  acknowledgement required before B, inert Start/navigation, mouse/A Back, B bursts and Main-menu
+  Quit safety. Isolated missing GAME data and missing world data remain browsable through 40 forward
+  keyboard and 40 backward mouse page changes (including wrapping), a background left click and B.
+  No singleton construction, focus injection or direct desktop-handler calls; runtime resources remain
+  local, original game data is neither needed nor committed. Fixtures restore only captured state.
+- All seven targeted Debug cases pass. Exact gpt-6.1-sol read-only patch/context review found no
+  actionable iterator, fallback, routing or overlay bug; repository inspection was blocked by its
+  sandbox, and it did not independently verify rendering or resource-cache isolation. Local tests
+  and CI are the runtime gates. Countercheck and complete Debug suite evidence are recorded below.
+- Without only the B handler (safe text fallback and pad opt-in retained), five cases fail specifically
+  at return-to-Main; Start/navigation and existing mouse/A Back pass. Final seven targeted cases pass,
+  and full Debug Test_splitscreen passes (88.34 s). Static validation, clang-format10 and diff checks
+  pass. All branch CI jobs remain required before tested handoff; Opus owns integration.
+
+## 2026-09-30 — Sol companion: real member cannot claim an extra local slot
+- Branch `sol/coop-member-local-slot-policy`, based on origin/master 6c0ba04a6. M3b policy is to reject
+  additional distinct player slots on a network member; shared local views remain a separate M3c item.
+  The existing GameClient guard is unchanged. coop-net gains `--extra-local-slot`, installed in the
+  connection-finished callback before subsequent start messages (Connect clears pending requests), and reports whether loading/started callbacks
+  fired when LocalPlayerSetup is returned. Host mode rejects the test option as a setup error.
+- Two real localhost host/member CTest cases use the same topology: host slot 0, spare dummy-AI slot 1,
+  member of player 0. A normal member finishes GF 1000 in sync. Requesting the otherwise valid slot 1
+  exits specifically with LocalPlayerSetup before either loading or starting; the rejected member has
+  no game result, the host removes it and finishes GF 1000 with checksums compared through that frame.
+  Actual starting member roster and spare-slot start goods are asserted; unrelated failures cannot pass.
+- Both Debug cases pass (22.32 s). Negative control removes only the request from a scratch checker:
+  both processes then succeed (0;0), and the refusal checker fails at the intended LocalPlayerSetup
+  expectation. The checked-in harness/guard are unchanged by that countercheck. Existing real-member
+  regressions and branch CI are recorded in the PR. Own build/debug, GCC12/Werror, at most two jobs.
+- Read-only exact gpt-6.1-sol review found a possible lobby/start race in initial harness instrumentation;
+  fixed by setting the request in the connection-finished callback rather than after Run returns.
+  A per-port process lock also covers concurrent invocations from different build directories.
+- After the callback fix, both cases pass three times each (65.86 s); negative control again fails at
+  the expected refusal assertion (0;0 without the request). Existing MemberOrders, MemberAndSecondPlayer,
+  MemberFallsBehind and MemberDesyncDetected all pass (48.78 s). Review confirmed the callback ordering
+  fix; port lock wait now covers a complete prior invocation and its CTest timeout allows both runs.
+  Static validation, clang-format10 and diff checks pass. All branch CI jobs are required before handoff.
+
+## 2026-09-30 — Opus: Sol PRs #11, #13, #14 integrated
+- Reviewed the diffs (Direct-IP/LAN B → existing Back, Credits iterator fix + text-only fallback + B → Close,
+  coop-net `--extra-local-slot` member refusal test). No objections; all 17 CI jobs were green on each head.
+- Merged into master (NOTES conflicts only, both sides kept). On the merged tree, Debug: full
+  Test_splitscreen passes (80.3 s) and all CoopNet_Member* incl. MemberLocalSlots_normal/extra pass.
+  Local run needs `USER=root TMPDIR=/app/agent/data/siedler/tmp` (see above).
+- PR #12 (lobby Back) still waits for its CI before handoff.

@@ -110,11 +110,15 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   13 commits, ~40k lines of code plus the language catalogues moved into the tree):
   - ☑ a) merged as is (PR #2, 2026-09-30): all our tests and its Test_splitscreen pass locally and in CI,
     two local players seen in the real client under Xvfb (`--local-players 2`, a building placed from the second view).
-  - ☐ b) coop member + local players: forbid or define the combination (a member client with extra local slots).
+  - ☑ b) coop member + additional distinct local player slots: forbidden by the pure-local-only guard.
+    Real host/member Debug regressions prove refusal before loading/starting, removal of the member and continued
+    host play; an ordinary member in the same topology finishes in sync (Sol companion, 2026-09-30).
   - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  Credits supports controller B to Main menu; its text pages stay usable when optional game graphics
+  or world data are unavailable, with physical-input and missing-resource regressions (Sol companion, 2026-09-30).
   Campaign chooser Back now retains local/network context; chapter/campaign victory screens support
   A/B/Start, with driver-event regressions (Sol PR #4). Remaining dialogs and menu paths stay open.
   Options handles controller B through its existing save/validate/Back action; driver-event tests cover
@@ -128,6 +132,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   Online-lobby B uses the existing disconnect/Back action; six regressions authenticate the real
   client against a loopback TCP peer and cover all five focusable controls, overlay precedence,
   physical input, edited chat and B bursts (Sol companion, 2026-09-30).
+  Direct-IP and the LAN browser handle controller B through their existing Back actions. Eight driver-event
+  and physical-input regressions cover all seven focusable controls, window/confirmation precedence,
+  mouse/A/keyboard behavior and B bursts stopping at Multiplayer (Sol companion, 2026-09-30).
   Create game/map selection handles controller B through its original Back route, with four-context,
   mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many

@@ -24,6 +24,8 @@ public:
     bool Msg_LeftUp(const MouseCoords& mc) override;
     bool Msg_RightUp(const MouseCoords& mc) override;
     bool Msg_KeyDown(const KeyEvent& ke) override;
+    bool Msg_PadCommand(unsigned slot, PadButton button) override;
+    bool WantsPadInput() const override { return true; }
     void Msg_Timer(unsigned timerId) override;
     void Draw_() override;
     void Msg_ButtonClick(unsigned ctrl_id) override;
@@ -76,6 +78,7 @@ private:
     };
 
     std::vector<Bob> bobs;
+    bool drawBobs_ = false;
 
     ctrlTimer* pageTimer;
     Timer bobSpawnTimer;
