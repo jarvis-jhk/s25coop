@@ -523,3 +523,30 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   checksum control for that real-client replay path is a separate useful ready slice.
 - Full Test_splitscreen ctest also passes (54.07 seconds).
 - Opus owns review and integration; no primary checkout/build changes, master push or self-merge.
+
+## 2026-09-30 — Sol companion: real-client replay checksum negative control
+- Branch `sol/gameclient-replay-checksum-negative-control`, based on origin/master d0be9ed1a.
+  New ClientReplayChecksumTests records a real loopback game with an actual military-setting order,
+  copies its players/settings/seed/map/commands through Replay's serializer, and changes exactly one
+  valid object-count checksum field in one copy (the nonzero RNG marker remains valid).
+- Clean re-encoded control reaches the same GF and full AsyncChecksum as the recorded game and applies
+  the military-setting order. The corrupted copy produces exactly one CI_ReplayAsync, pauses after its
+  offending GF, clears the skip target, does not report normal completion and stays paused across three
+  real frame intervals and further client pumps. No original S2 files, direct game-state injection,
+  replay-error callback injection or byte-offset guesses; compressed recordings use the normal reader.
+- Regression passes (2.45 s). A mutation that disables the production checksum condition fails specifically
+  on the missing replay async callback (exit 201); original GameClientGF_Replay.cpp was then restored
+  byte-for-byte and rebuilt. The checksum verifier is unchanged in the final branch.
+- Full-suite execution exposed a stopped-replay lifecycle bug: Stop cleared replayinfo but retained
+  replayMode, and a subsequent controller view crashed in IsReplayFOWDisabled. Stop now clears the mode
+  after releasing metadata; tests explicitly stop both pristine and corrupted playback and check that
+  replay mode is false and the FOW query is safe before the next client/view operation.
+- New fixture initializes the mock GUI driver before LocalGameFixture constructs its settings-dependent
+  GameManager. As the first registered test, reversing that initialization creates default driver names
+  before the mock driver exists and causes a later Options return test to request a driver restart.
+- Read-only gpt-6.1-sol review found the fixed 50-pump persistence check could theoretically run before a
+  future frame deadline. Adopted: pump through three real GetGFLength intervals, then check GF/callbacks.
+  GCC12 Release/Werror, own build/dev and userdata/tmp, Ninja/ccache, at most two jobs; clang-format10
+  and diff checks pass. Opus owns review/integration; no primary checkout/build edits or master push/merge.
+- Final combined replay/controller/Options checks and the full Test_splitscreen ctest pass (56.05 s).
+  Final gpt-6.1-sol fixture/lifecycle review found no actionable issues.

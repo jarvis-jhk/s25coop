@@ -53,6 +53,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   2026-09-27. The splitscreen regression `SecondLocalPlayerCommandsTakeTheFullNetworkRoundtrip` also records
   and replays through the real GameClient with the mock video driver, checking every recorded checksum,
   error/async callbacks and replay completion. A negative checksum control on that path remains open.
+  2026-09-27. The existing splitscreen network-roundtrip test also replays through the real GameClient/mock video.
+  `ClientReplayChecksumTests` now adds a clean re-encoded recording with identical final GF/checksum and a
+  corrupted-checksum control: one desync callback, paused playback and no normal completion. Disabling
+  the production checksum verifier fails that regression (Sol companion, 2026-09-30).
 
 ## M1 — The official campaign, done properly (single group)
 

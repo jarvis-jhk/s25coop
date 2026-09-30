@@ -247,6 +247,8 @@ void GameClient::Stop()
         replayinfo->replay.Close();
         replayinfo.reset();
     }
+    // A stopped replay no longer has replay metadata for the visibility/settings queries.
+    replayMode = false;
 
     mainPlayer.closeConnection();
 
