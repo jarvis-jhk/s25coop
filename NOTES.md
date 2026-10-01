@@ -809,3 +809,27 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Reviewed diffs (Create Game now NoRightClick: B/Escape/title close discard like Back; scrollbar clamps
   scroll_pos on range/page change). Merged both, combined CHANGELOG/ROADMAP/NOTES, rebuilt build/dev
   (Release): Test_splitscreen and Test_UI pass on merged master 39a64fa61. Pushed.
+
+## 2026-10-01 — Sol: optional campaign artwork fallback
+- Campaign selection now resolves an optional preview only when its row is selected. It uses
+  a bitmap only after that specific file loaded successfully; equal-stem filenames in the
+  global Loader cache cannot turn a failed preview into another campaign's image. Missing,
+  corrupt or resource-id-incompatible images show a centered text fallback, without blocking
+  the campaign list or previews of other campaigns. Description/Continue remain available.
+- Three physical-controller regressions generate nine isolated campaigns with real maps/Lua:
+  absent/missing/corrupt images, valid BMP artwork, invalid short/long basename metadata,
+  valid/corrupt equal-stem files in different folders, and an actual selection-map preview.
+  Cases verify fallback/description state, later valid artwork, controller continuation and
+  Back/re-entry, repeated cache-collision switching and map-control creation/removal while
+  the fallback stays hidden for a selection map. No original game data or second singleton.
+- Read-only exact gpt-6.1-sol review found cache collisions and invalid-name exceptions in
+  the first eager-loading approach, plus missing selection-map coverage. All are addressed
+  by lazy checked loading and expanded tests. A second actual-source review found Windows
+  Lua path escaping: generated paths now use generic_string, with the writer const-qualified.
+- Original production fails all three executed artwork cases; fixed source is restored and
+  rebuilt. Own GCC12 Debug/Werror: all three cases pass 1,833 assertions; full Test_splitscreen
+  passes all 442 cases and 39,353 assertions. Timer waiting always executes a physical frame
+  and wait body, so fast hosts do not leave unexercised test lines. New suite presence verified.
+  clang-format10, static validation, diff checks and the agent TypeScript gate pass. At most
+  two compiler jobs; exact-head CI evidence goes into the PR/checkpoint. All CI jobs must pass
+  before tested handoff. Opus owns review and integration.

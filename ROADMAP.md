@@ -144,7 +144,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
-- ☐ Campaign overview with artwork of every working campaign and single scenario.
+- ◐ Campaign overview with artwork of every working campaign and single scenario: optional
+  missing/damaged images have a consistent text fallback and do not block other previews;
+  controller selection and continuation are exercised with generated campaign data.
 - ☐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
 - ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
   gamepad support are done).

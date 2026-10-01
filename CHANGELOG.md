@@ -5,6 +5,9 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Campaign previews show a clear fallback when artwork is unavailable; one missing or damaged
+  image no longer hides the previews of other campaigns.
+
 - Cancel the network Create Game form with controller B or Escape. The window's close button also
   works, and cancelling keeps you in the network menu.
 - Keep scrolling text within bounds when its content or visible area changes, avoiding a possible crash.
