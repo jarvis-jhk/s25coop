@@ -1109,3 +1109,37 @@ validation, diff checks and the agent TypeScript gate pass. Exact-head CI eviden
   player-facing changelog entry. Agent TypeScript gate and diff checks pass.
 - Complete merged Release Test_splitscreen passes 504/504 cases and 182,662/182,662 assertions.
   Integration preserves the exact tested production/test files and is pushed to master.
+
+## 2026-10-01 — Sol: merchandise statistics through physical input and saved-history replays
+- Dedicated five-case suite enters Back -> system ring -> Main selection -> Merchandise in a
+  real single-view loopback game. All fourteen nested ware buttons toggle independently with
+  pad and mouse; multi-selection, clear/clear-empty, four time ranges and annotation visibility,
+  Help/Back and reopen are verified against the actual player's history and inventory.
+- History setup uses real IncreaseMerchandiseStatistic/StatisticStep operations, populates and
+  wraps all four rings, and asserts indices/counters, every retained boat bucket and an older
+  hourly wood spike. GUI maxima use the actual full-ring backend values; no direct handler,
+  focus mutation, UI selection setter, second singleton or common router/fixture/view edits.
+- Save the seeded game, rehost that save with the real server/client, execute and await a real
+  military command, then play that actual recording. History must survive save/replay loading;
+  physical browsing leaves it intact and playback reaches the exact recorded final GF/checksum
+  and military settings, with no error/desync callbacks. Bind/connect retries cover the entire
+  rehosting operation; only recovered setup errors are reset before testing gameplay.
+- Explicit whole-body cleanup restores persistent window settings and debug mode before fixture
+  destruction, after windows have released their settings-map pointers. A reached throw probe
+  verifies that Merchandise was open; post-destruction checks require a stopped GameClient.
+  Help preserves the underlying window: ReplaceWindow replaces matching new IDs/owners only.
+- Read-only review on exactly gpt-6.1-sol prompted backend aggregation contract separation,
+  save-host retry handling, explicit wrap assertions and recovered setup-error counters.
+  GamePlayer's independent coarse 4h/16h aggregation defect is delegated to the primary lane:
+  the current contribution incorrectly uses the raw counter rather than the current bucket of
+  the lower range (constant production becomes 1/4/13/40 rather than 1/4/16/64). This test-only
+  slice does not change simulation behavior or assume the bug is fixed.
+- Executed negative control: limiting the GUI scale to the current bucket makes all four
+  behavior cases fail at seventeen intended older-peak assertions; cleanup control passes.
+  Production is restored byte-for-byte before final rebuild/verification. No LCOV exclusions.
+  Uses Sol's own GCC12 Debug/Werror build/debug and at most two compiler jobs; CMake's test glob
+  reconfigured and the five new cases verified in the binary. Exact-head branch CI remains
+  required before tested handoff; Opus owns review and integration.
+Final restored full Debug/Werror Test_splitscreen passes all509 cases /185,027 assertions;
+its merchandise suite passes all5 cases /3,173 assertions. Formatting/static validation/diff
+checks and the agent TypeScript gate pass. Exact-head CI evidence remains pending in the PR.
