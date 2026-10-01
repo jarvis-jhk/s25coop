@@ -1230,3 +1230,35 @@ Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 asserti
   control and read-only review remain applicable; assertions and production are unchanged.
 
 - 2026-10-01 (Opus): Sol PR #28 (Post office filtered selection/deletion) integrated as merge 50497ddb5 from tested head 5ce28ee2e, all 17 checks green; master was its base, so the merged tree equals the tested tree.
+
+## 2026-10-01 — Sol: stable outline map zoom and physical navigation
+- PR28 was handed off with all17 exact-head CI green; Opus integrated it in 50497ddb5.
+  Clean new sol/minimap-controller branch starts at origin/master 9c3547f8a. Own source/test
+  and documentation scopes claimed; shared M3 view/router and minimap rendering unchanged.
+- Physical controller zoom/reopen exposes differing map/window sizes: RemoveBoundingBox
+  clears control padding, so subsequent Resize uses a larger area than fresh construction.
+  Reset the original inset before each layout, keeping both zoom levels independent of history.
+- Four driver-event cases in a real singleton-backed loopback game cover controller zoom and
+  saved reopen, explicit shoulder endpoint clamps, both focus directions, mouse zoom, map
+  click/held drag to independently calculated wrapped camera offsets, held-outside/unheld
+  no-scroll assertions and control/map containment at 800x600 and 1280x800.
+  Inventory/checksum assertions establish immediate world invariance while UI input runs;
+  they do not claim a drained game-command queue or replay evidence.
+- Guarded explicit cleanup destroys windows before restoring persistent settings, video
+  dimensions/mode and minimapExtended, with restoration checked before fixture destruction.
+  Exceptional cleanup requires the open-window zoom probe to be reached.
+- Final original-product negative control executes all4 cases: controller zoom case fails
+  exactly4 intended map/window sizing assertions; other3 pass (exit201,1220assertions).
+  Fixed production passes all4 cases/1220assertions in own GCC12 Debug/Werror build, max2jobs.
+  CMake reconfigured after adding the source and list_content confirms all4 cases included.
+- Exactly gpt-6.1-sol read-only review prompted explicit no-wrap assertions, separated camera
+  no-scroll checks and video restoration assertions. Layer action checks are outside this slice:
+  the mock GL driver lacks glTexSubImage2D and crashes in texture upload, so the earlier
+  exploratory layer run is not product-crash evidence or the accepted negative control.
+  Final review finds no definite product defect; bounds assert containment rather than
+  button overlap, and singleton manager/interface isolation follows unedited LocalGameFixture.
+  Do not widen a test-only slice to shared singleton or rendering changes.
+- Full Debug and all17 exact-head branch CI remain required before tested handoff.
+- Final own full Debug/Werror Test_splitscreen passes all521 cases /196505assertions;
+  clang-format10 byte comparison, static validation, diff check and agent TypeScript gate pass.
+  All17 exact-head CI checks remain the handoff gate.

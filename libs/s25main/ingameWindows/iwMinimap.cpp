@@ -53,6 +53,9 @@ void iwMinimap::Resize(const Extent& newSize)
     IngameWindow::Resize(newSize);
     auto* im = GetCtrl<ctrlIngameMinimap>(0);
 
+    // RemoveBoundingBox clears the padding; every zoom must start with the same
+    // inset as a newly opened map or its scale and window size depend on zoom history.
+    im->SetPadding(Extent::all(WINDOW_MAP_SPACE));
     im->Resize(newSize - contentOffset - contentOffsetEnd);
 
     // Control kürzen in der Höhe
