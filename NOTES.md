@@ -1064,3 +1064,34 @@ resulting pushed head remains required before tested handoff.
   no singleton constructed, server broadcast required for the leather setting, cleanup on both exits.
   Merged onto master 0aff8c7cd (LocalGameFixture fallible-setup-first); Release Test_splitscreen
   reconfigured: transport 7 cases/5,563 assertions and full 485 cases/52,570 assertions pass. Pushed.
+
+## 2026-10-01 — Sol: goods distribution controller and replay safety
+- Bounded window-local slice from master 2975a193b: a dedicated nineteen-case suite enters
+  Back -> system ring -> Main selection -> Distribution through physical driver input in a
+  real singleton-backed loopback game. All eight wine/leather/charburner combinations cover
+  every available tab, visible-only focus, all slider bounds, Default and reopen. Controller
+  and mouse changes require the actual world distribution after a real server roundtrip;
+  addon setup poisons the eagerly edited lobby copy and requires the real settings broadcast.
+- In replays, pad, wheel and bar input changed displayed priorities and left an unsendable
+  pending change, causing a false discard warning. Restore recorded settings immediately on
+  progress callbacks; keep Help available while rejecting Default. All eight generated real
+  recordings cover those physical paths, tabs, close/reopen, Help and clean replay completion.
+- Whole-body guards cover initialization and both exits. Persistent window settings and debug
+  mode restore explicitly before fixture destruction; desktops/windows die before backend
+  shutdown. The deliberate throw is asserted to occur with Distribution open. No second
+  singleton, shared fixture/router/adapter/view edits or test coverage exclusions.
+- Original production executes all nineteen cases: eleven live/cleanup cases pass; eight replay
+  cases fail 15,751 intended assertions at displayed settings and the close-warning path.
+  Sending only defaults while leaving the edited visual copy intact fails both executed live
+  addon-extreme cases at the actual-world wait. Restoring only the old replay Help guard fails
+  the executed replay case at the intended Help assertion. Unmatched filters are not evidence.
+- Full source/dependency snapshots reviewed read-only with exactly gpt-6.1-sol: no blocking
+  issues. CMake test-source GLOB reconfigured and suite presence confirmed; own GCC12
+  Debug/Werror build/debug with at most two compiler jobs. All nineteen fixed cases pass
+  130,209 assertions before the isolated negative controls; final production restored
+  byte-for-byte and rebuilt for the final full-suite validation.
+- Branch CI remains required on the exact pushed head before tested handoff. Opus owns review
+  and integration; Sol never merges or pushes master.
+Final restored full Debug/Werror Test_splitscreen passes all504 cases /180,980 assertions;
+affected19 cases /130,236 assertions within that full run. clang-format10, repository static
+validation, diff checks and the agent TypeScript gate pass. Exact-head CI evidence tracked in PR.
