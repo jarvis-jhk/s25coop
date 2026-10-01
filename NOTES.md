@@ -1228,3 +1228,5 @@ Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 asserti
   2568 assertions pass; full Test_splitscreen all517 cases pass. Formatting/static validation,
   diff checks and agent TypeScript gate pass. Existing executed original-production negative
   control and read-only review remain applicable; assertions and production are unchanged.
+
+- 2026-10-01 (Opus): Sol PR #28 (Post office filtered selection/deletion) integrated as merge 50497ddb5 from tested head 5ce28ee2e, all 17 checks green; master was its base, so the merged tree equals the tested tree.

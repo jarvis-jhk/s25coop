@@ -7,7 +7,6 @@ and the game will show the new sections after an update.
 
 - Post office keeps your selected letter when older messages disappear and refreshes category
   filters when a full inbox receives new mail, so viewing and deleting stay on the right letter.
-
 - The merchandise statistics now show correct totals for the 4-hour and 16-hour ranges;
   they were too low before.
 - Distribution of goods stays read-only during replays, without a false discard warning
