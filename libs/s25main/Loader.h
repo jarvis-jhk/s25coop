@@ -87,6 +87,8 @@ public:
     /// Creates archives with empty files for the GUI (for testing purposes)
     void LoadDummyGUIFiles();
     void LoadDummyMapFiles();
+    /// Distinct placeholder building textures for economy-window input tests without S2 data.
+    void LoadDummyBuildingFiles();
     void LoadDummySoundFiles();
     /// Ein Ersatz fuer languages.ini. Ohne ihn stuerzt Languages::loadLanguages im Test ab
     /// (es dereferenziert das Suchergebnis ungeprueft) und mit ihm jeder Bildschirm, der eine

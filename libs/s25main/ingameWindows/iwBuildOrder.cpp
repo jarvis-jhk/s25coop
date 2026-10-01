@@ -51,7 +51,8 @@ iwBuildOrder::iwBuildOrder(const GameWorldViewer& gwv)
     // Bild der Auswahl
     AddImage(5, DrawPoint(240, 150), LOADER.GetBuildingTex(gwv.GetPlayer().nation, pendingBuildOrder[0]));
 
-    ctrlComboBox* combo = AddComboBox(6, DrawPoint(15, 30), Extent(290, 20), TextureColor::Grey, NormalFont, 100);
+    ctrlComboBox* combo = AddComboBox(6, DrawPoint(15, 30), Extent(290, 20), TextureColor::Grey, NormalFont, 100,
+                                      GAMECLIENT.IsReplayModeOn());
     combo->AddItem(_("Sequence of given order"));   // "Reihenfolge der Auftraggebung"
     combo->AddItem(_("After the following order")); // "Nach folgender Reihenfolge"
 
@@ -111,8 +112,6 @@ void iwBuildOrder::TransmitSettings()
 
 void iwBuildOrder::Msg_ListSelectItem(const unsigned ctrl_id, const int selection)
 {
-    if(GAMECLIENT.IsReplayModeOn())
-        return;
     switch(ctrl_id)
     {
         default: break;
@@ -128,6 +127,8 @@ void iwBuildOrder::Msg_ListSelectItem(const unsigned ctrl_id, const int selectio
 
 void iwBuildOrder::Msg_ComboSelectItem(unsigned ctrl_id, unsigned selection)
 {
+    if(GAMECLIENT.IsReplayModeOn())
+        return;
     if(ctrl_id == 6)
     {
         useCustomBuildOrder = selection != 0u;
@@ -204,8 +205,8 @@ void iwBuildOrder::Msg_ButtonClick(const unsigned ctrl_id)
             list->DeleteAllItems();
 
             // Liste füllen
-            for(unsigned char i = 0; i < 31; ++i)
-                list->AddItem(_(BUILDING_NAMES[pendingBuildOrder[i]]));
+            for(const auto building : pendingBuildOrder)
+                list->AddItem(_(BUILDING_NAMES[building]));
             list->SetSelection(0);
 
             GetCtrl<ctrlImage>(5)->SetImage(LOADER.GetBuildingTex(gwv.GetPlayer().nation, pendingBuildOrder[0]));
@@ -227,4 +228,7 @@ void iwBuildOrder::UpdateSettings()
     GetCtrl<ctrlComboBox>(6)->SetSelection(useCustomBuildOrder ? 1 : 0);
     for(unsigned char i = 0; i < pendingBuildOrder.size(); ++i)
         GetCtrl<ctrlList>(0)->SetItemText(i, _(BUILDING_NAMES[pendingBuildOrder[i]]));
+    const auto selection = GetCtrl<ctrlList>(0)->GetSelection();
+    if(selection)
+        GetCtrl<ctrlImage>(5)->SetImage(LOADER.GetBuildingTex(gwv.GetPlayer().nation, pendingBuildOrder[*selection]));
 }

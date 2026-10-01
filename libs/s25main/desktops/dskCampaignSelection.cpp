@@ -29,7 +29,7 @@
 #include "s25util/Log.h"
 #include <boost/filesystem/operations.hpp>
 #include <chrono>
-#include <set>
+#include <stdexcept>
 
 namespace bfs = boost::filesystem;
 using namespace std::chrono_literals;
@@ -44,7 +44,8 @@ enum
     ID_btBack,
     ID_Next,
     ID_TimerFillCampaignTable,
-    ID_MapSelection
+    ID_MapSelection,
+    ID_PreviewFallback
 };
 
 constexpr int startOffsetY = 20;
@@ -77,6 +78,11 @@ dskCampaignSelection::dskCampaignSelection(CreateServerInfo csi)
                                 {_("Maps"), 40, SRT::Number},
                                 {_("Difficulty"), 70, SRT::String},
                                 {"", 0, SRT::Default}});
+
+    AddText(ID_PreviewFallback,
+            DrawPoint(secondColumnOffsetX + secondColumnExtentX / 2, getColumnOffsetY() + campaignImageExtentY / 2),
+            _("No preview available"), COLOR_YELLOW, FontStyle::CENTER | FontStyle::VCENTER, NormalFont)
+      ->setMaxWidth(secondColumnExtentX);
 
     const int previewTitleOffsetY = getColumnOffsetY() + campaignImageExtentY + padding;
     AddText(ID_PreviewTitle, DrawPoint(640, previewTitleOffsetY), "", COLOR_YELLOW, FontStyle::CENTER, LargeFont);
@@ -152,14 +158,27 @@ void dskCampaignSelection::Msg_TableSelectItem(const unsigned ctrl_id, const std
             mapSelection->setMissionsStatus(std::vector<MissionStatus>(campaign.getNumMaps(), {true, true}));
             mapSelection->setPreview(true);
         } else if(campaign.image)
-            campaignImage_ = LOADER.GetImageN(ResourceId::fromPath(*campaign.image), 0);
-        else
+        {
+            // Resolve this campaign's file now: equal filename stems share a loader cache entry.
+            // A failed load must not reuse another campaign's cached picture.
             campaignImage_ = nullptr;
+            try
+            {
+                if(LOADER.LoadFiles({*campaign.image}))
+                    campaignImage_ = LOADER.GetImageN(ResourceId::fromPath(*campaign.image), 0);
+            } catch(const std::invalid_argument& e)
+            {
+                LOG.write(_("Failed to load campaign preview %1%: %2%\n")) % *campaign.image % e.what();
+            }
+        } else
+            campaignImage_ = nullptr;
+        GetCtrl<ctrlText>(ID_PreviewFallback)->SetVisible(!campaign.selectionMapData && !campaignImage_);
     }
 }
 
 void dskCampaignSelection::showCampaignInfo(const bool show)
 {
+    GetCtrl<ctrlText>(ID_PreviewFallback)->SetVisible(false);
     GetCtrl<ctrlMultiline>(ID_PreviewDescription)->SetVisible(show);
     GetCtrl<ctrlText>(ID_PreviewTitle)->SetVisible(show);
     if(!show)
@@ -193,13 +212,6 @@ void dskCampaignSelection::Msg_Timer(unsigned ctrl_id)
 {
     GetCtrl<ctrlTimer>(ctrl_id)->Stop();
     loadCampaigns();
-    std::set<std::string> resourcesToLoad;
-    for(const auto& campaign : campaigns_)
-    {
-        if(campaign.image)
-            resourcesToLoad.insert(*campaign.image);
-    }
-    LOADER.LoadFiles({resourcesToLoad.begin(), resourcesToLoad.end()});
     FillCampaignsTable();
 }
 

@@ -856,6 +856,124 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   scroll_pos on range/page change). Merged both, combined CHANGELOG/ROADMAP/NOTES, rebuilt build/dev
   (Release): Test_splitscreen and Test_UI pass on merged master 39a64fa61. Pushed.
 
+## 2026-10-01 — Sol: in-game controller save regressions
+- Seven new cases enter Save through the actual Back system ring, Main selection and Options
+  controller buttons in a single-view local GameServer/GameClient game. Inputs enter through
+  the mock driver and dskGameInterface::UpdateInput; WindowManager handles physical mouse/key
+  input and window lifetime. The existing TestableGameInterface suppresses rendering, not input.
+  Text fields remain keyboard/mouse-only; pad focus is observed and never assigned by a test.
+- Saves are loaded with all game data and compared byte-for-byte against the actual running
+  world snapshot and exact GF. Cases cover a trimmed filename, keyboard Enter, pad row selection
+  and replacement at a later GF, empty/reserved-name warnings requiring acknowledgement even
+  after two B presses, B focus release then close, Escape/right-click close and re-entry, and
+  autosave browse/cancel/confirm without writing the pending filename. B cancellation preserves
+  an existing valid save. No product code change or overwrite-confirmation policy change.
+- Initialization and explicit desktop cleanup wrap the entire test body on normal/exceptional
+  exits; an executed throw probe verifies desktop destruction before backend teardown and
+  restoration of autosave/debug settings. Temporary userdata, no duplicate singleton. A method
+  named setup caused unintended Boost auto-initialization during development; beginGame avoids
+  that and keeps the observed desktop and saved backend on the same game instance.
+- A suppressed production SaveToFile call fails exactly the two saving cases at actual file
+  loading, with the five cancellation/settings/cleanup cases passing. Production is restored
+  before final validation. Exact gpt-6.1-sol read-only review tightened the warning test to two
+  B presses; final actual-source review reports no concrete findings.
+- Own GCC12 Debug/Werror build/debug, at most two compiler jobs: all seven cases pass
+  386 assertions; full Test_splitscreen passes all 446 cases and 37,906 assertions. CMake
+  reconfigured and new suite presence verified. clang-format10, static validation, diff checks
+  and the agent TypeScript gate pass. Branch CI evidence is recorded in the PR/checkpoint;
+  all jobs must pass before tested handoff. Opus owns review and integration.
+
+### Sol save-dialog CI coverage repair (2026-10-01)
+GCC10 coverage found two unexecuted test lines: an unused second-page ring-navigation fallback
+and deleting an existing filename. The only ring target used by this fixture is Main selection
+on the first page, so the helper now searches that page directly. The saving regression first
+enters a placeholder filename and physically replaces it before saving the actual snapshot,
+executing the Backspace path. No LCOV exclusions and no product changes. Fresh own Debug:
+all seven affected cases / 392 assertions pass; clang-format10, static validation, diff checks
+and agent TypeScript gate pass. All 17 CI jobs on the repaired head remain required.
+
+## 2026-10-01 — Sol: optional campaign artwork fallback
+- Campaign selection now resolves an optional preview only when its row is selected. It uses
+  a bitmap only after that specific file loaded successfully; equal-stem filenames in the
+  global Loader cache cannot turn a failed preview into another campaign's image. Missing,
+  corrupt or resource-id-incompatible images show a centered text fallback, without blocking
+  the campaign list or previews of other campaigns. Description/Continue remain available.
+- Three physical-controller regressions generate nine isolated campaigns with real maps/Lua:
+  absent/missing/corrupt images, valid BMP artwork, invalid short/long basename metadata,
+  valid/corrupt equal-stem files in different folders, and an actual selection-map preview.
+  Cases verify fallback/description state, later valid artwork, controller continuation and
+  Back/re-entry, repeated cache-collision switching and map-control creation/removal while
+  the fallback stays hidden for a selection map. No original game data or second singleton.
+- Read-only exact gpt-6.1-sol review found cache collisions and invalid-name exceptions in
+  the first eager-loading approach, plus missing selection-map coverage. All are addressed
+  by lazy checked loading and expanded tests. A second actual-source review found Windows
+  Lua path escaping: generated paths now use generic_string, with the writer const-qualified.
+- Original production fails all three executed artwork cases; fixed source is restored and
+  rebuilt. Own GCC12 Debug/Werror: all three cases pass 1,833 assertions; full Test_splitscreen
+  passes all 442 cases and 39,353 assertions. Timer waiting always executes a physical frame
+  and wait body, so fast hosts do not leave unexercised test lines. New suite presence verified.
+  clang-format10, static validation, diff checks and the agent TypeScript gate pass. At most
+  two compiler jobs; exact-head CI evidence goes into the PR/checkpoint. All CI jobs must pass
+  before tested handoff. Opus owns review and integration.
+
+### Sol campaign-artwork CI coverage repair (2026-10-01)
+GCC10 coverage reported the do/while's synthetic `do` line and an unused backwards-focus loop.
+Use an ordinary bounded for loop for loading. After returning from each mission chooser, assert
+table focus, physically move to a later control, then navigate backwards to the table; that now
+executes and proves the intended shoulder path. No LCOV exclusions or product changes.
+Fresh affected Debug: 3 cases / 1,881 assertions pass before reconciling integrated master.
+After reconciling master abd4cd961 (integrated music/addon PRs #16/#18), own campaign source/tests
+are byte-for-byte unchanged. Both documentation sides retained. Fresh Debug affected: 3 cases /
+1,881 assertions; complete merged Debug: 459 cases / 40,103 assertions pass. All17 checks must
+pass at the resulting merge head before tested handoff.
+
+
+## 2026-10-01 — Sol: construction-order controls and addon-safe defaults
+
+Claimed `build-order-controller`, starting from master 69888fe49 in Sol's own checkout; no shared
+adapter/router, view or primary-checkout edits. Physical Back -> system ring -> Main selection ->
+Building sequence enters the real window in a singleton-backed loopback game. Twelve cases cover
+all eight wine/leather/charburner combinations, list/preview selection, Up/Down/Top/Bottom and
+boundary moves, Default and reopen, custom-order browse/cancel/confirm and both flag directions.
+They inspect the full build-order array and flag in the actual world after at least two NWFs,
+including cancellation, rather than relying on the visual copy. Lobby setup also restores only
+its eagerly changed local copy and awaits the real server broadcast, then checks the running GGS.
+
+Default previously refilled exactly 31 rows, truncating enabled addon buildings. It now iterates
+all active entries. Replay's mode dropdown is read-only and its callback also rejects mutation;
+list browsing updates only the preview, including after recorded order changes. A generated real
+recording proves replay completion without desync, physical mouse/controller reorder rejection,
+readonly dropdown focus exclusion and actual recorded world/UI updates. An explicit idempotent
+Loader building-placeholder seam supplies distinct textures without original S2 files. Its header
+required a one-time wider Debug rebuild, kept at two jobs and in Sol's cache.
+
+The whole body, including initialization, is guarded on normal and exceptional exits; an executed
+throw probe proves window/desktop destruction before backend shutdown and settings restoration.
+Exact gpt-6.1-sol read-only review found desktop activation replacing the backend observer and
+missing replay input attempts: observer restored after activation/every input frame, mouse button
+attempts and full shoulder traversal added. Final actual-source review found no concrete issues.
+
+Old production was compiled before the fix: all seven addon-enabled Default cases and the replay
+case fail (8/12, 21 assertions); classic Default, all moves, cancellation and cleanup controls pass.
+Final production rebuilt: affected Debug 12 cases / 5,515 assertions pass. Complete Debug Test_splitscreen: 451 cases / 43,067 assertions pass.
+CMake reconfigured and new suite presence verified. clang-format10, static validation, diff checks
+and the agent TypeScript gate pass. Draft checkpoint until every exact-head CI job passes; Opus
+owns review/integration, and only fully tested PRs enter completedPRs.
+After reconciling master abd4cd961, all four construction-order/placeholder source and test files
+are unchanged; both documentation sides are preserved. Fresh affected Debug12 cases / 5,089
+assertions and complete merged Debug468 cases / 43,585 assertions pass. The assertion count
+varies with GUI/initialization paths; case counts and all actual world/replay assertions pass.
+All17 fresh checks on the resulting merge head are required before tested handoff.
+
+## 2026-10-01 — Sol: build-order fixture explicit settings cleanup
+- Remove singleton access from BuildOrderPadFixture's destructor. Restore debugMode through
+  explicit cleanup on both exits; verify restoration before fixture destruction on normal and
+  exceptional paths. Replay's in-body transition tears down only the desktop, retaining the
+  temporary debug setting until final cleanup. No product changes or coverage exclusions.
+- Own Debug/Werror build-order suite: 12 cases/5,121 assertions pass, including real replay
+  input policies and exception cleanup. Formatting, static validation, diff checks and agent
+  TypeScript gate pass. Await all17 new-head CI jobs before handoff.
+
 ## 2026-10-01 — Sol: music playlist Clang-Tidy repair
 - Mark the fixture's tracks() accessor const; this resolves the CI readability warning without
   changing playlist behavior. Merge master 69888fe49, retaining both sides of documentation conflicts.
@@ -915,3 +1033,22 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   restored byte-for-byte, rebuilt, then affected and full Debug suites rerun successfully.
   clang-format10, static validation, diff checks and agent TypeScript gate pass. Draft checkpoint
   until all17 exact-head CI jobs pass; Opus owns review and integration.
+After reconciling integrated master abd4cd961, the repaired save test is unchanged, and both
+notes/roadmap sides are preserved. Fresh affected Debug7 cases / 392 assertions and complete
+merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs remain required.
+
+## 2026-10-01 — Sol: save fixture explicit settings cleanup
+- Remove singleton access from SavePadFixture's destructor. Restore debugMode in the existing
+  cleanup path used on both successful and exceptional exits; assert the exceptional restoration
+  while the fixture still exists. No game behavior changes or coverage exclusions.
+- Own Debug/Werror save suite: 7 cases/393 assertions pass; formatting, static validation,
+  diff checks and agent TypeScript gate pass. Await all17 CI jobs on this new head before handoff.
+
+## 2026-10-01 — Opus: integrated Sol PRs #19 (save dialog), #20 (campaign artwork), #21 (build order)
+- All three handoffs had 17/17 CI green at the stated heads (6cdac72d7, 40d15473e, 1e38d069a), each
+  already on master abd4cd961. Production changes reviewed: #20 loads campaign artwork lazily per
+  selected row with a text fallback (no shared-stem cache reuse); #21 iterates the real build-order
+  length in Default (was a hard-coded 31, which dropped addon buildings), makes the combo read-only in
+  replays and keeps button clicks blocked there, while list selection may update the preview. #19 is
+  test-only. NOTES/ROADMAP/CHANGELOG conflicts resolved keeping both sides, each Sol paragraph kept
+  under its own heading. Release Test_splitscreen on the merged master passes (exit 0); pushed.

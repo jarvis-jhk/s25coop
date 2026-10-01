@@ -457,6 +457,36 @@ void Loader::LoadDummyMapFiles()
     }
 }
 
+void Loader::LoadDummyBuildingFiles()
+{
+    for(const auto nation : helpers::enumRange<Nation>())
+    {
+        if(nation_gfx[nation])
+            continue;
+        auto& archive = files_[ResourceId("testbld" + std::to_string(rttr::enum_cast(nation)))].archive;
+        archive.alloc(250 + 5 * helpers::NumEnumValues_v<BuildingType>);
+        for(const auto bld : helpers::enumRange<BuildingType>())
+        {
+            auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
+            libsiedler2::PixelBufferBGRA buffer(1, 1);
+            bmp->create(buffer);
+            archive.set(250 + 5 * rttr::enum_cast(bld), std::move(bmp));
+        }
+        nation_gfx[nation] = &archive;
+    }
+    auto& charburner = files_["charburner"].archive;
+    if(charburner.empty())
+    {
+        for([[maybe_unused]] const auto id : helpers::range(8u * helpers::NumEnumValues_v<Nation> + 1u))
+        {
+            auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
+            libsiedler2::PixelBufferBGRA buffer(1, 1);
+            bmp->create(buffer);
+            charburner.push(std::move(bmp));
+        }
+    }
+}
+
 void Loader::LoadDummySoundFiles()
 {
     libsiedler2::Archiv& archive = files_["sound"].archive;

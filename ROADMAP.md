@@ -141,6 +141,12 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   validation, all pad/keyboard focus targets and real-loopback lobby regressions.
   Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
   position now clamps safely when text/visible area changes, preventing out-of-range drawing.
+  In-game Save is exercised from the controller system menu through Options in a real local game:
+  saved world bytes, row selection/overwrite, keyboard submission, validation, cancellation and
+  autosave selection are covered.
+  Construction-order list/dropdown and reorder/default buttons now have physical-input,
+  real-world command and generated-replay coverage for all eight wine/leather/charburner combinations;
+  Default retains every active building, and replay settings stay read-only with current previews.
   Music playlist track reordering now refreshes playback; cancelled additions keep playback intact.
   Controller regressions cover song activation, removal, confirmed/cancelled input, repeat/random
   controls and saved files.
@@ -154,7 +160,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
-- ☐ Campaign overview with artwork of every working campaign and single scenario.
+- ◐ Campaign overview with artwork of every working campaign and single scenario: optional
+  missing/damaged images have a consistent text fallback and do not block other previews;
+  controller selection and continuation are exercised with generated campaign data.
 - ☐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
 - ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
   gamepad support are done).
