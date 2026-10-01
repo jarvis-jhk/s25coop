@@ -83,17 +83,19 @@ public:
         uiHelper::initGUITests();
         boost::filesystem::create_directories(RTTRCONFIG.ExpandPath(s25::folders::mapsPlayed));
         boost::filesystem::create_directories(RTTRCONFIG.ExpandPath(s25::folders::replays));
-        // Autosave wuerde waehrend der Partie in HandleAutosave Dateien schreiben
-        oldAutosave_ = SETTINGS.interface.autosaveInterval;
-        SETTINGS.interface.autosaveInterval = 0;
-        setGlobalGameManager(&gameManager_);
-        GAMECLIENT.SetInterface(&ci_);
-
         // Karte OHNE das danebenliegende Lua-Skript kopieren: GameServer::Start zieht ein
         // gleichnamiges .lua neben der Karte automatisch mit hinein.
         mapPath_ = mapDir_ / "SplitscreenTest.SWD";
         boost::filesystem::copy_file(rttr::test::rttrBaseDir / "tests" / "testData" / "maps" / "LuaFunctions.SWD",
                                      mapPath_);
+
+        // Singletons erst ganz am Ende umbiegen: wirft der Konstruktor davor (z.B. copy_file ueber
+        // Dateisystemgrenzen), laeuft der Destruktor nicht und nichts darf verbogen zurueckbleiben.
+        // Autosave wuerde waehrend der Partie in HandleAutosave Dateien schreiben
+        oldAutosave_ = SETTINGS.interface.autosaveInterval;
+        SETTINGS.interface.autosaveInterval = 0;
+        setGlobalGameManager(&gameManager_);
+        GAMECLIENT.SetInterface(&ci_);
     }
 
     // NOLINTNEXTLINE(bugprone-exception-escape)
