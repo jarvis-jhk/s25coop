@@ -113,13 +113,8 @@ struct SavePadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
     {
         if(dsk->GetPlayerView(0).GetRing().IsOpen())
         {
-            for(unsigned page = 0; page < 4 && focused() != target; ++page)
-            {
-                for(unsigned sector = 0; sector < 8 && focused() != target; ++sector)
-                    press(PadButton::DpadRight);
-                if(focused() != target)
-                    press(PadButton::RightShoulder);
-            }
+            for(unsigned sector = 0; sector < 8 && focused() != target; ++sector)
+                press(PadButton::DpadRight);
         } else
         {
             for(const auto direction : {PadButton::RightShoulder, PadButton::LeftShoulder})
@@ -226,6 +221,7 @@ BOOST_FIXTURE_TEST_CASE(ControllerEntryAndSaveWriteTheActualGameSnapshot, SavePa
     run([this] {
         enter();
         BOOST_TEST(table().GetNumRows() == 0u);
+        typeFilename("Replace me");
         typeFilename("   Controller");
         focusUntil(&saveButton());
         SerializedGameData snapshot;

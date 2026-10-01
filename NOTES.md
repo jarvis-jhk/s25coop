@@ -836,3 +836,12 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   reconfigured and new suite presence verified. clang-format10, static validation, diff checks
   and the agent TypeScript gate pass. Branch CI evidence is recorded in the PR/checkpoint;
   all jobs must pass before tested handoff. Opus owns review and integration.
+
+### Sol save-dialog CI coverage repair (2026-10-01)
+GCC10 coverage found two unexecuted test lines: an unused second-page ring-navigation fallback
+and deleting an existing filename. The only ring target used by this fixture is Main selection
+on the first page, so the helper now searches that page directly. The saving regression first
+enters a placeholder filename and physically replaces it before saving the actual snapshot,
+executing the Backspace path. No LCOV exclusions and no product changes. Fresh own Debug:
+all seven affected cases / 392 assertions pass; clang-format10, static validation, diff checks
+and agent TypeScript gate pass. All 17 CI jobs on the repaired head remain required.
