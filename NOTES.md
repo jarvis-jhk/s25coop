@@ -782,3 +782,62 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Full Debug Test_splitscreen passes all 435 cases and 37,013 assertions. clang-format10, static
   validation and diff checks pass. All current-head branch CI is required before tested handoff;
   Opus owns integration.
+
+## 2026-09-30 — Sol companion: cancel Create Game from the controller
+- Branch `sol/create-game-controller-cancel`, based on master 91676d5c8 after PR #12 integration.
+  Create Game uses the existing NoRightClick cancellation policy: B, Escape, Alt+W and the title
+  close button discard the form through the same Close method as visible Back. Right-click stays
+  inert; shared input routing and required custom confirmations are unchanged.
+- Seven driver-event/physical-input regressions cover both Direct-IP and LAN, all four pad focus
+  targets, keyboard focus in each of three text fields, invalid name/port, valid Start into map
+  selection, mouse/A Back, title close, Escape/Alt+W, regular/custom modal overlays, inert Start
+  and navigation, right-click, and B bursts stopping at the original network desktop.
+  The original parent must survive without map-selection transition and the real client remains
+  Stopped; tests never construct another singleton or call UI handlers/focus/activation directly.
+- Updated the existing network and real-loopback lobby tests' explicit old Custom-close expectations
+  in the same slice. The online lobby remains authenticated after form cancellation and its proxy
+  warning still needs confirmation. Text fields intentionally cannot take pad focus; their keyboard
+  input is tested through physical mouse focus and key events. New CMake source glob reconfigured.
+- All 21 affected cases pass (2,278 assertions). Full GCC12 Debug/Werror Test_splitscreen passes
+  all 433 cases. At most two compiler jobs, own build/debug, USER=root and same-mount TMPDIR.
+  Original production dialog makes six new and three existing cases fail specifically at missing
+  cancellation (exit 201, 63 assertions); valid Start still passes. Final source restored and rebuilt.
+- clang-format10, static validation, diff checks and agent TypeScript check pass. Exact gpt-6.1-sol
+  read-only review requested title-close coverage (added); final review finds no actionable bugs.
+  Stopped is corroborated by the same parent and absence of map-selection transition; Close only
+  queues removal and saves window state. All branch CI jobs are required before tested handoff.
+
+## 2026-10-01 — Sol companion: safe scrolling in long text windows
+- Branch `sol/controller-text-window-scroll`, based on master 91676d5c8. Readme, Help and Changelog
+  already support controller scrolling through their nested scrollbar; no focus/router change is
+  needed. Six driver-event and physical mouse regressions exercise long texts, both bounds without
+  losing focus, inert A/Start, wheel/arrows sharing pad scroll position, short texts with no focus
+  but working B, required confirmations, and clear/refill/resize behavior. Readme and Changelog
+  are entered through the real Main menu with generated temporary installed files.
+- The original resize case SIGSEGVs after the scroll position reaches the bottom of a narrow/small
+  area and the text area grows: RecalculateSizes moves the slider but leaves scroll_pos beyond the
+  new last valid page, so drawing that page extends past drawLines. Debug/gdb confirms ctrlMultiline::Draw_ -> glFont::Draw -> UTF-8 decode on
+  an invalid string. Clamp scroll_pos whenever range/page changes while a scrollbar remains visible;
+  the existing hidden-state reset remains unchanged. No parent callbacks added to size/range updates.
+- One control regression covers range shrink/page growth, preservation when range grows and all
+  visible/hidden transitions. Six targeted Debug cases pass; full Debug Test_splitscreen passes
+  all 432 cases. Full Debug Test_UI passes all 137 cases/20,671 assertions; ControlActivation passes
+  17 cases/255 assertions. GCC12 Debug/Werror, own build/debug and at most two compiler jobs.
+- Exact gpt-6.1-sol read-only review found the resize assertion allowed an unintended jump to zero:
+  tightened it to the exact old-bottom/new-maximum clamp and proved the maximum shrinks. No concrete
+  product/lifetime/config-isolation issue found. No second singleton; fixture destructor string swap.
+  All current-head branch CI is required before tested handoff; Opus owns integration.
+
+## 2026-10-01 — Opus: Sol PRs #15 and #17 integrated
+- Reviewed diffs (Create Game now NoRightClick: B/Escape/title close discard like Back; scrollbar clamps
+  scroll_pos on range/page change). Merged both, combined CHANGELOG/ROADMAP/NOTES, rebuilt build/dev
+  (Release): Test_splitscreen and Test_UI pass on merged master 39a64fa61. Pushed.
+
+## 2026-10-01 — Sol: music playlist Clang-Tidy repair
+- Mark the fixture's tracks() accessor const; this resolves the CI readability warning without
+  changing playlist behavior. Merge master 69888fe49, retaining both sides of documentation conflicts.
+  The music production source is unchanged; its test differs only by the accessor qualifier.
+- Reconfigure CMake to include the integrated Create Game and text-window tests. Own Debug/Werror
+  music suite: 9 cases/245 assertions; full merged suite: 448 cases/37,765 assertions.
+  Static validation, diff checks and agent TypeScript check pass. Fresh exact-head CI is required
+  before tested handoff; PR #16 stays draft until every job, including Clang-Tidy, succeeds.

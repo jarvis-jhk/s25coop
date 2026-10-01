@@ -228,6 +228,9 @@ void ctrlScrollBar::RecalculateSizes()
 
     if(scroll_range > pagesize)
     {
+        // Content or page size can change while parked at the old bottom. Drawing must stay in the new range.
+        if(scroll_pos > scroll_range - pagesize)
+            scroll_pos = scroll_range - pagesize;
         sliderHeight = (scroll_height * pagesize) / scroll_range;
 
         UpdateSliderFromPos();

@@ -17,9 +17,10 @@
 
 iwDirectIPCreate::iwDirectIPCreate(ServerType server_type)
     : IngameWindow(CGI_DIRECTIPCREATE, IngameWindow::posLastOrCenter, Extent(300, 285), _("Create Game"),
-                   LOADER.GetImageN("resource", 41), true, CloseBehavior::Custom),
+                   LOADER.GetImageN("resource", 41), true, CloseBehavior::NoRightClick),
       server_type(server_type)
 {
+    // Cancel only discards this form, just like Back; keep accidental right-click dismissal disabled.
     ctrlEdit *name, *port;
 
     // "Name des Spiels"

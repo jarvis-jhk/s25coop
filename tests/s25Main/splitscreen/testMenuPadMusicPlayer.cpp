@@ -96,7 +96,7 @@ struct MusicPlayerPadFixture : rttr::test::MenuPadFixture
         BOOST_TEST_REQUIRE(focused(0) == window->GetCtrl<ctrlList>(0));
     }
 
-    ctrlList& tracks() { return *window->GetCtrl<ctrlList>(0); }
+    ctrlList& tracks() const { return *window->GetCtrl<ctrlList>(0); }
 
     void act(const unsigned id, const PadButton direction = PadButton::RightShoulder)
     {
