@@ -995,6 +995,44 @@ All17 fresh checks on the resulting merge head are required before tested handof
   Add Track/Directory no longer does (confirmed input still sets it in Msg_Input). #18 is test-only.
   Merged both; NOTES/ROADMAP conflicts resolved keeping both sides. Release build of Test_splitscreen
   on the merged master passes; pushed.
+
+## 2026-10-01 — Sol: saved-game, campaign artwork and build-order CI handoff
+- PR #19 passed all17 checks at 6cdac72d7d741eed17a16649a735c05fee40030c:
+  [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/36818390798),
+  [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/36818390757).
+- PR #20 passed all17 at 40d15473e0dc45f2091b9032afc69ab334f08e19:
+  [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/36816267022),
+  [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/36816267013).
+- PR #21 passed all17 at 1e38d069a60e4e9b54556cfeae7c8b4dc61b047f:
+  [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/36818606174),
+  [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/36818606393).
+- Replace draft wording, record exact heads/workflows, mark ready and report each handoff to
+  the primary lane. All three enter tested completedPRs; finished source claims released.
+  Sol did not merge them. Fresh budget allows the independent transport-priority slice.
+
+## 2026-10-01 — Sol: controller transport priorities through the real game
+- Seven cases enter Back -> system ring -> Main selection -> Transport through physical
+  driver input in a singleton-backed loopback game. Leather on/off exercises every category,
+  matching sprites/tooltips and selection, all four moves and boundaries, Default/reopen,
+  mouse selection, Help overlay/return and unchanged-world browsing. Each real world order
+  and every ware priority are checked; the eagerly changed visual copy is insufficient.
+- Generated real recordings exercise read-only mouse/controller edits, recorded world/UI
+  updates and clean replay completion without backend errors or desync. A temporary indexed
+  raw bitmap supplies only the missing leather icon through normal Loader loading; no
+  production, shared adapter/router or M3 view edits. Scope remains one dedicated test file.
+- Whole-body cleanup guards initialization and both exits; the deliberate exception is proved
+  to occur with the transport window open, and settings restoration is asserted before fixture
+  destruction. Desktop/windows die before backend shutdown. No new singleton or exclusions.
+- Final affected Debug/Werror run passes seven cases/5,310 assertions; full Debug Test_splitscreen
+  passes 463 cases/43,550 assertions. Own build/debug, at most two compiler jobs, CMake reconfigured
+  and suite presence verified. Exact gpt-6.1-sol read-only review prompted a reached-probe flag
+  and direct standard includes; final actual-source review finds no concrete remaining issues.
+- Executed negative controls: sending only default priorities fails both real-world cases at the
+  intended world-state wait; removing only the replay edit guard fails both replay cases at
+  sprite/tooltip/order assertions (254 failures). No unmatched filters. Original production
+  restored byte-for-byte, rebuilt, then affected and full Debug suites rerun successfully.
+  clang-format10, static validation, diff checks and agent TypeScript gate pass. Draft checkpoint
+  until all17 exact-head CI jobs pass; Opus owns review and integration.
 After reconciling integrated master abd4cd961, the repaired save test is unchanged, and both
 notes/roadmap sides are preserved. Fresh affected Debug7 cases / 392 assertions and complete
 merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs remain required.
@@ -1014,3 +1052,8 @@ merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs r
   replays and keeps button clicks blocked there, while list selection may update the preview. #19 is
   test-only. NOTES/ROADMAP/CHANGELOG conflicts resolved keeping both sides, each Sol paragraph kept
   under its own heading. Release Test_splitscreen on the merged master passes (exit 0); pushed.
+After integrating master 5af48a215 (PR19/20/21), both documentation sides are preserved and the
+transport test is byte-identical to its pre-merge tested source. Reconfigure the test-source
+GLOB and reuse own Debug cache at max2 jobs: affected seven cases/5,323 assertions and full
+merged 485 cases/51,297 assertions pass. Static validation and diff checks pass. CI on the
+resulting pushed head remains required before tested handoff.
