@@ -5,6 +5,8 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- The merchandise statistics now show correct totals for the 4-hour and 16-hour ranges;
+  they were too low before.
 - Distribution of goods stays read-only during replays, without a false discard warning
   after controller or mouse input. Help remains available.
 - Campaign previews show a clear fallback when artwork is unavailable; one missing or damaged
