@@ -783,6 +783,29 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   validation and diff checks pass. All current-head branch CI is required before tested handoff;
   Opus owns integration.
 
+## 2026-10-01 — Sol companion: Addon Settings controller policy regressions
+- Branch `sol/addon-controller-policies`, from origin/master 91676d5c8. Bounded to a new
+  `testMenuPadAddons.cpp`; no product behavior, shared input, presets or M3 view changes.
+- Eight physical-input cases enter the real Options and connected local lobby addon windows.
+  They cover Apply and persisted configuration, Abort, deliberate custom B/right-click refusal,
+  category/reset-scroll with pending edits, dropdown B cancellation, read-only and whitelist rules,
+  Default preserving locked non-default values, and exception-safe singleton-state restoration.
+- All/AllAndSaveToConfig use actual controller entry. None/WhitelistOnly instantiate the real
+  addon window with the connected lobby parent, explicitly isolating policy enforcement from
+  campaign Lua policy selection; campaign script routing is not claimed. Apply clears only the
+  local settings after its serialized message is queued, then requires the real server broadcast
+  to restore them, so the window's immediate local edit is insufficient to pass.
+- The fixture uses temporary userdata and references the real Settings/GameClient. Options is
+  destroyed before swapping the captured addon configuration back, including a deliberate throw.
+  Saved INI assertions parse the exact addon section/key/value. Both shoulder directions traverse
+  the visible controls to their endpoints and prove locked controls never receive focus.
+- Final own Debug/Werror build (max two jobs): all 8 cases / 465 assertions, then complete
+  `Test_splitscreen`: all 434 cases / 37,233 assertions. Deliberate missing-callback/unlocked-policy
+  counterchecks are recorded in the PR/checkpoint. Initial read-only gpt-6.1-sol review found setup
+  outside the cleanup guard, weak substring persistence and one-direction traversal; all tightened.
+  Save/Load preset flows remain a separate bounded task. Branch CI must all pass before handoff;
+  Opus owns review and integration. No primary checkout/build, master push or self-merge.
+
 ## 2026-09-30 — Sol companion: cancel Create Game from the controller
 - Branch `sol/create-game-controller-cancel`, based on master 91676d5c8 after PR #12 integration.
   Create Game uses the existing NoRightClick cancellation policy: B, Escape, Alt+W and the title
@@ -841,3 +864,16 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   music suite: 9 cases/245 assertions; full merged suite: 448 cases/37,765 assertions.
   Static validation, diff checks and agent TypeScript check pass. Fresh exact-head CI is required
   before tested handoff; PR #16 stays draft until every job, including Clang-Tidy, succeeds.
+## 2026-10-01 — Sol: reconcile Addon policy CI checkpoint
+- All 17 jobs passed at 9a0ced87f3c1cbb7b62fd9ebbd3423b0d6c59e39, but master integration
+  caused documentation conflicts. Merge master 69888fe49 and retain both notes and roadmap entries.
+- The Addon test source is byte-identical to the previous tested head. Reconfigure the test glob,
+  rebuild own Debug with at most two jobs, and rerun all 8 Addon cases/465 assertions successfully.
+  Agent typecheck passes. Await all jobs at the new merge head before handoff.
+
+## 2026-10-01 — Opus: integrated Sol PRs #16 (music playlist) and #18 (addon policies)
+- Both handoffs verified: Unit tests + Static analysis green at a3452632a (#16) and 392ed7aa5 (#18).
+  #16 production change reviewed: Up/Down mark the playlist changed only on an actual swap; opening
+  Add Track/Directory no longer does (confirmed input still sets it in Msg_Input). #18 is test-only.
+  Merged both; NOTES/ROADMAP conflicts resolved keeping both sides. Release build of Test_splitscreen
+  on the merged master passes; pushed.

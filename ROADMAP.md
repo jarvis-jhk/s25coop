@@ -143,7 +143,12 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   position now clamps safely when text/visible area changes, preventing out-of-range drawing.
   Music playlist track reordering now refreshes playback; cancelled additions keep playback intact.
   Controller regressions cover song activation, removal, confirmed/cancelled input, repeat/random
-  controls and saved files. Other paths remain open.
+  controls and saved files.
+  Addon Settings has eight physical-input regressions for Apply/Abort, category scroll reset,
+  dropdown cancellation, read-only and whitelist/default enforcement, exact saved config and
+  real local-server settings roundtrip (Sol companion, 2026-10-01). Policy-specific windows are
+  tested with the real lobby parent; campaign Lua routing and preset Save/Load remain separate.
+  Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
