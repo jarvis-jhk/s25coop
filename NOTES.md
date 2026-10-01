@@ -1057,3 +1057,10 @@ transport test is byte-identical to its pre-merge tested source. Reconfigure the
 GLOB and reuse own Debug cache at max2 jobs: affected seven cases/5,323 assertions and full
 merged 485 cases/51,297 assertions pass. Static validation and diff checks pass. CI on the
 resulting pushed head remains required before tested handoff.
+
+## 2026-10-01 — Opus: integrated Sol PR #22 (transport priorities controller roundtrip)
+- 17/17 CI green at 5bdde6e1d. Test-only (testMenuPadTransport.cpp, 7 cases): both leather
+  policies, all moves/bounds/Default/reopen/help, real world priorities, read-only replay. Reviewed:
+  no singleton constructed, server broadcast required for the leather setting, cleanup on both exits.
+  Merged onto master 0aff8c7cd (LocalGameFixture fallible-setup-first); Release Test_splitscreen
+  reconfigured: transport 7 cases/5,563 assertions and full 485 cases/52,570 assertions pass. Pushed.
