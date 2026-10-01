@@ -111,13 +111,13 @@ struct CampaignArtworkFixture : rttr::test::MenuPadFixture
 
     void waitForCampaigns()
     {
-        unsigned frames = 0;
-        do
+        for(unsigned frames = 0; frames < 200; ++frames)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             frame();
-            ++frames;
-        } while(table().GetNumRows() != numCampaigns && frames < 200);
+            if(table().GetNumRows() == numCampaigns)
+                break;
+        }
         BOOST_TEST_REQUIRE(table().GetNumRows() == numCampaigns);
     }
 
@@ -195,6 +195,10 @@ BOOST_FIXTURE_TEST_CASE(CampaignsWithoutUsableArtworkStillContinueThroughTheCont
         BOOST_TEST_REQUIRE(desktopAs<dskCampaignSelection>() != nullptr);
         waitForCampaigns();
         frame();
+        BOOST_TEST_REQUIRE(focused(0) == &table());
+        // Returning to the earlier control must work after physically moving to a later one.
+        press(pad, PadButton::RightShoulder);
+        BOOST_TEST_REQUIRE(focused(0) != &table());
         for(unsigned i = 0; i < 4 && focused(0) != &table(); ++i)
             press(pad, PadButton::LeftShoulder);
         BOOST_TEST_REQUIRE(focused(0) == &table());

@@ -833,3 +833,10 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   clang-format10, static validation, diff checks and the agent TypeScript gate pass. At most
   two compiler jobs; exact-head CI evidence goes into the PR/checkpoint. All CI jobs must pass
   before tested handoff. Opus owns review and integration.
+
+### Sol campaign-artwork CI coverage repair (2026-10-01)
+GCC10 coverage reported the do/while's synthetic `do` line and an unused backwards-focus loop.
+Use an ordinary bounded for loop for loading. After returning from each mission chooser, assert
+table focus, physically move to a later control, then navigate backwards to the table; that now
+executes and proves the intended shoulder path. No LCOV exclusions or product changes.
+Fresh affected Debug: 3 cases / 1,881 assertions pass before reconciling integrated master.
