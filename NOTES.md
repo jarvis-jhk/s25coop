@@ -809,3 +809,30 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Reviewed diffs (Create Game now NoRightClick: B/Escape/title close discard like Back; scrollbar clamps
   scroll_pos on range/page change). Merged both, combined CHANGELOG/ROADMAP/NOTES, rebuilt build/dev
   (Release): Test_splitscreen and Test_UI pass on merged master 39a64fa61. Pushed.
+
+## 2026-10-01 — Sol: in-game controller save regressions
+- Seven new cases enter Save through the actual Back system ring, Main selection and Options
+  controller buttons in a single-view local GameServer/GameClient game. Inputs enter through
+  the mock driver and dskGameInterface::UpdateInput; WindowManager handles physical mouse/key
+  input and window lifetime. The existing TestableGameInterface suppresses rendering, not input.
+  Text fields remain keyboard/mouse-only; pad focus is observed and never assigned by a test.
+- Saves are loaded with all game data and compared byte-for-byte against the actual running
+  world snapshot and exact GF. Cases cover a trimmed filename, keyboard Enter, pad row selection
+  and replacement at a later GF, empty/reserved-name warnings requiring acknowledgement even
+  after two B presses, B focus release then close, Escape/right-click close and re-entry, and
+  autosave browse/cancel/confirm without writing the pending filename. B cancellation preserves
+  an existing valid save. No product code change or overwrite-confirmation policy change.
+- Initialization and explicit desktop cleanup wrap the entire test body on normal/exceptional
+  exits; an executed throw probe verifies desktop destruction before backend teardown and
+  restoration of autosave/debug settings. Temporary userdata, no duplicate singleton. A method
+  named setup caused unintended Boost auto-initialization during development; beginGame avoids
+  that and keeps the observed desktop and saved backend on the same game instance.
+- A suppressed production SaveToFile call fails exactly the two saving cases at actual file
+  loading, with the five cancellation/settings/cleanup cases passing. Production is restored
+  before final validation. Exact gpt-6.1-sol read-only review tightened the warning test to two
+  B presses; final actual-source review reports no concrete findings.
+- Own GCC12 Debug/Werror build/debug, at most two compiler jobs: all seven cases pass
+  386 assertions; full Test_splitscreen passes all 446 cases and 37,906 assertions. CMake
+  reconfigured and new suite presence verified. clang-format10, static validation, diff checks
+  and the agent TypeScript gate pass. Branch CI evidence is recorded in the PR/checkpoint;
+  all jobs must pass before tested handoff. Opus owns review and integration.

@@ -140,8 +140,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   form also supports B/Escape/title close cancellation while keeping right-click inert, with
   validation, all pad/keyboard focus targets and real-loopback lobby regressions.
   Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
-  position now clamps safely when text/visible area changes, preventing out-of-range drawing. Other
-  paths remain open.
+  position now clamps safely when text/visible area changes, preventing out-of-range drawing.
+  In-game Save is exercised from the controller system menu through Options in a real local game:
+  saved world bytes, row selection/overwrite, keyboard submission, validation, cancellation and
+  autosave selection are covered. Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
