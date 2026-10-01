@@ -1014,3 +1014,37 @@ merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs r
   replays and keeps button clicks blocked there, while list selection may update the preview. #19 is
   test-only. NOTES/ROADMAP/CHANGELOG conflicts resolved keeping both sides, each Sol paragraph kept
   under its own heading. Release Test_splitscreen on the merged master passes (exit 0); pushed.
+
+
+## 2026-10-01 — Sol: military sliders, addon focus and replay edit rejection
+- Own bounded military-settings-controller slice starts at master 5af48a215. Eleven cases enter
+  the actual Back -> system ring -> Main selection -> Military path through driver input in a
+  singleton-backed loopback game. All four DEFENDER_BEHAVIOR/SEA_ATTACK visibility combinations
+  cover every visible slider at both bounds, hidden focus exclusion and values preserved,
+  Default/reopen, mouse +/- and periodic transmission while still open, and Help return.
+  Assertions inspect all eight settings in the actual world after a real command roundtrip;
+  the lobby also requires the server broadcast after resetting only its eagerly edited local copy.
+- Replay progress callbacks previously marked unsendable edits pending, so changed displays
+  remained until the timer and closing raised a false discard warning. Restore recorded values
+  immediately after replay progress input, and reject Default before mutating or marking state.
+  Help stays available. Recorded live edits, all physical replay input paths (pad steps, mouse
+  buttons, bar and wheel), close/reopen, recorded-value refresh and clean completion are proved.
+  Production changes are confined to iwMilitary; no shared adapter/router/view or fixture edits.
+- The complete initialization/body is guarded on both exits; an executed throw probe is reached
+  with the military window open, restores settings before fixture destruction and destroys the
+  desktop before backend teardown. No second singleton or coverage exclusions.
+- Original production runs all eleven cases: seven live/cleanup cases pass, all four replay
+  cases fail at intended UI/close assertions (715 failed assertions). Fixed Debug/Werror passes
+  eleven cases / 10,099 assertions. CMake reconfigured and new suite presence verified; own
+  build/debug cache with at most two jobs. Full-suite evidence recorded after its run below.
+- Read-only exact gpt-6.1-sol actual-source review: an apparent reversed SEA_ATTACK expectation
+  is disproved by AddonSeaAttack default status2 (disabled), status0 (enabled). The existing
+  LocalGameFixture constructor may throw while copying a map after registering singleton
+  references; it is unchanged and tracked separately with the primary lane. Final review finds
+  no concrete introduced/blocking issue. clang-format10, static validation, diff check and
+  agent TypeScript gate pass. Draft until all17 exact-head CI pass; Opus owns integration.
+Full own Debug Test_splitscreen passes all489 cases / 56,361 assertions on the fixed source.
+Additional executed negative control sends only default military values while the visual copy still
+accepts the edited values: all four addon-policy cases fail at the actual-world wait. Fixed source
+is restored byte-for-byte, rebuilt and rerun: all11 affected cases / 10,091 assertions pass. The full
+489-case run above used this identical fixed source. No unmatched-filter exit counts as evidence.

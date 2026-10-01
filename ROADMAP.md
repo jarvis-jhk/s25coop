@@ -139,6 +139,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   mouse and regular/custom-window regressions (Sol companion, 2026-09-30). The network Create Game
   form also supports B/Escape/title close cancellation while keeping right-click inert, with
   validation, all pad/keyboard focus targets and real-loopback lobby regressions.
+  Military sliders are covered through physical controller/mouse input with all four defender/harbor
+  addon visibility combinations, bounds, Default/reopen and real world settings after timer/close
+  transmission. Replay inputs preserve recorded values and close without a false discard warning;
+  clean replay completion and guarded fixture cleanup are exercised (Sol companion, 2026-10-01).
   Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
   position now clamps safely when text/visible area changes, preventing out-of-range drawing.
   In-game Save is exercised from the controller system menu through Options in a real local game:

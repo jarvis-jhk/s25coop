@@ -99,6 +99,13 @@ void iwMilitary::TransmitSettings()
 
 void iwMilitary::Msg_ProgressChange(const unsigned /*ctrl_id*/, const unsigned short /*position*/)
 {
+    if(GAMECLIENT.IsReplayModeOn())
+    {
+        // Progress controls apply input before notifying us. Restore the recorded values without
+        // leaving pending settings that would show a discard warning when this window closes.
+        UpdateSettings();
+        return;
+    }
     MarkSettingsChanged();
 }
 
@@ -137,6 +144,8 @@ void iwMilitary::Msg_ButtonClick(const unsigned ctrl_id)
         break;
         case ID_btDefault:
         {
+            if(GAMECLIENT.IsReplayModeOn())
+                return;
             UpdateSettings(GAMECLIENT.GetDefaultSettings(gwv.GetPlayerId()).military_settings);
             MarkSettingsChanged();
         }
