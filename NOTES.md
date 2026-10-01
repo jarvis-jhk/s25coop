@@ -1052,3 +1052,8 @@ merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs r
   replays and keeps button clicks blocked there, while list selection may update the preview. #19 is
   test-only. NOTES/ROADMAP/CHANGELOG conflicts resolved keeping both sides, each Sol paragraph kept
   under its own heading. Release Test_splitscreen on the merged master passes (exit 0); pushed.
+After integrating master 5af48a215 (PR19/20/21), both documentation sides are preserved and the
+transport test is byte-identical to its pre-merge tested source. Reconfigure the test-source
+GLOB and reuse own Debug cache at max2 jobs: affected seven cases/5,323 assertions and full
+merged 485 cases/51,297 assertions pass. Static validation and diff checks pass. CI on the
+resulting pushed head remains required before tested handoff.
