@@ -804,3 +804,8 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   tightened it to the exact old-bottom/new-maximum clamp and proved the maximum shrinks. No concrete
   product/lifetime/config-isolation issue found. No second singleton; fixture destructor string swap.
   All current-head branch CI is required before tested handoff; Opus owns integration.
+
+## 2026-10-01 — Opus: Sol PRs #15 and #17 integrated
+- Reviewed diffs (Create Game now NoRightClick: B/Escape/title close discard like Back; scrollbar clamps
+  scroll_pos on range/page change). Merged both, combined CHANGELOG/ROADMAP/NOTES, rebuilt build/dev
+  (Release): Test_splitscreen and Test_UI pass on merged master 39a64fa61. Pushed.
