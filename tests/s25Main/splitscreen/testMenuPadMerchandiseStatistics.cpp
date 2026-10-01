@@ -284,8 +284,11 @@ struct MerchandisePadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
             BOOST_TEST(actual[range].currentIndex == expected[range].currentIndex);
             BOOST_TEST(actual[range].counter == expected[range].counter);
             for(unsigned type = 0; type < goods.size(); ++type)
-                BOOST_TEST(actual[range].merchandiseData[type] == expected[range].merchandiseData[type],
-                           boost::test_tools::per_element());
+                // Boost's collection comparator calls std::begin on MultiArrayRef, whose
+                // missing noexcept declaration is rejected by GCC16's -Wnoexcept.
+                for(unsigned step = 0; step < NUM_STAT_STEPS; ++step)
+                    BOOST_TEST(actual[range].merchandiseData[type][step]
+                               == expected[range].merchandiseData[type][step]);
             for(const auto type : helpers::EnumRange<StatisticType>{})
                 BOOST_TEST(actual[range].data[type] == expected[range].data[type], boost::test_tools::per_element());
         }

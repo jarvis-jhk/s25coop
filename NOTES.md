@@ -1152,3 +1152,18 @@ Debug validation and all exact-head CI jobs are required at the resulting merge 
 Fresh merged full Debug/Werror: 509 cases /184,659 assertions; affected Merchandise: 5 cases /3,152 assertions, all pass.
 Static validation, diff checks and agent TypeScript gate pass; own test remains byte-identical.
 Await all17 fresh merge-head branch checks before tested handoff.
+
+## 2026-10-01 — Sol: repair GCC16 merchandise-history comparison
+- Exact-head CI at 4e4b67550badc6b62544238745af75ad1cf570ff failed the GCC16 Debug build:
+  Boost's per-element comparison calls std::begin on MultiArrayRef, whose begin() lacks
+  noexcept. GCC16 diagnoses that call under -Wnoexcept/Werror. This is a test compilation
+  failure, rather than an aggregation or gameplay regression.
+- Compare every merchandise-history bucket explicitly by range/type/index. All fourteen
+  goods and thirty buckets in all four ranges remain checked; no shared helper changes,
+  warning suppression, production edits or coverage exclusions. Standard-array comparisons
+  retain their existing per-element checks.
+- Own cached GCC12 Debug/Werror build/debug, at most two compiler jobs: all five affected
+  cases pass 11,350 assertions, including saved-history replay completion and reached
+  exceptional cleanup. clang-format10, static validation, diff checks and agent tsc pass.
+  A fresh exact-head complete CI gate is required before tested handoff.
+Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 assertions pass.
