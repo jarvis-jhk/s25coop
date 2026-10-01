@@ -288,7 +288,7 @@ BOOST_FIXTURE_TEST_CASE(BDisconnectsFromEveryFocusedLobbyControl, LobbyReturnFix
     finish();
 }
 
-BOOST_FIXTURE_TEST_CASE(BDoesNotBypassCreateGameOrProxyConfirmation, LobbyReturnFixture)
+BOOST_FIXTURE_TEST_CASE(BCancelsCreateGameButRequiresProxyConfirmation, LobbyReturnFixture)
 {
     for(const bool proxy : {false, true})
     {
@@ -303,11 +303,12 @@ BOOST_FIXTURE_TEST_CASE(BDoesNotBypassCreateGameOrProxyConfirmation, LobbyReturn
         else
             BOOST_TEST_REQUIRE(dynamic_cast<iwDirectIPCreate*>(overlay) != nullptr);
         press(pad, PadButton::B);
-        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == overlay);
-        expectLobby();
-        if(!proxy)
-            focusUntil(overlay->GetCtrl<ctrlButton>(8));
-        press(pad, PadButton::A);
+        if(proxy)
+        {
+            BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == overlay);
+            expectLobby();
+            press(pad, PadButton::A);
+        }
         BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         expectLobby();
         press(pad, PadButton::B);

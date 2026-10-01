@@ -3,6 +3,11 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Cancel the network Create Game form with controller B or Escape. The window's close button also
+  works, and cancelling keeps you in the network menu.
+
 ## 0.1.9
 
 - Choose the goods each player starts with: every row in the game lobby has a "Goods" button. "Default"
