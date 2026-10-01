@@ -28,7 +28,6 @@ private:
     PostCategory curCategory;
     std::vector<unsigned> curMsgIdxs;
     unsigned curMsgId;
-    unsigned lastMsgCt;
     const PostMsg* curMsg;
     bool lastHasMissionGoal;
 

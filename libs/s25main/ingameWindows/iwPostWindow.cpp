@@ -330,8 +330,7 @@ void iwPostWindow::SetMessageText(const std::string& message)
 void iwPostWindow::FilterMessages()
 {
     curMsgIdxs.clear();
-    lastMsgCt = postBox.GetNumMsgs();
-    for(unsigned i = 0; i < lastMsgCt; i++)
+    for(unsigned i = 0; i < postBox.GetNumMsgs(); i++)
     {
         if(showAll)
             curMsgIdxs.push_back(i);
@@ -347,33 +346,33 @@ void iwPostWindow::FilterMessages()
 
 bool iwPostWindow::ValidateMessages()
 {
-    if(lastMsgCt == postBox.GetNumMsgs() && GetMsg(curMsgId) == curMsg)
-        return true;
-    // Messages have changed -> Update filter
+    // A full inbox can evict and replace a letter without changing its size. Refresh
+    // the category mapping even then, before using it for navigation or deletion.
+    const auto previousIndices = curMsgIdxs;
     FilterMessages();
-    if(!curMsg)
+    if(previousIndices == curMsgIdxs && GetMsg(curMsgId) == curMsg)
+        return true;
+
+    if(curMsg)
     {
-        // No last message? Display oldest
-        curMsgId = 0;
-        DisplayPostMessage();
-        return false;
-    } else
-    {
-        // Message was either deleted or others were added and message was shifted
-        // So first search it, if not found we will display the next (newer) message
-        for(unsigned i = curMsgId; i > 0; i--)
+        // Keep a surviving selected letter at its new FILTERED index. Unrelated
+        // categories can shift its raw inbox index independently of this position.
+        for(unsigned i = 0; i < curMsgIdxs.size(); ++i)
         {
-            if(postBox.GetMsg(i - 1) == curMsg)
+            if(GetMsg(i) == curMsg)
             {
-                curMsgId = i - 1;
+                curMsgId = i;
                 DisplayPostMessage();
                 return true;
             }
         }
-        // Display next valid one
-        DisplayPostMessage();
-        return false;
-    }
+    } else
+        curMsgId = 0;
+
+    // The selected letter disappeared; use its next filtered neighbour (or the
+    // last remaining letter). DisplayPostMessage also handles an empty category.
+    DisplayPostMessage();
+    return false;
 }
 
 const PostMsg* iwPostWindow::GetMsg(unsigned id) const
