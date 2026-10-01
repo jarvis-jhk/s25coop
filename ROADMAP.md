@@ -157,6 +157,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   Transport priorities now have seven physical-input/backend/replay regressions with leather on/off:
   selection, all move buttons and boundaries, Default/reopen, mouse selection and Help return,
   every actual ware priority, recorded updates and read-only replay policies (Sol companion, 2026-10-01).
+  General statistics now has physical-input, actual-history and replay coverage for all
+  categories/time ranges, ally/own/everyone visibility and player toggles, Help and default
+  selection on reopen. Empty scaled charts keep a neutral 0..1 range; populated scaling and
+  all player/time histories remain intact (Sol companion, 2026-10-01).
   Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.

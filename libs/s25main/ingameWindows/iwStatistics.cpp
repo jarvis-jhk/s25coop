@@ -21,6 +21,7 @@
 #include "world/GameWorldViewer.h"
 #include "gameData/PortraitConsts.h"
 #include "gameData/const_gui_ids.h"
+#include <algorithm>
 #include <limits>
 
 namespace {
@@ -341,6 +342,10 @@ void iwStatistics::DrawStatistic(StatisticType type)
                 min = std::min(min, stat.data[type][idx]);
         }
     }
+
+    // An empty chart has no sampled minimum; keep its axis at the neutral 0..1 range.
+    if(std::none_of(showStatistic.begin(), showStatistic.end(), [](const bool shown) { return shown; }))
+        min = 0;
 
     if(max == min)
     {
