@@ -43,8 +43,6 @@ struct SavePadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
     const bool savedDebugMode = SETTINGS.global.debugMode;
     const boost::filesystem::path saveDir = RTTRCONFIG.ExpandPath(s25::folders::save);
 
-    ~SavePadFixture() { SETTINGS.global.debugMode = savedDebugMode; }
-
     template<class F>
     void run(F&& body)
     {
@@ -69,6 +67,7 @@ struct SavePadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
             world().SetGameInterface(nullptr);
         dsk = nullptr;
         window = nullptr;
+        SETTINGS.global.debugMode = savedDebugMode;
     }
 
     void beginGame()
@@ -371,6 +370,7 @@ BOOST_AUTO_TEST_CASE(ExceptionalCleanupDestroysTheDesktopBeforeTheBackend)
                           std::runtime_error);
         BOOST_TEST(dynamic_cast<dskGameInterface*>(WINDOWMANAGER.GetCurrentDesktop()) == nullptr);
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        BOOST_TEST(SETTINGS.global.debugMode == debugBefore);
     }
     BOOST_TEST(SETTINGS.interface.autosaveInterval == autosaveBefore);
     BOOST_TEST(SETTINGS.global.debugMode == debugBefore);

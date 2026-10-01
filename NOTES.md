@@ -915,3 +915,10 @@ and agent TypeScript gate pass. All 17 CI jobs on the repaired head remain requi
 After reconciling integrated master abd4cd961, the repaired save test is unchanged, and both
 notes/roadmap sides are preserved. Fresh affected Debug7 cases / 392 assertions and complete
 merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs remain required.
+
+## 2026-10-01 — Sol: save fixture explicit settings cleanup
+- Remove singleton access from SavePadFixture's destructor. Restore debugMode in the existing
+  cleanup path used on both successful and exceptional exits; assert the exceptional restoration
+  while the fixture still exists. No game behavior changes or coverage exclusions.
+- Own Debug/Werror save suite: 7 cases/393 assertions pass; formatting, static validation,
+  diff checks and agent TypeScript gate pass. Await all17 CI jobs on this new head before handoff.
