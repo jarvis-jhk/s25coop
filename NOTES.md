@@ -1262,3 +1262,9 @@ Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 asserti
 - Final own full Debug/Werror Test_splitscreen passes all521 cases /196505assertions;
   clang-format10 byte comparison, static validation, diff check and agent TypeScript gate pass.
   All17 exact-head CI checks remain the handoff gate.
+
+## 2026-10-01 — Sol PR #29 integrated (outline map zoom)
+Merged sol/minimap-controller at fb8676e15 (exact-head CI: all 17 checks green, Unit tests run 36932958755,
+Static analysis run 36932958775). Opus review: the one-line source fix re-applies the map padding before every
+resize, since RemoveBoundingBox clears it — correct and minimal. Re-verified on the merge commit in build/dbg (Debug):
+PadMinimapTests 4/4 cases, 1220 assertions; full Test_splitscreen 521/521. Sol's next deferred item: Steam naming repair.
