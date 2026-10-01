@@ -184,6 +184,23 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
   gamepad support are done).
 
+## M3.5 — Linux handhelds via PortMaster (Jan, 2026-10-01)
+
+Automatic builds that install through [PortMaster](https://portmaster.games/), first target Jan's
+Anbernic RG 35XX H (Allwinner H700, aarch64, Mali-G31 with OpenGL ES only, 640×480, stock OS or
+muOS/Knulli/ROCKNIX). Only after the M3 controller UI, which a handheld without mouse depends on.
+
+- ☐ 0 Feasibility on the target: RttR draws with desktop OpenGL; check whether PortMaster's gl4es
+  carries it on the H700 at playable speed, or whether a GLES renderer path is needed. Decide before
+  building anything else; write the result to doc/.
+- ☐ 1 CI job: aarch64 build (PortMaster's build-environment image / compatible glibc), packaged as a
+  PortMaster port (`port.json`, launcher `.sh` using `control.txt`, gl4es if needed), attached to every release.
+- ☐ 2 640×480 layout: menus and in-game windows usable at that size (RttR's minimum is 800×600), Deck-style
+  scale detection extended to small screens.
+- ☐ 3 Game data: the port ships no S2 files; the launcher finds `DATA`/`GFX` the player copied into the port
+  folder (or a GOG installer, like the Deck installer) and shows a clear help screen otherwise.
+- ☐ 4 Test on Jan's RG 35XX H, then offer the port to the PortMaster repository.
+
 ## M4 — More campaigns
 
 In order: Die Rückkehr der Wikinger (complete, Spikeone/RttR_Campaigns), Roman Campaign II
