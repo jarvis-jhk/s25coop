@@ -120,7 +120,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   Merchandise statistics has five physical-input regressions for all fourteen ware toggles,
   clear, all four time ranges and older peaks, Help/reopen, unchanged history/inventory and
   save-backed real replay completion at the exact final GF/checksum (Sol companion; exact-head
-  CI required before handoff). A separate coarse aggregation defect is delegated to the primary lane.
+  CI required before handoff). The separate coarse aggregation defect is fixed on master and
+  integrated into the companion branch.
   Goods distribution now rejects replay pad/wheel/bar edits immediately without a false discard
   warning and keeps Help available. Nineteen real-input/real-world tests cover all eight
   wine/leather/charburner policies, all tabs and bounds, Default/reopen, mouse/timer transmission

@@ -1143,3 +1143,12 @@ validation, diff checks and the agent TypeScript gate pass. Exact-head CI eviden
 Final restored full Debug/Werror Test_splitscreen passes all509 cases /185,027 assertions;
 its merchandise suite passes all5 cases /3,173 assertions. Formatting/static validation/diff
 checks and the agent TypeScript gate pass. Exact-head CI evidence remains pending in the PR.
+
+After Opus fixed coarse merchandise aggregation on master 4a73e073048ed2095878d6199e8b588a507cd2ce,
+merge it into this branch. The five-case physical-input/replay test is byte-for-byte unchanged;
+its actual-history assertions remain valid for corrected 1/4/16/64 interval totals. The
+primary regression MerchandiseStatistic_CoarseBucketsSumFinerBuckets is retained. Fresh own
+Debug validation and all exact-head CI jobs are required at the resulting merge head.
+Fresh merged full Debug/Werror: 509 cases /184,659 assertions; affected Merchandise: 5 cases /3,152 assertions, all pass.
+Static validation, diff checks and agent TypeScript gate pass; own test remains byte-identical.
+Await all17 fresh merge-head branch checks before tested handoff.
