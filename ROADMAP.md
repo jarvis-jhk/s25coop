@@ -141,6 +141,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   validation, all pad/keyboard focus targets and real-loopback lobby regressions.
   Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
   position now clamps safely when text/visible area changes, preventing out-of-range drawing.
+  In-game Save is exercised from the controller system menu through Options in a real local game:
+  saved world bytes, row selection/overwrite, keyboard submission, validation, cancellation and
+  autosave selection are covered.
   Music playlist track reordering now refreshes playback; cancelled additions keep playback intact.
   Controller regressions cover song activation, removal, confirmed/cancelled input, repeat/random
   controls and saved files.
