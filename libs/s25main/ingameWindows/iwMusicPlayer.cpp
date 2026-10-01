@@ -282,12 +282,10 @@ void iwMusicPlayer::Msg_ButtonClick(const unsigned ctrl_id)
         break;
         case ID_btAddTrack:
             WINDOWMANAGER.ToggleWindow(std::make_unique<InputWindow>(*this, ID_wndAddTrack, _("Add track")));
-            changed = true;
             break;
         case ID_btAddTrackDir:
             WINDOWMANAGER.ToggleWindow(
               std::make_unique<InputWindow>(*this, ID_wndAddTrackDir, _("Add directory of tracks")));
-            changed = true;
             break;
         case ID_btRemoveTrack:
         {
@@ -305,7 +303,10 @@ void iwMusicPlayer::Msg_ButtonClick(const unsigned ctrl_id)
             const auto& selection = GetCtrl<ctrlList>(ID_lstSongs)->GetSelection();
 
             if(selection && *selection > 0u)
+            {
                 GetCtrl<ctrlList>(ID_lstSongs)->Swap(*selection - 1u, *selection);
+                changed = true;
+            }
         }
         break;
         case ID_btDown:
@@ -313,7 +314,10 @@ void iwMusicPlayer::Msg_ButtonClick(const unsigned ctrl_id)
             const auto& selection = GetCtrl<ctrlList>(ID_lstSongs)->GetSelection();
 
             if(selection && *selection < GetCtrl<ctrlList>(ID_lstSongs)->GetNumLines() - 1u)
+            {
                 GetCtrl<ctrlList>(ID_lstSongs)->Swap(*selection + 1u, *selection);
+                changed = true;
+            }
         }
         break;
         case ID_btDecRepeat:

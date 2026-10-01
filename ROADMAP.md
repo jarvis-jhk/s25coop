@@ -140,10 +140,18 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   form also supports B/Escape/title close cancellation while keeping right-click inert, with
   validation, all pad/keyboard focus targets and real-loopback lobby regressions.
   Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
-  position now clamps safely when text/visible area changes, preventing out-of-range drawing. Other
-  paths remain open. Construction-order list/dropdown and reorder/default buttons now have physical-input,
+  position now clamps safely when text/visible area changes, preventing out-of-range drawing.
+  Construction-order list/dropdown and reorder/default buttons now have physical-input,
   real-world command and generated-replay coverage for all eight wine/leather/charburner combinations;
   Default retains every active building, and replay settings stay read-only with current previews.
+  Music playlist track reordering now refreshes playback; cancelled additions keep playback intact.
+  Controller regressions cover song activation, removal, confirmed/cancelled input, repeat/random
+  controls and saved files.
+  Addon Settings has eight physical-input regressions for Apply/Abort, category scroll reset,
+  dropdown cancellation, read-only and whitelist/default enforcement, exact saved config and
+  real local-server settings roundtrip (Sol companion, 2026-10-01). Policy-specific windows are
+  tested with the real lobby parent; campaign Lua routing and preset Save/Load remain separate.
+  Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.

@@ -7,6 +7,8 @@ and the game will show the new sections after an update.
 
 - Building sequence: Default now keeps all buildings enabled by wine, leather and charcoal addons.
   Replay sequence settings remain read-only, while building previews follow the selected row and recorded changes.
+- Moving tracks up or down in the music player now updates playback when you close the window.
+  Cancelling Add Track or Add Directory keeps playback as it was.
 
 - Cancel the network Create Game form with controller B or Escape. The window's close button also
   works, and cancelling keeps you in the network menu.
