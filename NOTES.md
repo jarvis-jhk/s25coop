@@ -1167,3 +1167,14 @@ Await all17 fresh merge-head branch checks before tested handoff.
   exceptional cleanup. clang-format10, static validation, diff checks and agent tsc pass.
   A fresh exact-head complete CI gate is required before tested handoff.
 Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 assertions pass.
+
+## 2026-10-01 — Primary: review and integrate Sol PR #27
+- Verified all 17 successful CI checks at exact head 84fb0114e59d9a1bd8559566c0726277be982a80:
+  [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/36900785266),
+  [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/36900785439).
+- Test-only slice (one new suite + docs). Reviewed fixture lifecycle (beginGame, cleanup before
+  settings restore, expectRestored before destruction), real-history seeding against the fixed
+  1/4/16/64 aggregation (4a73e0730) and the save-backed replay oracle. No blocking findings.
+- Conflict-free merge onto 4a73e0730; CMake reconfigured for the new test GLOB. Own Release build,
+  two jobs: merchandise suite 5/5; complete Test_splitscreen 509/509 cases, 193,130 assertions.
+  No player-facing changelog entry (the aggregation fix is a separate master commit).
