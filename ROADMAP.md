@@ -136,7 +136,12 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   and physical-input regressions cover all seven focusable controls, window/confirmation precedence,
   mouse/A/keyboard behavior and B bursts stopping at Multiplayer (Sol companion, 2026-09-30).
   Create game/map selection handles controller B through its original Back route, with four-context,
-  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
+  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). The network Create Game
+  form also supports B/Escape/title close cancellation while keeping right-click inert, with
+  validation, all pad/keyboard focus targets and real-loopback lobby regressions.
+  Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
+  position now clamps safely when text/visible area changes, preventing out-of-range drawing. Other
+  paths remain open.
   Addon Settings has eight physical-input regressions for Apply/Abort, category scroll reset,
   dropdown cancellation, read-only and whitelist/default enforcement, exact saved config and
   real local-server settings roundtrip (Sol companion, 2026-10-01). Policy-specific windows are
