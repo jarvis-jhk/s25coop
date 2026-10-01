@@ -1014,3 +1014,36 @@ merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs r
   replays and keeps button clicks blocked there, while list selection may update the preview. #19 is
   test-only. NOTES/ROADMAP/CHANGELOG conflicts resolved keeping both sides, each Sol paragraph kept
   under its own heading. Release Test_splitscreen on the merged master passes (exit 0); pushed.
+
+## 2026-10-01 — Sol: tool production controller and replay safety
+- Bounded tool-production-controller slice starts at master 0aff8c7cd. Eight cases enter the
+  actual Back -> system ring -> Main selection -> Tools path through driver input in a real
+  singleton-backed loopback game. Both TOOL_ORDERING policies cover all twelve priority
+  sliders, lower/upper bounds, addon-specific focus, Default/reopen, mouse +/- and Help/Back.
+  Ordering covers all twelve 0..99 bounds, mixed deltas, Zero production, periodic transmission
+  and no duplicate orders on a second timer/close. Every priority and order is checked in the
+  actual world after a real command roundtrip; the addon setup requires a real server broadcast.
+- Replay controller/bar/wheel input could alter displayed priorities and mark unsendable changes
+  pending, causing a false discard warning. Refresh recorded settings immediately on replay
+  progress callbacks, and keep Help available while rejecting edit buttons. Two generated real
+  recordings exercise all physical edit paths, order buttons, Default/Zero, close/reopen, Help,
+  recorded priorities/orders and clean completion with no error/desync. Replay reads actual
+  orders; only live play must converge its speculative visual orders to that backend count.
+- Initialization and test bodies are guarded on both exits; a reached-probe assertion proves
+  cleanup runs after deliberately throwing with Tools open. Temporary settings are restored
+  before fixture destruction, and desktop/windows are destroyed before stopping the backend.
+  No second singleton, shared fixture/router/adapter/view changes or coverage exclusions.
+- Original production executes all eight cases: six live/cleanup cases pass, both replay cases
+  fail at intended UI/close assertions (729 failures). Default-only/no-order command mutation
+  fails both executed priority cases and the executed order case at the actual-world wait,
+  despite changed UI/visual settings. Restoring only the old replay Help guard fails both
+  replay cases at the intended Help assertion. Final production is restored byte-for-byte,
+  rebuilt, and all eight affected cases pass again. No unmatched filter counts as evidence.
+- Exact gpt-6.1-sol read-only review of complete final source snapshots plus existing fixture,
+  adapter and order-application dependencies finds no blocking issue. Local shell access in the
+  review sandbox is unavailable, so source was supplied on stdin. Runtime evidence is separate.
+  CMake reconfigured and suite presence verified; own build/debug cache with at most two jobs.
+  Draft checkpoint until all 17 exact-head branch CI jobs pass; Opus owns review/integration.
+Full own GCC12 Debug/Werror Test_splitscreen passes all486 cases / 64,073 assertions.
+Restored affected Debug suite: 8 cases / 18,168 assertions pass. clang-format10, static validation,
+diff checks and the agent TypeScript gate pass. CI evidence will be attached to the exact pushed head.

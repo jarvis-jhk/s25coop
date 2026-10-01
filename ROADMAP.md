@@ -154,6 +154,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   dropdown cancellation, read-only and whitelist/default enforcement, exact saved config and
   real local-server settings roundtrip (Sol companion, 2026-10-01). Policy-specific windows are
   tested with the real lobby parent; campaign Lua routing and preset Save/Load remain separate.
+  Tool production has physical-input/real-world coverage with ordering on/off, all slider and
+  order bounds, Default/Zero, timer transmission, Help and generated replay browsing. Replay
+  progress input now preserves recorded priorities and closes without a false discard warning;
+  Help stays available (Sol companion, 2026-10-01).
   Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
