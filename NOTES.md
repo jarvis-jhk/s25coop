@@ -1215,3 +1215,16 @@ Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 asserti
   Test_splitscreen passes all517 cases /195345 assertions (own build/debug, at most2 jobs).
   clang-format10, static validation, diff checks and the agent TypeScript gate pass. Require
   all17 checks on the resulting branch head before marking ready or handing off to Opus.
+
+## 2026-10-01 — Sol: execute post-office system-ring navigation helper
+- Exact-head GCC10 coverage at 422690babd20fd1cbf4971c935c91bb7e3897b5e ran all
+  unit tests successfully but rejected the new Post fixture's unexecuted D-pad helper line.
+  Entry already moved the ring onto Post before calling focusUntil, bypassing its loop.
+- Remove that redundant pre-navigation step: every real Post entry now navigates the system
+  ring through focusUntil and retains the physical target/root assertions. No product change,
+  coverage exclusions or suppressed diagnostics. Fresh affected/full Debug evidence and all17
+  exact-head CI are required before ready/handoff; current master remains bd0fcb0dd.
+- Fresh own GCC12 Debug/Werror validation, max2 jobs: affected Post suite all8 cases /
+  2568 assertions pass; full Test_splitscreen all517 cases pass. Formatting/static validation,
+  diff checks and agent TypeScript gate pass. Existing executed original-production negative
+  control and read-only review remain applicable; assertions and production are unchanged.

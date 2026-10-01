@@ -121,7 +121,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   eviction, including same-count category replacements. Eight physical-input regressions cover
   all four filters, timeline bounds, correct delete targets, mouse/keyboard, empty/incoming mail,
   Help/mission-goal/position links, unchanged world/inventory and explicit exceptional cleanup
-  (Sol companion; local Debug and exact-head CI evidence tracked in its PR).
+  (Sol companion; local Debug complete; exact-head CI, including executed ring-helper coverage,
+  required before handoff).
   Merchandise statistics has five physical-input regressions for all fourteen ware toggles,
   clear, all four time ranges and older peaks, Help/reopen, unchanged history/inventory and
   save-backed real replay completion at the exact final GF/checksum (Sol companion; exact-head

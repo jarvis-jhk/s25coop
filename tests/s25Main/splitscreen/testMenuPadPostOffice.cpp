@@ -169,7 +169,6 @@ struct PostPadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
         press(PadButton::Back);
         auto* system = dynamic_cast<iwPadSystemMenu*>(WINDOWMANAGER.GetTopMostWindow());
         BOOST_TEST_REQUIRE(system != nullptr);
-        press(PadButton::DpadRight);
         focusUntil(system->GetCtrl<ctrlTextButton>(iwPadSystemMenu::ID_POST));
         press(PadButton::A);
         window = dynamic_cast<iwPostWindow*>(WINDOWMANAGER.GetTopMostWindow());
