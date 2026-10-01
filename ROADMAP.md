@@ -144,6 +144,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   In-game Save is exercised from the controller system menu through Options in a real local game:
   saved world bytes, row selection/overwrite, keyboard submission, validation, cancellation and
   autosave selection are covered.
+  Construction-order list/dropdown and reorder/default buttons now have physical-input,
+  real-world command and generated-replay coverage for all eight wine/leather/charburner combinations;
+  Default retains every active building, and replay settings stay read-only with current previews.
   Music playlist track reordering now refreshes playback; cancelled additions keep playback intact.
   Controller regressions cover song activation, removal, confirmed/cancelled input, repeat/random
   controls and saved files.

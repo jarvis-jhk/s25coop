@@ -927,6 +927,53 @@ are byte-for-byte unchanged. Both documentation sides retained. Fresh Debug affe
 1,881 assertions; complete merged Debug: 459 cases / 40,103 assertions pass. All17 checks must
 pass at the resulting merge head before tested handoff.
 
+
+## 2026-10-01 — Sol: construction-order controls and addon-safe defaults
+
+Claimed `build-order-controller`, starting from master 69888fe49 in Sol's own checkout; no shared
+adapter/router, view or primary-checkout edits. Physical Back -> system ring -> Main selection ->
+Building sequence enters the real window in a singleton-backed loopback game. Twelve cases cover
+all eight wine/leather/charburner combinations, list/preview selection, Up/Down/Top/Bottom and
+boundary moves, Default and reopen, custom-order browse/cancel/confirm and both flag directions.
+They inspect the full build-order array and flag in the actual world after at least two NWFs,
+including cancellation, rather than relying on the visual copy. Lobby setup also restores only
+its eagerly changed local copy and awaits the real server broadcast, then checks the running GGS.
+
+Default previously refilled exactly 31 rows, truncating enabled addon buildings. It now iterates
+all active entries. Replay's mode dropdown is read-only and its callback also rejects mutation;
+list browsing updates only the preview, including after recorded order changes. A generated real
+recording proves replay completion without desync, physical mouse/controller reorder rejection,
+readonly dropdown focus exclusion and actual recorded world/UI updates. An explicit idempotent
+Loader building-placeholder seam supplies distinct textures without original S2 files. Its header
+required a one-time wider Debug rebuild, kept at two jobs and in Sol's cache.
+
+The whole body, including initialization, is guarded on normal and exceptional exits; an executed
+throw probe proves window/desktop destruction before backend shutdown and settings restoration.
+Exact gpt-6.1-sol read-only review found desktop activation replacing the backend observer and
+missing replay input attempts: observer restored after activation/every input frame, mouse button
+attempts and full shoulder traversal added. Final actual-source review found no concrete issues.
+
+Old production was compiled before the fix: all seven addon-enabled Default cases and the replay
+case fail (8/12, 21 assertions); classic Default, all moves, cancellation and cleanup controls pass.
+Final production rebuilt: affected Debug 12 cases / 5,515 assertions pass. Complete Debug Test_splitscreen: 451 cases / 43,067 assertions pass.
+CMake reconfigured and new suite presence verified. clang-format10, static validation, diff checks
+and the agent TypeScript gate pass. Draft checkpoint until every exact-head CI job passes; Opus
+owns review/integration, and only fully tested PRs enter completedPRs.
+After reconciling master abd4cd961, all four construction-order/placeholder source and test files
+are unchanged; both documentation sides are preserved. Fresh affected Debug12 cases / 5,089
+assertions and complete merged Debug468 cases / 43,585 assertions pass. The assertion count
+varies with GUI/initialization paths; case counts and all actual world/replay assertions pass.
+All17 fresh checks on the resulting merge head are required before tested handoff.
+
+## 2026-10-01 — Sol: build-order fixture explicit settings cleanup
+- Remove singleton access from BuildOrderPadFixture's destructor. Restore debugMode through
+  explicit cleanup on both exits; verify restoration before fixture destruction on normal and
+  exceptional paths. Replay's in-body transition tears down only the desktop, retaining the
+  temporary debug setting until final cleanup. No product changes or coverage exclusions.
+- Own Debug/Werror build-order suite: 12 cases/5,121 assertions pass, including real replay
+  input policies and exception cleanup. Formatting, static validation, diff checks and agent
+  TypeScript gate pass. Await all17 new-head CI jobs before handoff.
+
 ## 2026-10-01 — Sol: music playlist Clang-Tidy repair
 - Mark the fixture's tracks() accessor const; this resolves the CI readability warning without
   changing playlist behavior. Merge master 69888fe49, retaining both sides of documentation conflicts.
