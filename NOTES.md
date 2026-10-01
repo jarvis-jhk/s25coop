@@ -809,3 +809,35 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
 - Reviewed diffs (Create Game now NoRightClick: B/Escape/title close discard like Back; scrollbar clamps
   scroll_pos on range/page change). Merged both, combined CHANGELOG/ROADMAP/NOTES, rebuilt build/dev
   (Release): Test_splitscreen and Test_UI pass on merged master 39a64fa61. Pushed.
+
+## 2026-10-01 — Sol: construction-order controls and addon-safe defaults
+
+Claimed `build-order-controller`, starting from master 69888fe49 in Sol's own checkout; no shared
+adapter/router, view or primary-checkout edits. Physical Back -> system ring -> Main selection ->
+Building sequence enters the real window in a singleton-backed loopback game. Twelve cases cover
+all eight wine/leather/charburner combinations, list/preview selection, Up/Down/Top/Bottom and
+boundary moves, Default and reopen, custom-order browse/cancel/confirm and both flag directions.
+They inspect the full build-order array and flag in the actual world after at least two NWFs,
+including cancellation, rather than relying on the visual copy. Lobby setup also restores only
+its eagerly changed local copy and awaits the real server broadcast, then checks the running GGS.
+
+Default previously refilled exactly 31 rows, truncating enabled addon buildings. It now iterates
+all active entries. Replay's mode dropdown is read-only and its callback also rejects mutation;
+list browsing updates only the preview, including after recorded order changes. A generated real
+recording proves replay completion without desync, physical mouse/controller reorder rejection,
+readonly dropdown focus exclusion and actual recorded world/UI updates. An explicit idempotent
+Loader building-placeholder seam supplies distinct textures without original S2 files. Its header
+required a one-time wider Debug rebuild, kept at two jobs and in Sol's cache.
+
+The whole body, including initialization, is guarded on normal and exceptional exits; an executed
+throw probe proves window/desktop destruction before backend shutdown and settings restoration.
+Exact gpt-6.1-sol read-only review found desktop activation replacing the backend observer and
+missing replay input attempts: observer restored after activation/every input frame, mouse button
+attempts and full shoulder traversal added. Final actual-source review found no concrete issues.
+
+Old production was compiled before the fix: all seven addon-enabled Default cases and the replay
+case fail (8/12, 21 assertions); classic Default, all moves, cancellation and cleanup controls pass.
+Final production rebuilt: affected Debug 12 cases / 5,515 assertions pass. Complete Debug Test_splitscreen: 451 cases / 43,067 assertions pass.
+CMake reconfigured and new suite presence verified. clang-format10, static validation, diff checks
+and the agent TypeScript gate pass. Draft checkpoint until every exact-head CI job passes; Opus
+owns review/integration, and only fully tested PRs enter completedPRs.

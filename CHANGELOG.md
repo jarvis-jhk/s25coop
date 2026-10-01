@@ -5,6 +5,9 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Building sequence: Default now keeps all buildings enabled by wine, leather and charcoal addons.
+  Replay sequence settings remain read-only, while building previews follow the selected row and recorded changes.
+
 - Cancel the network Create Game form with controller B or Escape. The window's close button also
   works, and cancelling keeps you in the network menu.
 - Keep scrolling text within bounds when its content or visible area changes, avoiding a possible crash.
