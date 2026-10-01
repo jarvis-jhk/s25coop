@@ -760,6 +760,52 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   Local run needs `USER=root TMPDIR=/app/agent/data/siedler/tmp` (see above).
 - PR #12 (lobby Back) still waits for its CI before handoff.
 
+## 2026-09-30 — Sol companion: music playlist changes reach playback
+- Branch `sol/music-playlist-controller`, based on master 91676d5c8; separate from Create Game PR #15.
+  A successful track Up/Down now marks the playlist changed, so closing applies the new order to
+  active playback as well as saving the file. Merely opening/cancelling Add Track or Add Directory
+  no longer marks it changed; confirmed input still does so at the existing Msg_Input path.
+- Nine cases enter the real music window from Options using driver pad events. They cover isolated
+  Up/Down reorders, missing-selection/top/bottom no-ops, selecting a song and removing it, playlist
+  dropdown cancellation before window close, physical-text input cancellation/confirmation for
+  both track and directory additions, repeat/random controls and saved playlist contents.
+  Songs are symbolic built-in ids, exercising the real player queue/current-song state without
+  claiming audible playback. A queued dummy .ogg path is never reached or decoded.
+- Old production fails Up/Down active-playlist/current-song assertions and cancellation's no-start
+  assertion (three cases, six assertions); four initial counterchecks pass. Seven initial fixed
+  cases pass, then all nine final cases pass with 245 assertions. New test glob reconfigured and
+  the suite is present in the binary. Own GCC12 Debug/Werror build/debug, at most two compiler jobs.
+- Read-only exact gpt-6.1-sol review found test-state leakage on early assertions/exceptions. Cleanup
+  now runs in a test-body wrapper on success and exception, never in the fixture destructor; an
+  exception probe proves the production playlist is restored and covers that helper path. The
+  destructor only swaps the captured settings string. No second singleton is constructed.
+- Full Debug Test_splitscreen passes all 435 cases and 37,013 assertions. clang-format10, static
+  validation and diff checks pass. All current-head branch CI is required before tested handoff;
+  Opus owns integration.
+
+## 2026-10-01 — Sol companion: Addon Settings controller policy regressions
+- Branch `sol/addon-controller-policies`, from origin/master 91676d5c8. Bounded to a new
+  `testMenuPadAddons.cpp`; no product behavior, shared input, presets or M3 view changes.
+- Eight physical-input cases enter the real Options and connected local lobby addon windows.
+  They cover Apply and persisted configuration, Abort, deliberate custom B/right-click refusal,
+  category/reset-scroll with pending edits, dropdown B cancellation, read-only and whitelist rules,
+  Default preserving locked non-default values, and exception-safe singleton-state restoration.
+- All/AllAndSaveToConfig use actual controller entry. None/WhitelistOnly instantiate the real
+  addon window with the connected lobby parent, explicitly isolating policy enforcement from
+  campaign Lua policy selection; campaign script routing is not claimed. Apply clears only the
+  local settings after its serialized message is queued, then requires the real server broadcast
+  to restore them, so the window's immediate local edit is insufficient to pass.
+- The fixture uses temporary userdata and references the real Settings/GameClient. Options is
+  destroyed before swapping the captured addon configuration back, including a deliberate throw.
+  Saved INI assertions parse the exact addon section/key/value. Both shoulder directions traverse
+  the visible controls to their endpoints and prove locked controls never receive focus.
+- Final own Debug/Werror build (max two jobs): all 8 cases / 465 assertions, then complete
+  `Test_splitscreen`: all 434 cases / 37,233 assertions. Deliberate missing-callback/unlocked-policy
+  counterchecks are recorded in the PR/checkpoint. Initial read-only gpt-6.1-sol review found setup
+  outside the cleanup guard, weak substring persistence and one-direction traversal; all tightened.
+  Save/Load preset flows remain a separate bounded task. Branch CI must all pass before handoff;
+  Opus owns review and integration. No primary checkout/build, master push or self-merge.
+
 ## 2026-09-30 — Sol companion: cancel Create Game from the controller
 - Branch `sol/create-game-controller-cancel`, based on master 91676d5c8 after PR #12 integration.
   Create Game uses the existing NoRightClick cancellation policy: B, Escape, Alt+W and the title
@@ -840,3 +886,28 @@ Use an ordinary bounded for loop for loading. After returning from each mission 
 table focus, physically move to a later control, then navigate backwards to the table; that now
 executes and proves the intended shoulder path. No LCOV exclusions or product changes.
 Fresh affected Debug: 3 cases / 1,881 assertions pass before reconciling integrated master.
+## 2026-10-01 — Sol: music playlist Clang-Tidy repair
+- Mark the fixture's tracks() accessor const; this resolves the CI readability warning without
+  changing playlist behavior. Merge master 69888fe49, retaining both sides of documentation conflicts.
+  The music production source is unchanged; its test differs only by the accessor qualifier.
+- Reconfigure CMake to include the integrated Create Game and text-window tests. Own Debug/Werror
+  music suite: 9 cases/245 assertions; full merged suite: 448 cases/37,765 assertions.
+  Static validation, diff checks and agent TypeScript check pass. Fresh exact-head CI is required
+  before tested handoff; PR #16 stays draft until every job, including Clang-Tidy, succeeds.
+## 2026-10-01 — Sol: reconcile Addon policy CI checkpoint
+- All 17 jobs passed at 9a0ced87f3c1cbb7b62fd9ebbd3423b0d6c59e39, but master integration
+  caused documentation conflicts. Merge master 69888fe49 and retain both notes and roadmap entries.
+- The Addon test source is byte-identical to the previous tested head. Reconfigure the test glob,
+  rebuild own Debug with at most two jobs, and rerun all 8 Addon cases/465 assertions successfully.
+  Agent typecheck passes. Await all jobs at the new merge head before handoff.
+
+## 2026-10-01 — Opus: integrated Sol PRs #16 (music playlist) and #18 (addon policies)
+- Both handoffs verified: Unit tests + Static analysis green at a3452632a (#16) and 392ed7aa5 (#18).
+  #16 production change reviewed: Up/Down mark the playlist changed only on an actual swap; opening
+  Add Track/Directory no longer does (confirmed input still sets it in Msg_Input). #18 is test-only.
+  Merged both; NOTES/ROADMAP conflicts resolved keeping both sides. Release build of Test_splitscreen
+  on the merged master passes; pushed.
+After reconciling master abd4cd961 (integrated music/addon PRs #16/#18), own campaign source/tests
+are byte-for-byte unchanged. Both documentation sides retained. Fresh Debug affected: 3 cases /
+1,881 assertions; complete merged Debug: 459 cases / 40,103 assertions pass. All17 checks must
+pass at the resulting merge head before tested handoff.
