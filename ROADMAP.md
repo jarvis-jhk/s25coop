@@ -136,7 +136,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   and physical-input regressions cover all seven focusable controls, window/confirmation precedence,
   mouse/A/keyboard behavior and B bursts stopping at Multiplayer (Sol companion, 2026-09-30).
   Create game/map selection handles controller B through its original Back route, with four-context,
-  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Other paths remain open.
+  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). Long Readme, Help and
+  Changelog scrolling is covered through driver and physical mouse input; scroll position now clamps
+  safely when text/visible area changes, preventing out-of-range drawing. Other paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
