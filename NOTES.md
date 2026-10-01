@@ -759,3 +759,27 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   Test_splitscreen passes (80.3 s) and all CoopNet_Member* incl. MemberLocalSlots_normal/extra pass.
   Local run needs `USER=root TMPDIR=/app/agent/data/siedler/tmp` (see above).
 - PR #12 (lobby Back) still waits for its CI before handoff.
+
+
+## 2026-10-01 — Sol companion: Addon Settings controller policy regressions
+- Branch `sol/addon-controller-policies`, from origin/master 91676d5c8. Bounded to a new
+  `testMenuPadAddons.cpp`; no product behavior, shared input, presets or M3 view changes.
+- Eight physical-input cases enter the real Options and connected local lobby addon windows.
+  They cover Apply and persisted configuration, Abort, deliberate custom B/right-click refusal,
+  category/reset-scroll with pending edits, dropdown B cancellation, read-only and whitelist rules,
+  Default preserving locked non-default values, and exception-safe singleton-state restoration.
+- All/AllAndSaveToConfig use actual controller entry. None/WhitelistOnly instantiate the real
+  addon window with the connected lobby parent, explicitly isolating policy enforcement from
+  campaign Lua policy selection; campaign script routing is not claimed. Apply clears only the
+  local settings after its serialized message is queued, then requires the real server broadcast
+  to restore them, so the window's immediate local edit is insufficient to pass.
+- The fixture uses temporary userdata and references the real Settings/GameClient. Options is
+  destroyed before swapping the captured addon configuration back, including a deliberate throw.
+  Saved INI assertions parse the exact addon section/key/value. Both shoulder directions traverse
+  the visible controls to their endpoints and prove locked controls never receive focus.
+- Final own Debug/Werror build (max two jobs): all 8 cases / 465 assertions, then complete
+  `Test_splitscreen`: all 434 cases / 37,233 assertions. Deliberate missing-callback/unlocked-policy
+  counterchecks are recorded in the PR/checkpoint. Initial read-only gpt-6.1-sol review found setup
+  outside the cleanup guard, weak substring persistence and one-direction traversal; all tightened.
+  Save/Load preset flows remain a separate bounded task. Branch CI must all pass before handoff;
+  Opus owns review and integration. No primary checkout/build, master push or self-merge.
