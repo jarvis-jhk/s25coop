@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-# Adds a non-Steam game shortcut to every Steam user's shortcuts.vdf (Steam must be closed), and gives it
-# Settlers II artwork from SteamGridDB, so it looks like the real game in the library and in Game Mode.
-#   add-to-steam.py <name> <exe> <start dir> <launch options>
-#   add-to-steam.py --artwork-only <name> <exe>   only the pictures, for an entry that exists (Steam may run)
-# After ArnoldSmith86/minecraft-splitscreen's add-to-steam.py (MIT).
-import glob, os, re, sys, zlib, struct, urllib.request
+# Copyright (C) 2026 s25coop contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Steam writes shortcuts on exit. Only artwork may be changed while it is running.
+# Installer originally based on ArnoldSmith86/minecraft-splitscreen (MIT).
+import glob
+import os
+import struct
+import subprocess
+import sys
+import tempfile
+import urllib.request
+import zlib
 
-# The Settlers 2: Gold Edition on SteamGridDB (game 5247477). Steam's file names in config/grid:
-# <appid>p = library cover 600x900, <appid> = wide capsule 920x430, _hero = header, _logo, _icon.
 ARTWORK = {
     'p.png': 'https://cdn2.steamgriddb.com/grid/c6fff3fd2b60ebf71b3ea44eb4e1036a.png',
     '.jpg': 'https://cdn2.steamgriddb.com/grid/87dab7322c069fc3f8c0d162435b9a4d.jpg',
@@ -16,39 +20,117 @@ ARTWORK = {
     '_icon.png': 'https://cdn2.steamgriddb.com/icon/a22ede5d703532f281f393a5459571fd.png',
 }
 
-artwork_only = sys.argv[1:2] == ['--artwork-only']
-args = sys.argv[2:] if artwork_only else sys.argv[1:]
-name, exe = args[0], args[1]
-startdir, options = (args[2], args[3]) if not artwork_only else ('', '')
+
+def cstring(data, pos):
+    end = data.index(b'\0', pos)
+    return data[pos:end], end + 1
 
 
-def entry(index, appid, icon):
-    s = lambda k, v: b'\x01' + k + b'\x00' + v.encode() + b'\x00'
-    return (b'\x00' + str(index).encode() + b'\x00'
-            + b'\x02appid\x00' + struct.pack('<I', appid)
-            + s(b'AppName', name) + s(b'Exe', '"%s"' % exe) + s(b'StartDir', '"%s"' % startdir)
-            + s(b'icon', icon) + s(b'LaunchOptions', options)
-            + b'\x08')
+def fields(data, pos=0):
+    """Parse field boundaries so a path/name in another field cannot select a shortcut."""
+    result = []
+    while pos < len(data):
+        start = pos
+        kind = data[pos]
+        pos += 1
+        if kind == 8:
+            return result, pos
+        key, pos = cstring(data, pos)
+        value_start = pos
+        if kind == 0:
+            value, pos = fields(data, pos)
+        elif kind == 1:
+            value, pos = cstring(data, pos)
+        elif kind in (2, 3, 4, 6, 7, 10):
+            size = 8 if kind in (7, 10) else 4
+            if pos + size > len(data):
+                raise ValueError('truncated numeric field')
+            value = data[pos:pos + size]
+            pos += size
+        else:
+            raise ValueError('unsupported binary VDF field type: %d' % kind)
+        result.append((kind, key, start, pos, value_start, value))
+    raise ValueError('unterminated binary VDF object')
 
 
-def existing_appid(data):
-    """appid of the shortcut that already starts exe, or None"""
-    pos = data.find(exe.encode())
-    if pos < 0:
-        return None
-    key = data.rfind(b'\x02appid\x00', 0, pos)
-    return struct.unpack_from('<I', data, key + 7)[0] if key >= 0 else None
+def shortcuts(data):
+    top, end = fields(data)
+    if end != len(data) or len(top) != 1 or top[0][:2] != (0, b'shortcuts'):
+        raise ValueError('unrecognised shortcuts.vdf root')
+    return top[0]
 
 
-def update_entry(data, appid, icon):
-    """Gives the existing shortcut of exe the current name and the Settlers II icon"""
-    start = data.rfind(b'\x02appid\x00', 0, data.find(exe.encode()))
-    end = data.find(b'\x02appid\x00', start + 1)
-    end = len(data) if end < 0 else end
-    part = data[start:end]
-    for key, value in ((rb'AppName', name), (rb'icon', icon)):
-        part = re.sub(rb'(?i)\x01' + key + rb'\x00[^\x00]*\x00', lambda m: m.group(0)[:len(key) + 2] + value.encode() + b'\x00', part, count=1)
-    return data[:start] + part + data[end:]
+def matching_entry(root, exe):
+    matches = []
+    for node in root[5]:
+        if node[0] != 0:
+            raise ValueError('invalid shortcut entry')
+        values = {field[1].lower(): field for field in node[5]}
+        executable = values.get(b'exe')
+        if executable and executable[0] == 1 and executable[5].strip(b'"') == exe.encode():
+            appid = values.get(b'appid')
+            if not appid or appid[0] != 2:
+                raise ValueError('shortcut has no valid appid')
+            matches.append((node, values, struct.unpack('<I', appid[5])[0]))
+    if len(matches) > 1:
+        raise ValueError('multiple shortcuts for this executable')
+    return matches[0] if matches else None
+
+
+def string_field(key, value):
+    return b'\x01' + key + b'\0' + value.encode() + b'\0'
+
+
+def new_entry(index, appid, name, exe, startdir, options, icon):
+    return (b'\0' + str(index).encode() + b'\0\x02appid\0' + struct.pack('<I', appid)
+            + string_field(b'AppName', name) + string_field(b'Exe', '"%s"' % exe)
+            + string_field(b'StartDir', '"%s"' % startdir) + string_field(b'icon', icon)
+            + string_field(b'LaunchOptions', options) + b'\x08')
+
+
+def renamed(data, match, name, icon):
+    node, values, _ = match
+    edits = []
+    for key, value in ((b'appname', name), (b'icon', icon)):
+        field = values.get(key)
+        if field:
+            if field[0] != 1:
+                raise ValueError('shortcut name/icon is not a string')
+            edits.append((field[4], field[3], value.encode() + b'\0'))
+        else:
+            edits.append((node[3] - 1, node[3] - 1, string_field(key, value)))
+    for start, end, replacement in sorted(edits, reverse=True):
+        data = data[:start] + replacement + data[end:]
+    return data
+
+
+def steam_closed():
+    # Refuse an unknown process state too; failing to inspect Steam is not proof it exited.
+    result = subprocess.run(['pgrep', '-x', 'steam'], stdout=subprocess.DEVNULL, check=False)
+    if result.returncode != 1:
+        raise RuntimeError('Steam is running or its process state could not be checked')
+
+
+def replace_shortcuts(path, data):
+    steam_closed()
+    backup = path + '.s25coop-backup'
+    if os.path.exists(path) and not os.path.exists(backup):
+        with open(path, 'rb') as src, open(backup, 'xb') as dst:
+            dst.write(src.read())
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=os.path.dirname(path), delete=False) as out:
+            temporary = out.name
+            if os.path.exists(path):
+                os.chmod(temporary, os.stat(path).st_mode & 0o777)
+            out.write(data)
+            out.flush()
+            os.fsync(out.fileno())
+        steam_closed()
+        os.replace(temporary, path)
+    finally:
+        if temporary and os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 def fetch_artwork(grid, appid):
@@ -65,31 +147,62 @@ def fetch_artwork(grid, appid):
                 out.write(data)
             os.replace(path + '.part', path)
             print('artwork', path)
-        except Exception as e:  # pictures are nice to have; a missing one must not fail the install
-            print('artwork failed: %s: %s' % (url, e), file=sys.stderr)
+        except Exception as error:
+            print('artwork failed: %s: %s' % (url, error), file=sys.stderr)
 
 
-configs = glob.glob(os.path.expanduser('~/.steam/steam/userdata/*/config'))
-if not configs:
-    sys.exit('no Steam user found')
-for config in configs:
-    path = os.path.join(config, 'shortcuts.vdf')
-    grid = os.path.join(config, 'grid')
-    data = open(path, 'rb').read() if os.path.exists(path) else b'\x00shortcuts\x00\x08\x08'
-    appid = existing_appid(data)
-    if appid is not None and not artwork_only:
-        updated = update_entry(data, appid, os.path.join(grid, '%d_icon.png' % appid))
+def main(args):
+    mode = args.pop(0) if args and args[0].startswith('--') else 'add'
+    if mode not in ('add', '--artwork-only', '--status', '--migrate-name'):
+        raise ValueError('unknown mode')
+    if len(args) != (4 if mode == 'add' else 2):
+        raise ValueError('usage: [--status|--migrate-name|--artwork-only] <name> <exe> [<start dir> <options>]')
+    name, exe = args[:2]
+    configs = sorted(glob.glob(os.path.expanduser('~/.steam/steam/userdata/*/config')))
+    if not configs:
+        raise ValueError('no Steam user found')
+    plans = []
+    states = []
+    for config in configs:
+        path = os.path.join(config, 'shortcuts.vdf')
+        grid = os.path.join(config, 'grid')
+        data = b'\x00shortcuts\x00\x08\x08'
+        if os.path.exists(path):
+            with open(path, 'rb') as src:
+                data = src.read()
+        root = shortcuts(data)
+        match = matching_entry(root, exe)
+        appid = match[2] if match else None
+        title = match[1].get(b'appname') if match else None
+        states.append('missing' if not match else 'current' if title and title[5] == name.encode() else 'old')
+        updated = data
+        if mode in ('add', '--migrate-name') and match:
+            updated = renamed(data, match, name, os.path.join(grid, '%d_icon.png' % appid))
+        elif mode == 'add' and not match:
+            appid = (zlib.crc32((exe + name).encode()) & 0xFFFFFFFF) | 0x80000000
+            indices = [int(node[1]) for node in root[5]]
+            position = root[3] - 1
+            entry = new_entry(max(indices, default=-1) + 1, appid, name, exe, args[2], args[3],
+                              os.path.join(grid, '%d_icon.png' % appid))
+            updated = data[:position] + entry + data[position:]
+        plans.append((path, grid, appid, data, updated))
+    if mode == '--status':
+        print('old' if 'old' in states else 'missing' if 'missing' in states else 'current')
+        return
+    # Validate all users before editing any, and guard independently of the shell caller.
+    if mode != '--artwork-only':
+        steam_closed()
+    for path, grid, appid, data, updated in plans:
         if updated != data:
-            open(path, 'wb').write(updated)
+            replace_shortcuts(path, updated)
             print('updated', path)
-    elif appid is None and not artwork_only:
-        appid = (zlib.crc32((exe + name).encode()) & 0xFFFFFFFF) | 0x80000000
-        if not data.endswith(b'\x08\x08'):
-            sys.exit('unrecognised shortcuts.vdf: ' + path)
-        indices = [int(i) for i in re.findall(rb'\x00(\d+)\x00\x02appid', data)]
-        icon = os.path.join(grid, '%d_icon.png' % appid)
-        data = data[:-2] + entry(max(indices, default=-1) + 1, appid, icon) + b'\x08\x08'
-        open(path, 'wb').write(data)
-        print('added to', path)
-    if appid is not None:
-        fetch_artwork(grid, appid)
+        # Launch migration is synchronous; artwork stays in the separate background call.
+        if appid is not None and mode != '--migrate-name':
+            fetch_artwork(grid, appid)
+
+
+if __name__ == '__main__':
+    try:
+        main(sys.argv[1:])
+    except (OSError, ValueError, RuntimeError) as error:
+        sys.exit('Steam shortcuts: ' + str(error))

@@ -9,7 +9,7 @@ namespace rttr::version {
 
 std::string GetTitle()
 {
-    return "Return To The Roots";
+    return "The Settlers II: Coop";
 }
 
 std::string GetVersion()

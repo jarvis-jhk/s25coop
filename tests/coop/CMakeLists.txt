@@ -6,6 +6,15 @@
 # and a Lua script asserts on the game state. Exit code 2 = Lua error or failed assertion.
 set(coopTestMap ${PROJECT_SOURCE_DIR}/tests/testData/maps/LuaFunctions.SWD)
 
+# The Linux installer must migrate real binary Steam entries without affecting other games.
+if(UNIX)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME CoopInstaller_SteamShortcut
+             COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/coop/test-steam-shortcut.py)
+    set_tests_properties(CoopInstaller_SteamShortcut PROPERTIES TIMEOUT 120
+                         ENVIRONMENT "S25COOP_TEST_TMPDIR=${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+
 # Optional further arguments: the AI of each player (default: two aijh)
 function(coop_headless_args out script maxGF)
     set(ais ${ARGN})

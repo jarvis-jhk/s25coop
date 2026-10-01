@@ -1230,3 +1230,41 @@ Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 asserti
   control and read-only review remain applicable; assertions and production are unchanged.
 
 - 2026-10-01 (Opus): Sol PR #28 (Post office filtered selection/deletion) integrated as merge 50497ddb5 from tested head 5ce28ee2e, all 17 checks green; master was its base, so the merged tree equals the tested tree.
+
+## 2026-10-01 — Sol: Steam, desktop and game-window naming
+- PR29 handed off at fb8676e15e1e817b4fffaf535a55f9b990b4afaf with all17 exact-head
+  checks and both workflows successful. Steam naming request is the next bounded Sol slice,
+  based on origin/master96b363ec5; no shared-view/router/input changes.
+- Existing Steam shortcuts migrate to "The Settlers II: Coop" without another rename question
+  during reinstall. New Steam entries still need the existing opt-in. Desktop launches/updates
+  repair names while Steam is closed; Game Mode never closes Steam or writes live shortcuts.
+  Generated desktop names and rttr::version::GetTitle use the same title.
+- Byte searches could mistake our executable in another game's launch options for its Exe,
+  or mistake that game's title for an already migrated name. Parse bounded binary VDF fields,
+  match the exact Exe, and replace only name/icon payloads. Preserve existing appid, tags,
+  start directory/options, unknown supported fields, other entries and existing grid artwork.
+  Malformed/ambiguous files are refused before any user's file changes. Atomic replacement,
+  original backup and independent Steam process checks guard writes, including unknown status.
+- Name-only migration does no artwork download; the launcher retains its separate background
+  artwork path and fault reporting. A malformed migration reports its fault and still launches.
+- Fifteen isolated HOME/real-helper/real-installer fixtures pass without Steam/internet. Cover
+  exact matching/unchanged bytes, repeat migration, multi-user validation, missing/new entries,
+  live/stuck Steam, unknown process state, optional first add, downloaded-release launch and
+  fault continuation. CTest uses binary-tree scratch; the same cases pass from a source copy
+  with read-only files and explicit external scratch.
+- Executed original-installer negative control runs two cases: both fail the intended renamed
+  entry assertion. Original-helper control runs two other cases: wrong-entry preservation fails
+  and running Steam incorrectly returns success. Final production restored and all15 pass.
+- Own GCC12 Debug/Werror Test_rttrConfig passes all5 cases/72assertions, including the actual
+  GetTitle value; CTest Test_rttrConfig + CoopInstaller_SteamShortcut both pass. Reconfigured
+  own build/debug; at most2 compiler jobs. Format10/static validation/diff/Python/Bash syntax
+  and agent TypeScript gate pass.
+- Read-only exactly gpt-6.1-sol review requested binary-tree test scratch; fixed and exercised.
+  Practical limits: a new Steam start can race the final process check, multiple users are not
+  one filesystem transaction, unsupported VDF types are refused, and Game Mode users must
+  rerun the installer in Desktop Mode or launch with Steam closed for an old title to migrate.
+  No real Deck start claimed. All17 exact-head checks remain the ready/integration gate.
+- Final read-only exact-model review finds no blocking correctness issue. It confirms field
+  identity/byte preservation, independent guards, atomic replacement, background artwork and
+  corrected CTest scratch. Conventional Linux Steam layout/pgrep and exact stored executable
+  path remain assumptions; Steam/network lifecycle is stubbed in local installer evidence.

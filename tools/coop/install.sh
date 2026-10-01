@@ -107,7 +107,7 @@ add_menu_entry() {
     mkdir -p "$apps"
     cat > "$apps/s25coop.desktop" <<DESKTOP
 [Desktop Entry]
-Name=s25coop
+Name=$STEAM_NAME
 Comment=Settlers II coop (Return to the Roots)
 Exec=$SELF run
 Icon=$GAME/s25coop.png
@@ -120,32 +120,47 @@ DESKTOP
 
 add_to_steam() {
     [ -d "$HOME/.steam/steam/userdata" ] || return 0
-    local f old=0 missing=0
-    for f in "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf; do
-        if grep -qs "s25coop/install.sh" "$f"; then grep -qsF "$STEAM_NAME" "$f" || old=1; else missing=1; fi
-    done
-    if [ $missing -eq 0 ] && [ $old -eq 0 ] && ls "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf >/dev/null 2>&1; then
+    local state mode="" f
+    state=$(python3 "$GAME/add-to-steam.py" --status "$STEAM_NAME" "$SELF" 2>"$BASE/add-to-steam.log") || {
+        report "reading Steam shortcuts failed" "$(tail -n 40 "$BASE/add-to-steam.log")"
+        say "⚠️ Cannot read Steam shortcuts; no entries changed"; return 0;
+    }
+    if [ "$state" = current ]; then
         say "✅ Already in Steam"; add_steam_artwork; return 0
-    elif [ $old -eq 1 ]; then
-        # Entries from before 0.1.4 are called "s25coop" and have no artwork: rename them once
-        dialog question "Give the s25coop entry in Steam the Settlers II name and pictures?\n\nSteam will be closed for a moment and started again." || { add_steam_artwork; return 0; }
+    elif [ "$state" = old ]; then
+        # Existing installs already opted into Steam. Repair their name without a second opt-in.
+        mode="--migrate-name"
     else
         dialog question "Add s25coop to Steam, so it can be started from Game Mode?\n\nSteam will be closed for a moment and started again." || return 0
     fi
     say "⏳ Closing Steam to add the shortcut…"
-    steam -shutdown >/dev/null 2>&1
+    local was_running=0
+    if pgrep -x steam >/dev/null; then was_running=1; steam -shutdown >/dev/null 2>&1; fi
     for _ in $(seq 60); do pgrep -x steam >/dev/null || break; sleep 1; done
     # Steam writes shortcuts.vdf when it exits: an edit made while it still runs would be lost
     if pgrep -x steam >/dev/null; then say "⚠️ Steam did not close, the Steam entry is left as it is"; return 0; fi
     for f in "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf; do
         [ -f "$f" ] && cp -n "$f" "$f.s25coop-backup"
     done
-    if python3 "$GAME/add-to-steam.py" "$STEAM_NAME" "$SELF" "$BASE" "run" 2>"$BASE/add-to-steam.log"; then
+    local args=("$STEAM_NAME" "$SELF" "$BASE" "run")
+    [ -n "$mode" ] && args=("$mode" "$STEAM_NAME" "$SELF")
+    if python3 "$GAME/add-to-steam.py" "${args[@]}" 2>"$BASE/add-to-steam.log"; then
         say "✅ Added to Steam"
+        [ -z "$mode" ] || add_steam_artwork
     else
         report "adding to Steam failed" "$(tail -n 40 "$BASE/add-to-steam.log" 2>&1; ls -la "$HOME"/.steam/steam/userdata/*/config/shortcuts.vdf 2>&1)"; say "⚠️ Adding to Steam failed (backup of the old shortcuts: shortcuts.vdf.s25coop-backup)"
     fi
-    nohup steam >/dev/null 2>&1 &
+    [ $was_running -eq 0 ] || { nohup steam >/dev/null 2>&1 & }
+}
+
+# A desktop launch can repair old names when Steam is closed. Game Mode must never shut down
+# Steam to rename its own running shortcut; the next Desktop Mode reinstall handles that case.
+migrate_steam_name() {
+    [ -d "$HOME/.steam/steam/userdata" ] && [ -f "$GAME/add-to-steam.py" ] || return 0
+    pgrep -x steam >/dev/null && return 0
+    python3 "$GAME/add-to-steam.py" --migrate-name "$STEAM_NAME" "$SELF" >/dev/null 2>"$BASE/add-to-steam.log" || {
+        report "updating Steam shortcut name failed" "$(tail -n 40 "$BASE/add-to-steam.log")"
+    }
 }
 
 # Settlers II box art for the Steam entry (library cover, banner, hero, logo, icon), fetched from
@@ -166,6 +181,8 @@ run_game() {
     fi
     [ -x "$GAME/s25coop.sh" ] || fail "s25coop is not installed. Run the installer again."
     setup_s2
+    add_menu_entry
+    migrate_steam_name
     add_steam_artwork
     S25COOP_S2_DIR="$S2" exec "$GAME/s25coop.sh" "$@"
 }

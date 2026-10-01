@@ -20,6 +20,11 @@
 
 namespace fs = boost::filesystem;
 
+BOOST_AUTO_TEST_CASE(CoopWindowTitle)
+{
+    BOOST_TEST(rttr::version::GetTitle() == "The Settlers II: Coop");
+}
+
 class ResetWorkDir
 {
     fs::path oldWorkDir;

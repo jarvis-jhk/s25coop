@@ -176,8 +176,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   every actual ware priority, recorded updates and read-only replay policies (Sol companion, 2026-10-01).
   Other paths remain open.
 - ☐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
-  - ☐ Steam entry still named "s25coop" although the artwork arrived (probably the rename question
-    was declined: artwork is added regardless, the name only on Yes). Rename it to "The Settlers II: Coop".
+  - ◐ Steam, application menu and window title use "The Settlers II: Coop". Existing Steam entries
+    migrate automatically on reinstall or desktop launch with Steam closed; Game Mode leaves
+    live shortcuts untouched. Binary VDF fixtures and Debug title tests pass locally (Sol);
+    exact-head CI and Opus integration still required. Confirm on the Deck after release.
   - ☐ Controller hints as Xbox button glyphs (A/B/X/Y, LB/RB, triggers, D-pad) instead of text.
   - ☐ One fixed button always toggles building positions; map the buttons that currently do nothing.
   - ☐ Lobby "play as a team / together" checkbox is drawn over other controls; fix the layout.
