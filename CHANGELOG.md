@@ -5,6 +5,8 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Campaign previews show a clear fallback when artwork is unavailable; one missing or damaged
+  image no longer hides the previews of other campaigns.
 - Moving tracks up or down in the music player now updates playback when you close the window.
   Cancelling Add Track or Add Directory keeps playback as it was.
 

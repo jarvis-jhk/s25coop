@@ -891,6 +891,42 @@ enters a placeholder filename and physically replaces it before saving the actua
 executing the Backspace path. No LCOV exclusions and no product changes. Fresh own Debug:
 all seven affected cases / 392 assertions pass; clang-format10, static validation, diff checks
 and agent TypeScript gate pass. All 17 CI jobs on the repaired head remain required.
+
+## 2026-10-01 — Sol: optional campaign artwork fallback
+- Campaign selection now resolves an optional preview only when its row is selected. It uses
+  a bitmap only after that specific file loaded successfully; equal-stem filenames in the
+  global Loader cache cannot turn a failed preview into another campaign's image. Missing,
+  corrupt or resource-id-incompatible images show a centered text fallback, without blocking
+  the campaign list or previews of other campaigns. Description/Continue remain available.
+- Three physical-controller regressions generate nine isolated campaigns with real maps/Lua:
+  absent/missing/corrupt images, valid BMP artwork, invalid short/long basename metadata,
+  valid/corrupt equal-stem files in different folders, and an actual selection-map preview.
+  Cases verify fallback/description state, later valid artwork, controller continuation and
+  Back/re-entry, repeated cache-collision switching and map-control creation/removal while
+  the fallback stays hidden for a selection map. No original game data or second singleton.
+- Read-only exact gpt-6.1-sol review found cache collisions and invalid-name exceptions in
+  the first eager-loading approach, plus missing selection-map coverage. All are addressed
+  by lazy checked loading and expanded tests. A second actual-source review found Windows
+  Lua path escaping: generated paths now use generic_string, with the writer const-qualified.
+- Original production fails all three executed artwork cases; fixed source is restored and
+  rebuilt. Own GCC12 Debug/Werror: all three cases pass 1,833 assertions; full Test_splitscreen
+  passes all 442 cases and 39,353 assertions. Timer waiting always executes a physical frame
+  and wait body, so fast hosts do not leave unexercised test lines. New suite presence verified.
+  clang-format10, static validation, diff checks and the agent TypeScript gate pass. At most
+  two compiler jobs; exact-head CI evidence goes into the PR/checkpoint. All CI jobs must pass
+  before tested handoff. Opus owns review and integration.
+
+### Sol campaign-artwork CI coverage repair (2026-10-01)
+GCC10 coverage reported the do/while's synthetic `do` line and an unused backwards-focus loop.
+Use an ordinary bounded for loop for loading. After returning from each mission chooser, assert
+table focus, physically move to a later control, then navigate backwards to the table; that now
+executes and proves the intended shoulder path. No LCOV exclusions or product changes.
+Fresh affected Debug: 3 cases / 1,881 assertions pass before reconciling integrated master.
+After reconciling master abd4cd961 (integrated music/addon PRs #16/#18), own campaign source/tests
+are byte-for-byte unchanged. Both documentation sides retained. Fresh Debug affected: 3 cases /
+1,881 assertions; complete merged Debug: 459 cases / 40,103 assertions pass. All17 checks must
+pass at the resulting merge head before tested handoff.
+
 ## 2026-10-01 — Sol: music playlist Clang-Tidy repair
 - Mark the fixture's tracks() accessor const; this resolves the CI readability warning without
   changing playlist behavior. Merge master 69888fe49, retaining both sides of documentation conflicts.
