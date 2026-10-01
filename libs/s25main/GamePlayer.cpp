@@ -1635,7 +1635,7 @@ void GamePlayer::StatisticStep()
             for(unsigned i = 0; i < NUM_STAT_MERCHANDISE_TYPES; ++i)
             {
                 statistic[nextT].merchandiseData[i][incrStatIndex(statistic[nextT].currentIndex)] =
-                  statisticCurrentMerchandiseData[i]
+                  statistic[t].merchandiseData[i][statistic[t].currentIndex]
                   + statistic[t].merchandiseData[i][decrStatIndex(statistic[t].currentIndex, 1)]
                   + statistic[t].merchandiseData[i][decrStatIndex(statistic[t].currentIndex, 2)]
                   + statistic[t].merchandiseData[i][decrStatIndex(statistic[t].currentIndex, 3)];

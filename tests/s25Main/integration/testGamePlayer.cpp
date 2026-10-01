@@ -149,3 +149,28 @@ BOOST_FIXTURE_TEST_CASE(IsHQTent_ReturnsTrue_IfPrimaryHQIsTent, WorldFixtureEmpt
 
     BOOST_TEST_REQUIRE(p1.IsHQTent() == true);
 }
+
+BOOST_FIXTURE_TEST_CASE(MerchandiseStatistic_CoarseBucketsSumFinerBuckets, WorldFixtureEmpty1P)
+{
+    GamePlayer& p1 = world.GetPlayer(0);
+    // One wood (merchandise index 0) and 14 boats (index 13) per base step. After enough steps every
+    // bucket covers only such steps, so each timescale holds 4 times the one below it.
+    for(unsigned step = 0; step < 6 * 64; ++step)
+    {
+        p1.IncreaseMerchandiseStatistic(GoodType::Wood);
+        for(unsigned j = 0; j < 14; ++j)
+            p1.IncreaseMerchandiseStatistic(GoodType::Boat);
+        p1.StatisticStep();
+    }
+    const std::array<unsigned, 4> expected = {1, 4, 16, 64};
+    for(const auto t : helpers::enumRange<StatisticTime>())
+    {
+        const GamePlayer::Statistic& stat = p1.GetStatistic(t);
+        const unsigned factor = expected[rttr::enum_cast(t)];
+        BOOST_TEST_CONTEXT("time " << rttr::enum_cast(t))
+        {
+            BOOST_TEST(stat.merchandiseData[0][stat.currentIndex] == factor);
+            BOOST_TEST(stat.merchandiseData[13][stat.currentIndex] == 14u * factor);
+        }
+    }
+}
