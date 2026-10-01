@@ -175,6 +175,16 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   selection, all move buttons and boundaries, Default/reopen, mouse selection and Help return,
   every actual ware priority, recorded updates and read-only replay policies (Sol companion, 2026-10-01).
   Other paths remain open.
+- ☐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
+  - ☐ Steam entry still named "s25coop" although the artwork arrived (probably the rename question
+    was declined: artwork is added regardless, the name only on Yes). Rename it to "The Settlers II: Coop".
+  - ☐ Controller hints as Xbox button glyphs (A/B/X/Y, LB/RB, triggers, D-pad) instead of text.
+  - ☐ One fixed button always toggles building positions; map the buttons that currently do nothing.
+  - ☐ Lobby "play as a team / together" checkbox is drawn over other controls; fix the layout.
+  - ☐ Dropdowns under D-pad/stick: focus must not change the value; A opens, D-pad picks, A confirms, B cancels.
+  - ☐ In-game with a controller: instead of floating, movable, overlapping windows, a fixed side panel
+    with tabs switched by the shoulder buttons that shows as much information as possible.
+    Mouse/keyboard keep the windows. Large: design doc and split into slices first.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ◐ Campaign overview with artwork of every working campaign and single scenario: optional
