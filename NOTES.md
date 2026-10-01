@@ -1005,3 +1005,12 @@ merged Debug463 cases / 38,614 assertions pass. All17 fresh merge-head CI jobs r
   while the fixture still exists. No game behavior changes or coverage exclusions.
 - Own Debug/Werror save suite: 7 cases/393 assertions pass; formatting, static validation,
   diff checks and agent TypeScript gate pass. Await all17 CI jobs on this new head before handoff.
+
+## 2026-10-01 — Opus: integrated Sol PRs #19 (save dialog), #20 (campaign artwork), #21 (build order)
+- All three handoffs had 17/17 CI green at the stated heads (6cdac72d7, 40d15473e, 1e38d069a), each
+  already on master abd4cd961. Production changes reviewed: #20 loads campaign artwork lazily per
+  selected row with a text fallback (no shared-stem cache reuse); #21 iterates the real build-order
+  length in Default (was a hard-coded 31, which dropped addon buildings), makes the combo read-only in
+  replays and keeps button clicks blocked there, while list selection may update the preview. #19 is
+  test-only. NOTES/ROADMAP/CHANGELOG conflicts resolved keeping both sides, each Sol paragraph kept
+  under its own heading. Release Test_splitscreen on the merged master passes (exit 0); pushed.
