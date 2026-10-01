@@ -154,6 +154,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   dropdown cancellation, read-only and whitelist/default enforcement, exact saved config and
   real local-server settings roundtrip (Sol companion, 2026-10-01). Policy-specific windows are
   tested with the real lobby parent; campaign Lua routing and preset Save/Load remain separate.
+  Transport priorities now have seven physical-input/backend/replay regressions with leather on/off:
+  selection, all move buttons and boundaries, Default/reopen, mouse selection and Help return,
+  every actual ware priority, recorded updates and read-only replay policies (Sol companion, 2026-10-01).
   Tool production has physical-input/real-world coverage with ordering on/off, all slider and
   order bounds, Default/Zero, timer transmission, Help and generated replay browsing. Replay
   progress input now preserves recorded priorities and closes without a false discard warning;
