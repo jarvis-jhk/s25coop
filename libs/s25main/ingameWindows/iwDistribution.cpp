@@ -109,6 +109,12 @@ void iwDistribution::TransmitSettings()
 void iwDistribution::Msg_Group_ProgressChange(const unsigned /*group_id*/, const unsigned /*ctrl_id*/,
                                               const unsigned short /*position*/)
 {
+    if(GAMECLIENT.IsReplayModeOn())
+    {
+        // Pad, wheel and bar input still reach the progress control: restore recorded values.
+        UpdateSettings();
+        return;
+    }
     MarkSettingsChanged();
 }
 
@@ -135,7 +141,7 @@ void iwDistribution::UpdateSettings()
 
 void iwDistribution::Msg_ButtonClick(const unsigned ctrl_id)
 {
-    if(GAMECLIENT.IsReplayModeOn())
+    if(GAMECLIENT.IsReplayModeOn() && ctrl_id != 2u)
         return;
     switch(ctrl_id)
     {
