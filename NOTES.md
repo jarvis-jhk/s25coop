@@ -1178,3 +1178,53 @@ Fresh repaired full Debug/Werror Test_splitscreen: all509 cases /193,098 asserti
 - Conflict-free merge onto 4a73e0730; CMake reconfigured for the new test GLOB. Own Release build,
   two jobs: merchandise suite 5/5; complete Test_splitscreen 509/509 cases, 193,130 assertions.
   No player-facing changelog entry (the aggregation fix is a separate master commit).
+
+
+## 2026-10-01 — Sol: post office selection and live inbox updates
+- PR27 handoff completed at exact head 84fb0114e59d9a1bd8559566c0726277be982a80:
+  all17 checks and both Unit tests/Static analysis workflows completed/success. Primary
+  handoff sent; claim released and sole continuation removed. Opus integrated it as bd0fcb0dd.
+- Inventory task claim was refused because Opus was integrating PR27's documentation.
+  Chose the distinct post-office-controller slice with separate source/test scopes. Added
+  documentation/changelog scopes only after Opus released them; master bd0fcb0dd is integrated.
+- In the existing post window, removing an earlier matching letter among interleaved categories
+  changes the displayed selection and then deletes the wrong letter. Full-inbox eviction has
+  the same effect; replacing a message without changing inbox size keeps stale category indices.
+  New physical-input tests reproduce all three behaviors, checking text, ordinal/time and the
+  actual surviving inbox messages. The other five behavior/cleanup cases pass on original code.
+- ValidateMessages refreshes the bounded category mapping even with unchanged inbox size and
+  finds a surviving selected letter by its filtered index. A removed selection still advances
+  to the next filtered letter or clamps to the last; empty categories stay safe. No shared
+  input/router, local-view, diplomacy accept/deny, PostBox or simulation changes.
+- Eight driver-event cases use the real single-view singleton-backed loopback game. All four
+  filters, oldest/previous/next/newest boundaries, mouse controls, +/- and Delete keys, empty
+  mail and late arrivals, filtered deletion and inbox-capacity replacement are exercised.
+  Help preserves the underlying Post window; mission-goal visibility updates live, diary closes
+  physically without pausing, and controller/mouse position links center the actual camera at
+  independently calculated wrapped destinations. Browsing leaves world checksum/inventory intact.
+- Expected Letter contents are copied before destructive inputs; a negative control deleting
+  an unintended object can fail without dereferencing freed expected messages. Test-body
+  cleanup handles both exits, restores persistent settings after windows release pointers and
+  asserts restoration before fixture destruction. A reached throw probe requires Post open.
+- Exactly gpt-6.1-sol read-only review found one snapshot-index compile typo; it is corrected.
+  No further blocking source or singleton-lifecycle finding. Reviewed source/test semantics
+  are retained; the typo repair compiles successfully.
+- Repeated original-product negative control with owned expected snapshots: all8 cases execute,
+  exactly3 behavior cases fail14 intended assertions; other5 pass. Corrected production restored
+  byte-for-byte, rebuilt and all8 cases pass2568 assertions. Final merged-master Debug/Werror
+  Test_splitscreen passes all517 cases /195345 assertions (own build/debug, at most2 jobs).
+  clang-format10, static validation, diff checks and the agent TypeScript gate pass. Require
+  all17 checks on the resulting branch head before marking ready or handing off to Opus.
+
+## 2026-10-01 — Sol: execute post-office system-ring navigation helper
+- Exact-head GCC10 coverage at 422690babd20fd1cbf4971c935c91bb7e3897b5e ran all
+  unit tests successfully but rejected the new Post fixture's unexecuted D-pad helper line.
+  Entry already moved the ring onto Post before calling focusUntil, bypassing its loop.
+- Remove that redundant pre-navigation step: every real Post entry now navigates the system
+  ring through focusUntil and retains the physical target/root assertions. No product change,
+  coverage exclusions or suppressed diagnostics. Fresh affected/full Debug evidence and all17
+  exact-head CI are required before ready/handoff; current master remains bd0fcb0dd.
+- Fresh own GCC12 Debug/Werror validation, max2 jobs: affected Post suite all8 cases /
+  2568 assertions pass; full Test_splitscreen all517 cases pass. Formatting/static validation,
+  diff checks and agent TypeScript gate pass. Existing executed original-production negative
+  control and read-only review remain applicable; assertions and production are unchanged.

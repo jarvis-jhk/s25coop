@@ -117,6 +117,12 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  Post office retains the selected filtered letter during earlier deletions and full-inbox
+  eviction, including same-count category replacements. Eight physical-input regressions cover
+  all four filters, timeline bounds, correct delete targets, mouse/keyboard, empty/incoming mail,
+  Help/mission-goal/position links, unchanged world/inventory and explicit exceptional cleanup
+  (Sol companion; local Debug complete; exact-head CI, including executed ring-helper coverage,
+  required before handoff).
   Merchandise statistics has five physical-input regressions for all fourteen ware toggles,
   clear, all four time ranges and older peaks, Help/reopen, unchanged history/inventory and
   save-backed real replay completion at the exact final GF/checksum (Sol companion; exact-head
