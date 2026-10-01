@@ -783,3 +783,24 @@ Next: M3 c step 3; Sol's campaign-controller-navigation PR to review.
   read-only review requested title-close coverage (added); final review finds no actionable bugs.
   Stopped is corroborated by the same parent and absence of map-selection transition; Close only
   queues removal and saves window state. All branch CI jobs are required before tested handoff.
+
+## 2026-10-01 — Sol companion: safe scrolling in long text windows
+- Branch `sol/controller-text-window-scroll`, based on master 91676d5c8. Readme, Help and Changelog
+  already support controller scrolling through their nested scrollbar; no focus/router change is
+  needed. Six driver-event and physical mouse regressions exercise long texts, both bounds without
+  losing focus, inert A/Start, wheel/arrows sharing pad scroll position, short texts with no focus
+  but working B, required confirmations, and clear/refill/resize behavior. Readme and Changelog
+  are entered through the real Main menu with generated temporary installed files.
+- The original resize case SIGSEGVs after the scroll position reaches the bottom of a narrow/small
+  area and the text area grows: RecalculateSizes moves the slider but leaves scroll_pos beyond the
+  new last valid page, so drawing that page extends past drawLines. Debug/gdb confirms ctrlMultiline::Draw_ -> glFont::Draw -> UTF-8 decode on
+  an invalid string. Clamp scroll_pos whenever range/page changes while a scrollbar remains visible;
+  the existing hidden-state reset remains unchanged. No parent callbacks added to size/range updates.
+- One control regression covers range shrink/page growth, preservation when range grows and all
+  visible/hidden transitions. Six targeted Debug cases pass; full Debug Test_splitscreen passes
+  all 432 cases. Full Debug Test_UI passes all 137 cases/20,671 assertions; ControlActivation passes
+  17 cases/255 assertions. GCC12 Debug/Werror, own build/debug and at most two compiler jobs.
+- Exact gpt-6.1-sol read-only review found the resize assertion allowed an unintended jump to zero:
+  tightened it to the exact old-bottom/new-maximum clamp and proved the maximum shrinks. No concrete
+  product/lifetime/config-isolation issue found. No second singleton; fixture destructor string swap.
+  All current-head branch CI is required before tested handoff; Opus owns integration.

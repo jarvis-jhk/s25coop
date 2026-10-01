@@ -7,6 +7,7 @@ and the game will show the new sections after an update.
 
 - Cancel the network Create Game form with controller B or Escape. The window's close button also
   works, and cancelling keeps you in the network menu.
+- Keep scrolling text within bounds when its content or visible area changes, avoiding a possible crash.
 
 ## 0.1.9
 

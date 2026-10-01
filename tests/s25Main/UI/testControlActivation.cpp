@@ -527,6 +527,39 @@ BOOST_AUTO_TEST_CASE(ScrollBarIsVerticalValue)
     BOOST_TEST(wnd.scrollChanges.back() == 9);
 }
 
+BOOST_AUTO_TEST_CASE(ScrollPositionStaysInsideChangedContentAndPageSizes)
+{
+    RecordingWnd wnd;
+    auto* bar = wnd.AddScrollBar(1, DrawPoint(0, 0), Extent(20, 100), 20, TextureColor::Green1, 5);
+    putMouseFarAway();
+    bar->SetRange(20);
+    BOOST_TEST(bar->SetValue(1000));
+    BOOST_TEST_REQUIRE(bar->GetScrollPos() == 15u);
+
+    bar->SetRange(8);
+    BOOST_TEST(bar->GetScrollPos() == 3u);
+    BOOST_TEST(bar->IsVisible());
+    bar->SetPageSize(7);
+    BOOST_TEST(bar->GetScrollPos() == 1u);
+    bar->SetRange(20);
+    BOOST_TEST(bar->GetScrollPos() == 1u);
+
+    bar->SetPageSize(30);
+    BOOST_TEST(bar->GetScrollPos() == 0u);
+    BOOST_TEST(!bar->IsVisible());
+    bar->SetPageSize(1);
+    BOOST_TEST(bar->GetScrollPos() == 0u);
+    BOOST_TEST(bar->IsVisible());
+    bar->SetRange(0);
+    BOOST_TEST(bar->GetScrollPos() == 0u);
+    BOOST_TEST(!bar->IsVisible());
+    bar->SetRange(2);
+    BOOST_TEST(bar->SetValue(1));
+    bar->SetRange(1);
+    BOOST_TEST(bar->GetScrollPos() == 0u);
+    BOOST_TEST(!bar->IsVisible());
+}
+
 // --------------------------------------------------------------------------------------------
 // BEFUND N8 - DIE STEUERKREUZFRAGE UND DER STEUERKREUZSCHRITT KOENNEN NICHT MEHR AUSEINANDER
 //

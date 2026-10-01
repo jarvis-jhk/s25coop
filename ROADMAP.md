@@ -138,7 +138,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   Create game/map selection handles controller B through its original Back route, with four-context,
   mouse and regular/custom-window regressions (Sol companion, 2026-09-30). The network Create Game
   form also supports B/Escape/title close cancellation while keeping right-click inert, with
-  validation, all pad/keyboard focus targets and real-loopback lobby regressions. Other paths remain open.
+  validation, all pad/keyboard focus targets and real-loopback lobby regressions.
+  Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
+  position now clamps safely when text/visible area changes, preventing out-of-range drawing. Other
+  paths remain open.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ☐ Campaign overview with artwork of every working campaign and single scenario.
