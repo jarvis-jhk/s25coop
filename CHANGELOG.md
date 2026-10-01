@@ -5,6 +5,9 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Moving tracks up or down in the music player now updates playback when you close the window.
+  Cancelling Add Track or Add Directory keeps playback as it was.
+
 - Cancel the network Create Game form with controller B or Escape. The window's close button also
   works, and cancelling keeps you in the network menu.
 - Keep scrolling text within bounds when its content or visible area changes, avoiding a possible crash.
