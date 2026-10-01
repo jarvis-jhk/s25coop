@@ -37,8 +37,6 @@ struct BuildOrderPadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
     iwBuildOrder* window = nullptr;
     const bool savedDebugMode = SETTINGS.global.debugMode;
 
-    ~BuildOrderPadFixture() { SETTINGS.global.debugMode = savedDebugMode; }
-
     template<class F>
     void run(const unsigned mask, F&& body)
     {
@@ -56,6 +54,12 @@ struct BuildOrderPadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
     }
 
     void cleanup()
+    {
+        cleanupDesktop();
+        SETTINGS.global.debugMode = savedDebugMode;
+    }
+
+    void cleanupDesktop()
     {
         WINDOWMANAGER.Switch(std::make_unique<Desktop>(nullptr));
         WINDOWMANAGER.Draw();
@@ -311,6 +315,7 @@ BOOST_DATA_TEST_CASE_F(BuildOrderPadFixture, DefaultRestoresEveryVisibleBuilding
         openFromMain();
         expectList(defaults);
     });
+    BOOST_TEST(SETTINGS.global.debugMode == savedDebugMode);
 }
 
 BOOST_FIXTURE_TEST_CASE(UpDownTopBottomAndBoundaryMovesRoundtripTheEntireOrder, BuildOrderPadFixture)
@@ -389,7 +394,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayShowsRecordedChangesAndRejectsControllerAndMouseEd
         closeAndRoundtrip(completeOrder(recorded, 7u), true);
         pumpUntilGF(GAMECLIENT.GetGFNumber() + 40u);
         const auto replay = RTTRCONFIG.ExpandPath(s25::folders::replays) / GAMECLIENT.GetReplayFilename();
-        cleanup();
+        cleanupDesktop();
         GAMECLIENT.Stop();
         GAMESERVER.Stop();
         BOOST_TEST_REQUIRE(boost::filesystem::is_regular_file(replay));
@@ -456,6 +461,7 @@ BOOST_AUTO_TEST_CASE(ExceptionalCleanupDestroysWindowsBeforeStoppingTheGame)
                           std::runtime_error);
         BOOST_TEST(dynamic_cast<dskGameInterface*>(WINDOWMANAGER.GetCurrentDesktop()) == nullptr);
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        BOOST_TEST(SETTINGS.global.debugMode == debugBefore);
     }
     BOOST_TEST(SETTINGS.interface.autosaveInterval == autosaveBefore);
     BOOST_TEST(SETTINGS.global.debugMode == debugBefore);

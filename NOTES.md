@@ -913,3 +913,12 @@ are unchanged; both documentation sides are preserved. Fresh affected Debug12 ca
 assertions and complete merged Debug468 cases / 43,585 assertions pass. The assertion count
 varies with GUI/initialization paths; case counts and all actual world/replay assertions pass.
 All17 fresh checks on the resulting merge head are required before tested handoff.
+
+## 2026-10-01 — Sol: build-order fixture explicit settings cleanup
+- Remove singleton access from BuildOrderPadFixture's destructor. Restore debugMode through
+  explicit cleanup on both exits; verify restoration before fixture destruction on normal and
+  exceptional paths. Replay's in-body transition tears down only the desktop, retaining the
+  temporary debug setting until final cleanup. No product changes or coverage exclusions.
+- Own Debug/Werror build-order suite: 12 cases/5,121 assertions pass, including real replay
+  input policies and exception cleanup. Formatting, static validation, diff checks and agent
+  TypeScript gate pass. Await all17 new-head CI jobs before handoff.
