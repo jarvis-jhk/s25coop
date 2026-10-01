@@ -34,6 +34,11 @@ namespace {
 constexpr PadDeviceId pad = 100;
 const std::vector<std::string> songs{"s01", "s02", "s03"};
 
+[[noreturn]] void throwCleanupProbe()
+{
+    throw std::runtime_error("cleanup probe");
+}
+
 struct MusicPlayerPadFixture : rttr::test::MenuPadFixture
 {
     rttr::test::TmpFolder userData;
@@ -316,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE(ExceptionRestoresTheProductionPlaylist, MusicPlayerPadFi
 {
     const auto originalSongs = savedPlaylist.getSongs();
     const auto originalCurrent = savedPlaylist.getCurrentSong();
-    BOOST_CHECK_THROW(run([] { throw std::runtime_error("cleanup probe"); }), std::runtime_error);
+    BOOST_CHECK_THROW(run(throwCleanupProbe), std::runtime_error);
     BOOST_TEST(player.GetPlaylist().getSongs() == originalSongs, boost::test_tools::per_element());
     BOOST_TEST(player.GetPlaylist().getCurrentSong() == originalCurrent);
 }
