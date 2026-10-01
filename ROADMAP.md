@@ -117,6 +117,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  Outline map now preserves identical map/window dimensions across controller zoom and reopen.
+  Four physical-input regressions cover saved zoom, shoulder endpoint clamps, mouse click/drag
+  camera targets, containment at 800x600/1280x800, immediate world/inventory invariance and
+  explicit exceptional settings restoration (Sol companion; exact-head CI required before handoff).
   Post office retains the selected filtered letter during earlier deletions and full-inbox
   eviction, including same-count category replacements. Eight physical-input regressions cover
   all four filters, timeline bounds, correct delete targets, mouse/keyboard, empty/incoming mail,
