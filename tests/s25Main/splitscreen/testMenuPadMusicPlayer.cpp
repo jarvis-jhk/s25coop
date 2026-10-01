@@ -104,7 +104,7 @@ struct MusicPlayerPadFixture : rttr::test::MenuPadFixture
         press(pad, PadButton::A);
     }
 
-    void expectTracks(const std::vector<std::string>& expected)
+    void expectTracks(const std::vector<std::string>& expected) const
     {
         BOOST_TEST_REQUIRE(tracks().GetNumLines() == expected.size());
         for(unsigned i = 0; i < expected.size(); ++i)
