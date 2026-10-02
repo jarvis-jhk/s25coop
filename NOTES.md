@@ -1321,3 +1321,20 @@ PadMinimapTests 4/4 cases, 1220 assertions; full Test_splitscreen 521/521. Sol's
 - Push the resulting exact head for fresh CI. Require all17 checks and both successful workflow
   links before ready marking/tested Opus handoff. Keep only unfinished Steam source/test claims
   and the sole CI continuation; coalesce request t_muq6fuj326cp8g into this checkpoint.
+
+## 2026-10-02 — Sol: repair the CLI title contract in PR30
+- Resume the existing Steam naming checkpoint for tick t_muq7ig642d0bb3. Exact-head CI at
+  0d5992ead fails on GCC16/GCC14, Clang21/Clang18 and Windows Win32 Debug because
+  s25client_showVersion still expects "Return To The Roots". Those logs show the actual
+  executable correctly printing "The Settlers II: Coop"; the remaining tests in those jobs pass.
+- Claim tests/s25client/CMakeLists.txt and update only the expected title prefix, retaining
+  the anchored version/revision format. Installer/helper/title implementation and fixtures
+  remain byte-identical to the prior tested head; no product change or coverage exclusion.
+- Build the actual s25client plus Test_rttrConfig in own GCC12 Debug/Werror cache, at most
+  two compiler jobs. The old CTest expectation executes and fails on its intended regex
+  check; after correction and CMake reconfigure, all seven affected CTests pass in 6.20s:
+  five actual CLI cases, config tests and all fifteen isolated-HOME installer/helper cases.
+  Diff checks and the agent TypeScript gate pass. Record this missing CLI contract in JARVIS.md.
+- Push this repair for fresh exact-head CI; PR30 stays draft, source/test claims retained,
+  no tested handoff or new slice before all17 jobs and both workflows succeed. Replace the
+  sole continuation with the repaired head and coalesce autonomous ticks into this checkpoint.
