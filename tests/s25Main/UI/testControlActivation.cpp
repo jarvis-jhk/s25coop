@@ -390,24 +390,25 @@ BOOST_AUTO_TEST_CASE(ComboBoxStepAndActivate)
 
     BOOST_TEST(combo->CanFocus());
     BOOST_TEST(!combo->StepValue(Position(1, 0)));
-    BOOST_TEST(combo->StepValue(Position(0, 1)));
-    BOOST_TEST_REQUIRE(combo->GetSelection().has_value());
-    BOOST_TEST(*combo->GetSelection() == 0u);
-    BOOST_TEST(combo->StepValue(Position(0, 1)));
-    BOOST_TEST(*combo->GetSelection() == 1u);
-    // Der Rueckruf ist derselbe, den ein Mausklick auf den Listeneintrag ausloest.
-    BOOST_TEST_REQUIRE(wnd.comboSelected.size() == 2u);
-    BOOST_TEST(wnd.comboSelected.back() == 1u);
+    BOOST_TEST(!combo->StepValue(Position(0, 1)));
+    BOOST_TEST(!combo->GetSelection().has_value());
+    BOOST_TEST(wnd.comboSelected.empty());
 
-    // Activate klappt die Liste auf und wieder zu - genau der Rumpf von Msg_LeftDown beim
-    // Klick auf das Feld.
     auto* list = combo->GetCtrl<ctrlList>(0);
     BOOST_TEST_REQUIRE(list != nullptr);
     BOOST_TEST(!list->IsVisible());
     BOOST_TEST(combo->Activate());
     BOOST_TEST(list->IsVisible());
+    BOOST_TEST(combo->StepValue(Position(0, 1)));
+    BOOST_TEST_REQUIRE(combo->GetSelection().has_value());
+    BOOST_TEST(*combo->GetSelection() == 0u);
+    BOOST_TEST(combo->StepValue(Position(0, 1)));
+    BOOST_TEST(*combo->GetSelection() == 1u);
+    BOOST_TEST(wnd.comboSelected.empty());
     BOOST_TEST(combo->Activate());
     BOOST_TEST(!list->IsVisible());
+    BOOST_TEST_REQUIRE(wnd.comboSelected.size() == 1u);
+    BOOST_TEST(wnd.comboSelected.back() == 1u);
 
     // Nur-lesend: kein Fokus, keine Wirkung.
     auto* ro = wnd.AddComboBox(2, DrawPoint(0, 40), Extent(80, 20), TextureColor::Green1, NormalFont, 60, true);

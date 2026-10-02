@@ -318,43 +318,22 @@ std::optional<Window::ValueRange> ctrlComboBox::GetValueRange() const
     return ValueRange{list->GetSelection().value_or(0u), list->GetNumLines() - 1u, ValueAxis::Vertical};
 }
 
-bool ctrlComboBox::CanStepValue(const Position& dir) const
+bool ctrlComboBox::CanStepValue(const Position&) const
 {
-    // Schreibgeschuetzt heisst schreibgeschuetzt - auch fuer das Steuerkreuz. GENAU HIER lag
-    // Befund N8: GetValueRange() liefert hier trotzdem einen Wertebereich, die Leiste haette
-    // also "Steuerkreuz Einstellen" versprochen, und der Druck haette nichts getan.
-    if(readonly)
-        return false;
-    const auto* list = GetCtrl<ctrlList>(0);
-    // AUFGEKLAPPT: das Steuerkreuz blaettert nur, es waehlt nicht. Auch waagerecht
-    // verbraucht - solange die Liste offen ist, soll der Fokus nicht unter ihr wegrutschen
-    // und sie offen zuruecklassen. Heraus fuehren A (bestaetigen), B (verwerfen) und die
-    // Schultertasten (verwerfen ueber OnFocusLost).
-    if(list->IsVisible())
-        return true;
-    return dir.y != 0 && list->GetNumLines() > 0;
+    // A closed dropdown belongs to focus navigation. Only A opens a browsing session;
+    // consuming directions here would immediately change settings while moving past it.
+    // An open list also consumes horizontal input so focus cannot slip behind it.
+    return !readonly && IsListOpen();
 }
 
 void ctrlComboBox::DoStepValue(const Position& dir)
 {
-    auto* list = GetCtrl<ctrlList>(0);
-    if(list->IsVisible())
+    if(dir.y != 0)
     {
-        if(dir.y != 0)
-        {
-            browsing_ = true;
-            list->StepValue(dir);
-            browsing_ = false;
-        }
-        return;
+        browsing_ = true;
+        GetCtrl<ctrlList>(0)->StepValue(dir);
+        browsing_ = false;
     }
-    const int last = static_cast<int>(list->GetNumLines()) - 1;
-    const auto& sel = list->GetSelection();
-    int next = (sel ? static_cast<int>(*sel) : (dir.y > 0 ? -1 : last + 1)) + dir.y;
-    next = std::max(0, std::min(last, next));
-    // Bewusst ueber die Liste: das loest Msg_ListSelectItem auf DIESEM Control aus und damit
-    // genau den Weg, den auch ein Mausklick auf einen Listeneintrag nimmt.
-    list->SetSelection(static_cast<unsigned>(next));
 }
 
 void ctrlComboBox::AddItem(const std::string& text)

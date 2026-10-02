@@ -65,6 +65,7 @@ public:
     bool CanCancelInput() const override { return !readonly && IsListOpen(); }
     bool CancelInput() override;
     void OnFocusLost() override;
+    /// Closed fields let directions move focus; open lists browse without committing.
     bool CanStepValue(const Position& dir) const override;
     void DoStepValue(const Position& dir) override;
     std::optional<ValueRange> GetValueRange() const override;

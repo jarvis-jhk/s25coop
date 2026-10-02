@@ -117,6 +117,11 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☑ 3 seat colours per view (focus ring, brief stripe), a road built from one view stops a crossing preview in another (2026-10-02) · ☐ 4 refresh a second view's open economy windows when the shared settings change.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  Closed dropdowns now let controller directions move focus instead of immediately changing
+  settings; A opens, directions browse, A confirms and B restores. BuildOrder's actual timer
+  sends its confirmed mode while an open dropdown only previews a different one. Physical
+  D-pad/stick and real-game timer/cancellation/roundtrip regressions cover both defects;
+  exact-head CI is required before the Sol companion handoff.
   The shared-tribe checkbox now occupies the local seat panel below the cards, clear of Goals
   and the other settings. Five physical-input layout/scaling/seat-policy/cleanup regressions
   and all22 existing seat cases pass in Debug; the full560-case suite passes. Exact-head CI

@@ -75,7 +75,7 @@ void iwBuildOrder::TransmitSettings()
     if(HasPendingSettings())
     {
         // Einstellungen speichern
-        useCustomBuildOrder = GetCtrl<ctrlComboBox>(6)->GetSelection() != 0u;
+        // The open dropdown selection is a preview; its callback owns the committed mode.
         BuildOrders transmitPendingBuildOrder;
         unsigned int i = 0;
         for(; i < pendingBuildOrder.size(); i++)
