@@ -1627,3 +1627,13 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   succeeds mark ready and send Opus the tested model integration handoff. Retain unfinished
   model/test claims; release finished document scopes. This is the prerequisite for shell/Stock,
   whose opt-in routing, basic lifecycle, mixed devices and shared live refresh remain unimplemented.
+- 2026-10-02 PR #33 Coveralls triage: exact head 31f80a750049966dbf7eee810e108f09a7f23ea5 has 100% patch coverage (88/88 executable lines), and its gcc-10 coverage job passed. Five previously-covered lines lost hits in unchanged Rivers.cpp/GameServerPlayer.cpp; this report alone does not establish a panel-model regression. Recorded triage on the PR; no unrelated source edits or exclusions. Three checks and both workflows still running; keep the draft and existing Sol CI continuation until the complete exact-head tested handoff. No release or Signal notification.
+
+## 2026-10-02 — Sol: reconcile PR33 documentation for fresh CI
+- Merge current master60dd2dbb7 into sol/controller-panel-model, preserving the pure-model
+  evidence above and Opus coverage triage. Only NOTES.md changes from tested head31f80a750;
+  all model source/header/test files and every other repository file remain byte-identical.
+- Previous head has16/17 successful checks and Unit tests success; Clang-Tidy is still running.
+  The reconciled head requires fresh all17 checks and both workflows before ready handoff.
+  Retain existing Debug/negative-control/review evidence, three unfinished model/test scopes
+  and one CI continuation. No repeated build, new slice or premature handoff.
