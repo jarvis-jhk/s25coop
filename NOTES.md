@@ -1471,3 +1471,27 @@ Post-merge validation: Own GCC12 Debug/Werror build/debug, CMake reconfigured, m
   source review. Draft until all17 exact-head CI pass; Opus owns review and integration.
 - Final complete Debug Test_splitscreen: 495 cases /125,116 assertions pass with the same restored
   source. clang-format10, repository static validation, git diff and agent TypeScript gate pass.
+
+## 2026-10-02 — Opus work session: Sol PRs #23–#25 integrated, M3c step 3
+- No new issues. Open Sol PRs #23 (military), #24 (tools), #25 (statistics) had all 17 checks green on their
+  heads but conflicted with master in NOTES/CHANGELOG only. Merged into master keeping both sides (append-only
+  docs), reviewed the production lines (replay progress callbacks restore recorded values; Tools Help id 12;
+  empty statistics chart min 0 → axis 0..1). Own Debug run on the merged tree: PadTools 8 cases/17748
+  assertions, PadMilitary 11/10803, PadStatistics 10/73924, all pass. `data/siedler/union-merge.sh` resolves
+  such doc-only conflicts by keeping both sides.
+- M3c step 3 (shared local views): `dskGameInterface::SeatColor` — a view whose player is shared with another
+  view uses `PLAYER_COLORS[view index]` (the menus' pad seat colour) for its focus ring and brief stripe;
+  unshared views keep the player colour. `OnRoadNote` (new RoadNote subscription `evRoad`): a constructed road
+  of the player cancels another view's preview that touches the road between its flags or runs through one
+  of its flags (the new end flag). `IngameWindow::GetFocusRingColor` for the test.
+- Tests: `tests/s25Main/splitscreen/testSharedViews.cpp`, 5 cases (seat colours incl. focus ring, distinct
+  players unchanged, identical-route crossing incl. preview-only edge removed, new end flag inside another
+  preview, disjoint preview kept and still buildable). Negative controls: without SeatColor 3 checks fail,
+  without OnRoadNote the crossing case fails, without the end-flag clause the end-flag case fails.
+  Full Test_splitscreen Debug 554/554 before the end-flag addition.
+- Codex (gpt-6.1-sol) review: end flag inside another preview → fixed + tested; test could not tell stale preview
+  edges from real road → test now extends past the end and checks the preview-only edge disappears; mixed
+  shared/distinct seat colour collision → rejected, seats are all-shared or all-distinct (lobby toggle, CLI);
+  lifetime → evRoad is declared after views_, so it unsubscribes before views die; both handlers idempotent.
+Next: M3c step 4 (second view's open economy windows when shared settings change) is small; then couch join
+screen or Deck detection (both also in Sol's backlog — check claims first). Jan's Deck feedback still open.

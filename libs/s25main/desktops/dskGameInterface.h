@@ -40,6 +40,7 @@ struct MouseCoords;
 class PostBox;
 class PostMsg;
 struct BuildingNote;
+struct RoadNote;
 struct KeyEvent;
 class NWFInfo;
 class GameWorldBase;
@@ -397,6 +398,12 @@ public:
     /// betreten muss, das es soeben geoeffnet hat - "das oberste" waere hinter einem modalen
     /// Fenster das falsche (WindowManager::DoShow fuegt vor dem ersten modalen ein).
     bool EnterWindow(PlayerView& view, IngameWindow* wnd);
+
+    /// The colour that identifies this view's seat: its focus ring and brief stripe.
+    /// Normally the colour of the player it controls. When several views share ONE player
+    /// (couch coop), that colour would make them indistinguishable, so each takes the pad
+    /// seat colour the menus already use for its slot (PLAYER_COLORS[view index]).
+    unsigned SeatColor(const PlayerView& view) const;
 
     /// --- Die vier Handlungen der Knopfleiste, auf GENAU EINE Ansicht bezogen ---------------
     ///
@@ -1038,6 +1045,10 @@ protected:
     /// zugehen, der es offen hat. Genau das tut der Rueckruf ueber WINDOWMANAGER.CloseAll().
     /// Ein Abo je Ansicht wuerde dasselbe mehrfach tun.
     Subscription evBld;
+    /// Shared views: a road built from one view cancels another view's preview that runs
+    /// through it (see OnRoadNote).
+    Subscription evRoad;
+    void OnRoadNote(const RoadNote& note);
 
     /// Verteilt Gamepad-Ereignisse auf die Ansichten. Gehoert dem Desktop und nicht einem
     /// Singleton: er lebt genau so lange wie die Ansichten, auf die er verteilt.

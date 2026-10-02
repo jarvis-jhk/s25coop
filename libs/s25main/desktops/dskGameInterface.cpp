@@ -74,6 +74,7 @@
 #include "network/GameClient.h"
 #include "notifications/BuildingNote.h"
 #include "notifications/NotificationManager.h"
+#include "notifications/RoadNote.h"
 #include "ogl/FontStyle.h"
 #include "ogl/SoundEffectItem.h"
 #include "ogl/glArchivItem_Bitmap_Player.h"
@@ -93,6 +94,7 @@
 #include "gameData/const_gui_ids.h"
 #include "liblobby/LobbyClient.h"
 #include "s25util/Log.h"
+#include "s25util/colors.h"
 #include <glad/glad.h>
 #include <algorithm>
 #include <cmath>
@@ -387,6 +389,8 @@ void dskGameInterface::InitPlayer()
             }
         }
     });
+    evRoad = worldViewer.GetWorld().GetNotifications().subscribe<RoadNote>(
+      [this](const RoadNote& note) { this->OnRoadNote(note); });
     // Ein Postfach fuer JEDE dargestellte Ansicht, nicht nur fuer die Hauptansicht. Ohne das
     // wird die Post der Spieler 2 bis 4 gar nicht erst aufgehoben (siehe GetPostBoxFor), und
     // das Padmenue oeffnete ein leeres Fenster, in dem nie etwas ankommen kann.
@@ -1742,8 +1746,7 @@ void dskGameInterface::DrawBrief(const PlayerView& view) const
     // Ein schmaler Streifen in der Spielerfarbe: bei vier Kaesten auf einem Fernseher ist das
     // der schnellste Weg zu erkennen, welcher der eigene ist. Dieselbe Farbe traegt schon der
     // Fokusrahmen (ClearFocusRing/AddFocusRing).
-    const unsigned playerColor = worldViewer.GetWorld().GetPlayer(view.GetPlayerId()).color;
-    DrawRectangle(Rect(layout.panel.getOrigin(), Extent(2, layout.panel.getSize().y)), playerColor);
+    DrawRectangle(Rect(layout.panel.getOrigin(), Extent(2, layout.panel.getSize().y)), SeatColor(view));
 
     // BEFUND N7: hier stand die Schleife. Was von ihr uebrig bleibt, ist ein Ausgeber ohne
     // Verzweigung - er kann keine Zeile mehr auslassen, weil er keine Zeile mehr auswaehlt.
@@ -2767,8 +2770,18 @@ bool dskGameInterface::EnterWindow(PlayerView& view, IngameWindow* const wnd)
     // Tages nicht mehr stimmt; erreicht wird sie nicht.
     if(!view.GetFocus().SetRoot(wnd))
         return false;
-    wnd->AddFocusRing(view.GetFocus(), view.GetViewer().GetPlayer().color);
+    wnd->AddFocusRing(view.GetFocus(), SeatColor(view));
     return true;
+}
+
+unsigned dskGameInterface::SeatColor(const PlayerView& view) const
+{
+    const bool shared = std::any_of(views_.begin(), views_.end(), [&view](const auto& other) {
+        return other.get() != &view && other->GetPlayerId() == view.GetPlayerId();
+    });
+    if(shared)
+        return PLAYER_COLORS[view.GetIndex() % PLAYER_COLORS.size()];
+    return view.GetViewer().GetWorld().GetPlayer(view.GetPlayerId()).color;
 }
 
 /// DER BACK-KNOPF, und warum er es ist und nicht Start:
@@ -3198,6 +3211,44 @@ void dskGameInterface::CancelRoadBuilding(PlayerView& view)
     // sie hier geleert, statt sich auf den naechsten StartRoadBuilding zu verlassen.
     rb.route.clear();
     UpdateRoadCursor(view);
+}
+
+void dskGameInterface::OnRoadNote(const RoadNote& note)
+{
+    // Only a road that now really stands can invalidate a preview. Each view has its own viewer,
+    // so a view sharing the player never saw the other view's preview and may have planned
+    // through the same nodes. Its build would be refused, and its own preview would keep holes
+    // where the new road's note cleared the overlay. Stop it now instead, visibly. Shorter routes
+    // never get here: GameWorld::BuildRoad refuses them.
+    if(note.type != RoadNote::Constructed || note.route.size() < 2u)
+        return;
+    const GameWorldBase& world = worldViewer.GetWorld();
+    std::vector<MapPoint> built{note.pos};
+    for(const Direction dir : note.route)
+        built.push_back(world.GetNeighbour(built.back(), dir));
+    const MapPoint startFlag = built.front();
+    const MapPoint endFlag = built.back();
+    for(const auto& viewPtr : views_)
+    {
+        PlayerView& view = *viewPtr;
+        const RoadBuildState& rb = view.GetRoad();
+        if(view.GetPlayerId() != note.player || rb.mode == RoadBuildMode::Disabled)
+            continue;
+        // A preview may begin or end at one of the new road's flags. It may not touch the road
+        // anywhere in between, nor run THROUGH one of its flags (the end flag is new).
+        bool crosses = false;
+        MapPoint cur = rb.start;
+        for(unsigned i = 0; i <= rb.route.size() && !crosses; ++i)
+        {
+            if(i > 0)
+                cur = world.GetNeighbour(cur, rb.route[i - 1]);
+            const bool isEnd = i == 0 || i == rb.route.size();
+            crosses = std::find(built.begin() + 1, built.end() - 1, cur) != built.end() - 1
+                      || (!isEnd && (cur == startFlag || cur == endFlag));
+        }
+        if(crosses)
+            CancelRoadBuilding(view);
+    }
 }
 
 /// Die Ansicht, in deren Namen gerade ein Strassenfenster handelt - sonst die Hauptansicht.

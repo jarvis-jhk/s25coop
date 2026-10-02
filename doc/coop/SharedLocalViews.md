@@ -63,6 +63,15 @@ Only explicit guards that refuse a repeated player id:
    player (a visual glitch when two people build roads at once); refresh open economy windows
    when the shared visual settings change.
 
+Done for 4 and the road half of 6 (2026-10-02): `dskGameInterface::SeatColor` gives a shared view
+`PLAYER_COLORS[view index]` for its focus ring and brief stripe; unshared views keep their player's
+colour. `OnRoadNote` cancels another view's preview of the same player when a constructed road
+runs through it or puts its new end flag inside it (that view's build could only be refused, and
+the note would have punched holes into its overlay). Tests: `tests/s25Main/splitscreen/testSharedViews.cpp`.
+Seats are either all shared or all distinct today (lobby toggle, CLI), so a shared seat colour
+cannot collide with an unshared local player's colour; revisit if mixed setups are ever allowed.
+Open: refreshing a second view's open economy window when the shared settings change.
+
 Tests: a Test_splitscreen case with two views on player 0 — both place a building, both land
 in player 0's world, one command stream; a campaign mission with two shared views in the
 headless harness if feasible.

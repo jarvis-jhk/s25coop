@@ -538,6 +538,16 @@ bool IngameWindow::HasFocusRing(const FocusPath& focus) const
     return helpers::contains_if(focusRings_, [&focus](const FocusRing& ring) { return ring.focus == &focus; });
 }
 
+std::optional<unsigned> IngameWindow::GetFocusRingColor(const FocusPath& focus) const
+{
+    for(const FocusRing& ring : focusRings_)
+    {
+        if(ring.focus == &focus)
+            return ring.color;
+    }
+    return std::nullopt;
+}
+
 void IngameWindow::Msg_PaintAfter()
 {
     // Rekursiv an die Controls, wie bisher.

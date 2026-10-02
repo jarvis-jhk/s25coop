@@ -12,6 +12,7 @@
 #include "input/PlayerBrief.h"
 #include "gameData/const_gui_ids.h"
 #include <array>
+#include <optional>
 #include <vector>
 
 class FocusPath;
@@ -135,6 +136,8 @@ public:
     void RemoveFocusRing(const FocusPath& focus);
     /// Ist der Rahmen DIESES Fokus an diesem Fenster angemeldet?
     bool HasFocusRing(const FocusPath& focus) const;
+    /// The colour this focus's ring is drawn in, if it is registered here.
+    std::optional<unsigned> GetFocusRingColor(const FocusPath& focus) const;
     /// Wie viele lokale Spieler stehen gerade in diesem Fenster? Beobachtbar gemacht, weil an
     /// dieser Zahl die LEBENSDAUER haengt: bleibt hier ein Eintrag stehen, waehrend der
     /// zugehoerige FocusPath schon tot ist, greift ~IngameWindow auf freigegebenen Speicher zu.

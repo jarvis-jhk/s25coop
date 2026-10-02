@@ -115,7 +115,7 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     host play; an ordinary member in the same topology finishes in sync (Sol companion, 2026-09-30).
   - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
-    with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☐ 3 seat colours per view, road-preview/settings polish.
+    with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☑ 3 seat colours per view (focus ring, brief stripe), a road built from one view stops a crossing preview in another (2026-10-02) · ☐ 4 refresh a second view's open economy windows when the shared settings change.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
   Outline map now preserves identical map/window dimensions across controller zoom and reopen.
   Four physical-input regressions cover saved zoom, shoulder endpoint clamps, mouse click/drag
