@@ -157,7 +157,7 @@ void iwTools::Msg_PaintBefore()
 
 void iwTools::Msg_ButtonClick(const unsigned ctrl_id)
 {
-    if(isReplay)
+    if(isReplay && ctrl_id != 12u)
         return;
     // qx:tools
     if(ctrl_id >= 100 && ctrl_id < (100 + 2 * helpers::NumEnumValues_v<Tool>))
@@ -206,6 +206,12 @@ void iwTools::Msg_ButtonClick(const unsigned ctrl_id)
 
 void iwTools::Msg_ProgressChange(const unsigned /*ctrl_id*/, const unsigned short /*position*/)
 {
+    if(isReplay)
+    {
+        // Disabled buttons do not block pad, wheel or bar input: keep recorded values read-only.
+        UpdateSettings();
+        return;
+    }
     // Einstellungen wurden geändert
     MarkSettingsChanged();
 }

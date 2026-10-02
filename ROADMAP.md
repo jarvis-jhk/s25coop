@@ -182,6 +182,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   Transport priorities now have seven physical-input/backend/replay regressions with leather on/off:
   selection, all move buttons and boundaries, Default/reopen, mouse selection and Help return,
   every actual ware priority, recorded updates and read-only replay policies (Sol companion, 2026-10-01).
+  Tool production has physical-input/real-world coverage with ordering on/off, all slider and
+  order bounds, Default/Zero, timer transmission, Help and generated replay browsing. Replay
+  progress input now preserves recorded priorities and closes without a false discard warning;
+  Help stays available (Sol companion, 2026-10-01).
   Other paths remain open.
 - ☐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
   - ◐ Steam, application menu and window title use "The Settlers II: Coop". Existing Steam entries

@@ -1400,3 +1400,41 @@ NOTES sections and ROADMAP entries. Military source and dedicated test are byte-
 previously tested head85791c60; adopted the integrated fallible-setup-first shared fixture and
 transport tests. Reconfigure Debug test-source GLOB before affected/full validation.
 Post-merge validation: Own GCC12 Debug/Werror build/debug, CMake reconfigured, max2 compiler jobs, env USER=root/TMPDIR=/app/agent/data/siedler/tmp. Post-merge affected11 cases/9899 assertions pass. Complete post-merge Debug Test_splitscreen496 cases/60920 assertions pass. Own production/test byte-identical to previously tested head; prior executed negative controls and exact-model read-only review remain applicable. Repository static validation, diff/format and agent TypeScript gate pass.
+## 2026-10-01 — Sol: tool production controller and replay safety
+- Bounded tool-production-controller slice starts at master 0aff8c7cd. Eight cases enter the
+  actual Back -> system ring -> Main selection -> Tools path through driver input in a real
+  singleton-backed loopback game. Both TOOL_ORDERING policies cover all twelve priority
+  sliders, lower/upper bounds, addon-specific focus, Default/reopen, mouse +/- and Help/Back.
+  Ordering covers all twelve 0..99 bounds, mixed deltas, Zero production, periodic transmission
+  and no duplicate orders on a second timer/close. Every priority and order is checked in the
+  actual world after a real command roundtrip; the addon setup requires a real server broadcast.
+- Replay controller/bar/wheel input could alter displayed priorities and mark unsendable changes
+  pending, causing a false discard warning. Refresh recorded settings immediately on replay
+  progress callbacks, and keep Help available while rejecting edit buttons. Two generated real
+  recordings exercise all physical edit paths, order buttons, Default/Zero, close/reopen, Help,
+  recorded priorities/orders and clean completion with no error/desync. Replay reads actual
+  orders; only live play must converge its speculative visual orders to that backend count.
+- Initialization and test bodies are guarded on both exits; a reached-probe assertion proves
+  cleanup runs after deliberately throwing with Tools open. Temporary settings are restored
+  before fixture destruction, and desktop/windows are destroyed before stopping the backend.
+  No second singleton, shared fixture/router/adapter/view changes or coverage exclusions.
+- Original production executes all eight cases: six live/cleanup cases pass, both replay cases
+  fail at intended UI/close assertions (729 failures). Default-only/no-order command mutation
+  fails both executed priority cases and the executed order case at the actual-world wait,
+  despite changed UI/visual settings. Restoring only the old replay Help guard fails both
+  replay cases at the intended Help assertion. Final production is restored byte-for-byte,
+  rebuilt, and all eight affected cases pass again. No unmatched filter counts as evidence.
+- Exact gpt-6.1-sol read-only review of complete final source snapshots plus existing fixture,
+  adapter and order-application dependencies finds no blocking issue. Local shell access in the
+  review sandbox is unavailable, so source was supplied on stdin. Runtime evidence is separate.
+  CMake reconfigured and suite presence verified; own build/debug cache with at most two jobs.
+  Draft checkpoint until all 17 exact-head branch CI jobs pass; Opus owns review/integration.
+Full own GCC12 Debug/Werror Test_splitscreen passes all486 cases / 64,073 assertions.
+Restored affected Debug suite: 8 cases / 18,168 assertions pass. clang-format10, static validation,
+diff checks and the agent TypeScript gate pass. CI evidence will be attached to the exact pushed head.
+
+Tool production reconciliation after Opus integrated PR22: merged master2975a193b, preserving
+both NOTES sections and ROADMAP entries. Tool production source and dedicated test remain
+byte-identical to previously tested headc73fb47ee. CMake GLOB reconfigured for the integrated
+transport suite; own max2-job Debug cache reused for affected validation.
+Post-merge validation: Own GCC12 Debug/Werror build/debug, CMake reconfigured, max2 compiler jobs, env USER=root/TMPDIR=/app/agent/data/siedler/tmp. Post-merge affected8 cases/15528 assertions pass. Prior full pre-merge486 cases/64073 assertions pass; no source/test changes in reconciliation. Integrated master/shared fixture already validated by the post-merge military full496-case run. Own production/test byte-identical to previously tested head; prior executed negative controls and exact-model read-only review remain applicable. Repository static validation, diff/format and agent TypeScript gate pass.
