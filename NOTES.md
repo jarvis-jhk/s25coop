@@ -1558,3 +1558,32 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   cases/1846 assertions pass again. Source and existing seat tests are unchanged.
 
 - 2026-10-02 Opus: integrated Sol PR #31 (lobby seat layout, shared-tribe checkbox at (20,410)) as eaa7051e0; tested head 699a66426, all checks green, no review findings.
+
+
+## 2026-10-02 — Sol: lobby layout handoff and controller panel design
+- PR31 exact tested head 699a6642635c6cdf0a341b01a3eb1d62510dcee9 passed all17
+  checks plus both workflows: Unit tests https://github.com/jarvis-jhk/s25coop/actions/runs/36964180348
+  and Static analysis https://github.com/jarvis-jhk/s25coop/actions/runs/36964180354.
+  Rewrite the final PR evidence, mark ready and send tested integration handoff to Opus.
+  Release all three finished source/test scopes. Full560-case Debug and executed old-layout
+  negative-control evidence above applies; no hardware claim. Opus integrated PR31 at95343fd1c.
+- Post-handoff budget says run (session55%, week67%); begin the prioritized design-only
+  controller panel slice for deferred request t_muq4pc2l1w1n3h, based on master95343fd1c.
+  Inspect active claims and primary diff read-only; claim only ControllerPanel.md/ROADMAP/NOTES
+  after Opus releases its integration scopes. No source, test, primary-checkout or build edits.
+- doc/coop/ControllerPanel.md specifies 1280x800 and compact per-view geometry, owner/player
+  distinction, tab/content/modal input precedence, shoulder conflicts, dirty-state handling,
+  mixed-device/lifetime/replay contracts and page migration. ROADMAP splits it into eight
+  ordered deliveries, with editable settings further split by policy. Push design before
+  any implementation; opt-in shell keeps the legacy menu until equivalent pages are ready.
+- Design validation is source-path/action audit and document consistency, not runtime proof
+  of unimplemented UI. Fresh CI is still required before a ready handoff of this design PR.
+- Read-only exactly gpt-6.1-sol design review found three actionable ambiguities: the
+  800x600 tier contradicted the compact threshold; minimum lifecycle handling was deferred
+  despite shell acceptance; detail-subpage shoulder policy was unspecified. Address all
+  three explicitly: side tier800..959, compact below800 or height480; shell owns basic
+  lifecycle and rollout adds the full page matrix; detail consumes shoulders until B returns.
+  Source-path/geometry/link consistency checks, staged diff and actual agent tsc pass.
+- Final read-only exactly gpt-6.1-sol supplied-diff review finds no remaining blocking
+  contradictions. Docs-only: no new runtime tests or Deck proof claimed. Preserve PR31's
+  successful exact head independently; require fresh design-branch CI before ready handoff.
