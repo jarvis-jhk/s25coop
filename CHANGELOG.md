@@ -15,6 +15,9 @@ and the game will show the new sections after an update.
   they were too low before.
 - Distribution of goods stays read-only during replays, without a false discard warning
   after controller or mouse input. Help remains available.
+- Military settings in replays keep showing the recorded values after controller or mouse input,
+  and close without a spurious warning about unsaved changes.
+
 - Campaign previews show a clear fallback when artwork is unavailable; one missing or damaged
   image no longer hides the previews of other campaigns.
 - Building sequence: Default now keeps all buildings enabled by wine, leather and charcoal addons.
