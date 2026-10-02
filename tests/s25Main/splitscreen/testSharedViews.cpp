@@ -103,10 +103,13 @@ RoadSpot findDisjointSpot(const GameWorldViewer& viewer, const RoadSpot& other)
            || world.GetBQ(pt, viewer.GetPlayerId()) == BuildingQuality::Nothing)
             continue;
         std::vector<Direction> route = FindPathForRoad(viewer, spot.start, pt, false, 100);
-        if(route.size() < 2u || route.size() > 5u)
-            continue;
-        const std::vector<MapPoint> pts = roadPoints(world, spot.start, route);
-        if(std::any_of(pts.begin() + 1, pts.end(), nearOther))
+        const auto runsNearOther = [&]() {
+            const std::vector<MapPoint> pts = roadPoints(world, spot.start, route);
+            return std::any_of(pts.begin() + 1, pts.end(), nearOther);
+        };
+        // One combined filter: which test rejects a node depends on the map, and a separate
+        // continue that this map never reaches fails the coverage check.
+        if(route.size() < 2u || route.size() > 5u || runsNearOther())
             continue;
         spot.end = pt;
         spot.route = std::move(route);
@@ -149,9 +152,10 @@ std::vector<MapPoint> approachEndFlag(const GameWorldViewer& viewer, const RoadS
     };
     for(const MapPoint& w : world.GetPointsInRadius(spot.start, 7))
     {
-        if(contains(roadPts, w) || world.GetNode(w).obj)
-            continue;
-        const std::vector<Direction> first = FindPathForRoad(viewer, spot.start, w, false, 100);
+        const std::vector<Direction> first = (contains(roadPts, w) || world.GetNode(w).obj) ?
+                                               std::vector<Direction>{} :
+                                               FindPathForRoad(viewer, spot.start, w, false, 100);
+        // Combined for the same reason as in findDisjointSpot.
         if(first.empty() || !avoids(spot.start, first, roadPts))
             continue;
         std::vector<MapPoint> taken = roadPts;
