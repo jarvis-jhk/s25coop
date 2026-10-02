@@ -193,17 +193,13 @@ struct LobbySeatFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixtu
 
     static iwMsgbox* topMsgbox() { return dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()); }
 
-    /// s25coop: the "Play one tribe together" box of the seat panel (the only checkbox at its place)
+    /// s25coop: the "Play one tribe together" box, independent of screen scaling/layout.
     static ctrlCheck* togetherCheck()
     {
         auto* lobby = desktopAs<dskGameLobby>();
         BOOST_TEST_REQUIRE(lobby != nullptr);
-        for(ctrlCheck* chk : lobby->GetCtrls<ctrlCheck>())
-        {
-            if(chk->GetPos() == DrawPoint(400, 340))
-                return chk;
-        }
-        return nullptr; // LCOV_EXCL_LINE
+        // The co-player controls follow the seat label and two message-box ids.
+        return lobby->GetCtrl<ctrlCheck>(ID_txtSeats + 7);
     }
 };
 
