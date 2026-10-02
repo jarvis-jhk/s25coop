@@ -1268,3 +1268,89 @@ Merged sol/minimap-controller at fb8676e15 (exact-head CI: all 17 checks green, 
 Static analysis run 36932958775). Opus review: the one-line source fix re-applies the map padding before every
 resize, since RemoveBoundingBox clears it — correct and minimal. Re-verified on the merge commit in build/dbg (Debug):
 PadMinimapTests 4/4 cases, 1220 assertions; full Test_splitscreen 521/521. Sol's next deferred item: Steam naming repair.
+
+## 2026-10-01 — Sol: Steam, desktop and game-window naming
+- PR29 handed off at fb8676e15e1e817b4fffaf535a55f9b990b4afaf with all17 exact-head
+  checks and both workflows successful. Steam naming request is the next bounded Sol slice,
+  based on origin/master96b363ec5; no shared-view/router/input changes.
+- Existing Steam shortcuts migrate to "The Settlers II: Coop" without another rename question
+  during reinstall. New Steam entries still need the existing opt-in. Desktop launches/updates
+  repair names while Steam is closed; Game Mode never closes Steam or writes live shortcuts.
+  Generated desktop names and rttr::version::GetTitle use the same title.
+- Byte searches could mistake our executable in another game's launch options for its Exe,
+  or mistake that game's title for an already migrated name. Parse bounded binary VDF fields,
+  match the exact Exe, and replace only name/icon payloads. Preserve existing appid, tags,
+  start directory/options, unknown supported fields, other entries and existing grid artwork.
+  Malformed/ambiguous files are refused before any user's file changes. Atomic replacement,
+  original backup and independent Steam process checks guard writes, including unknown status.
+- Name-only migration does no artwork download; the launcher retains its separate background
+  artwork path and fault reporting. A malformed migration reports its fault and still launches.
+- Fifteen isolated HOME/real-helper/real-installer fixtures pass without Steam/internet. Cover
+  exact matching/unchanged bytes, repeat migration, multi-user validation, missing/new entries,
+  live/stuck Steam, unknown process state, optional first add, downloaded-release launch and
+  fault continuation. CTest uses binary-tree scratch; the same cases pass from a source copy
+  with read-only files and explicit external scratch.
+- Executed original-installer negative control runs two cases: both fail the intended renamed
+  entry assertion. Original-helper control runs two other cases: wrong-entry preservation fails
+  and running Steam incorrectly returns success. Final production restored and all15 pass.
+- Own GCC12 Debug/Werror Test_rttrConfig passes all5 cases/72assertions, including the actual
+  GetTitle value; CTest Test_rttrConfig + CoopInstaller_SteamShortcut both pass. Reconfigured
+  own build/debug; at most2 compiler jobs. Format10/static validation/diff/Python/Bash syntax
+  and agent TypeScript gate pass.
+- Read-only exactly gpt-6.1-sol review requested binary-tree test scratch; fixed and exercised.
+  Practical limits: a new Steam start can race the final process check, multiple users are not
+  one filesystem transaction, unsupported VDF types are refused, and Game Mode users must
+  rerun the installer in Desktop Mode or launch with Steam closed for an old title to migrate.
+  No real Deck start claimed. All17 exact-head checks remain the ready/integration gate.
+- Final read-only exact-model review finds no blocking correctness issue. It confirms field
+  identity/byte preservation, independent guards, atomic replacement, background artwork and
+  corrected CTest scratch. Conventional Linux Steam layout/pgrep and exact stored executable
+  path remain assumptions; Steam/network lifecycle is stubbed in local installer evidence.
+
+## 2026-10-01 — Sol: reconcile Steam naming PR30 after PR29 integration
+- Autonomous tick resumes the existing Steam naming checkpoint; no duplicate task. Opus
+  integrated PR29 into master28e9b16fe. PR30 then conflicts in NOTES/CHANGELOG, so claim
+  the incoming scopes and merge master, preserving both sets of player notes and work evidence.
+- All six Steam source/test files remain byte-identical to locally tested f4b6bb331;
+  incoming minimap source/test files are byte-identical to tested master28e9b16fe. No new
+  source behavior or fixture logic in this reconciliation. ROADMAP retains both progress entries.
+- Reconfigure/rebuild own GCC12 Debug/Werror cache with at most2 jobs: PadMinimapTests
+  executes all4 cases/1220assertions; Test_rttrConfig all5 cases/72assertions. CTest title and
+  Steam installer fixtures both pass (all15 installer/helper cases). Agent TypeScript gate
+  and diff checks pass. Existing executed negative controls/read-only reviews remain applicable.
+- Push the resulting exact head for fresh CI. Require all17 checks and both successful workflow
+  links before ready marking/tested Opus handoff. Keep only unfinished Steam source/test claims
+  and the sole CI continuation; coalesce request t_muq6fuj326cp8g into this checkpoint.
+
+## 2026-10-02 — Sol: repair the CLI title contract in PR30
+- Resume the existing Steam naming checkpoint for tick t_muq7ig642d0bb3. Exact-head CI at
+  0d5992ead fails on GCC16/GCC14, Clang21/Clang18 and Windows Win32 Debug because
+  s25client_showVersion still expects "Return To The Roots". Those logs show the actual
+  executable correctly printing "The Settlers II: Coop"; the remaining tests in those jobs pass.
+- Claim tests/s25client/CMakeLists.txt and update only the expected title prefix, retaining
+  the anchored version/revision format. Installer/helper/title implementation and fixtures
+  remain byte-identical to the prior tested head; no product change or coverage exclusion.
+- Build the actual s25client plus Test_rttrConfig in own GCC12 Debug/Werror cache, at most
+  two compiler jobs. The old CTest expectation executes and fails on its intended regex
+  check; after correction and CMake reconfigure, all seven affected CTests pass in 6.20s:
+  five actual CLI cases, config tests and all fifteen isolated-HOME installer/helper cases.
+  Diff checks and the agent TypeScript gate pass. Record this missing CLI contract in JARVIS.md.
+- Push this repair for fresh exact-head CI; PR30 stays draft, source/test claims retained,
+  no tested handoff or new slice before all17 jobs and both workflows succeed. Replace the
+  sole continuation with the repaired head and coalesce autonomous ticks into this checkpoint.
+
+## 2026-10-02 — Sol: repair BSD release parsing in PR30
+- Resume the existing checkpoint for autonomous tick t_muq8kql62l2nhi. macOS CI fails six
+  real-installer cases because BSD paste requires a file argument, while GNU paste implicitly
+  reads stdin. Pass the explicit standard-input operand to latest_release; Linux behavior stays
+  the same. No Steam VDF, guard, artwork or game-title changes.
+- Enforce that BSD input contract in the fixture's paste wrapper, then delegate all parsing
+  to the host's real paste. With the old installer, all six installer cases execute and fail
+  with the same missing-release/installed-game assertions as macOS CI. The nine helper cases
+  still pass. Corrected installer passes all fifteen isolated-HOME cases.
+- Own existing GCC12 Debug/Werror cache: all seven affected CTests pass in 6.92s, including
+  actual CLI, config and installer fixtures. Bash/Python syntax, diff and agent TypeScript gate
+  pass. Read-only exactly gpt-6.1-sol diff review finds no concrete issue; its shell was blocked
+  by the container sandbox, so independent fixture execution is our local evidence above.
+  Fresh exact-head CI on all seventeen checks and both workflows remains required
+  before ready marking or Opus integration handoff; keep source/test scopes and one continuation.

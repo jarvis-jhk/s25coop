@@ -6,6 +6,8 @@ and the game will show the new sections after an update.
 ## Unreleased
 
 - Outline map keeps a consistent map and window size when zooming and reopening it.
+- Steam, the application menu and the game window use "The Settlers II: Coop". Reinstalling
+  repairs old Steam names automatically; starting from the desktop repairs them when Steam is closed.
 
 - Post office keeps your selected letter when older messages disappear and refreshes category
   filters when a full inbox receives new mail, so viewing and deleting stay on the right letter.
