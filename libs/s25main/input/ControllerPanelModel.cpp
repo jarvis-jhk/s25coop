@@ -45,7 +45,7 @@ ControllerPanelNavigation::TabResult ControllerPanelNavigation::CycleTab(const b
     // Child input must consume shoulders, including detail pages with navigation history.
     if(!layers_.empty())
         return TabResult::BlockedByChild;
-    const unsigned index = static_cast<unsigned>(tab_);
+    const auto index = static_cast<unsigned>(tab_);
     tab_ = static_cast<Tab>((index + (forward ? 1 : NumTabs - 1)) % NumTabs);
     return TabResult::Changed;
 }
@@ -112,7 +112,7 @@ bool ControllerPanelNavigation::SelectRow(const Tab tab, const unsigned id)
 
 void ControllerPanelNavigation::RevealSelection(Page& page)
 {
-    const unsigned count = static_cast<unsigned>(page.rows.size());
+    const auto count = static_cast<unsigned>(page.rows.size());
     page.firstVisibleRow = std::min(page.firstVisibleRow, count > page.visibleRows ? count - page.visibleRows : 0);
     if(!page.selectedId)
         return;

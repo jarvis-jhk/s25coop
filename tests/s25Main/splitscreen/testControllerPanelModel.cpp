@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(AllActualCellsAndGuiScalesStayContained)
         for(const unsigned percent : {75u, 100u, 125u, 150u, 200u})
         {
             // This is the established screen->view conversion, before viewport splitting.
-            const Extent render = GuiScale(percent).screenToView<Extent>(screen);
+            const auto render = GuiScale(percent).screenToView<Extent>(screen);
             for(unsigned numViews = 1; numViews <= 4; ++numViews)
             {
                 BOOST_TEST_CONTEXT(screen.x << "x" << screen.y << " scale " << percent << " views " << numViews)

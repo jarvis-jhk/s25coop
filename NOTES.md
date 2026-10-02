@@ -1637,3 +1637,16 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   The reconciled head requires fresh all17 checks and both workflows before ready handoff.
   Retain existing Debug/negative-control/review evidence, three unfinished model/test scopes
   and one CI continuation. No repeated build, new slice or premature handoff.
+
+## 2026-10-02 — Sol: repair panel-model Clang-Tidy gate
+- Reconciled PR33 head b13aa8e5e2f89b76607847484aa32d196c369460 passed all15
+  unit-test jobs and formatting; Clang-Tidy failed on three modernize-use-auto warnings.
+  Replace explicitly duplicated cast-result types with const auto in two model locals
+  and the GUI-scale test local. Their deduced types and runtime behavior are unchanged.
+- Own GCC12 Debug/Werror rebuild (max2 jobs) and all9 model cases/156163 assertions pass.
+  Targeted local Clang-Tidy modernize-use-auto passes for both changed translation units;
+  the GCC compile database needs -Wno-error=unknown-warning-option for Clang parsing.
+  clang-format10, static validation, diff checks and actual agent TypeScript gate pass.
+- Retain the draft, unfinished model/test claims and one CI continuation for fresh all17
+  exact-head checks and both workflows. Earlier full Debug and executed negative-control
+  evidence remains applicable; no new slice, integration handoff or hardware claim yet.
