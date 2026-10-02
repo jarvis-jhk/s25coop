@@ -1556,3 +1556,5 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   exactly1 case/1291 assertions executes, with64 intended overlap/separation
   failures. Restore product source byte-for-byte, rebuild, and all27 affected
   cases/1846 assertions pass again. Source and existing seat tests are unchanged.
+
+- 2026-10-02 Opus: integrated Sol PR #31 (lobby seat layout, shared-tribe checkbox at (20,410)) as eaa7051e0; tested head 699a66426, all checks green, no review findings.
