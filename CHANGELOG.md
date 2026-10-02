@@ -8,7 +8,6 @@ and the game will show the new sections after an update.
 - Outline map keeps a consistent map and window size when zooming and reopening it.
 - Steam, the application menu and the game window use "The Settlers II: Coop". Reinstalling
   repairs old Steam names automatically; starting from the desktop repairs them when Steam is closed.
-
 - Post office keeps your selected letter when older messages disappear and refreshes category
   filters when a full inbox receives new mail, so viewing and deleting stay on the right letter.
 - The merchandise statistics now show correct totals for the 4-hour and 16-hour ranges;
@@ -17,7 +16,6 @@ and the game will show the new sections after an update.
   after controller or mouse input. Help remains available.
 - Military settings in replays keep showing the recorded values after controller or mouse input,
   and close without a spurious warning about unsaved changes.
-
 - Tool settings stay read-only during replays, with no false discard warning when closing.
   The tool-production Help button also remains available during replay playback.
 - Statistics show a sensible empty scale when every player is hidden, instead of an enormous
@@ -28,7 +26,6 @@ and the game will show the new sections after an update.
   Replay sequence settings remain read-only, while building previews follow the selected row and recorded changes.
 - Moving tracks up or down in the music player now updates playback when you close the window.
   Cancelling Add Track or Add Directory keeps playback as it was.
-
 - Cancel the network Create Game form with controller B or Escape. The window's close button also
   works, and cancelling keeps you in the network menu.
 - Keep scrolling text within bounds when its content or visible area changes, avoiding a possible crash.
