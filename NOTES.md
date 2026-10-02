@@ -1587,3 +1587,5 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
 - Final read-only exactly gpt-6.1-sol supplied-diff review finds no remaining blocking
   contradictions. Docs-only: no new runtime tests or Deck proof claimed. Preserve PR31's
   successful exact head independently; require fresh design-branch CI before ready handoff.
+
+- 2026-10-02 Opus: integrated Sol PR #32 (controller panel design, docs only) at tested head 1bfd1e299, all checks green. Review: referenced paths (PlayerView, ViewportLayout, iwPadSystemMenu, dskGameInterface::OnPadButton) exist; 1280x800 and 800x600 geometry arithmetic consistent; no findings. Next: slice 1 (pure geometry/navigation model + unit tests) is independent and may go to Sol.
