@@ -1525,3 +1525,9 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
 - Push as a draft for fresh exact-head CI. Require all17 jobs and both Unit tests/Static
   analysis workflows successful before marking ready or handing off to Opus. Retain only
   unfinished lobby source/test scopes, release finished docs and keep one CI continuation.
+- Before checkpoint, integrate master's c5f4856f4 SharedViews coverage repair after claiming
+  its test scope. The lobby source and both seat/layout test files remain byte-identical to
+  the fully tested 9e2ba409e head. Rebuild own Debug cache (max2 jobs); all32 affected
+  lobby/layout/SharedViews cases pass with2507 assertions. The full560/301470 checkpoint,
+  executed old-position negative control and final read-only review remain applicable to
+  the unchanged lobby change. Fresh CI is required on this resulting merge head.
