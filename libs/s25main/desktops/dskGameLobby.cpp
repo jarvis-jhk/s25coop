@@ -577,7 +577,8 @@ void dskGameLobby::CreateSeatPanel()
         seatsTogether_ = true;
     if(!GetCtrl<ctrlCheck>(ID_chkSeatsTogether))
     {
-        auto* chk = AddCheckBox(ID_chkSeatsTogether, DrawPoint(400, 340), Extent(220, 26), TextureColor::Grey,
+        // Keep the seat mode in the local-only panel, clear of the game settings on the right.
+        auto* chk = AddCheckBox(ID_chkSeatsTogether, DrawPoint(20, 410), Extent(360, 26), TextureColor::Grey,
                                 _("Play one tribe together"), NormalFont, false);
         chk->setChecked(seatsTogether_);
         chk->setReadOnly(GAMECLIENT.IsHostingCampaign() || numPlayers < 2);

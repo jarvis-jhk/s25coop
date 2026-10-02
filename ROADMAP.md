@@ -117,6 +117,11 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☑ 3 seat colours per view (focus ring, brief stripe), a road built from one view stops a crossing preview in another (2026-10-02) · ☐ 4 refresh a second view's open economy windows when the shared settings change.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
+  The shared-tribe checkbox now occupies the local seat panel below the cards, clear of Goals
+  and the other settings. Five physical-input layout/scaling/seat-policy/cleanup regressions
+  and all22 existing seat cases pass in Debug; the full560-case suite passes. Exact-head CI
+  is required before the Sol companion handoff. Slot-policy snapshots wait for the initial
+  AI server broadcasts, then compare every slot and its AI settings after physical toggles.
   Outline map now preserves identical map/window dimensions across controller zoom and reopen.
   Four physical-input regressions cover saved zoom, shoulder endpoint clamps, mouse click/drag
   camera targets, containment at 800x600/1280x800, immediate world/inventory invariance and

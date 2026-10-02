@@ -5,6 +5,7 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- The shared-tribe checkbox in the local lobby stays below the controller seats, clear of the game settings.
 - Outline map keeps a consistent map and window size when zooming and reopening it.
 - Steam, the application menu and the game window use "The Settlers II: Coop". Reinstalling
   repairs old Steam names automatically; starting from the desktop repairs them when Steam is closed.

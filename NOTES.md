@@ -1495,3 +1495,64 @@ Post-merge validation: Own GCC12 Debug/Werror build/debug, CMake reconfigured, m
   lifetime → evRoad is declared after views_, so it unsubscribes before views die; both handlers idempotent.
 Next: M3c step 4 (second view's open economy windows when shared settings change) is small; then couch join
 screen or Deck detection (both also in Sol's backlog — check claims first). Jan's Deck feedback still open.
+
+## 2026-10-02 — Sol: keep the shared-tribe option inside the lobby seat panel
+- Resume autonomous tick t_muqdkskk6ur56 from a clean checkout after PR30's tested handoff;
+  no unfinished CI/claims. Based on master efa1907fb, claim the lobby, a dedicated layout
+  test and the existing seat fixture. Address deferred Deck request t_muq4pbq31ulpfg.
+- "Play one tribe together" overlapped the Goals label and dropdown at baseline (400,340).
+  Move it below the local-only seat cards to (20,410), width 360. Ordinary/network game
+  settings and campaign/shared-seat policy are unchanged. Identify the checkbox in existing
+  seat tests by its stable id, not an unscaled coordinate.
+- Five new physical-input/real-client-server Debug cases cover 800x600, 1280x800, 1280x720
+  and 1920x1080; live resolution changes and rebuilt cards; A/mouse mode switching and shared
+  join/leave; unchanged goals/player slots; readonly campaign, pad visibility and explicit
+  exceptional video/settings restoration before fixture destruction. Ordinary cards follow
+  actual map player count (the test map has three); shared mode has four views.
+- Own GCC12 Debug/Werror cache, at most two compiler jobs: new five cases/1570 assertions
+  plus all 22 existing seat cases/265 assertions pass. Complete Test_splitscreen passes all
+  560 cases/301470 assertions, including current master shared-view changes. CMake reconfigured
+  and the five new case names confirmed in the binary before execution.
+- Executed old-layout negative control runs the exact resize/physical-toggle case: 64 of
+  1290 assertions fail at Goals label/dropdown overlap and card/checkbox separation across
+  the tested sizes. No unmatched-filter, initialization or lifetime failure claimed as proof.
+  Exact tested production file restored, rebuilt and all27 affected cases/1835 assertions
+  pass again before push.
+- Format10/static validation/diff and actual agent TypeScript gate pass. Read-only exactly
+  gpt-6.1-sol initial/final supplied-diff reviews find no blocking issue; their repository
+  commands were blocked by this container's sandbox, so executed local tests provide the
+  fixture/build evidence. No actual Deck/hardware start claimed.
+- Push as a draft for fresh exact-head CI. Require all17 jobs and both Unit tests/Static
+  analysis workflows successful before marking ready or handing off to Opus. Retain only
+  unfinished lobby source/test scopes, release finished docs and keep one CI continuation.
+- Before checkpoint, integrate master's c5f4856f4 SharedViews coverage repair after claiming
+  its test scope. The lobby source and both seat/layout test files remain byte-identical to
+  the fully tested 9e2ba409e head. Rebuild own Debug cache (max2 jobs); all32 affected
+  lobby/layout/SharedViews cases pass with2507 assertions. The full560/301470 checkpoint,
+  executed old-position negative control and final read-only review remain applicable to
+  the unchanged lobby change. Fresh CI is required on this resulting merge head.
+
+## 2026-10-02 — Sol: initialize lobby policy snapshots after the server broadcast
+- Resume PR31's existing gate for autonomous tick t_muqg2u2yjkf91; keep the same
+  branch/claim and coalesce its sole CI continuation. The macOS job at f8b236b7c
+  twice fails the new mouse-toggle slot-policy assertion; all other logged failures
+  are expected damaged-artwork diagnostics. Download the direct failed job log.
+- `ClientState::Config` precedes desktop construction, which queues Default/Easy AI
+  state messages for local nonhost slots. One UI frame may still leave a slot Free.
+  The test snapshot raced against the initial broadcast and later compared it with
+  the correctly initialized AI state. This is a fixture synchronization defect.
+- Wait through the existing bounded real-server/client pump for all initial AI slots
+  before any test snapshots or input. Retain the physical mouse/controller path and
+  strengthen the snapshot comparison to every slot's state and AI settings. Product
+  source/layout and original overlap assertions are unchanged; no exclusions added.
+- Own GCC12 Debug/Werror build (maximum two compiler jobs): all27 affected cases
+  pass with1846 assertions, including all5 layout cases/1581 assertions. Exactly
+  gpt-6.1-sol read-only supplied-diff review reports no concrete findings. Format10,
+  static validation, diff checks and actual agent TypeScript gate pass.
+- Retain draft status until all17 checks and both workflows pass on the repaired
+  exact head; no integration handoff or Jan notification before that gate.
+- Complete repaired Debug suite: all560 cases/300606 assertions pass. Repeat the
+  executed old-position/width negative control with this synchronized fixture:
+  exactly1 case/1291 assertions executes, with64 intended overlap/separation
+  failures. Restore product source byte-for-byte, rebuild, and all27 affected
+  cases/1846 assertions pass again. Source and existing seat tests are unchanged.
