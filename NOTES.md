@@ -1438,3 +1438,36 @@ both NOTES sections and ROADMAP entries. Tool production source and dedicated te
 byte-identical to previously tested headc73fb47ee. CMake GLOB reconfigured for the integrated
 transport suite; own max2-job Debug cache reused for affected validation.
 Post-merge validation: Own GCC12 Debug/Werror build/debug, CMake reconfigured, max2 compiler jobs, env USER=root/TMPDIR=/app/agent/data/siedler/tmp. Post-merge affected8 cases/15528 assertions pass. Prior full pre-merge486 cases/64073 assertions pass; no source/test changes in reconciliation. Integrated master/shared fixture already validated by the post-merge military full496-case run. Own production/test byte-identical to previously tested head; prior executed negative controls and exact-model read-only review remain applicable. Repository static validation, diff/format and agent TypeScript gate pass.
+## 2026-10-01 — Sol: controller statistics, visibility and empty chart scaling
+- Bounded statistics-controller-visibility slice starts at master 2975a193b. Ten cases enter
+  the actual Back -> system ring -> Main selection -> Statistics path through driver input
+  in a singleton-backed loopback game. All three STATISTICS_VISIBILITY policies and both
+  scale modes cover eight categories, four durations, headers/time labels, axis values from
+  actual world history, allied/enemy focus exclusion, mouse/controller player toggles,
+  Help/Back and the intended Country/15m defaults on reopen. Teams/addon setup require the
+  real server broadcast. History is seeded only through public GamePlayer updates.
+- When every player was deselected, a scaled chart displayed UINT_MAX as its minimum.
+  Give an empty chart a neutral 0..1 axis without changing populated graph scaling. A
+  constant-positive control explicitly preserves the 41..43 range around a value of42,
+  switches to0..1 when hidden, and returns to41..43 through physical mouse input.
+- Two real generated replays prove unrestricted opponent browsing despite the live own-only
+  policy, both scales, all category/time/player controls, Help/reopen and clean completion.
+  Full history snapshots cover all three players/four durations, category/merchandise data,
+  currentIndex and counter after live and replay browsing; live GF/checksum remain unchanged.
+- Desktop destruction preserves window-open intent, so replay activation could restore a
+  previous Statistics window and make the tested Main button close it. The dedicated fixture
+  now saves/restores the persistent settings and disables open flags before desktop entry;
+  map restoration happens after destroying windows that retain pointers to those entries.
+  All temporary settings are asserted before fixture destruction. An executed throw probe
+  is reached with the intended window open; normal/exception cleanup is explicit and guarded.
+  No singleton construction, shared fixture/router/view edits or coverage exclusions.
+- Isolated original production executes all10 cases: five pass, five fail133 intended empty
+  minimum assertions (4294967295 !=0). The populated positive margins still pass there.
+  Fixed source is restored byte-for-byte and rebuilt; final affected Debug10 cases /73,924
+  assertions pass. CMake reconfigured and new suite present; own build/debug, at most two jobs.
+- Exact gpt-6.1-sol read-only source/dependency review found no production issue; its history
+  snapshot and constant-positive test gaps are both addressed. A follow-up review of the
+  actual additions confirms no introduced finding. Runtime proof remains separate from the
+  source review. Draft until all17 exact-head CI pass; Opus owns review and integration.
+- Final complete Debug Test_splitscreen: 495 cases /125,116 assertions pass with the same restored
+  source. clang-format10, repository static validation, git diff and agent TypeScript gate pass.

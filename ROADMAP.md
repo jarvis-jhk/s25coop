@@ -186,6 +186,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   order bounds, Default/Zero, timer transmission, Help and generated replay browsing. Replay
   progress input now preserves recorded priorities and closes without a false discard warning;
   Help stays available (Sol companion, 2026-10-01).
+  General statistics now has physical-input, actual-history and replay coverage for all
+  categories/time ranges, ally/own/everyone visibility and player toggles, Help and default
+  selection on reopen. Empty scaled charts keep a neutral 0..1 range; populated scaling and
+  all player/time histories remain intact (Sol companion, 2026-10-01).
   Other paths remain open.
 - ☐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
   - ◐ Steam, application menu and window title use "The Settlers II: Coop". Existing Steam entries

@@ -20,6 +20,8 @@ and the game will show the new sections after an update.
 
 - Tool settings stay read-only during replays, with no false discard warning when closing.
   The tool-production Help button also remains available during replay playback.
+- Statistics show a sensible empty scale when every player is hidden, instead of an enormous
+  minimum value.
 - Campaign previews show a clear fallback when artwork is unavailable; one missing or damaged
   image no longer hides the previews of other campaigns.
 - Building sequence: Default now keeps all buildings enabled by wine, leather and charcoal addons.
