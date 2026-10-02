@@ -120,7 +120,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   The shared-tribe checkbox now occupies the local seat panel below the cards, clear of Goals
   and the other settings. Five physical-input layout/scaling/seat-policy/cleanup regressions
   and all22 existing seat cases pass in Debug; the full560-case suite passes. Exact-head CI
-  is required before the Sol companion handoff.
+  is required before the Sol companion handoff. Slot-policy snapshots wait for the initial
+  AI server broadcasts, then compare every slot and its AI settings after physical toggles.
   Outline map now preserves identical map/window dimensions across controller zoom and reopen.
   Four physical-input regressions cover saved zoom, shoulder endpoint clamps, mouse click/drag
   camera targets, containment at 800x600/1280x800, immediate world/inventory invariance and

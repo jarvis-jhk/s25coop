@@ -53,6 +53,18 @@ struct LobbyLayoutFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFix
         WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(ServerType::Local, GAMECLIENT.GetGameLobby(),
                                                             GAMECLIENT.GetPlayerId(), nullptr));
         frame();
+        // The desktop queues the initial AI slots; Config alone does not mean their
+        // server broadcasts have arrived. Take policy snapshots only after that roundtrip.
+        pumpUntil(
+          [] {
+              const auto& players = GAMECLIENT.GetGameLobby()->getPlayers();
+              return std::all_of(players.begin(), players.end(), [](const JoinPlayerInfo& player) {
+                  return player.isHost
+                         || (player.ps == PlayerState::AI && player.aiInfo.type == AI::Type::Default
+                             && player.aiInfo.level == AI::Level::Easy);
+              });
+          },
+          "initial local AI slots to arrive from the server");
     }
 
     static dskGameLobby& screen()
@@ -210,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(MouseToggleKeepsGameGoalsAndPlayerSlots, LobbyLayoutFixt
         BOOST_TEST_REQUIRE(goals != nullptr);
         const auto selection = goals->GetSelection();
         const auto objective = GAMECLIENT.GetGameLobby()->getSettings().objective;
-        const auto playerState = GAMECLIENT.GetGameLobby()->getPlayer(1).ps;
+        const auto players = GAMECLIENT.GetGameLobby()->getPlayers();
         mouseToggle();
         BOOST_TEST_REQUIRE(together().isChecked());
         expectSeparated();
@@ -219,7 +231,16 @@ BOOST_FIXTURE_TEST_CASE(MouseToggleKeepsGameGoalsAndPlayerSlots, LobbyLayoutFixt
         BOOST_TEST(!together().isChecked());
         BOOST_TEST((goals->GetSelection() == selection));
         BOOST_TEST((GAMECLIENT.GetGameLobby()->getSettings().objective == objective));
-        BOOST_TEST((GAMECLIENT.GetGameLobby()->getPlayer(1).ps == playerState));
+        const auto& currentPlayers = GAMECLIENT.GetGameLobby()->getPlayers();
+        BOOST_TEST_REQUIRE(currentPlayers.size() == players.size());
+        for(unsigned i = 0; i < players.size(); ++i)
+        {
+            BOOST_TEST_CONTEXT("Player slot " << i)
+            {
+                BOOST_TEST((currentPlayers[i].ps == players[i].ps));
+                BOOST_TEST((currentPlayers[i].aiInfo == players[i].aiInfo));
+            }
+        }
     });
 }
 

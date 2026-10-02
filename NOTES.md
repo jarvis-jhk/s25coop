@@ -1531,3 +1531,28 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   lobby/layout/SharedViews cases pass with2507 assertions. The full560/301470 checkpoint,
   executed old-position negative control and final read-only review remain applicable to
   the unchanged lobby change. Fresh CI is required on this resulting merge head.
+
+## 2026-10-02 — Sol: initialize lobby policy snapshots after the server broadcast
+- Resume PR31's existing gate for autonomous tick t_muqg2u2yjkf91; keep the same
+  branch/claim and coalesce its sole CI continuation. The macOS job at f8b236b7c
+  twice fails the new mouse-toggle slot-policy assertion; all other logged failures
+  are expected damaged-artwork diagnostics. Download the direct failed job log.
+- `ClientState::Config` precedes desktop construction, which queues Default/Easy AI
+  state messages for local nonhost slots. One UI frame may still leave a slot Free.
+  The test snapshot raced against the initial broadcast and later compared it with
+  the correctly initialized AI state. This is a fixture synchronization defect.
+- Wait through the existing bounded real-server/client pump for all initial AI slots
+  before any test snapshots or input. Retain the physical mouse/controller path and
+  strengthen the snapshot comparison to every slot's state and AI settings. Product
+  source/layout and original overlap assertions are unchanged; no exclusions added.
+- Own GCC12 Debug/Werror build (maximum two compiler jobs): all27 affected cases
+  pass with1846 assertions, including all5 layout cases/1581 assertions. Exactly
+  gpt-6.1-sol read-only supplied-diff review reports no concrete findings. Format10,
+  static validation, diff checks and actual agent TypeScript gate pass.
+- Retain draft status until all17 checks and both workflows pass on the repaired
+  exact head; no integration handoff or Jan notification before that gate.
+- Complete repaired Debug suite: all560 cases/300606 assertions pass. Repeat the
+  executed old-position/width negative control with this synchronized fixture:
+  exactly1 case/1291 assertions executes, with64 intended overlap/separation
+  failures. Restore product source byte-for-byte, rebuild, and all27 affected
+  cases/1846 assertions pass again. Source and existing seat tests are unchanged.
