@@ -4,6 +4,7 @@
 """Run the real installer/helper in isolated Steam homes; no Steam or internet access."""
 import os
 from pathlib import Path
+import shlex
 import shutil
 import struct
 import subprocess
@@ -111,6 +112,11 @@ class SteamFixture(unittest.TestCase):
         if self.prepared:
             return
         self.prepared = True
+        # BSD paste requires a file argument; enforce that contract on GNU hosts too.
+        paste = shutil.which('paste')
+        self.assertIsNotNone(paste)
+        self.stub('paste', 'if [ "${!#}" != - ]; then echo "paste: expected stdin file argument" >&2; exit 64; fi\n'
+                  + 'exec ' + shlex.quote(paste) + ' "$@"')
         self.payload = self.root / 'payload/s25coop'
         self.payload.mkdir(parents=True)
         shutil.copyfile(TOOLS / 'install.sh', self.payload / 'install.sh')

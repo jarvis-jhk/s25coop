@@ -51,7 +51,7 @@ dialog() { # dialog error|info|question <text>
 latest_release() { # prints "<tag> <tarball url>"
     curl -fsL --max-time 15 "https://api.github.com/repos/$REPO/releases/latest" |
         tr ',' '\n' | sed -n 's/.*"tag_name": *"\(.*\)".*/\1/p; s/.*"browser_download_url": *"\(.*linux-x86_64\.tar\.gz\)".*/\1/p' |
-        paste -sd' '
+        paste -sd' ' -
 }
 
 installed_version() { cat "$GAME/VERSION" 2>/dev/null || echo none; }

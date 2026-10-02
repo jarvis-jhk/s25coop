@@ -182,7 +182,7 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ☐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
   - ◐ Steam, application menu and window title use "The Settlers II: Coop". Existing Steam entries
     migrate automatically on reinstall or desktop launch with Steam closed; Game Mode leaves
-    live shortcuts untouched. Binary VDF fixtures, Debug title and actual CLI tests pass locally (Sol);
+    live shortcuts untouched. Binary VDF fixtures enforce BSD/GNU release parsing; Debug title and actual CLI tests pass locally (Sol);
     exact-head CI and Opus integration still required. Confirm on the Deck after release.
   - ☐ Controller hints as Xbox button glyphs (A/B/X/Y, LB/RB, triggers, D-pad) instead of text.
   - ☐ One fixed button always toggles building positions; map the buttons that currently do nothing.

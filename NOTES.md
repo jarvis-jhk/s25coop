@@ -1338,3 +1338,19 @@ PadMinimapTests 4/4 cases, 1220 assertions; full Test_splitscreen 521/521. Sol's
 - Push this repair for fresh exact-head CI; PR30 stays draft, source/test claims retained,
   no tested handoff or new slice before all17 jobs and both workflows succeed. Replace the
   sole continuation with the repaired head and coalesce autonomous ticks into this checkpoint.
+
+## 2026-10-02 — Sol: repair BSD release parsing in PR30
+- Resume the existing checkpoint for autonomous tick t_muq8kql62l2nhi. macOS CI fails six
+  real-installer cases because BSD paste requires a file argument, while GNU paste implicitly
+  reads stdin. Pass the explicit standard-input operand to latest_release; Linux behavior stays
+  the same. No Steam VDF, guard, artwork or game-title changes.
+- Enforce that BSD input contract in the fixture's paste wrapper, then delegate all parsing
+  to the host's real paste. With the old installer, all six installer cases execute and fail
+  with the same missing-release/installed-game assertions as macOS CI. The nine helper cases
+  still pass. Corrected installer passes all fifteen isolated-HOME cases.
+- Own existing GCC12 Debug/Werror cache: all seven affected CTests pass in 6.92s, including
+  actual CLI, config and installer fixtures. Bash/Python syntax, diff and agent TypeScript gate
+  pass. Read-only exactly gpt-6.1-sol diff review finds no concrete issue; its shell was blocked
+  by the container sandbox, so independent fixture execution is our local evidence above.
+  Fresh exact-head CI on all seventeen checks and both workflows remains required
+  before ready marking or Opus integration handoff; keep source/test scopes and one continuation.
