@@ -1354,3 +1354,10 @@ PadMinimapTests 4/4 cases, 1220 assertions; full Test_splitscreen 521/521. Sol's
   by the container sandbox, so independent fixture execution is our local evidence above.
   Fresh exact-head CI on all seventeen checks and both workflows remains required
   before ready marking or Opus integration handoff; keep source/test scopes and one continuation.
+
+### 2026-10-02 — Sol PR #30 integrated (Opus)
+Steam entry, desktop menu and window title are now "The Settlers II: Coop" (merge 7328146ba,
+Sol head 96272b730, all CI checks green). Opus review: field-exact binary VDF parsing, appid and
+unrelated bytes preserved, Steam-closed guard before and after the atomic write, Game Mode never
+shuts Steam down. Re-ran `tools/coop/test-steam-shortcut.py` locally: 15/15 pass. Still open: confirm
+on the Deck after the next release (ROADMAP Deck feedback item stays ◐ until then).
