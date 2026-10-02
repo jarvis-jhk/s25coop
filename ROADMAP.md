@@ -209,7 +209,8 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     with tabs switched by the shoulder buttons that shows as much information as possible.
     Mouse/keyboard keep the windows. Design: [ControllerPanel](doc/coop/ControllerPanel.md).
     Design and these bounded slices must be pushed before panel implementation:
-    - ☐ 1 pure per-view geometry/navigation model and unit tests (no input routing).
+    - ◐ 1 pure per-view geometry/navigation model and unit tests (no input routing):
+      local Debug/negative controls pass; Sol PR awaits exact-head CI and Opus integration.
     - ☐ 2 opt-in shell plus readonly Stock; physical entry/tab/Back/Help/modal tests,
       basic resize/disconnect/mixed-device exits and shared-view live refresh.
     - ☐ 3 Buildings/productivity: actual counts, targets and the owner's camera.

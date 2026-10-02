@@ -1589,3 +1589,41 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   successful exact head independently; require fresh design-branch CI before ready handoff.
 
 - 2026-10-02 Opus: integrated Sol PR #32 (controller panel design, docs only) at tested head 1bfd1e299, all checks green. Review: referenced paths (PlayerView, ViewportLayout, iwPadSystemMenu, dskGameInterface::OnPadButton) exist; 1280x800 and 800x600 geometry arithmetic consistent; no findings. Next: slice 1 (pure geometry/navigation model + unit tests) is independent and may go to Sol.
+
+
+## 2026-10-02 — Sol: pure controller panel model (slice 1)
+- Begin on current master e72ffc5cf after the design-only PR32 was integrated as945424dc4.
+  No open PRs, unfinished claims or primary-checkout edits at selection; budget gate run
+  (session1%, week71%). Claim only the two new input model files, one new test and these
+  documents. Branch sol/controller-panel-model; no desktop/router/window or settings edits.
+- `CalcControllerPanelLayout` accepts actual per-view GUI-unit cells, without another scale
+  conversion. Implement the design's wide/reduced/compact tiers, panel/content/tab/footer
+  bounds and side-world gap, including zero/tiny transient resize cells without underflow.
+- `ControllerPanelNavigation` owns independent tabs, stable row selection/scroll and nested
+  detail/dropdown/edit/confirmation bookkeeping. Both shoulders stop at every child; Back
+  unwinds the innermost accepted cancellation before closing, and disconnect clears child
+  capture while retaining tab/row memory. Refresh/reflow preserves stable identity and reveals
+  selection. The future shell still owns modal/dirty policies and vanished child reconciliation;
+  the model cannot apply/discard settings, resolve game objects or route physical input.
+- CMake reconfigured (globbed new test registration confirmed); own GCC12 Debug/Werror cache,
+  max2 compiler jobs: nine model cases/156163 assertions pass. Numeric reference rectangles,
+  threshold/clamp edges, actual1..4-cell layouts at six screen sizes/five GUI scales, zero/tiny
+  cells, both tab wraps, nested cancellation, reorder/replacement, resize retention, removed
+  child targets and independent view state are exercised without any singleton fixture.
+- Executed negative control changes compact width threshold800->960 and removes child shoulder
+  blocking. All9 cases execute; exactly4 fail15 intended geometry/routing assertions (exit201),
+  with no unmatched filter or initialization failure. Restore production byte-for-byte, rebuild
+  and all9 cases/156163 assertions pass again.
+- Initial exactly gpt-6.1-sol read-only supplied-diff review prompts fatal size guards before
+  stack `.back()` and explicit refresh/child ownership plus removal coverage. Both addressed;
+  final review finds no remaining concrete blocking issue. Formatting10, include guard, static
+  validation, diff checks and actual agent TypeScript gate pass. No panel rendering, physical
+  input, game commands, Steam Deck/hardware or usable Stock shell proof is claimed here.
+- Complete Debug splitscreen regression at the initial eight-case checkpoint passes568 cases/
+  457430 assertions. Production source remains byte-identical; subsequent changes are header
+  contract comments, two fatal stack guards and the new ninth removal-policy case (final9 pass).
+  Exact-head CI remains a separate pending gate.
+  Push draft for all17 checks plus Unit tests/Static analysis; only after every exact-head job
+  succeeds mark ready and send Opus the tested model integration handoff. Retain unfinished
+  model/test claims; release finished document scopes. This is the prerequisite for shell/Stock,
+  whose opt-in routing, basic lifecycle, mixed devices and shared live refresh remain unimplemented.
