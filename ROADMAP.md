@@ -207,7 +207,21 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ☐ Dropdowns under D-pad/stick: focus must not change the value; A opens, D-pad picks, A confirms, B cancels.
   - ☐ In-game with a controller: instead of floating, movable, overlapping windows, a fixed side panel
     with tabs switched by the shoulder buttons that shows as much information as possible.
-    Mouse/keyboard keep the windows. Large: design doc and split into slices first.
+    Mouse/keyboard keep the windows. Design: [ControllerPanel](doc/coop/ControllerPanel.md).
+    Design and these bounded slices must be pushed before panel implementation:
+    - ☐ 1 pure per-view geometry/navigation model and unit tests (no input routing).
+    - ☐ 2 opt-in shell plus readonly Stock; physical entry/tab/Back/Help/modal tests,
+      basic resize/disconnect/mixed-device exits and shared-view live refresh.
+    - ☐ 3 Buildings/productivity: actual counts, targets and the owner's camera.
+    - ☐ 4 general/merchandise Statistics: history, physical ranges and replay browsing.
+    - ☐ 5 Post: filters, incoming replacements, detail/diary/location and delete confirmation.
+    - ☐ 6 view-only Settings: building positions, names/output and watch-only per view.
+    - ☐ 7 editable economy Settings: distribution, then transport/tools, then military/build
+      order in separate policy PRs; live broadcasts, Apply/Cancel and replay guards.
+    - ☐ 8 parity/default rollout: complete mixed-device/shared-view regression matrix and
+      remaining legacy destinations; default only after parity and packaged Deck checks.
+    Each slice needs fresh claims for shared input/view/page scopes, physical Debug proof
+    and all exact-head CI green; use no panel code in this design-only checkpoint.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it.
 - ◐ Campaign overview with artwork of every working campaign and single scenario: optional
