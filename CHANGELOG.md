@@ -5,6 +5,9 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- In-game controller hints show coloured A/B/X/Y button symbols and labelled buttons for
+  the other controls. Each player's hints wrap to fit their view without losing instructions.
+
 - Click the left stick (L3) to turn building spots on or off, including while a menu,
   window or road preview is open. From Just watch, the click returns to play and shows the spots.
 

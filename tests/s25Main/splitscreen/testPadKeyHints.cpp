@@ -30,6 +30,7 @@
 #include "PadFixture.h"
 #include "PadGameFixture.h"
 #include "PointOutput.h"
+#include "RectOutput.h"
 #include "RttrForeachPt.h"
 #include "Settings.h"
 #include "WindowManager.h"
@@ -50,6 +51,7 @@
 #include "input/PlayerBrief.h"
 #include "languages.h"
 #include "mygettext/mygettext.h"
+#include "ogl/glFont.h"
 #include "world/GameWorld.h"
 #include "nodeObjs/noFlag.h"
 #include "gameTypes/BuildingQuality.h"
@@ -64,6 +66,7 @@
 #include <glad/glad.h>
 #include <boost/test/unit_test.hpp>
 #include <algorithm>
+#include <array>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -2502,46 +2505,33 @@ BOOST_FIXTURE_TEST_CASE(TheDrawnLinesReallyLeaveTheEmitter, HintFixture<2>)
         dsk->DrawBrief(view(1));
     }
 
-    // Was LayoutBrief liefert, und was der Ausgeber wirklich losgeschickt hat.
     std::vector<briefEmitTap::Emitted> expected;
+    std::size_t nonKeyEmissions = 0;
     for(const auto& line : layout.lines)
     {
-        if(line.text.empty())
-            // LCOV_EXCL_START
-            continue; // glFont::Draw steigt bei leerem Text aus, bevor es zeichnet
-        // LCOV_EXCL_STOP
-        expected.push_back(briefEmitTap::Emitted{line.color, numCodepoints(line.text)});
+        if(line.keyRuns.empty())
+        {
+            expected.push_back(briefEmitTap::Emitted{line.color, numCodepoints(line.text)});
+            if(line.color != dskGameInterface::keyLineColor)
+                ++nonKeyEmissions;
+        } else
+        {
+            for(const auto& run : line.keyRuns)
+                expected.push_back(briefEmitTap::Emitted{run.textColor, numCodepoints(run.text)});
+        }
     }
-    for(const auto& e : briefEmitTap::emitted)
-        BOOST_TEST_MESSAGE("AUDIT: gezeichnet - Farbe " << e.color << ", " << e.glyphs << " Zeichen");
     BOOST_TEST_REQUIRE(briefEmitTap::emitted.size() == expected.size());
     for(std::size_t i = 0; i < expected.size(); ++i)
     {
-        BOOST_TEST_CONTEXT("Zeile " << i << " (" << layout.lines[i].text << ")")
+        BOOST_TEST_CONTEXT("Emission " << i)
         {
             BOOST_TEST(briefEmitTap::emitted[i].color == expected[i].color);
             BOOST_TEST(briefEmitTap::emitted[i].glyphs == expected[i].glyphs);
         }
     }
-
-    // UND DIE TASTENZEILE IST DARUNTER: die LETZTEN ausgegebenen Zeilen tragen die Farbe der
-    // Leiste. Genau die hat die Gegenprobe des Nachpruefers entfernt. Es koennen mehrere sein -
-    // LayoutBrief bricht die Leiste um, statt sie abzuschneiden.
-    const auto numKeyLines =
-      static_cast<std::size_t>(std::count_if(layout.lines.begin(), layout.lines.end(),
-                                             [](const auto& l) { return l.color == dskGameInterface::keyLineColor; }));
-    BOOST_TEST_REQUIRE(numKeyLines >= 1u);
-    BOOST_TEST_REQUIRE(briefEmitTap::emitted.size() > numKeyLines);
+    BOOST_TEST_REQUIRE(expected.size() > nonKeyEmissions);
     BOOST_TEST(briefEmitTap::emitted.back().color == dskGameInterface::keyLineColor);
-    for(std::size_t i = 0; i < briefEmitTap::emitted.size(); ++i)
-    {
-        const bool isKeyLine = i >= briefEmitTap::emitted.size() - numKeyLines;
-        BOOST_TEST_CONTEXT("Ausgegebene Zeile " << i)
-        BOOST_TEST((briefEmitTap::emitted[i].color == dskGameInterface::keyLineColor) == isKeyLine);
-    }
 
-    // Und ein Block OHNE Leiste gibt genau diese Zeilen NICHT aus - sonst waere die Messung oben
-    // blind gegen eine Zeile, die immer da ist.
     brief::Brief withoutKeys = view(1).GetBrief();
     withoutKeys.keys.clear();
     view(1).SetBrief(withoutKeys);
@@ -2551,7 +2541,7 @@ BOOST_FIXTURE_TEST_CASE(TheDrawnLinesReallyLeaveTheEmitter, HintFixture<2>)
         RTTR_STUB_FUNCTION(glDrawArrays, briefEmitTap::glDrawArrays);
         dsk->DrawBrief(view(1));
     }
-    BOOST_TEST(briefEmitTap::emitted.size() + numKeyLines == expected.size());
+    BOOST_TEST(briefEmitTap::emitted.size() == nonKeyEmissions);
     for(const auto& e : briefEmitTap::emitted)
         BOOST_TEST(e.color != dskGameInterface::keyLineColor);
 }
@@ -2768,6 +2758,224 @@ BOOST_AUTO_TEST_CASE(WhereSeveralActionsMeetAtOnceTheBarKeepsTheCollectiveWord)
     BOOST_TEST((brief::ActionMenuAction(brief::ActionMenuKind::Flag) == brief::KeyAction::OpenFlagMenu));
     BOOST_TEST((brief::ActionMenuAction(brief::ActionMenuKind::Trade) == brief::KeyAction::OpenTradeWindow));
     BOOST_TEST((brief::ActionMenuAction(brief::ActionMenuKind::Generic) == brief::KeyAction::OpenActionMenu));
+}
+
+BOOST_FIXTURE_TEST_CASE(ColoredButtonsKeepEveryInputAndActionLabel, HintFixture<1>)
+{
+    const std::vector<brief::KeyHint> keys = {{PadButton::A, brief::KeyAction::Choose},
+                                              {PadButton::B, brief::KeyAction::CloseWindow},
+                                              {PadButton::X, brief::KeyAction::PlaceFlag},
+                                              {PadButton::Y, brief::KeyAction::EnterWindow}};
+    const std::array<unsigned, 4> colors = {0xFF287A35, 0xFFA62F31, 0xFF2864AA, 0xFFE5B832};
+    const auto lines = brief::LayoutKeyGlyphs(keys, *NormalFont, 1000, dskGameInterface::keyLineColor);
+    BOOST_REQUIRE_EQUAL(lines.size(), 1u);
+    BOOST_TEST(lines.front().text == brief::KeyLine(keys));
+    unsigned badge = 0;
+    for(const auto& run : lines.front().runs)
+    {
+        if(!run.badgeColor)
+            continue;
+        BOOST_REQUIRE_LT(badge, keys.size());
+        BOOST_TEST(run.text == brief::KeyInputLabel(keys[badge]));
+        BOOST_TEST(run.badgeColor == colors[badge]);
+        BOOST_TEST(run.textColor == (badge == 3 ? COLOR_BLACK : COLOR_WHITE));
+        BOOST_TEST(run.width == NormalFont->getWidth(run.text) + 2 * brief::keyTextPadding);
+        ++badge;
+    }
+    BOOST_TEST(badge == 4u);
+    BOOST_TEST(brief::GroupKeys({}).empty());
+    BOOST_TEST(brief::KeyGroup{}.text().empty());
+    BOOST_TEST(brief::LayoutKeyGlyphs({}, *NormalFont, 100, dskGameInterface::keyLineColor).empty());
+}
+
+BOOST_FIXTURE_TEST_CASE(NeutralButtonsAndStickMotionKeepTheirOwnIdentity, HintFixture<1>)
+{
+    for(const auto button : helpers::EnumRange<PadButton>{})
+    {
+        const brief::KeyHint key{button, brief::KeyAction::Choose};
+        const auto lines = brief::LayoutKeyGlyphs({key}, *NormalFont, 1000, dskGameInterface::keyLineColor);
+        BOOST_REQUIRE_EQUAL(lines.size(), 1u);
+        BOOST_REQUIRE_EQUAL(lines.front().runs.size(), 2u);
+        BOOST_TEST(lines.front().runs.front().text == brief::PadButtonLabel(button));
+        if(button != PadButton::A && button != PadButton::B && button != PadButton::X && button != PadButton::Y)
+            BOOST_TEST(lines.front().runs.front().badgeColor == 0xFF455361u);
+    }
+    const brief::KeyHint axis{PadButton::A, brief::KeyAction::AimRing, brief::KeyInput::LeftStickAxis};
+    const auto lines = brief::LayoutKeyGlyphs({axis, {PadButton::LeftStick, brief::KeyAction::Choose}}, *NormalFont,
+                                              1000, dskGameInterface::keyLineColor);
+    BOOST_REQUIRE_EQUAL(lines.size(), 1u);
+    BOOST_REQUIRE_EQUAL(lines.front().runs.size(), 5u);
+    BOOST_TEST(lines.front().runs[0].text == brief::KeyInputLabel(axis));
+    BOOST_TEST(lines.front().runs[0].text != "A");
+    BOOST_TEST(lines.front().runs[0].badgeColor == 0xFF455361u);
+    BOOST_TEST(lines.front().runs[3].text == "L3");
+    BOOST_TEST(lines.front().runs[3].text != lines.front().runs[0].text);
+}
+
+namespace {
+std::string compactHintText(std::string text)
+{
+    text.erase(std::remove_if(text.begin(), text.end(), [](const char c) { return c == ' ' || c == '-'; }), text.end());
+    return text;
+}
+} // namespace
+
+BOOST_FIXTURE_TEST_CASE(GlyphWrappingAndTextFallbackNeverDropTheLastHint, HintFixture<1>)
+{
+    const std::vector<brief::KeyHint> keys = {{PadButton::A, brief::KeyAction::Choose},
+                                              {PadButton::DpadLeft, brief::KeyAction::MoveFocus},
+                                              {PadButton::DpadRight, brief::KeyAction::MoveFocus},
+                                              {PadButton::DpadUp, brief::KeyAction::MoveFocus},
+                                              {PadButton::DpadDown, brief::KeyAction::MoveFocus},
+                                              {PadButton::B, brief::KeyAction::CancelChoice},
+                                              {PadButton::RightShoulder, brief::KeyAction::NextControl}};
+    bool sawFallback = false, sawBadges = false, sawWrap = false;
+    for(const unsigned short width : {16, 60, 140, 420, 1000})
+    {
+        const auto lines = brief::LayoutKeyGlyphs(keys, *NormalFont, width, dskGameInterface::keyLineColor);
+        BOOST_REQUIRE(!lines.empty());
+        std::string text;
+        sawWrap = sawWrap || lines.size() > 1;
+        for(const auto& line : lines)
+        {
+            text += line.text;
+            if(line.runs.empty())
+            {
+                sawFallback = true;
+                BOOST_TEST(NormalFont->getWidth(line.text) <= width);
+            } else
+            {
+                sawBadges = true;
+                unsigned end = 0;
+                for(const auto& run : line.runs)
+                {
+                    BOOST_TEST(run.x == end);
+                    end = run.x + run.width;
+                    BOOST_TEST(end <= width);
+                }
+            }
+        }
+        BOOST_TEST(compactHintText(text) == compactHintText(brief::KeyLine(keys)));
+    }
+    BOOST_TEST(sawFallback);
+    BOOST_TEST(sawBadges);
+    BOOST_TEST(sawWrap);
+}
+
+BOOST_AUTO_TEST_CASE(CodeDrawnBadgeCornersStayInsideTheMeasuredCell)
+{
+    for(const Extent size : {Extent(18, 12), Extent(1, 1), Extent(0, 0)})
+    {
+        const Rect cell(DrawPoint(43, 27), size);
+        std::vector<Rect> emitted;
+        brief::EmitKeyBadge(cell, 0xFF287A35, [&](const Rect& rect, const unsigned color) {
+            emitted.push_back(rect);
+            BOOST_TEST(color == 0xFF287A35u);
+            BOOST_TEST(rect.left >= cell.left);
+            BOOST_TEST(rect.top >= cell.top);
+            BOOST_TEST(rect.right <= cell.right);
+            BOOST_TEST(rect.bottom <= cell.bottom);
+        });
+        BOOST_REQUIRE_EQUAL(emitted.size(), size.y > 2 ? 2u : 1u);
+        if(size.x == 18)
+        {
+            BOOST_TEST(emitted[0].getOrigin() == DrawPoint(45, 27));
+            BOOST_TEST(emitted[0].getSize() == Extent(14, 12));
+            BOOST_TEST(emitted[1].getOrigin() == DrawPoint(43, 28));
+            BOOST_TEST(emitted[1].getSize() == Extent(18, 10));
+        }
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(FourPhysicalControllersRenderOnlyTheirOwnCurrentHints, HintFixture<4>)
+{
+    for(unsigned seat = 0; seat < 4; ++seat)
+    {
+        const PadDeviceId device = 20 + seat;
+        takePad(device, seat);
+        const MapPoint flag = findPlainFlagSpot(worldFixture.world, view(seat).GetViewer());
+        BOOST_REQUIRE(flag.isValid());
+        worldFixture.world.SetFlag(flag, static_cast<unsigned char>(seat));
+        padSteerTo(device, seat, flag);
+        press(device, padHint::OpenActions);
+        BOOST_REQUIRE(view(seat).GetRing().IsOpen());
+        const auto& source = view(seat).GetBrief();
+        BOOST_REQUIRE(!source.keys.empty());
+        const auto layout = dsk->LayoutBrief(view(seat));
+        BOOST_REQUIRE(!layout.lines.empty());
+        const Rect viewport(view(seat).GetView().GetPos(), view(seat).GetView().GetSize());
+        BOOST_TEST(layout.panel.left >= viewport.left);
+        BOOST_TEST(layout.panel.right <= viewport.right);
+        BOOST_TEST(layout.panel.top >= viewport.top);
+        BOOST_TEST(layout.panel.bottom <= viewport.bottom);
+        std::string text;
+        unsigned badgeCount = 0;
+        for(const auto& line : layout.lines)
+        {
+            if(line.color != dskGameInterface::keyLineColor)
+                continue;
+            text += line.text;
+            for(const auto& run : line.keyRuns)
+            {
+                BOOST_TEST(layout.textOrigin.x + run.x + run.width <= layout.panel.right);
+                if(run.badgeColor)
+                    ++badgeCount;
+            }
+        }
+        BOOST_TEST(compactHintText(text) == compactHintText(brief::KeyLine(source.keys)));
+        BOOST_TEST(badgeCount == source.keys.size());
+        const auto originalKeys = source.keys;
+        dsk->DrawBrief(view(seat));
+        BOOST_TEST(view(seat).GetBrief().keys == originalKeys, boost::test_tools::per_element());
+        press(device, padHint::Back);
+        BOOST_TEST(!view(seat).GetRing().IsOpen());
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(TheDrawnBadgesReachTheRectangleEmitter, HintFixture<2>)
+{
+    takePad(11, 1);
+    const MapPoint flag = findPlainFlagSpot(worldFixture.world, view(1).GetViewer());
+    BOOST_REQUIRE(flag.isValid());
+    worldFixture.world.SetFlag(flag, 1);
+    padSteerTo(11, 1, flag);
+    press(11, padHint::OpenActions);
+    BOOST_REQUIRE(view(1).GetRing().IsOpen());
+    const auto layout = dsk->LayoutBrief(view(1));
+    std::vector<Rect> rectangles;
+    std::vector<unsigned> colors;
+    dsk->DrawBrief(view(1), [&](const Rect& rect, const unsigned color) {
+        rectangles.push_back(rect);
+        colors.push_back(color);
+    });
+    BOOST_REQUIRE_GE(rectangles.size(), 2u);
+    BOOST_TEST(rectangles[0] == layout.panel);
+    BOOST_TEST(colors[0] == 0xB4000000u);
+    BOOST_TEST(rectangles[1] == Rect(layout.panel.getOrigin(), Extent(2, layout.panel.getSize().y)));
+    BOOST_TEST(colors[1] == dsk->SeatColor(view(1)));
+    std::size_t emission = 2;
+    for(std::size_t row = 0; row < layout.lines.size(); ++row)
+    {
+        for(const auto& run : layout.lines[row].keyRuns)
+        {
+            if(!run.badgeColor)
+                continue;
+            const DrawPoint origin =
+              layout.textOrigin + DrawPoint(static_cast<int>(run.x), static_cast<int>(row * layout.lineHeight));
+            BOOST_REQUIRE_LE(emission + 2, rectangles.size());
+            BOOST_TEST(rectangles[emission]
+                       == Rect(origin + DrawPoint(2, 0), Extent(run.width - 4, layout.lineHeight)));
+            BOOST_TEST(rectangles[emission + 1]
+                       == Rect(origin + DrawPoint(0, 1), Extent(run.width, layout.lineHeight - 2)));
+            BOOST_TEST(colors[emission] == run.badgeColor);
+            BOOST_TEST(colors[emission + 1] == run.badgeColor);
+            emission += 2;
+        }
+    }
+    BOOST_TEST(emission > 2u);
+    BOOST_TEST(emission == rectangles.size());
+    press(11, padHint::Back);
+    BOOST_TEST(!view(1).GetRing().IsOpen());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -575,9 +575,9 @@ const char* KeyInputLabel(const KeyHint& hint)
     return "";
 }
 
-std::string KeyLine(const std::vector<KeyHint>& keys)
+std::vector<KeyGroup> GroupKeys(const std::vector<KeyHint>& keys)
 {
-    std::string out;
+    std::vector<KeyGroup> groups;
     for(auto it = keys.begin(); it != keys.end();)
     {
         // Alle unmittelbar folgenden Eintraege mit DERSELBEN Wirkung gehoeren in einen Eintrag:
@@ -586,17 +586,37 @@ std::string KeyLine(const std::vector<KeyHint>& keys)
         auto last = it;
         while(last + 1 != keys.end() && (last + 1)->action == it->action)
             ++last;
+        groups.push_back(KeyGroup{{it, last + 1}});
+        it = last + 1;
+    }
+    return groups;
+}
+
+std::string KeyGroup::text() const
+{
+    std::string out;
+    for(const auto& input : inputs)
+    {
+        if(!out.empty())
+            out += '/';
+        out += KeyInputLabel(input);
+    }
+    if(!inputs.empty())
+    {
+        out += ' ';
+        out += KeyLabel(inputs.front().action);
+    }
+    return out;
+}
+
+std::string KeyLine(const std::vector<KeyHint>& keys)
+{
+    std::string out;
+    for(const auto& group : GroupKeys(keys))
+    {
         if(!out.empty())
             out += "  -  ";
-        for(auto cur = it; cur != last + 1; ++cur)
-        {
-            if(cur != it)
-                out += '/';
-            out += KeyInputLabel(*cur);
-        }
-        out += ' ';
-        out += KeyLabel(it->action);
-        it = last + 1;
+        out += group.text();
     }
     return out;
 }

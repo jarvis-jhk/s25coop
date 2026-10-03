@@ -206,11 +206,16 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     migrate automatically on reinstall or desktop launch with Steam closed; Game Mode leaves
     live shortcuts untouched. Binary VDF fixtures enforce BSD/GNU release parsing; Debug title and actual CLI tests pass locally (Sol);
     exact-head CI and Opus integration still required. Confirm on the Deck after release.
-  - ☐ Controller hints as Xbox button glyphs (A/B/X/Y, LB/RB, triggers, D-pad) instead of text.
+  - ◐ Controller hints as Xbox button glyphs: per-view in-game brief badges now colour
+    A/B/X/Y and label shoulders, D-pad directions, Start/Back and stick inputs, with font-metric
+    wrapping and complete text fallback for oversized groups (Sol; full Debug589/UI137 pass, CI pending).
+    Existing contextual bindings stay authoritative; triggers/camera-axis hints, other UI surfaces
+    and device-specific artwork remain separate slices. Deck appearance is unverified.
+    Rendering scope and fallback policy: [Controller hints](doc/coop/ControllerHints.md).
   - ◐ Fixed L3 building-position shortcut plus current in-game mapping audit in
     [ControllerMapping](doc/coop/ControllerMapping.md); eight physical/live cases and full
-    583-case Debug suite pass locally. All17 exact-head CI and Opus integration still required.
-    Further bindings, glyph rendering and panel integration remain separate gated slices.
+    583-case Debug suite pass locally. All17 exact-head CI passed; Opus integrated PR #35.
+    Further bindings and panel integration remain separate gated slices.
   - ☐ Lobby "play as a team / together" checkbox is drawn over other controls; fix the layout.
   - ☐ Dropdowns under D-pad/stick: focus must not change the value; A opens, D-pad picks, A confirms, B cancels.
   - ☐ In-game with a controller: instead of floating, movable, overlapping windows, a fixed side panel

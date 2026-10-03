@@ -1799,3 +1799,34 @@ L3 now toggles building aid per owning view from world, road mode, ring, window 
 leaves watching and shows all spots, B still restores. Hint bar lists L3 in each state. Reviewed diff: L3 was unbound
 before, so no binding conflict. Own Release Test_splitscreen on the merge: 583/583 cases passed. Addresses part of
 Deck request t_muq4pbai1teze5 (other bindings/glyphs/panel still open).
+
+### Sol — graphical in-game controller hints (2026-10-03)
+
+The per-view brief bar now draws Xbox-coloured A/B/X/Y badges and neutral labelled badges
+for the remaining advertised button/stick inputs. Stick motion stays distinct from L3.
+Measured padding and action-group wrapping preserve every hint; oversized groups use the
+ordinary font's complete text fallback. Shared grouping keeps the textual KeyLine contract.
+No binding, game-command route, external artwork or new fault-reporting service is added.
+The existing game fault path is retained. See doc/coop/ControllerHints.md for bounded scope:
+triggers/camera-axis hints, other UI surfaces and hardware appearance remain follow-up work.
+
+Started from master afdcbe1bc and reconciled onto integrated PR35 master4ee4f87bd before final
+testing. Only ROADMAP conflicted; both glyph progress and the integrated L3 mapping were preserved.
+Incoming PlayerView, building-aid and ring-test files are byte-identical to master. The mapping
+itself is unchanged. Sol's own GCC12 Debug/Werror cache, max two compiler jobs: all 50 hint cases
+(1628 assertions), full Test_splitscreen589 cases (460240 assertions), and Test_UI137 cases
+(19424 assertions) pass. Six new cases cover colours/input identities, measured wrapping and
+fallback, bounded badge geometry, four physical controller ring entries, and actual rectangle
+emission. Existing physical routes, mouse/keyboard and real-game command-absence checks remain green.
+
+Executed negative control removes ONLY the production badge-emission call. Both selected cases
+execute: the font GL emitter still passes54 assertions, while the rectangle emitter fails its
+intended required-badge assertion (4 rectangles expected at that point, only panel/stripe2 exist).
+The desktop is restored byte-for-byte, rebuilt, and the complete suites above pass. No exclusions.
+Initial exact gpt-6.1-sol read-only review identified this missing actual-draw guard; the production
+DrawBrief rectangle-sink body and physical test address it. Final combined supplied-diff review
+finds no concrete blocker. Format10, static validation, include guard/private-marker audit and
+real agent tsc gate pass; targeted tidy has no new KeyGlyph.cpp diagnostics.
+
+Draft companion PR requires all exact-head CI checks and both complete workflows before tested
+handoff. Opus owns integration. Geometry/font/rectangle calls are verified, not visible Deck pixels.

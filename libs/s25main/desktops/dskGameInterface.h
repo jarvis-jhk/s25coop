@@ -16,6 +16,7 @@
 #include "ingameWindows/iwAction.h"
 #include "ingameWindows/iwChat.h"
 #include "input/IPadTarget.h"
+#include "input/KeyGlyph.h"
 #include "input/PadRing.h"
 #include "input/PadRouter.h"
 #include "network/ClientInterface.h"
@@ -662,11 +663,12 @@ public:
     /// PlayerView::SetBrief, gerufen einmal je Frame und Ansicht am Ende von UpdateInput -
     /// also nachdem der Fokus dieses Frames feststeht.
     void RefreshBrief(PlayerView& view);
-    /// Eine Zeile des Klartextkastens, so wie sie gezeichnet wird: Text und Farbe.
+    /// A measured brief line, with optional coloured input runs and a text fallback.
     struct BriefLine
     {
         std::string text;
         unsigned color;
+        std::vector<brief::KeyRun> keyRuns;
     };
     /// ALLES, was DrawBrief zeichnet - und zwar genau das, Zeile fuer Zeile.
     ///
@@ -676,22 +678,15 @@ public:
         Rect panel;
         DrawPoint textOrigin;
         unsigned lineHeight = 0;
-        /// Titelzeile (gelb), umgebrochener Fliesstext (weiss), Tastenhinweisleiste (grau) -
-        /// in Zeichenreihenfolge und ohne Kennzeichen, welche Zeile welche ist. Genau deshalb
-        /// gibt es hier keine Kennzeichen: DrawBrief soll nicht entscheiden koennen, eine Sorte
-        /// wegzulassen.
+        /// Title, body and key rows in drawing order. Key rows may contain measured badges.
         std::vector<BriefLine> lines;
     };
     /// Die Farbe der Tastenhinweisleiste. Oeffentlich, weil ein Nachweis sie braucht, um IHRE
     /// Zeilen im Ergebnis von LayoutBrief zu finden (Befund B4).
     static constexpr unsigned keyLineColor = 0xFFC0C8D0;
 
-    /// Der Umbruch und die Lage des Kastens DIESER Ansicht - rein, ohne einen Zeichenaufruf.
-    ///
-    /// Herausgezogen aus DrawBrief wegen Befund B4: solange die Tastenzeile ein eigener Zweig im
-    /// Zeichner war, konnte sie dort ersatzlos verschwinden, ohne dass ein einziger von 306
-    /// Faellen rot wurde. Jetzt entstehen ALLE Zeilen hier, und der Zeichner kennt den
-    /// Unterschied zwischen ihnen gar nicht mehr.
+    /// Font-metric wrapping and panel placement, without drawing. Every row type
+    /// contributes to the panel height; there is no separate unmeasured footer.
     BriefLayout LayoutBrief(const PlayerView& view) const;
 
     /// Derselbe Umbruch und dieselbe Lage fuer einen BELIEBIGEN Block dieser Ansicht.
@@ -719,22 +714,11 @@ public:
     /// am Fernseher steht, kann weiterhin keiner der Faelle sehen (der DummyRenderer verwirft
     /// jeden Zeichenaufruf).
     void DrawBrief(const PlayerView& view) const;
+    /// The production draw body with an injectable rectangle sink, so badges cannot
+    /// disappear between measured geometry and drawing without a regression test.
+    void DrawBrief(const PlayerView& view, const std::function<void(const Rect&, unsigned)>& drawRectangle) const;
 
-    /// DIE SCHLEIFE, DIE WIRKLICH ZEICHNET - herausgezogen wegen Befund N7.
-    ///
-    /// Der Befund: Pruefer 3 hat zwei Sabotagen gefahren. (A) Tastenzeile aus LayoutBrief
-    /// entfernt -> rot, der Waechter aus B4 hat Zaehne. (B) LayoutBrief unangetastet, in
-    /// DrawBrief die LETZTE Zeile nicht mehr gezeichnet -> gruen, kein einziger von 316 Faellen
-    /// sah es. Die Behauptung "die Zeile kann nicht mehr aus dem Zeichenweg fallen" galt also
-    /// nur fuer LayoutBrief; die Schleife selbst war ungedeckt, weil der DummyRenderer jeden
-    /// Zeichenaufruf verwirft und ein Nachweis nichts zu messen hatte.
-    ///
-    /// Jetzt hat er etwas zu messen: er reicht seinen EIGENEN Ausgeber herein und zaehlt, was
-    /// hindurchlaeuft - durch dieselbe Schleife, die im Spiel den Zeichenaufruf ausloest.
-    /// DrawBrief hat danach keine Zeilenlogik mehr; sein Ausgeber ist ein einziger Aufruf ohne
-    /// Verzweigung, und DAS ist der ehrliche Rest, den diese Umgebung nicht messen kann.
-    ///
-    /// Statisch und ohne Ansicht: die Schleife braucht nur, was LayoutBrief geliefert hat.
+    /// Emits every measured row, including graphical and fallback key rows.
     static void EmitBriefLines(const BriefLayout& layout,
                                const std::function<void(const DrawPoint&, const BriefLine&)>& emit);
 

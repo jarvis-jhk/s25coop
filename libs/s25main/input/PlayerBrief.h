@@ -695,6 +695,14 @@ const char* KeyInputLabel(const KeyHint& hint);
 /// weiterhin beide Knoepfe), damit ein Nachweis jeden einzeln druecken kann.
 std::string KeyLine(const std::vector<KeyHint>& keys);
 
+/// Shared grouping for the text fallback and the graphical hint bar.
+struct KeyGroup
+{
+    std::vector<KeyHint> inputs;
+    std::string text() const;
+};
+std::vector<KeyGroup> GroupKeys(const std::vector<KeyHint>& keys);
+
 /// Der Kasten, in dem der Klartext einer Ansicht liegt.
 ///
 /// Unten in ihrem Viewport, aber nie ausserhalb der Safe Area des BILDSCHIRMS: der Overscan

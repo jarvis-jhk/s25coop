@@ -74,6 +74,7 @@ part of the tested confirmation policy.
 
 Further useful mappings need separate policy and physical-input tests: a stable camera/HQ
 shortcut, optional names/output shortcuts, and help exposing camera/zoom alongside the
-contextual hint bar. No such binding or coloured glyph rendering is implemented here.
+contextual hint bar. No such additional binding is implemented here. See [Graphical controller hints](ControllerHints.md)
+for the separately implemented hint rendering.
 Any change to those routes needs fresh shared-input/view claims; L3 is the bounded first
 implementation from the Deck mapping feedback.

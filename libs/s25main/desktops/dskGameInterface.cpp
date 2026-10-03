@@ -1690,28 +1690,16 @@ dskGameInterface::BriefLayout dskGameInterface::LayoutBriefOf(const PlayerView& 
         for(std::string& part : font.GetWrapInfo(line, textWidth, textWidth).CreateSingleStrings(line))
             wrapped.push_back(std::move(part));
     }
-    // Die Tastenzeile wird MIT umgebrochen und nicht abgeschnitten: eine Leiste, der ihr letzter
-    // Eintrag fehlt, verschweigt genau den Knopf, den ein Anfaenger nicht kennt. GEMESSEN passt
-    // sie in einer Viertel-Ansicht in aller Regel auf eine Zeile (852 Punkte Kastenbreite gegen
-    // hoechstens sieben kurze Eintraege); der Umbruch ist die Zusicherung fuer den Rest.
-    std::vector<std::string> keyLines;
-    if(!b.keys.empty())
-    {
-        const std::string keyText = brief::KeyLine(b.keys);
-        for(std::string& part : font.GetWrapInfo(keyText, textWidth, textWidth).CreateSingleStrings(keyText))
-            keyLines.push_back(std::move(part));
-    }
+    auto keyLines = brief::LayoutKeyGlyphs(b.keys, font, textWidth, keyLineColor);
 
-    // Titel gelb, Fliesstext weiss, die Tastenleiste ein gedaempftes Grau - damit sie als
-    // BESCHRIFTUNG lesbar ist und nicht als weiterer Satz. Dieselbe Schrift wie der Rest des
-    // Kastens; eine zweite Schriftgroesse mitten in einem Kasten ist eine Sichtprobe am Geraet
-    // und keine Rechnung (siehe den Bericht zu dieser Phase).
+    // Key rows contribute to the measured height so ring placement reserves the
+    // complete displayed bar, including wraps and text fallback.
     if(!b.title.empty())
-        out.lines.push_back(BriefLine{b.title, COLOR_YELLOW});
+        out.lines.push_back(BriefLine{b.title, COLOR_YELLOW, {}});
     for(std::string& line : wrapped)
-        out.lines.push_back(BriefLine{std::move(line), COLOR_WHITE});
-    for(std::string& line : keyLines)
-        out.lines.push_back(BriefLine{std::move(line), keyLineColor});
+        out.lines.push_back(BriefLine{std::move(line), COLOR_WHITE, {}});
+    for(auto& line : keyLines)
+        out.lines.push_back(BriefLine{std::move(line.text), keyLineColor, std::move(line.runs)});
 
     if(out.lines.empty())
         return out;
@@ -1723,35 +1711,38 @@ dskGameInterface::BriefLayout dskGameInterface::LayoutBriefOf(const PlayerView& 
 
 void dskGameInterface::DrawBrief(const PlayerView& view) const
 {
-    // DIESE FUNKTION ENTSCHEIDET NICHTS MEHR. Sie zeichnet stur die Liste, die LayoutBrief
-    // liefert - und genau das ist die Erledigung von Befund B4.
-    //
-    // Der Befund lautete: nichts in der Suite sichert zu, dass die Tastenzeile ueberhaupt
-    // gezeichnet wird. Pruefer 1 hat die Zeile ersatzlos aus dem Zeichenweg entfernt und 306
-    // Faelle blieben gruen; Pruefer 2 hat nachgemessen, warum - der Zeichenweg lief in der
-    // ganzen Suite kein einziges Mal (WINDOWMANAGER.GetCurrentDesktop() != dsk in jeder
-    // Splitscreen-Fixture, also blieb `paintForReal` wirkungslos).
-    //
-    // WAS EIN NACHWEIS NICHT KANN, und das bleibt wahr: der DummyRenderer verwirft jeden
-    // Zeichenaufruf; kein Testfall kann sehen, dass ein Buchstabe erscheint. WAS ER JETZT KANN:
-    // die Liste lesen, aus der gezeichnet wird, und zwar dieselbe, aus der DrawBrief zeichnet.
-    // Eine "Tastenzeile" gibt es in dieser Funktion nicht mehr - sie kann hier also auch nicht
-    // mehr einzeln herausfallen, ohne aus LayoutBrief zu verschwinden, und das SIEHT ein
-    // Nachweis (tests/s25Main/splitscreen/testPadKeyHints.cpp, TheDrawnPanelReallyCarriesTheKeyLine).
+    DrawBrief(view, [](const Rect& rect, const unsigned color) { DrawRectangle(rect, color); });
+}
+
+void dskGameInterface::DrawBrief(const PlayerView& view,
+                                 const std::function<void(const Rect&, unsigned)>& drawRectangle) const
+{
+    // Layout owns wrapping and fallback; the draw path consumes its measured runs.
     const BriefLayout layout = LayoutBrief(view);
     if(layout.lines.empty())
         return;
     const glFont& font = *NormalFont;
-    DrawRectangle(layout.panel, 0xB4000000);
+    drawRectangle(layout.panel, 0xB4000000);
     // Ein schmaler Streifen in der Spielerfarbe: bei vier Kaesten auf einem Fernseher ist das
     // der schnellste Weg zu erkennen, welcher der eigene ist. Dieselbe Farbe traegt schon der
     // Fokusrahmen (ClearFocusRing/AddFocusRing).
-    DrawRectangle(Rect(layout.panel.getOrigin(), Extent(2, layout.panel.getSize().y)), SeatColor(view));
+    drawRectangle(Rect(layout.panel.getOrigin(), Extent(2, layout.panel.getSize().y)), SeatColor(view));
 
-    // BEFUND N7: hier stand die Schleife. Was von ihr uebrig bleibt, ist ein Ausgeber ohne
-    // Verzweigung - er kann keine Zeile mehr auslassen, weil er keine Zeile mehr auswaehlt.
-    EmitBriefLines(layout, [&font](const DrawPoint& pos, const BriefLine& line) {
-        font.Draw(pos, line.text, FontStyle{}, line.color);
+    EmitBriefLines(layout, [&font, &drawRectangle](const DrawPoint& pos, const BriefLine& line) {
+        if(line.keyRuns.empty())
+            font.Draw(pos, line.text, FontStyle{}, line.color);
+        else
+        {
+            for(const auto& run : line.keyRuns)
+            {
+                const DrawPoint origin = pos + DrawPoint(static_cast<int>(run.x), 0);
+                if(run.badgeColor)
+                    brief::EmitKeyBadge(Rect(origin, Extent(run.width, font.getHeight())), run.badgeColor,
+                                        drawRectangle);
+                font.Draw(origin + DrawPoint(run.badgeColor ? brief::keyTextPadding : 0, 0), run.text, FontStyle{},
+                          run.textColor);
+            }
+        }
     });
 }
 
