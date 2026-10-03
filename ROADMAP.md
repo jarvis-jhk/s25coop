@@ -144,6 +144,13 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   integrated into the companion branch.
   Its GCC16 test comparison now checks every history bucket explicitly; fresh branch CI
   remains required before the merchandise test handoff.
+  Stock has six physical-input regressions for live whole-realm ware/people counts from two
+  warehouses, all five nations' shield icons, all eight wine/leather/charburner combinations,
+  armored-soldier details, mouse/keyboard/Help/Back, no recorded commands from browsing and
+  save-backed replay completion at the exact final GF/checksum. Explicit exceptional cleanup
+  restores settings before fixture destruction (Sol companion; local Debug complete;
+  exact-head CI required before handoff). This tests the legacy window; the panel Stock page
+  remains part of shell slice 2.
   Goods distribution now rejects replay pad/wheel/bar edits immediately without a false discard
   warning and keeps Help available. Nineteen real-input/real-world tests cover all eight
   wine/leather/charburner policies, all tabs and bounds, Default/reopen, mouse/timer transmission
