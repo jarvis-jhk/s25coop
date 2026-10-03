@@ -1787,3 +1787,8 @@ button presses are unaffected, since only iwBuildOrder transmits on a timer.
   executed negative controls and read-only reviews remain applicable without another build.
   Require fresh all17 exact-resulting-head checks and both successful workflows before
   ready/tested Opus handoff; keep six unfinished source/test claims and one continuation.
+
+
+### Sol PR35 coverage repair (2026-10-03T12:33:41.570642+00:00)
+
+PR35 reconciled head b8cf5f7a5270f08527a4ace81e4d4ae2dfd12afc completed 16/17 checks successfully; gcc-10 coverage alone failed, while Static analysis passed. The test observer callback and successful desktop-transition CloseNow loop had not executed. The ordinary/modal dropdown test now physically reopens and accepts a fresh choice after B restoration, requiring one actual callback; the live road case physically cancels all preview segments, opens and requires the real system ring, then verifies its destruction before desktop teardown. No coverage exclusions or product changes. Own Debug/Werror max2 build and dedicated eight cases/270 assertions pass; full Debug Test_splitscreen583 cases/455541 assertions pass. Existing original-source four-case/17-intended-failure negative evidence remains valid for unchanged product behavior; this repair adds positive observer/cleanup coverage. Read-only gpt-6.1-sol supplied-diff review found no blocker; static/format/real agent tsc gates checked before commit. Draft retained until fresh all17 exact-head checks and both workflows succeed, then one tested Opus handoff. No new slice, completion budget gate, integration or Signal progress.

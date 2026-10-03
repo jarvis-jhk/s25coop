@@ -209,6 +209,13 @@ BOOST_FIXTURE_TEST_CASE(OpenDropdownAndModalConfirmationKeepTheirPendingChoice, 
             press(11, PadButton::B);
             BOOST_TEST((combo->GetSelection() == 0u));
             BOOST_TEST(window.selections == accepted);
+            // Commit a fresh physical choice to prove the notification observer is active.
+            press(11, PadButton::A);
+            press(11, PadButton::DpadDown);
+            press(11, PadButton::A);
+            BOOST_TEST((combo->GetSelection() == 1u));
+            BOOST_TEST(!combo->CanCancelInput());
+            BOOST_TEST(window.selections == accepted + 1u);
             WINDOWMANAGER.CloseNow(&window);
         }
     });
@@ -323,8 +330,16 @@ BOOST_FIXTURE_TEST_CASE(ARealRoadPreviewAndTheRecordedWorldStayUnchanged, LiveSh
         // Force the real local client/server through more than one NWF before closing the recording.
         const auto gf = GAMECLIENT.GetGFNumber();
         pumpUntil([&] { return GAMECLIENT.GetGFNumber() > gf + 24; }, "view-only shortcut NWF");
+        // End the uncommitted road and leave a real ring for the desktop transition to close.
+        for(unsigned i = 0; i <= route.size(); ++i)
+            press(11, PadButton::B);
+        BOOST_REQUIRE(playerView.GetRoad().mode == RoadBuildMode::Disabled);
+        press(11, PadButton::Back);
+        BOOST_REQUIRE(playerView.GetRing().IsOpen());
+        BOOST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() != nullptr);
         while(auto* window = WINDOWMANAGER.GetTopMostWindow())
             WINDOWMANAGER.CloseNow(window);
+        BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         tearDownDesktop();
         // Reuse the same live world with two seats controlling the same tribe, not two players.
         GAMECLIENT.SetAdditionalLocalPlayers({});
