@@ -6,9 +6,10 @@ SPDX-License-Identifier: GPL-2.0-or-later
 
 # Pre-game menu redesign for controllers
 
-Status: proposal, 2026-10-03 (Jan's feedback on the menu concepts report).
-Builds on concept B (campaign hub). Not yet ROADMAP slices; split each step
-into bounded slices before implementing, and keep mouse/keyboard working.
+Status: accepted for the roadmap in this order, 2026-10-03 (Jan: "Pack es so
+auf die Roadmap"). Builds on concept B (campaign hub). Player cards come first.
+Keep mouse/keyboard working in every slice. The bounded slices are listed
+under "Roadmap slices" below; ROADMAP.md (M3) points here.
 
 ## Requirements from Jan
 - A live "shell map" behind the main menu with ambient sound and music,
@@ -47,3 +48,49 @@ into bounded slices before implementing, and keep mouse/keyboard working.
    cap in the menu, option live/calm/still, still image on low battery and
    without original data.
 6. Campaign hub (concept B) as the new start page on top.
+
+## Roadmap slices (2026-10-03)
+Order as approved by Jan. Each slice is one PR: claim its scopes first, prove it
+with physical-input Debug tests (mouse/keyboard unchanged) and all exact-head CI
+green before integration. A later slice may start once the earlier one it builds
+on is integrated.
+
+Player cards
+- 1a Pure card model per seat: rows (colour, nation, team, shared tribe), value
+  cycling, taken-colour skipping, campaign locks with reason. Unit tests only.
+- 1b Cards in `dskGameLobby` for local seats: D-pad row/value, A/B, focus per
+  controller; replaces the per-seat controls for controller users.
+- 1c Remote players' cards (read-only) and per-seat cursor colours in a shared
+  tribe; online and splitscreen regression with real loopback server.
+
+Rules drawer
+- 2a Staged rule edits: one `GameMessage_GGSChange` per apply instead of per
+  step; ready players keep their own choices and re-confirm new rules with Y.
+  Countdown/ready regressions.
+- 2b Drawer UI over the editing player's card; one editor at a time with a
+  visible "X is editing the rules"; others keep editing their cards.
+- 2c Online: non-hosts read the rules and may send a suggestion to the host.
+
+Addon categories
+- 3a Category table (Comfort, New content, World & economy, Combat, Easier,
+  Developer) with a test that every addon has exactly one category and
+  value-dependent easier/harder marks.
+- 3b Category tabs plus "changed only" filter in the addon window. UI only.
+- 3c Presets Classic / Comfort (recommended) / Relaxed / Challenge / Custom;
+  "Easier" marked in saves and the victory screen.
+
+Profiles
+- 4a Profiles (name, colour, nation, controller mapping) stored and picked on
+  the card.
+- 4b Controller on-screen keyboard for names and chat.
+
+Shell map
+- 5a Decouple the menu world from the lobby's `GAMECLIENT` (or stop it cleanly
+  on lobby entry); tests that lobby/game start are unaffected.
+- 5b Play a recorded AI replay with a camera script behind the main menu.
+- 5c Ambient sound and music; Deck: 30 fps cap, live/calm/still option, still
+  image on low battery or without original data.
+- 5d One scene per nation/campaign.
+
+Campaign hub
+- 6 Campaign hub (concept B) as the new start page on top of the above.
