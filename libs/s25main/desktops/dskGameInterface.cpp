@@ -1427,7 +1427,7 @@ void dskGameInterface::RefreshBrief(PlayerView& view)
         view.SetBrief(brief::Brief());
         return;
     }
-    // BEIM ZUSCHAUEN bleibt vom Kasten GENAU EINE ZEILE stehen: der Ausgang.
+    // Beim Zuschauen bleiben nur die Ausgaenge: B stellt wieder her, L3 zeigt Bauplaetze.
     //
     // Nicht gar nichts, und das ist die wichtigste Entscheidung an diesem Zustand. Ein Zustand,
     // der alles ausblendet UND seinen eigenen Ausgang verschweigt, ist eine Falle - genau die,
@@ -2490,6 +2490,21 @@ void dskGameInterface::OnPadButton(const unsigned slot, const PadButton button, 
     // gehoert es ihm. Ein einziger Wert, aus dem beides faellt - der handelnde Spieler kann
     // gar nicht mehr vom Fensterbesitz abweichen.
     const ViewScope ownerScope(slot);
+    // A view-only shortcut must survive ring/modal/focus routing without activating any control.
+    // Watching hides the aid, so requesting it explicitly leaves that mode and shows all spots.
+    if(button == PadButton::LeftStick)
+    {
+        if(down)
+        {
+            if(view.IsWatchOnly())
+            {
+                LeaveWatchOnly(view);
+                view.GetView().SetBqMode(BqMode::All);
+            } else
+                ToggleConstructionAidFor(view);
+        }
+        return;
+    }
     // --- DER RING IST FUER SEINEN SITZPLATZ MODAL (Phase 13) ---------------------------------
     //
     // Er wird VOR allem anderen gefragt - auch vor Back und Y. Sonst risse Back mitten in der
@@ -2501,7 +2516,7 @@ void dskGameInterface::OnPadButton(const unsigned slot, const PadButton button, 
         if(RingOnPadButton(view, button, down))
             return;
     }
-    // BEIM ZUSCHAUEN gibt es GENAU EINEN Knopf, und der Kasten nennt ihn: B fuehrt zurueck.
+    // Beim Zuschauen fuehrt B zurueck; L3 wurde bereits als expliziter Anzeigewunsch behandelt.
     // Ein Zustand ohne sichtbaren Ausgang ist die Falle, die Phase 11 und Phase 12 je einmal
     // gebaut und wieder ausgebaut haben.
     if(view.IsWatchOnly())

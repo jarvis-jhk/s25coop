@@ -975,13 +975,13 @@ BOOST_FIXTURE_TEST_CASE(JustWatchHidesEverythingAndSaysHowToComeBack, PadViewFix
     const brief::Brief& b = view(1).GetBrief();
     BOOST_TEST_MESSAGE("AUDIT: Kasten beim Zuschauen = '" << b.joined() << "' [" << brief::KeyLine(b.keys) << "]");
     BOOST_TEST(b.lines.empty());
-    BOOST_TEST_REQUIRE(b.keys.size() == 1u);
+    BOOST_TEST_REQUIRE(b.keys.size() == 2u);
     BOOST_TEST((b.keys.front().button == PadButton::B));
     BOOST_TEST((b.keys.front().action == brief::KeyAction::LeaveWatchOnly));
     // Die Zeile ist nicht leer - ein unsichtbarer Ausgang waere keiner.
     BOOST_TEST(!brief::KeyLine(b.keys).empty());
 
-    // KEIN ANDERER KNOPF WIRKT. A oeffnet kein Fenster, X legt keine Flagge, Back kein Menue.
+    // Weltaktionen bleiben gesperrt. L3 ist separat als expliziter Anzeigewunsch belegt.
     press(11, PadButton::A);
     BOOST_TEST(view(1).actionwindow == static_cast<iwAction*>(nullptr));
     press(11, PadButton::Back);
@@ -1662,9 +1662,9 @@ BOOST_FIXTURE_TEST_CASE(InTheRingTheBarNamesEveryInputThatDoesSomething, PadView
         });
         BOOST_TEST_REQUIRE((stickHint != b.keys.end()));
         BOOST_TEST((stickHint->action == brief::KeyAction::AimRing));
-        // ... und der Stick ist NICHT als PadButton::LeftStick (der Stickklick, L3) ausgegeben -
-        // sonst verspraeche die Leiste einen Klick, der nichts tut.
-        BOOST_TEST(!ringNamesButton(b, PadButton::LeftStick));
+        // Stick movement and the independent L3 display shortcut must name different actions.
+        BOOST_TEST(!ringHasHint(b, PadButton::LeftStick, brief::KeyAction::AimRing));
+        BOOST_TEST(ringHasHint(b, PadButton::LeftStick, brief::KeyAction::ToggleConstructionAid));
         // ... und er steht wirklich in der Zeile, die der Spieler liest.
         BOOST_TEST(brief::KeyLine(b.keys).find(brief::KeyInputLabel(*stickHint)) != std::string::npos);
     }

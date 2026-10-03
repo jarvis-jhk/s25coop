@@ -1745,3 +1745,50 @@ Closed dropdowns now pass D-pad/stick to focus navigation; A opens, browse is si
 Closed-box stepping no longer changes values (mouse wheel still does). iwBuildOrder timer no longer commits an open mode preview.
 Addresses Deck request t_muq4pbvs1viw8z. Possible follow-up (not filed): other windows reading combo selections on
 button presses are unaffected, since only iwBuildOrder transmits on a timer.
+
+
+## 2026-10-03 — Sol: fixed controller building-aid shortcut and mapping audit
+- PR34 integrated by Opus at master9899cb311 after Sol's all17 exact-head handoff
+  cb297a4a4d2ac87cf0dcbbd90d039bba209a4c7e. Both complete successful workflow links
+  and combined Debug575/UI137 evidence are in its ready PR description and Sol checkpoint.
+- Claim shared desktop/hints plus bounded dedicated and affected test/doc scopes before editing.
+  New sol/controller-building-aid-shortcut starts from integrated master9899cb311.
+  Deck mapping feedback t_muq4pbai1teze5 is split: audit all current contexts and give L3
+  one safe per-view building-spot toggle. No extra destructive actions, glyph or panel claim.
+- L3 precedes rings, focus, modal windows and watching. It never commits a pending control;
+  in watching it deliberately returns to play and shows all spots, while B still restores
+  the exact saved display. System-menu cursor-only cycling and primary-only persistence
+  remain unchanged. doc/coop/ControllerMapping.md records the actual axes/buttons, mode
+  precedence and remaining unused controls. Existing game fault reporting stays in place.
+- Reconfigured Sol's own GCC12 Debug/Werror cache and confirmed the new eight-case suite
+  in the 583-case binary. All8 physical/live cases pass260 assertions; full Debug
+  Test_splitscreen583 cases/458467 assertions pass. Tests cover four distinct-player seats,
+  held/released input, ring selection/label refresh, ordinary and modal dropdown previews,
+  physical watch entry/exit, disconnect, primary persistence and the unchanged space-key
+  path. A real nonempty road preview survives the shortcut; shared-tribe seats stay independent
+  and both players' completed real-server recordings contain zero game commands.
+- Separate normal/exceptional cleanup guards destroy windows before their desktop/world and
+  restore settings before fixture destruction. Deliberate exception probes assert they reached
+  the intended open menu, including a live game. No new Settings/GameClient singleton instance.
+- Executed original master9899cb311 desktop negative control: all4 targeted physical cases
+  run and fail17 intended aid/label/watch assertions; no unmatched-filter or crash evidence.
+  Restored the fixed source byte-for-byte, rebuilt and all8 cases pass260 assertions again.
+- Final read-only exactly gpt-6.1-sol supplied patch and complete fixture/context review has
+  no concrete blocker. Narrow documentation to recorded game-command absence rather than a
+  measured claim about all network traffic. Format10, static validation, diff and actual agent
+  TypeScript gate are required before commit; all17 fresh exact-head checks and both complete
+  workflows remain the tested handoff gate. No hardware, glyph, panel or release proof claimed.
+
+## 2026-10-03 — Sol: PR35 documentation reconciliation
+- Master afdcbe1bc only adds Opus’s PR34 integration note. Its parallel append conflicts
+  with the PR35 notes and prevents GitHub from starting pull-request CI. Preserve both
+  sections; every non-NOTES file remains byte-identical to tested 7d101bf365e981473c70c9f854ae1c19b4d2a7dd.
+- Existing local Debug583 cases/458467 assertions and eight dedicated cases/260 assertions,
+  executed negative controls and read-only reviews remain applicable without another build.
+  Require fresh all17 exact-resulting-head checks and both successful workflows before
+  ready/tested Opus handoff; keep six unfinished source/test claims and one continuation.
+
+
+### Sol PR35 coverage repair (2026-10-03T12:33:41.570642+00:00)
+
+PR35 reconciled head b8cf5f7a5270f08527a4ace81e4d4ae2dfd12afc completed 16/17 checks successfully; gcc-10 coverage alone failed, while Static analysis passed. The test observer callback and successful desktop-transition CloseNow loop had not executed. The ordinary/modal dropdown test now physically reopens and accepts a fresh choice after B restoration, requiring one actual callback; the live road case physically cancels all preview segments, opens and requires the real system ring, then verifies its destruction before desktop teardown. No coverage exclusions or product changes. Own Debug/Werror max2 build and dedicated eight cases/270 assertions pass; full Debug Test_splitscreen583 cases/455541 assertions pass. Existing original-source four-case/17-intended-failure negative evidence remains valid for unchanged product behavior; this repair adds positive observer/cleanup coverage. Read-only gpt-6.1-sol supplied-diff review found no blocker; static/format/real agent tsc gates checked before commit. Draft retained until fresh all17 exact-head checks and both workflows succeed, then one tested Opus handoff. No new slice, completion budget gate, integration or Signal progress.
