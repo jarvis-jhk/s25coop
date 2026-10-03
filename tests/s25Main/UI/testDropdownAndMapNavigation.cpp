@@ -356,23 +356,33 @@ BOOST_AUTO_TEST_CASE(MouseAndPadEndInTheSameState)
     BOOST_TEST(padParent.comboSelected.back() == 2u);
 }
 
-/// Bei GESCHLOSSENER Liste bleibt der Steuerkreuzschritt, was er war: er setzt den Wert direkt
-/// und meldet ihn. Das ist derselbe Weg wie das Mausrad ueber dem Feld
-/// (ctrlComboBox::Msg_WheelDown), und beides wird gebraucht - ein Lautstaerkeregler soll sich
-/// nicht erst aufklappen lassen muessen.
-BOOST_AUTO_TEST_CASE(SteppingOnAClosedBoxIsUnchanged)
+BOOST_AUTO_TEST_CASE(ClosedBoxDoesNotConsumeValueStepsButMouseWheelStillSelects)
 {
     RecordingParent parent;
     auto* combo = makeCombo(parent, 4);
     putMouseFarAway();
 
+    // Without a selection, pad navigation must not choose an implicit default either.
+    for(const auto direction : {Position(1, 0), Position(-1, 0), Position(0, 1), Position(0, -1)})
+        BOOST_TEST(!combo->StepValue(direction));
+    BOOST_TEST(!combo->GetSelection().has_value());
+    BOOST_TEST(parent.comboSelected.empty());
+
+    combo->SetSelection(1);
+    BOOST_TEST(!combo->StepValue(Position(0, 1)));
+    BOOST_TEST((combo->GetSelection() == 1u));
+    BOOST_TEST(parent.comboSelected.empty());
+
+    // Mouse wheel selection remains immediate and uses the same notification as before.
+    const MouseCoords mouse(combo->GetDrawPos() + DrawPoint(5, 5));
+    BOOST_TEST(combo->Msg_WheelDown(mouse));
+    BOOST_TEST((combo->GetSelection() == 2u));
     BOOST_TEST(!combo->IsListOpen());
-    BOOST_TEST(!combo->StepValue(Position(1, 0))); // waagerecht: der Fokus wandert weiter
-    BOOST_TEST(combo->StepValue(Position(0, 1)));
-    BOOST_TEST(combo->GetSelection() == 0u);
-    BOOST_TEST(!combo->IsListOpen());
-    BOOST_TEST_REQUIRE(parent.comboSelected.size() == 1u);
-    BOOST_TEST(parent.comboSelected.back() == 0u);
+    BOOST_TEST(combo->Msg_WheelUp(mouse));
+    BOOST_TEST((combo->GetSelection() == 1u));
+    BOOST_TEST_REQUIRE(parent.comboSelected.size() == 2u);
+    BOOST_TEST(parent.comboSelected.front() == 2u);
+    BOOST_TEST(parent.comboSelected.back() == 1u);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

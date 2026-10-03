@@ -357,6 +357,64 @@ BOOST_FIXTURE_TEST_CASE(UpDownTopBottomAndBoundaryMovesRoundtripTheEntireOrder, 
     });
 }
 
+BOOST_FIXTURE_TEST_CASE(ClosedModeNavigationPreservesTheSelectedModeAndWorld, BuildOrderPadFixture)
+{
+    run(0u, [this] {
+        enter();
+        const auto before = actual();
+        focusUntil(&mode());
+        press(PadButton::DpadDown);
+        BOOST_TEST(focused() == &list());
+        BOOST_TEST((mode().GetSelection() == 0u));
+        BOOST_TEST(!mode().IsListOpen());
+        BOOST_TEST(!GAMECLIENT.GetVisualSettings(0).useCustomBuildOrder);
+
+        focusUntil(&mode());
+        press(PadButton::A);
+        press(PadButton::DpadDown);
+        BOOST_TEST(mode().IsListOpen());
+        BOOST_TEST((mode().GetSelection() == 1u));
+        BOOST_TEST(!GAMECLIENT.GetVisualSettings(0).useCustomBuildOrder);
+        press(PadButton::B);
+        BOOST_TEST((mode().GetSelection() == 0u));
+        BOOST_TEST(!GAMECLIENT.GetVisualSettings(0).useCustomBuildOrder);
+        closeAndRoundtrip(before.build_order, before.useCustomBuildOrder);
+    });
+    BOOST_TEST(SETTINGS.global.debugMode == savedDebugMode);
+}
+
+BOOST_FIXTURE_TEST_CASE(PendingOrderTimerDoesNotCommitAnOpenModePreview, BuildOrderPadFixture)
+{
+    run(0u, [this] {
+        enter();
+        auto expected = visibleDefaults(0u);
+        click(4);
+        std::rotate(expected.begin(), expected.begin() + 1, expected.end());
+        const auto fullExpected = completeOrder(expected, 0u);
+        focusUntil(&mode());
+        press(PadButton::A);
+        press(PadButton::DpadDown);
+        BOOST_TEST_REQUIRE(mode().IsListOpen());
+        BOOST_TEST((mode().GetSelection() == 1u));
+
+        // The real timer may send the confirmed list reorder while the mode is only previewed.
+        std::this_thread::sleep_for(std::chrono::milliseconds(2100));
+        frame();
+        pumpUntil([this, &fullExpected] { return actual().build_order == fullExpected; },
+                  "confirmed reorder from the real timer");
+        expectWorld(fullExpected, false);
+        BOOST_TEST(!GAMECLIENT.GetVisualSettings(0).useCustomBuildOrder);
+        BOOST_TEST(mode().IsListOpen());
+        press(PadButton::B);
+        BOOST_TEST((mode().GetSelection() == 0u));
+        closeAndRoundtrip(completeOrder(expected, 0u), false);
+        openFromMain();
+        chooseCustom(true);
+        closeAndRoundtrip(completeOrder(expected, 0u), true);
+    });
+    BOOST_TEST(SETTINGS.global.debugMode == savedDebugMode);
+}
+
 BOOST_FIXTURE_TEST_CASE(BrowsingTheListOrCancellingTheModeDoesNotChangeTheWorld, BuildOrderPadFixture)
 {
     run(0u, [this] {

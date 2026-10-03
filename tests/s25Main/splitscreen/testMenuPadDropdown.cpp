@@ -102,6 +102,61 @@ struct DropdownPadFixture : rttr::test::MenuPadFixture
 
 BOOST_AUTO_TEST_SUITE(MenuPadDropdownTests)
 
+BOOST_FIXTURE_TEST_CASE(ClosedDropdownDirectionsMoveFocusWithoutChangingTheValue, DropdownPadFixture)
+{
+    auto* dsk = toComboDesktop();
+    pickUp(pad);
+    BOOST_TEST_REQUIRE(focused(0) == &combo());
+
+    press(pad, Down);
+    BOOST_TEST(focusedId(0) == ID_Button);
+    BOOST_TEST((combo().GetSelection() == 1u));
+    BOOST_TEST(!combo().IsListOpen());
+    BOOST_TEST(dsk->comboSelected.empty());
+
+    press(pad, PadButton::DpadUp);
+    BOOST_TEST(focused(0) == &combo());
+    // No control above or beside the field: unsuccessful navigation is also inert.
+    for(const auto direction : {PadButton::DpadUp, PadButton::DpadLeft, PadButton::DpadRight})
+    {
+        press(pad, direction);
+        BOOST_TEST(focused(0) == &combo());
+        BOOST_TEST((combo().GetSelection() == 1u));
+        BOOST_TEST(dsk->comboSelected.empty());
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(ClosedDropdownStickMovesFocusAndOpenStickOnlyBrowses, DropdownPadFixture)
+{
+    auto* dsk = toComboDesktop();
+    pickUp(pad);
+    video.padEvents_.push_back(PadEvent::Axis(pad, PadAxis::LeftY, 1.f));
+    for(unsigned i = 0; i < 20; ++i)
+        frame();
+    video.padEvents_.push_back(PadEvent::Axis(pad, PadAxis::LeftY, 0.f));
+    frame();
+    BOOST_TEST(focusedId(0) == ID_Button);
+    BOOST_TEST((combo().GetSelection() == 1u));
+    BOOST_TEST(dsk->comboSelected.empty());
+
+    press(pad, PadButton::LeftShoulder);
+    BOOST_TEST_REQUIRE(focused(0) == &combo());
+    press(pad, Activate);
+    video.padEvents_.push_back(PadEvent::Axis(pad, PadAxis::LeftY, 1.f));
+    for(unsigned i = 0; i < 20; ++i)
+        frame();
+    video.padEvents_.push_back(PadEvent::Axis(pad, PadAxis::LeftY, 0.f));
+    frame();
+    BOOST_TEST(combo().IsListOpen());
+    BOOST_TEST_REQUIRE(combo().GetSelection().has_value());
+    BOOST_TEST(*combo().GetSelection() > 1u);
+    BOOST_TEST(focused(0) == &combo());
+    BOOST_TEST(dsk->comboSelected.empty());
+    press(pad, Cancel);
+    BOOST_TEST((combo().GetSelection() == 1u));
+    BOOST_TEST(dsk->comboSelected.empty());
+}
+
 /// Aufklappen, blaettern, bestaetigen - drei getrennte Schritte, alle nur aus Padereignissen.
 ///
 /// Vorher gab es nur einen: jeder Steuerkreuzschritt setzte den Wert sofort UND klappte die

@@ -1673,6 +1673,35 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   mixed-device/shared-view refresh proof. No usable panel, hardware test or release claimed.
   Existing ntfy reporting is unchanged; no private endpoint added and no Signal notice.
 
+## 2026-10-02 — Sol: explicit controller dropdown confirmation
+- Resume from integrated master07b907257; no unfinished Sol PR or competing source claim.
+  Deferred Deck request t_muq4pbvs1viw8z: closed dropdowns still consumed vertical D-pad/stick
+  directions and notified immediately, even though the open/browse/A/B paths already existed.
+  Closed fields now let focus navigation handle directions; only an opened list consumes
+  browsing input. Update the two UI tests that deliberately required the old policy.
+- Physical driver regressions cover closed D-pad navigation including inert directions,
+  closed/open analog-stick input and B restoration. A real BuildOrder game checks navigation,
+  cancellation and actual backend settings through the ordinary system/Main menu entry.
+- A second executed regression found that BuildOrder's transmission timer sent the open
+  mode preview while a confirmed list reorder was pending. Transmit the mode already stored
+  by the selection callback instead of reading the transient combo selection. The new game
+  case runs the actual wall-clock timer, observes the backend reorder/mode, cancels the
+  preview and subsequently verifies an explicit A-confirmed mode roundtrip.
+- Negative controls execute against the original relevant production code: all3 closed-field
+  physical cases fail18 intended focus/value/notification assertions. The timer case reaches
+  the live reorder and fails both backend and visual-mode assertions; its later unchanged-mode
+  wait also times out because the leaked command has already changed the game. A zero-case
+  comma-separated filter attempt is excluded; the executed filters use a colon between suites.
+- Initial fixed physical menu/Options/BuildOrder run:19 cases/5599 assertions pass; first full
+  UI Debug run:137 cases/13343 assertions pass. After the timer repair all4 new regressions
+  pass502 assertions; final full UI137 cases/11174 assertions pass. Final supplied-patch and
+  complete-context read-only gpt-6.1-sol review finds no concrete blocking issue. Formatting,
+  static validation, diff and actual agent TypeScript gate pass; exact-head all17 CI checks and both
+  workflows remain required before tested Opus handoff. Keep this PR draft until then.
+  Final full Debug Test_splitscreen passes573 cases/457778 assertions in Sol's own cache.
+  No shared view/router changes, private endpoint, hardware or release claim. Existing game
+  fault reporting remains in place. Opus owns integration; releases-only means no Signal report.
+
 ## 2026-10-03 — splitscreen savegames resume with the same players (Jan, voice, 2026-10-02)
 Bug: the lobby hid the seat panel for every savegame (`AreLocalSeatsAvailable` excluded them), so a loaded
 splitscreen game had no way to seat the controllers again; own-slot co-players stayed idle Dummy AIs.
@@ -1689,3 +1718,23 @@ players sit on those slots by hand).
 Also: ROADMAP M8 "really good computer opponent" (Jan, voice 2026-10-02): arena on all maps, iterate with
 measured wins, optional learned parts, difficulty levels. PR #34 (Sol) Windows Debug failure was a flaky
 DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed job re-run.
+
+## 2026-10-03 — Sol: reconcile tested dropdown PR34 with save/resume master
+- Original head aa55c3fb7588e129e788f98a0c2a1ef60b58ba0b passed all17 checks and both
+  complete workflows: Unit tests https://github.com/jarvis-jhk/s25coop/actions/runs/37014584915
+  and Static analysis https://github.com/jarvis-jhk/s25coop/actions/runs/37014584743.
+  The Windows Debug DLL-copy failure was resolved by the primary's failed-job rerun,
+  not by an unrelated product edit. No original-head CI failure remains.
+- Current master90916ca0a adds splitscreen save/resume. NOTES append conflict was initially
+  blocked by Opus's retained claims; after coordination and actual scope release, claim the
+  five incoming paths and preserve both notes sections. Own seven dropdown source/test files
+  remain byte-identical to the all17-green original head; incoming lobby and seat-test files
+  remain byte-identical to master. This combination has additional code/tests, so it receives
+  its own Debug build and full regression gate before the merge commit is pushed.
+- Own GCC12 Debug/Werror build completed with at most2 compiler jobs; full combined
+  Test_splitscreen575 cases/459466 assertions and UI137 cases/7619 assertions pass. Formatting/static/diff checks and actual agent TypeScript
+  gate pass. The restart omitted TypeScript dev dependencies; npm install --include=dev
+  restored the real compiler with no package.json/package-lock change before that gate.
+- No tested handoff, budget gate or new implementation slice until all17 fresh resulting-head
+  checks and both complete workflows pass. Retain unfinished source/test claims and one
+  synchronized continuation. Opus owns integration; no release or Signal notification.
