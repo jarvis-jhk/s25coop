@@ -1938,3 +1938,42 @@ Merged sol/controller-camera-hints at exact tested head 1d4b4ef43 (CI 19/19 gree
 Test_splitscreen in build/dev, full suite "No errors detected". Read-only gpt-6.1-sol review of the
 source diff: no concrete defects. Hints now name right stick (camera) and LT/RT (zoom, hidden at
 the zoom limit) in world, road, ring, window and Just watch. Open: hardware appearance, panel runtime.
+
+## Sol companion — controller Building overview (2026-10-03)
+
+- Branch `sol/building-overview-browsing`, from master `89b04c9ef` after integrated PR38.
+  Claim `building-overview-browsing`: new dedicated test, existing dummy Loader helper,
+  temporary `iwBuildings.cpp` negative control and NOTES/ROADMAP.
+- Six physical-input regressions enter through real Back/system/Main-menu events and select
+  actual GamePlayer registries. Duplicate ordinary buildings are registered opposite spatial
+  order. Ordinary/military/warehouse/temple child type, GUI identity, title and wrapped owner
+  camera center are checked independently. Empty categories, Help, keyboard/mouse return,
+  five nations/eight addon combinations, D-pad row transitions and disappearance of the first
+  then last temple are exercised. Live browsing flushes to zero recorded commands. A real
+  save/rehost/record/replay preserves actual seeded buildings and the final GF/checksum.
+- `LoadDummyBuildingFiles` now supplies distinct synthetic nation icons and Wine ware/job/
+  default-temple UI sprites, preserving loaded archives and repeat-load identity. The prior
+  helper supplied building sprites but left overview button images null. Direct factory
+  seeds need empty neighboring nodes for flag/castle extensions too; cached building quality
+  alone is insufficient after direct seeding.
+- Test-body guarded initialization/cleanup avoids Boost auto-detected `setup()` and throwing
+  fixture destructors. Windows/desktops die before the saved persistent map is restored;
+  normal and reached deliberate exceptional probes check restoration before destruction.
+  Desktop activation/input frames reinstall the real-client observer.
+- Own GCC12 Debug/Werror, at most two compiler jobs. Final temple/replay/exception run:
+  three cases/1027 assertions pass. UI: all 137 cases/15498 assertions pass. Full splitscreen:
+  all 609 cases/498194 assertions pass, including all six new cases/8849 assertions. Reversing the real first-match
+  search executed one case with 445 assertions: seven intended identity/camera failures (exit201,
+  no abort). Restored `iwBuildings.cpp` is byte-identical to master. Earlier missing assets,
+  focus/filter failures and aborted unexecuted cases are development history, not evidence.
+- Exactly `gpt-6.1-sol` read-only reviews: initial oracle/navigation/command-flush points
+  addressed; final combined and Wine asset refinement reviews have no blockers. Format10,
+  diff/private-string checks and actual agent TypeScript gate precede commit. Targeted local
+  Clang-Tidy23 has no new-test diagnostics with its newer multiple-inheritance/internal-linkage
+  checks filtered; its other new checks flag existing code. Full branch Clang18/coverage CI
+  remains a mandatory gate, not inferred from that local check.
+- Legacy single-view coverage and test tooling only: no window/router/simulation changes,
+  successful harbor target, drawn numeric-count assertion, shared-view/panel integration,
+  hardware appearance or release acceptance. Existing ntfy/CI reporting stays; no private
+  endpoint in public sources. Draft until every exact-head check and BOTH complete Unit tests/
+  Static analysis workflows pass; Sol never merges its own PR.
