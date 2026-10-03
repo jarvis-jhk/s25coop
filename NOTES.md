@@ -1851,3 +1851,41 @@ diff: no blockers (nit: yellow badge contrast compares the colour literal; fallb
 text by design). Local Release rebuild (reconfigure for the new KeyGlyph.cpp): Test_splitscreen and
 Test_UI pass. All 17 exact-head CI checks green. Follow-up from t_muq4pb2l1srln1 remains:
 trigger/camera-axis hints, other hint surfaces, Deck hardware look.
+
+
+## 2026-10-03 — Sol Stock controller regression slice
+
+Branch `sol/inventory-controller-browsing`, based on integrated master `4425ceb6d`.
+New `PadInventoryTests` drives the actual in-game Back/system ring/Main selection/Stock
+entry, focus and A page switching. A second real storehouse contains distinct wood and
+carpenters so an HQ-only display cannot pass the whole-realm assertion. Counts are compared
+with the live aggregate, including refresh after real HQ seeding, zero/nonzero colours and
+noninteractive stock icons/hidden warehouse-policy overlays. Five nations assert distinct
+shield textures and the canonical shield count; all eight wine/leather/charburner policies
+check row availability/counts and armored-soldier details. Mouse page buttons, keyboard Escape,
+controller Help/Back/reopen and explicit normal/exceptional settings restoration are covered.
+The exceptional case asserts it reached its deliberate probe while Stock was open.
+
+The live browsing recording contains zero actual game commands after pumping the real
+network; a save-backed recording with one military command is the nonzero counter control.
+Stock pages remain usable in the actual replay, which ends at the recorded final GF and
+checksum with no client/desync callback. All windows die before persistent-settings restoration
+and backend transitions. No new singleton instance, renderer seam or product change.
+
+Validation in own GCC12 Debug/Werror cache, at most two compiler jobs: all six new cases
+pass (30151 assertions). Production sabotages executed three matched cases: off-by-one
+counts, unconverted nation shield icons and disabled-addon leakage produce 671 intended
+assertion failures. A separate HQ-only inventory sabotage executes the strengthened real
+warehouse case and produces 24 intended count failures. Production files restored byte-for-byte.
+Full 595-case Debug regression passes (489977 assertions).
+Clang-format 10, repository static validation and actual agent TypeScript gate pass.
+Read-only review on exactly gpt-6.1-sol fixed the exact armor translation key and the
+HQ-versus-total oracle; final review finds no remaining concrete code blocker. Its correction
+from 34 to 24 HQ-only failures is reflected above. LLVM23 targeted tidy adds only newer
+style diagnostics also emitted for existing fixtures; CI's Clang18 result remains required.
+
+No panel shell/rendering/Stock-page implementation, hardware or release claim. Existing
+ntfy fault reporting stays unchanged; no private endpoint in this test-only branch. Await
+ALL exact-head CI jobs and both complete workflows before marking the PR tested and handing
+it to Opus through the report API. Opus owns integration. Ten audited independent ready
+backlog tasks remain; economic-progress browsing replaces this consumed inventory slice.
