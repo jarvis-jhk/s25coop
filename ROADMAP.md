@@ -298,6 +298,28 @@ selectable; eventually the game runs without the original game files at all.
   generated from descriptions, not from the original pictures, so it does not count as a copy of Blue Byte's
   work; the legal side is checked before it is shipped.
 
+## M8 — A really good computer opponent (Jan, 2026-10-02)
+
+The RttR AI (`libs/s25main/ai/aijh`) is beatable and has only Easy/Medium/Hard. Goal: an AI that plays well,
+found by measurement rather than guesswork, and then sensible difficulty levels on top of it. Starts after M3;
+every step is finished, measured and pushed before the next.
+
+- ☐ 0 Arena: `ai-battle` runs AI A against AI B on every suitable map at once (headless, fixed seeds, both
+  starting positions swapped), in parallel up to the CPU budget, and writes one table: wins, losses, time to win,
+  score at the time limit, plus asyncs/crashes. Reproducible from a single command, results kept in the repo
+  so every later change is compared to the same baseline.
+- ☐ 1 Baseline and weaknesses: current aijh against itself and against each level; watch replays of the losses
+  and write down the concrete weaknesses (economy stalls, soldiers, expansion, defence, ships) in doc/.
+- ☐ 2 Iterate: one weakness per step, each change must beat the previous version in the arena with a
+  statistically clear margin over all maps before it is merged. Parameters the AI already has are tuned
+  automatically first (search over the weights, arena as the fitness function).
+- ☐ 3 Learned components only if 2 runs out: e.g. a trained evaluation for build-site choice or attack timing,
+  trained in the headless arena. Must stay deterministic (same seed → same game) so network games and replays
+  stay in sync, and cheap enough for a Steam Deck.
+- ☐ 4 Difficulty levels made from the strong AI (handicaps such as reaction time, economy bonus/malus,
+  attack restraint), each level measured in the arena so neighbouring levels are clearly apart.
+  Old levels stay selectable for old saves and replays.
+
 ## Continuous
 
 - Every few weeks: review all RttR forks and branches, merge what is safe, note the rest here.

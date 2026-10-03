@@ -1672,3 +1672,20 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   physical real-game routing, minimum resize/disconnect/reconnect/destruction and
   mixed-device/shared-view refresh proof. No usable panel, hardware test or release claimed.
   Existing ntfy reporting is unchanged; no private endpoint added and no Signal notice.
+
+## 2026-10-03 — splitscreen savegames resume with the same players (Jan, voice, 2026-10-02)
+Bug: the lobby hid the seat panel for every savegame (`AreLocalSeatsAvailable` excluded them), so a loaded
+splitscreen game had no way to seat the controllers again; own-slot co-players stayed idle Dummy AIs.
+Fix (dskGameLobby.cpp): savegames get the seat panel; slots that are `AI::Type::Dummy` AND named
+"Local player N" (current translation or English) are re-registered as additional local players before the
+existing --local-players path validates/applies them; a save without such slots opens in "one tribe
+together" mode (other slots there are real tribes, often campaign enemies). Shared views are not stored in a
+save — players press A again. Tests: testMenuPadSeats `ALoadedSplitscreenGameSeatsItsLocalPlayersAgain`
+(host-chosen Dummy is NOT seated) and `ALoadedTogetherGameOffersItsSeatsAgain`, both start → save →
+real savegame host → lobby → start. Negative control on the old dskGameLobby.cpp: 3 failures. Release
+local: full Test_splitscreen and Test_UI pass. Codex (gpt-6.1-sol): only finding = save made in one non-English
+language and loaded in another is not recognised → consciously accepted (rare; the panel still lets
+players sit on those slots by hand).
+Also: ROADMAP M8 "really good computer opponent" (Jan, voice 2026-10-02): arena on all maps, iterate with
+measured wins, optional learned parts, difficulty levels. PR #34 (Sol) Windows Debug failure was a flaky
+DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed job re-run.

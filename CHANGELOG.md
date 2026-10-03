@@ -5,6 +5,8 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Loading a splitscreen game brings the controller players back: players who had their own tribe
+  get it again, and in a "one tribe together" game everyone just presses A again in the lobby.
 - The shared-tribe checkbox in the local lobby stays below the controller seats, clear of the game settings.
 - Outline map keeps a consistent map and window size when zooming and reopening it.
 - Steam, the application menu and the game window use "The Settlers II: Coop". Reinstalling
