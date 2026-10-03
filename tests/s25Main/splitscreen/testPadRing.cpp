@@ -970,12 +970,16 @@ BOOST_FIXTURE_TEST_CASE(JustWatchHidesEverythingAndSaysHowToComeBack, PadViewFix
     BOOST_TEST(!view(1).GetRing().IsOpen());
     BOOST_TEST(WINDOWMANAGER.FindNonModalWindow(CGI_PADMENU, 1) == static_cast<IngameWindow*>(nullptr));
 
-    // DER KASTEN IST NICHT WEG, SONDERN AUF EINE ZEILE GESCHRUMPFT - und diese eine Zeile ist
-    // der Ausgang. Das ist die Zusicherung, an der alles haengt.
+    // Watching retains its display exits and the still-usable camera/zoom axes.
     const brief::Brief& b = view(1).GetBrief();
     BOOST_TEST_MESSAGE("AUDIT: Kasten beim Zuschauen = '" << b.joined() << "' [" << brief::KeyLine(b.keys) << "]");
     BOOST_TEST(b.lines.empty());
-    BOOST_TEST_REQUIRE(b.keys.size() == 2u);
+    BOOST_TEST_REQUIRE(b.keys.size() == 5u);
+    for(const auto& hint :
+        std::vector<brief::KeyHint>{{PadButton{}, brief::KeyAction::PanCamera, brief::KeyInput::RightStickAxis},
+                                    {PadButton{}, brief::KeyAction::ZoomOut, brief::KeyInput::LeftTriggerAxis},
+                                    {PadButton{}, brief::KeyAction::ZoomIn, brief::KeyInput::RightTriggerAxis}})
+        BOOST_TEST(std::count(b.keys.begin(), b.keys.end(), hint) == 1);
     BOOST_TEST((b.keys.front().button == PadButton::B));
     BOOST_TEST((b.keys.front().action == brief::KeyAction::LeaveWatchOnly));
     // Die Zeile ist nicht leer - ein unsichtbarer Ausgang waere keiner.

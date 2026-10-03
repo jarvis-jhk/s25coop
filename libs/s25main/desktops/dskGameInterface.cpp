@@ -1427,19 +1427,24 @@ void dskGameInterface::RefreshBrief(PlayerView& view)
         view.SetBrief(brief::Brief());
         return;
     }
+    brief::KeyContext keys;
+    keys.canPanCamera = true;
+    const float targetZoom = view.GetView().GetCurrentTargetZoomFactor();
+    keys.canZoomOut = targetZoom > ZOOM_FACTORS.front();
+    keys.canZoomIn = targetZoom < ZOOM_FACTORS.back();
+    // Camera axes bypass legacy button/focus routing, including Just watch.
     // Beim Zuschauen bleiben nur die Ausgaenge: B stellt wieder her, L3 zeigt Bauplaetze.
     //
     // Nicht gar nichts, und das ist die wichtigste Entscheidung an diesem Zustand. Ein Zustand,
     // der alles ausblendet UND seinen eigenen Ausgang verschweigt, ist eine Falle - genau die,
     // die Phase 11 (Back verschluckt) und Phase 12 (luegende Leiste) je einmal gebaut und
     // wieder ausgebaut haben. Der Kasten ist damit nicht weg, sondern von bis zu neun Zeilen
-    // auf eine geschrumpft.
+    // auf die Ausgaenge und Kameraachsen geschrumpft.
     if(view.IsWatchOnly())
     {
-        brief::KeyContext watchKeys;
-        watchKeys.watchOnly = true;
+        keys.watchOnly = true;
         brief::Brief b;
-        b.keys = brief::HintsFor(watchKeys);
+        b.keys = brief::HintsFor(keys);
         view.SetBrief(std::move(b));
         return;
     }
@@ -1452,7 +1457,6 @@ void dskGameInterface::RefreshBrief(PlayerView& view)
     // Klartext und aus DENSELBEN Werten. Das ist der ganze Grund, warum sie hier steht und nicht
     // in einer eigenen HUD-Schicht: eine zweite Ableitung derselben Zustandsfrage veraltete
     // neben der ersten, und ein Hinweis, der luegt, ist schlimmer als keiner.
-    brief::KeyContext keys;
     keys.canOpenSystemMenu = CanOpenSystemMenu(view);
     keys.inWindow = view.GetFocus().IsActive();
     // DER RING - und die Leiste liest denselben Zustand, den OnPadButton liest. `ringHasPages`

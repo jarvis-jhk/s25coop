@@ -174,11 +174,14 @@ enum class KeyAction
     /// nennen KONNTE, weil ein Stickausschlag kein PadButton ist (Befund K2/4E).
     AimRing,
     /// L3: view-only building spots, available before ring, focus and watch-only routing.
-    ToggleConstructionAid
+    ToggleConstructionAid,
+    PanCamera,
+    ZoomOut,
+    ZoomIn
 };
 constexpr auto maxEnumValue(KeyAction)
 {
-    return KeyAction::ToggleConstructionAid;
+    return KeyAction::ZoomIn;
 }
 
 /// Was EINE Steuerkreuzrichtung im Fenster bewirkt.
@@ -234,7 +237,10 @@ enum class KeyInput : uint8_t
     /// Ein Knopf. `KeyHint::button` gilt.
     Button,
     /// Der linke Stick als ZEIGER (die Achse, nicht der Klick). `KeyHint::button` gilt NICHT.
-    LeftStickAxis
+    LeftStickAxis,
+    RightStickAxis,
+    LeftTriggerAxis,
+    RightTriggerAxis
 };
 
 struct KeyHint
@@ -529,6 +535,11 @@ Brief ForAttackMenu(const AttackMenuButtons& buttons);
 /// nicht tut - und ein Nachweis kann jeden Fall ohne Partie und ohne Grafik durchspielen.
 struct KeyContext
 {
+    /// Axis routing remains available in legacy world, ring, window and watch modes.
+    bool canPanCamera = false;
+    /// Target zoom, rather than the interpolated drawing zoom, determines each limit.
+    bool canZoomOut = false;
+    bool canZoomIn = false;
     /// Der Fokus dieses Spielers steht in einem Fenster (FocusPath::IsActive). Dann sieht die
     /// Welt seine Flanken gar nicht erst.
     bool inWindow = false;
@@ -628,8 +639,7 @@ struct KeyContext
     /// der auch die Wirkung rechnet (dskGameInterface::RingPageCtrls). Verschmolzen, nicht
     /// abgeschrieben - eine Quelle, drei Leser.
     bool ringManySectors = false;
-    /// "NUR ZUSCHAUEN" laeuft. Dann ist GENAU EIN Knopf belegt, und der Kasten besteht aus
-    /// dieser einen Zeile.
+    /// Just watch retains the display exits and camera/zoom axes.
     bool watchOnly = false;
 
     // --- Was das FOKUSSIERTE Control hergibt (nur im Fenster gelesen) ------------------------

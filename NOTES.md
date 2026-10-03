@@ -1897,3 +1897,36 @@ no product change. All 17 exact-head checks and both workflows were green. Local
 `build/dev` after reconfigure (new test source): PadInventoryTests 6/6 cases (30157 assertions),
 full Test_splitscreen 595/595 (497279 assertions). Sol's NOTES/ROADMAP "CI required" wording above is
 its pre-CI checkpoint; CI evidence is in the PR. Panel Stock page remains shell slice 2.
+
+
+## Sol camera and trigger hints (2026-10-03; local gates passed, exact-head CI pending)
+
+Bounded follow-up to the Deck mapping/glyph requests: typed right-stick camera and LT/RT zoom
+hints follow existing legacy world, road, ring, focused-window/modal and Just watch routing.
+Only the actual target-zoom limits suppress a direction; axes never masquerade as R3 or shoulders.
+No binding, simulation, network command or mouse-only brief policy changes. Updated the player
+changelog and ControllerHints/ControllerMapping docs; the future panel keeps its separate motion policy.
+
+Own GCC12 Debug/Werror cache, at most two compiler jobs: eight new cases/392 assertions pass;
+58 combined new/existing hint cases/2093 assertions pass. Full603 cases/488556 assertions pass.
+Physical four-seat pan/zoom limits, opposing triggers, unchanged neighbor/cursor, ring/watch exits,
+pending dropdown and modal choices, actual road preview, two shared-tribe views, zero recorded
+commands and executed local/live exception cleanup are covered. Neutral badge layout and narrow
+text fallback preserve every input/action. The German wordFor test helper needed its missing
+KeyInput::Button guard: default axis button storage is irrelevant, not A. The repaired full suite passes.
+
+Executed production controls: inverting camera capability guards fails three matched cases at12
+intended input assertions; ignoring zoom limits fails one four-seat case at8 intended min/max
+assertions (exit201). Restored all six tested source/test hashes, rebuilt, and reran all58 affected
+cases. Full603 success uses those same source/test hashes. Read-only exact gpt-6.1-sol snapshot
+and final live exception-probe reviews have no concrete blocker; initial review tightened typed
+array/positive-effect test oracles. Format10, repository static validation, diff/private-marker
+checks and the actual agent TypeScript gate pass. Auxiliary LLVM23 tidy has newer Boost/macro and
+existing fixture/header warnings; CI Clang18 remains authoritative.
+
+While testing, master added only doc/ai/Goals.md and doc/coop/MenuRedesign.md (2bc7266aa).
+Claimed the incoming files, fast-forwarded with all six source/test hashes unchanged, and released
+those completed incoming scopes. Ready backlog now defers couch-join implementation until the new
+pre-game proposal has bounded ROADMAP slices; audited navigation-only Ship-register coverage replaces
+it, retaining ten independent ready slices. Exact-head CI and tested Opus handoff still required;
+no hardware, panel, release or full pre-game redesign claim. Existing fault reporting is retained.

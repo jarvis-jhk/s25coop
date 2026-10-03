@@ -73,8 +73,10 @@ destructive global actions merely to fill those gaps: current A/X/road distincti
 part of the tested confirmation policy.
 
 Further useful mappings need separate policy and physical-input tests: a stable camera/HQ
-shortcut, optional names/output shortcuts, and help exposing camera/zoom alongside the
-contextual hint bar. No such additional binding is implemented here. See [Graphical controller hints](ControllerHints.md)
+shortcut and optional names/output shortcuts. No such additional binding is implemented here.
+The contextual bar now names right-stick camera movement and LT/RT zoom in each legacy
+mode, suppressing only a zoom direction already at its target limit. This exposes existing
+axis routing, including through focused windows and modals; it adds no new action. See [Graphical controller hints](ControllerHints.md)
 for the separately implemented hint rendering.
 Any change to those routes needs fresh shared-input/view claims; L3 is the bounded first
 implementation from the Deck mapping feedback.

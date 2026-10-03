@@ -216,8 +216,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   - ◐ Controller hints as Xbox button glyphs: per-view in-game brief badges now colour
     A/B/X/Y and label shoulders, D-pad directions, Start/Back and stick inputs, with font-metric
     wrapping and complete text fallback for oversized groups (Sol; full Debug589/UI137 pass, CI pending).
-    Existing contextual bindings stay authoritative; triggers/camera-axis hints, other UI surfaces
-    and device-specific artwork remain separate slices. Deck appearance is unverified.
+    Existing contextual bindings stay authoritative. Typed right-stick and LT/RT camera/zoom
+    hints now cover legacy world/road/ring/window/watch modes and actual target-zoom limits
+    (Sol camera follow-up; Debug603/603 and58 affected hint cases pass, exact-head CI pending). Other UI surfaces and
+    device-specific artwork remain separate slices. Deck appearance is unverified.
     Rendering scope and fallback policy: [Controller hints](doc/coop/ControllerHints.md).
   - ◐ Fixed L3 building-position shortcut plus current in-game mapping audit in
     [ControllerMapping](doc/coop/ControllerMapping.md); eight physical/live cases and full

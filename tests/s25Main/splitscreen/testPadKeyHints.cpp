@@ -2702,7 +2702,7 @@ BOOST_FIXTURE_TEST_CASE(TheKeyBarUsesTheSameWordForTheButtonAsThePlainTextBox, H
         std::string out;
         for(const brief::KeyHint& h : view(1).GetBrief().keys)
         {
-            if(h.button == button)
+            if(h.input == brief::KeyInput::Button && h.button == button)
                 out = brief::KeyLabel(h.action);
         }
         return out;
