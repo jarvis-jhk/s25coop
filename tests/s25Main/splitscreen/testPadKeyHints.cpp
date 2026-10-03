@@ -69,6 +69,7 @@
 #include <array>
 #include <optional>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -1029,6 +1030,15 @@ BOOST_AUTO_TEST_CASE(EveryKeyActionAndEveryButtonHasAWord)
     BOOST_TEST(line.find("Back ") != std::string::npos);
     BOOST_TEST(line.find(brief::KeyLabel(brief::KeyAction::StartRoad)) != std::string::npos);
     BOOST_TEST(line.find(brief::KeyLabel(brief::KeyAction::OpenActionMenu)) != std::string::npos);
+    // Exercise failure diagnostics without making a deliberately failing comparison.
+    for(const auto& key : keys)
+    {
+        std::ostringstream diagnostic;
+        diagnostic << key;
+        BOOST_TEST(diagnostic.str()
+                   == std::string(brief::PadButtonLabel(key.button)) + "="
+                        + std::to_string(static_cast<int>(key.action)));
+    }
 }
 
 /// Der Klartext einer Handlung ist NIE leer - sonst faellt der Kasten stumm auf den Tooltip

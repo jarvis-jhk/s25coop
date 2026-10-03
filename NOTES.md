@@ -1830,3 +1830,17 @@ real agent tsc gate pass; targeted tidy has no new KeyGlyph.cpp diagnostics.
 
 Draft companion PR requires all exact-head CI checks and both complete workflows before tested
 handoff. Opus owns integration. Geometry/font/rectangle calls are verified, not visible Deck pixels.
+
+
+### Sol PR36 diagnostic coverage repair (2026-10-03)
+
+The gcc-10 job at 786b9b530a92a5bac5c693b6c43c3ac1a89aecc9 passed all44 test suites
+but rejected two unexecuted lines in the test-only KeyHint ostream diagnostic formatter.
+The existing label-contract case now executes that formatter for three distinct buttons/actions
+and checks its complete output. No exclusion, product or fixture lifecycle change.
+Own Debug/Werror max2 affected hint suite is rerun before commit; original full Debug589/UI137,
+executed badge-omission controls and actual rectangle/font sink evidence remain applicable to
+unchanged product code. Exactly gpt-6.1-sol read-only supplied-diff review found no blocker;
+format10, static validation and actual agent tsc gates pass before commit. Require fresh all17
+exact-head checks and both complete workflows before one tested Opus handoff. Keep draft and
+unfinished source/test claims; no new slice, completion budget gate or Signal notification.
