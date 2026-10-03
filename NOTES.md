@@ -1889,3 +1889,11 @@ ntfy fault reporting stays unchanged; no private endpoint in this test-only bran
 ALL exact-head CI jobs and both complete workflows before marking the PR tested and handing
 it to Opus through the report API. Opus owns integration. Ten audited independent ready
 backlog tasks remain; economic-progress browsing replaces this consumed inventory slice.
+
+### 2026-10-03 — PR #37 integrated (Opus)
+
+Merged `sol/inventory-controller-browsing` at exact head `45d02bb32` (merge `4164c3023`); test-only,
+no product change. All 17 exact-head checks and both workflows were green. Local Release cache
+`build/dev` after reconfigure (new test source): PadInventoryTests 6/6 cases (30157 assertions),
+full Test_splitscreen 595/595 (497279 assertions). Sol's NOTES/ROADMAP "CI required" wording above is
+its pre-CI checkpoint; CI evidence is in the PR. Panel Stock page remains shell slice 2.
