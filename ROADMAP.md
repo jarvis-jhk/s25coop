@@ -207,7 +207,10 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     live shortcuts untouched. Binary VDF fixtures enforce BSD/GNU release parsing; Debug title and actual CLI tests pass locally (Sol);
     exact-head CI and Opus integration still required. Confirm on the Deck after release.
   - ☐ Controller hints as Xbox button glyphs (A/B/X/Y, LB/RB, triggers, D-pad) instead of text.
-  - ☐ One fixed button always toggles building positions; map the buttons that currently do nothing.
+  - ◐ Fixed L3 building-position shortcut plus current in-game mapping audit in
+    [ControllerMapping](doc/coop/ControllerMapping.md); eight physical/live cases and full
+    583-case Debug suite pass locally. All17 exact-head CI and Opus integration still required.
+    Further bindings, glyph rendering and panel integration remain separate gated slices.
   - ☐ Lobby "play as a team / together" checkbox is drawn over other controls; fix the layout.
   - ☐ Dropdowns under D-pad/stick: focus must not change the value; A opens, D-pad picks, A confirms, B cancels.
   - ☐ In-game with a controller: instead of floating, movable, overlapping windows, a fixed side panel

@@ -149,7 +149,7 @@ public:
     /// Figuren, Grenzsteine - und beide Sticks samt Trigger: "zuschauen" heisst herumschauen,
     /// also muessen Kamera und Zoom weiterlaufen.
     ///
-    /// Der Ausgang ist GENAU EINER und er ist sichtbar (B, und der Kasten sagt es). Ein Zustand
+    /// B restores the saved display; L3 leaves watching to show all building spots. Ein Zustand
     /// ohne sichtbaren Ausgang ist die Falle, die Phase 11 und Phase 12 je einmal gebaut und
     /// wieder ausgebaut haben.
     bool IsWatchOnly() const { return watchOnly_; }

@@ -1738,3 +1738,36 @@ DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed 
 - No tested handoff, budget gate or new implementation slice until all17 fresh resulting-head
   checks and both complete workflows pass. Retain unfinished source/test claims and one
   synchronized continuation. Opus owns integration; no release or Signal notification.
+
+
+## 2026-10-03 — Sol: fixed controller building-aid shortcut and mapping audit
+- PR34 integrated by Opus at master9899cb311 after Sol's all17 exact-head handoff
+  cb297a4a4d2ac87cf0dcbbd90d039bba209a4c7e. Both complete successful workflow links
+  and combined Debug575/UI137 evidence are in its ready PR description and Sol checkpoint.
+- Claim shared desktop/hints plus bounded dedicated and affected test/doc scopes before editing.
+  New sol/controller-building-aid-shortcut starts from integrated master9899cb311.
+  Deck mapping feedback t_muq4pbai1teze5 is split: audit all current contexts and give L3
+  one safe per-view building-spot toggle. No extra destructive actions, glyph or panel claim.
+- L3 precedes rings, focus, modal windows and watching. It never commits a pending control;
+  in watching it deliberately returns to play and shows all spots, while B still restores
+  the exact saved display. System-menu cursor-only cycling and primary-only persistence
+  remain unchanged. doc/coop/ControllerMapping.md records the actual axes/buttons, mode
+  precedence and remaining unused controls. Existing game fault reporting stays in place.
+- Reconfigured Sol's own GCC12 Debug/Werror cache and confirmed the new eight-case suite
+  in the 583-case binary. All8 physical/live cases pass260 assertions; full Debug
+  Test_splitscreen583 cases/458467 assertions pass. Tests cover four distinct-player seats,
+  held/released input, ring selection/label refresh, ordinary and modal dropdown previews,
+  physical watch entry/exit, disconnect, primary persistence and the unchanged space-key
+  path. A real nonempty road preview survives the shortcut; shared-tribe seats stay independent
+  and both players' completed real-server recordings contain zero game commands.
+- Separate normal/exceptional cleanup guards destroy windows before their desktop/world and
+  restore settings before fixture destruction. Deliberate exception probes assert they reached
+  the intended open menu, including a live game. No new Settings/GameClient singleton instance.
+- Executed original master9899cb311 desktop negative control: all4 targeted physical cases
+  run and fail17 intended aid/label/watch assertions; no unmatched-filter or crash evidence.
+  Restored the fixed source byte-for-byte, rebuilt and all8 cases pass260 assertions again.
+- Final read-only exactly gpt-6.1-sol supplied patch and complete fixture/context review has
+  no concrete blocker. Narrow documentation to recorded game-command absence rather than a
+  measured claim about all network traffic. Format10, static validation, diff and actual agent
+  TypeScript gate are required before commit; all17 fresh exact-head checks and both complete
+  workflows remain the tested handoff gate. No hardware, glyph, panel or release proof claimed.

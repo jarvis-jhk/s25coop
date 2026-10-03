@@ -167,16 +167,18 @@ enum class KeyAction
     RingPrevPage,
     /// B im Ring: der Ring geht zu, und das Fenster dahinter mit ihm.
     CloseRing,
-    /// B beim Zuschauen: der EINZIGE Knopf in diesem Zustand.
+    /// B beim Zuschauen: restores the saved display without choosing a new aid mode.
     LeaveWatchOnly,
     /// DER LINKE STICK IM RING: er zeigt auf einen Sektor. Das HAUPTZEIGEMITTEL des Rings -
     /// und bis zur Korrektur der einzige belegte Eingang, den die Leiste konstruktiv nicht
     /// nennen KONNTE, weil ein Stickausschlag kein PadButton ist (Befund K2/4E).
-    AimRing
+    AimRing,
+    /// L3: view-only building spots, available before ring, focus and watch-only routing.
+    ToggleConstructionAid
 };
 constexpr auto maxEnumValue(KeyAction)
 {
-    return KeyAction::AimRing;
+    return KeyAction::ToggleConstructionAid;
 }
 
 /// Was EINE Steuerkreuzrichtung im Fenster bewirkt.

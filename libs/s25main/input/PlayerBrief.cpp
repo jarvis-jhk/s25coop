@@ -501,6 +501,7 @@ const char* KeyLabel(const KeyAction action)
         // Katalog schon, und zwar als EIGENSCHAFTSWORT - "Open" ist dort "Offen", "Close" ist
         // "Nah". Ein Hinweis "A Offen" oder "B Nah" waere schlimmer als gar keiner, und
         // msgctxt gibt es in mygettext nicht.
+        case KeyAction::ToggleConstructionAid: return _("Build aid");
         case KeyAction::OpenWindow: return _("Open it");
         case KeyAction::StartRoad: return _("Road");
         case KeyAction::OpenActionMenu: return _("Actions");
@@ -610,11 +611,11 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         out.push_back(KeyHint{PadButton{}, action, KeyInput::LeftStickAxis});
     };
 
-    // BEIM ZUSCHAUEN ist genau ein Knopf belegt - dskGameInterface::OnPadButton kehrt fuer
-    // jeden anderen wirkungslos zurueck. Diese eine Zeile IST der sichtbare Ausgang.
+    // B restores the saved display; L3 explicitly leaves watching to show building spots.
     if(ctx.watchOnly)
     {
         add(PadButton::B, KeyAction::LeaveWatchOnly);
+        add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
         return out;
     }
     // DER RING - Phase 13. Er wird VOR dem Fenster gefragt, weil OnPadButton ihn vor dem Fokus
@@ -681,6 +682,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         // die Leiste nennt sie in EINEM Eintrag: "B/Back Schliessen".
         add(PadButton::B, KeyAction::CloseRing);
         add(PadButton::Back, KeyAction::CloseRing);
+        add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
         return out;
     }
     // Die drei Zustaende sind GENAU die drei Zweige von RefreshBrief und damit genau die
@@ -735,6 +737,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         add(PadButton::B, ctx.focusCanCancelInput ? KeyAction::CancelChoice : KeyAction::LeaveFocus);
         if(ctx.canOpenSystemMenu)
             add(PadButton::Back, KeyAction::SystemMenu);
+        add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
         return out;
     }
     if(ctx.roadMode)
@@ -770,6 +773,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         // Bedeutung. Also stehen sie auch nicht in der Leiste. Fuer Back ist das seit Befund N1
         // keine zweite Behauptung mehr: dskGameInterface::CanOpenSystemMenu liefert im Baumodus
         // selbst false, `ctx.canOpenSystemMenu` ist hier also ohnehin nicht gesetzt.
+        add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
         return out;
     }
     // DIE WELT. Feste Reihenfolge A, X, Y, RB, LB, B, Back - XAG 112 verlangt, dass
@@ -821,6 +825,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
 
     if(ctx.canOpenSystemMenu)
         add(PadButton::Back, KeyAction::SystemMenu);
+    add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
     return out;
 }
 

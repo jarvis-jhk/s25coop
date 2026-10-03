@@ -5,6 +5,9 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Click the left stick (L3) to turn building spots on or off, including while a menu,
+  window or road preview is open. From Just watch, the click returns to play and shows the spots.
+
 - Loading a splitscreen game brings the controller players back: players who had their own tribe
   get it again, and in a "one tribe together" game everyone just presses A again in the lobby.
 - The shared-tribe checkbox in the local lobby stays below the controller seats, clear of the game settings.
