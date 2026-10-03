@@ -502,6 +502,9 @@ const char* KeyLabel(const KeyAction action)
         // "Nah". Ein Hinweis "A Offen" oder "B Nah" waere schlimmer als gar keiner, und
         // msgctxt gibt es in mygettext nicht.
         case KeyAction::ToggleConstructionAid: return _("Build aid");
+        case KeyAction::PanCamera: return _("Move camera");
+        case KeyAction::ZoomOut: return _("Zoom out");
+        case KeyAction::ZoomIn: return _("Zoom in");
         case KeyAction::OpenWindow: return _("Open it");
         case KeyAction::StartRoad: return _("Road");
         case KeyAction::OpenActionMenu: return _("Actions");
@@ -571,6 +574,9 @@ const char* KeyInputLabel(const KeyHint& hint)
         // NICHT "LeftStick": das ist in PadButtonLabel der Stickklick (L3). Hier ist die ACHSE
         // gemeint, und ein Spieler, der beides nacheinander liest, muss den Unterschied sehen.
         case KeyInput::LeftStickAxis: return _("Left stick");
+        case KeyInput::RightStickAxis: return _("Right stick");
+        case KeyInput::LeftTriggerAxis: return "LT";
+        case KeyInput::RightTriggerAxis: return "RT";
     }
     return "";
 }
@@ -631,11 +637,21 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         out.push_back(KeyHint{PadButton{}, action, KeyInput::LeftStickAxis});
     };
 
+    const auto addCamera = [&] {
+        if(ctx.canPanCamera)
+            out.push_back(KeyHint{PadButton{}, KeyAction::PanCamera, KeyInput::RightStickAxis});
+        if(ctx.canZoomOut)
+            out.push_back(KeyHint{PadButton{}, KeyAction::ZoomOut, KeyInput::LeftTriggerAxis});
+        if(ctx.canZoomIn)
+            out.push_back(KeyHint{PadButton{}, KeyAction::ZoomIn, KeyInput::RightTriggerAxis});
+    };
+
     // B restores the saved display; L3 explicitly leaves watching to show building spots.
     if(ctx.watchOnly)
     {
         add(PadButton::B, KeyAction::LeaveWatchOnly);
         add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
+        addCamera();
         return out;
     }
     // DER RING - Phase 13. Er wird VOR dem Fenster gefragt, weil OnPadButton ihn vor dem Fokus
@@ -703,6 +719,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         add(PadButton::B, KeyAction::CloseRing);
         add(PadButton::Back, KeyAction::CloseRing);
         add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
+        addCamera();
         return out;
     }
     // Die drei Zustaende sind GENAU die drei Zweige von RefreshBrief und damit genau die
@@ -758,6 +775,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         if(ctx.canOpenSystemMenu)
             add(PadButton::Back, KeyAction::SystemMenu);
         add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
+        addCamera();
         return out;
     }
     if(ctx.roadMode)
@@ -794,6 +812,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
         // keine zweite Behauptung mehr: dskGameInterface::CanOpenSystemMenu liefert im Baumodus
         // selbst false, `ctx.canOpenSystemMenu` ist hier also ohnehin nicht gesetzt.
         add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
+        addCamera();
         return out;
     }
     // DIE WELT. Feste Reihenfolge A, X, Y, RB, LB, B, Back - XAG 112 verlangt, dass
@@ -846,6 +865,7 @@ std::vector<KeyHint> HintsFor(const KeyContext& ctx)
     if(ctx.canOpenSystemMenu)
         add(PadButton::Back, KeyAction::SystemMenu);
     add(PadButton::LeftStick, KeyAction::ToggleConstructionAid);
+    addCamera();
     return out;
 }
 
