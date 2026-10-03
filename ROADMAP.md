@@ -258,6 +258,14 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 - ◐ Campaign overview with artwork of every working campaign and single scenario: optional
   missing/damaged images have a consistent text fallback and do not block other previews;
   controller selection and continuation are exercised with generated campaign data.
+- ☐ Controller-first pre-game menu (Jan, 2026-10-03; design and slices: doc/coop/MenuRedesign.md). One PR per
+  slice, physical-input tests, mouse/keyboard unchanged:
+  1a pure player-card model · 1b local cards in the lobby · 1c remote cards and shared-tribe cursors ·
+  2a staged rule edits with re-confirm · 2b rules drawer, one editor at a time · 2c online rule suggestions ·
+  3a addon category table · 3b category tabs and "changed only" filter · 3c rule presets ·
+  4a player profiles · 4b on-screen keyboard · 5a menu world decoupled from the lobby client ·
+  5b AI replay behind the main menu · 5c ambient sound, Deck fps/battery options · 5d scene per nation/campaign ·
+  6 campaign hub as the new start page.
 - ☐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
 - ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
   gamepad support are done).
@@ -337,6 +345,9 @@ every step is finished, measured and pushed before the next.
   starting positions swapped), in parallel up to the CPU budget, and writes one table: wins, losses, time to win,
   score at the time limit, plus asyncs/crashes. Reproducible from a single command, results kept in the repo
   so every later change is compared to the same baseline.
+- ☐ AI must handle every game setting (addons, nation, map, starting resources) and actually use economy
+  addons such as wine (Jan, 2026-10-03; doc/ai/Goals.md): step 0 gets a settings matrix, ignored addons are
+  step-2 weaknesses.
 - ☐ 1 Baseline and weaknesses: current aijh against itself and against each level; watch replays of the losses
   and write down the concrete weaknesses (economy stalls, soldiers, expansion, defence, ships) in doc/.
 - ☐ 2 Iterate: one weakness per step, each change must beat the previous version in the arena with a

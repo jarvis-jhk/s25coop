@@ -1977,3 +1977,18 @@ the zoom limit) in world, road, ring, window and Just watch. Open: hardware appe
   hardware appearance or release acceptance. Existing ntfy/CI reporting stays; no private
   endpoint in public sources. Draft until every exact-head check and BOTH complete Unit tests/
   Static analysis workflows pass; Sol never merges its own PR.
+
+## 2026-10-03 — menu redesign and AI goals on the roadmap
+
+ROADMAP M3 now lists the controller-first pre-game menu with slices 1a–6 (Jan asked, t_mustmg803mw4fb;
+design doc/coop/MenuRedesign.md). M8 gained the "AI handles every setting / uses economy addons" line
+linking doc/ai/Goals.md. Docs only. Released v0.1.10 for the PR #38 controller hints already in Unreleased.
+
+## Sol companion — PR39 documentation reconciliation (2026-10-03)
+
+Merged current master `9e4950d7e` after the primary released its documentation claims.
+Preserved both workers' notes and roadmap slices. Incoming master changes only NOTES,
+ROADMAP and CHANGELOG; all tested source and test bytes remain identical to `b37b169fa`.
+The prior local Debug and executed negative-control evidence above still applies.
+Fresh complete exact-head Unit tests and Static analysis are required before the tested
+PR39 handoff; keep draft until that gate passes.

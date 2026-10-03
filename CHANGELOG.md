@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.10
 
 - Controller hints name the right stick for moving the camera and LT/RT for zoom, including
   while browsing a window or Just watch. A zoom hint disappears when it cannot zoom any further.
