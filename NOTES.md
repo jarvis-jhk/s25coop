@@ -1938,3 +1938,9 @@ Merged sol/controller-camera-hints at exact tested head 1d4b4ef43 (CI 19/19 gree
 Test_splitscreen in build/dev, full suite "No errors detected". Read-only gpt-6.1-sol review of the
 source diff: no concrete defects. Hints now name right stick (camera) and LT/RT (zoom, hidden at
 the zoom limit) in world, road, ring, window and Just watch. Open: hardware appearance, panel runtime.
+
+## 2026-10-03 — menu redesign and AI goals on the roadmap
+
+ROADMAP M3 now lists the controller-first pre-game menu with slices 1a–6 (Jan asked, t_mustmg803mw4fb;
+design doc/coop/MenuRedesign.md). M8 gained the "AI handles every setting / uses economy addons" line
+linking doc/ai/Goals.md. Docs only. Released v0.1.10 for the PR #38 controller hints already in Unreleased.
