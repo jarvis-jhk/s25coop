@@ -193,6 +193,56 @@ struct LobbySeatFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixtu
 
     static iwMsgbox* topMsgbox() { return dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()); }
 
+    /// s25coop: starts the game set up in the lobby, saves it and loads the save into a fresh lobby -
+    /// the way back into a started splitscreen game (Jan, 2026-10-02).
+    void startSaveAndReload()
+    {
+        takeOverTheClientInterface();
+        press(10, PadButton::Start);
+        BOOST_TEST_REQUIRE(frameUntil([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
+        GAMECLIENT.GameLoaded();
+        pumpUntil([] { return GAMECLIENT.GetState() == ClientState::Game; }, "client to enter game state");
+        GAMECLIENT.OnGameStart();
+        BOOST_TEST_REQUIRE(ci().numErrors == 0u);
+        pumpUntilGF(GAMECLIENT.GetGFNumber() + 20u);
+        const auto save = RTTRCONFIG.ExpandPath(s25::folders::save) / "splitscreen.sav";
+        boost::filesystem::create_directories(save.parent_path());
+        BOOST_TEST_REQUIRE(GAMECLIENT.SaveToFile(save));
+
+        bool inLobby = false;
+        for(unsigned attempt = 0; attempt < 10 && !inLobby; ++attempt)
+        {
+            // Retry binding AND connecting, like LocalGameFixture::hostAndEnterLobby
+            GAMECLIENT.Stop();
+            GAMESERVER.Stop();
+            GAMECLIENT.SetInterface(&ci());
+            const auto port = static_cast<uint16_t>(rttr::test::randomValue(1024, 49151));
+            if(GAMECLIENT.HostGame(CreateServerInfo(ServerType::Local, port, "SplitscreenTest"),
+                                   MapDescription(save, MapType::Savegame)))
+                inLobby =
+                  pumpWhile([] { return GAMECLIENT.GetState() == ClientState::Config; }, std::chrono::seconds(10));
+        }
+        BOOST_TEST_REQUIRE(inLobby);
+        BOOST_TEST_REQUIRE(GAMECLIENT.GetGameLobby()->isSavegame());
+        // Nothing survives in the client: whatever comes back below comes from the save
+        BOOST_TEST_REQUIRE(GAMECLIENT.GetAdditionalLocalPlayers().empty());
+        BOOST_TEST_REQUIRE(GAMECLIENT.GetSharedLocalViews() == 0u);
+        enterLobbyKeepingLocalPlayers();
+        settle();
+    }
+
+    /// Starts the game from the (savegame) lobby with the host pad, as the couch would.
+    void startFromLobby()
+    {
+        takeOverTheClientInterface();
+        press(10, PadButton::Start);
+        BOOST_TEST_REQUIRE(frameUntil([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
+        GAMECLIENT.GameLoaded();
+        pumpUntil([] { return GAMECLIENT.GetState() == ClientState::Game; }, "client to enter game state");
+        GAMECLIENT.OnGameStart();
+        BOOST_TEST(ci().numErrors == 0u);
+    }
+
     /// s25coop: the "Play one tribe together" box, independent of screen scaling/layout.
     static ctrlCheck* togetherCheck()
     {
@@ -750,6 +800,71 @@ BOOST_FIXTURE_TEST_CASE(CampaignSeatsAreAlwaysTogether, LobbySeatFixture)
     BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
     BOOST_TEST(localPlayers().empty());
     BOOST_TEST((player(1).ps == ps1Before));
+}
+
+/// s25coop, Jan 2026-10-02: a splitscreen game played in own slots comes back from its save with
+/// the same local players on the same slots - not as idle AIs that let their tribes stand still.
+BOOST_FIXTURE_TEST_CASE(ALoadedSplitscreenGameSeatsItsLocalPlayersAgain, LobbySeatFixture)
+{
+    enterLobby();
+    pickUp(10); // Host
+    pickUp(11);
+    BOOST_TEST_REQUIRE(numSeats() >= 3u);
+    press(11, Activate);
+    settle();
+    BOOST_TEST_REQUIRE(localPlayers() == std::vector<uint8_t>{1}, boost::test_tools::per_element());
+    // An idle AI the HOST chose is no local player and must not come back as one
+    toggleUntil(
+      2, [] { return player(2).ps == PlayerState::AI && player(2).aiInfo.type == AI::Type::Dummy; }, "an idle AI");
+
+    startSaveAndReload();
+
+    BOOST_TEST(localPlayers() == std::vector<uint8_t>{1}, boost::test_tools::per_element());
+    BOOST_TEST((player(1).ps == PlayerState::AI));
+    BOOST_TEST((player(1).aiInfo.type == AI::Type::Dummy));
+    BOOST_TEST((player(2).aiInfo.type == AI::Type::Dummy));
+    ctrlCheck* chk = togetherCheck();
+    BOOST_TEST_REQUIRE(chk != static_cast<ctrlCheck*>(nullptr));
+    BOOST_TEST(!chk->isChecked());
+    BOOST_TEST(seatText(1) == helpers::format(_("Seat %1%: slot %2%"), 2, 2));
+
+    startFromLobby();
+    BOOST_TEST(GAMECLIENT.IsLocalHumanPlayer(1));
+    BOOST_TEST(!GAMECLIENT.IsLocalHumanPlayer(2));
+    BOOST_TEST(GAMECLIENT.GetAdditionalLocalPlayers() == std::vector<uint8_t>{1}, boost::test_tools::per_element());
+}
+
+/// s25coop, Jan 2026-10-02: a game played as one tribe together takes no slot, so its save holds no
+/// seats. Loading it offers the together seats again, and a pad that presses A plays along.
+BOOST_FIXTURE_TEST_CASE(ALoadedTogetherGameOffersItsSeatsAgain, LobbySeatFixture)
+{
+    enterLobby();
+    pickUp(10); // Host
+    pickUp(11);
+    clickWithMouse(*togetherCheck());
+    press(11, Activate);
+    settle();
+    BOOST_TEST_REQUIRE(GAMECLIENT.GetSharedLocalViews() == 1u);
+    const PlayerState ps1Before = player(1).ps;
+
+    startSaveAndReload();
+
+    ctrlCheck* chk = togetherCheck();
+    BOOST_TEST_REQUIRE(chk != static_cast<ctrlCheck*>(nullptr));
+    BOOST_TEST(chk->isChecked());
+    BOOST_TEST(!chk->isReadOnly());
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST((player(1).ps == ps1Before));
+
+    press(11, Activate);
+    settle();
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+    BOOST_TEST(router().GetSlot(11) == 1u);
+    BOOST_TEST((player(1).ps == ps1Before));
+
+    startFromLobby();
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+    BOOST_TEST(GAMECLIENT.GetAdditionalLocalPlayers().empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

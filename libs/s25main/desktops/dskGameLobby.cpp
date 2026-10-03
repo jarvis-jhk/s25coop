@@ -218,6 +218,27 @@ Nation nextNation(const Nation value)
         it = NATION_ORDER.begin();
     return *it;
 }
+
+/// s25coop: the slots a splitscreen savegame was played with by further local players.
+///
+/// The save stores no seat list, but every such slot was written by
+/// GameClient::ApplyAdditionalLocalPlayers: an idle AI named "Local player N". Both are checked,
+/// because a campaign script or the host can make a slot an idle AI too, and that slot must not
+/// come back as a human player. The untranslated name covers a save made in another language.
+std::vector<uint8_t> formerLocalPlayers(const GameLobby& lobby, const unsigned mainPlayerId)
+{
+    std::vector<uint8_t> ids;
+    for(unsigned id = 0; id < lobby.getNumPlayers(); ++id)
+    {
+        const JoinPlayerInfo& player = lobby.getPlayer(id);
+        if(id == mainPlayerId || player.ps != PlayerState::AI || player.aiInfo.type != AI::Type::Dummy)
+            continue;
+        if(player.name == helpers::format(_("Local player %1%"), id + 1)
+           || player.name == helpers::format("Local player %1%", id + 1))
+            ids.push_back(static_cast<uint8_t>(id));
+    }
+    return ids;
+}
 } // namespace
 
 dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gameLobby, unsigned playerId,
@@ -445,6 +466,12 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
         }
     }
 
+    // s25coop: a loaded splitscreen game brings its local players back to their own slots;
+    // without this they stay idle AIs and the tribes they played stand still.
+    if(lobbyController && IsSinglePlayer() && gameLobby_->isSavegame() && !GAMECLIENT.IsAIBattleModeOn()
+       && GAMECLIENT.GetAdditionalLocalPlayers().empty())
+        GAMECLIENT.SetAdditionalLocalPlayers(formerLocalPlayers(*gameLobby_, localPlayerId_));
+
     // Angeforderte zusaetzliche lokale Spieler (Splitscreen) festnageln. NACH der
     // Standardbelegung oben, damit die Default-KI ueberschrieben wird - und auch fuer
     // Savegames, die der Block oben ueberspringt.
@@ -558,10 +585,11 @@ void dskGameLobby::SetActive(bool activate /*= true*/)
 bool dskGameLobby::AreLocalSeatsAvailable() const
 {
     // Genau die Bedingungen, unter denen ValidateAdditionalLocalPlayers zustimmen kann.
-    // Savegames sind bewusst ausgenommen: dort haengt an jedem Slot ein frueherer Spieler, und
-    // ohne eine Anzeige "welcher Sitz war frueher wer" (ID_cbMove) waere die Zuordnung geraten.
-    return lobbyController && IsSinglePlayer() && gameLobby_ && gameLobby_->isHost() && !gameLobby_->isSavegame()
-           && !GAMECLIENT.IsAIBattleModeOn();
+    // s25coop: savegames included (Jan, 2026-10-02: a started splitscreen game could not be
+    // continued with the same players). Who sat where is not guessed: the slots of the former
+    // local players are seated again in the constructor (formerLocalPlayers), and a save without
+    // any was played "together", which takes no slot at all.
+    return lobbyController && IsSinglePlayer() && gameLobby_ && gameLobby_->isHost() && !GAMECLIENT.IsAIBattleModeOn();
 }
 
 void dskGameLobby::CreateSeatPanel()
@@ -575,6 +603,10 @@ void dskGameLobby::CreateSeatPanel()
     // plays the host's tribe
     if(GAMECLIENT.IsHostingCampaign() || numPlayers < 2)
         seatsTogether_ = true;
+    // s25coop: in a savegame the other slots are tribes already on the map (often a campaign's
+    // enemies); only a save that was played in own slots starts in that mode again
+    else if(gameLobby_->isSavegame() && !GetCtrl<ctrlCheck>(ID_chkSeatsTogether))
+        seatsTogether_ = GAMECLIENT.GetAdditionalLocalPlayers().empty();
     if(!GetCtrl<ctrlCheck>(ID_chkSeatsTogether))
     {
         // Keep the seat mode in the local-only panel, clear of the game settings on the right.

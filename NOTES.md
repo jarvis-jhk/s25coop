@@ -1701,3 +1701,40 @@ screen or Deck detection (both also in Sol's backlog — check claims first). Ja
   Final full Debug Test_splitscreen passes573 cases/457778 assertions in Sol's own cache.
   No shared view/router changes, private endpoint, hardware or release claim. Existing game
   fault reporting remains in place. Opus owns integration; releases-only means no Signal report.
+
+## 2026-10-03 — splitscreen savegames resume with the same players (Jan, voice, 2026-10-02)
+Bug: the lobby hid the seat panel for every savegame (`AreLocalSeatsAvailable` excluded them), so a loaded
+splitscreen game had no way to seat the controllers again; own-slot co-players stayed idle Dummy AIs.
+Fix (dskGameLobby.cpp): savegames get the seat panel; slots that are `AI::Type::Dummy` AND named
+"Local player N" (current translation or English) are re-registered as additional local players before the
+existing --local-players path validates/applies them; a save without such slots opens in "one tribe
+together" mode (other slots there are real tribes, often campaign enemies). Shared views are not stored in a
+save — players press A again. Tests: testMenuPadSeats `ALoadedSplitscreenGameSeatsItsLocalPlayersAgain`
+(host-chosen Dummy is NOT seated) and `ALoadedTogetherGameOffersItsSeatsAgain`, both start → save →
+real savegame host → lobby → start. Negative control on the old dskGameLobby.cpp: 3 failures. Release
+local: full Test_splitscreen and Test_UI pass. Codex (gpt-6.1-sol): only finding = save made in one non-English
+language and loaded in another is not recognised → consciously accepted (rare; the panel still lets
+players sit on those slots by hand).
+Also: ROADMAP M8 "really good computer opponent" (Jan, voice 2026-10-02): arena on all maps, iterate with
+measured wins, optional learned parts, difficulty levels. PR #34 (Sol) Windows Debug failure was a flaky
+DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed job re-run.
+
+## 2026-10-03 — Sol: reconcile tested dropdown PR34 with save/resume master
+- Original head aa55c3fb7588e129e788f98a0c2a1ef60b58ba0b passed all17 checks and both
+  complete workflows: Unit tests https://github.com/jarvis-jhk/s25coop/actions/runs/37014584915
+  and Static analysis https://github.com/jarvis-jhk/s25coop/actions/runs/37014584743.
+  The Windows Debug DLL-copy failure was resolved by the primary's failed-job rerun,
+  not by an unrelated product edit. No original-head CI failure remains.
+- Current master90916ca0a adds splitscreen save/resume. NOTES append conflict was initially
+  blocked by Opus's retained claims; after coordination and actual scope release, claim the
+  five incoming paths and preserve both notes sections. Own seven dropdown source/test files
+  remain byte-identical to the all17-green original head; incoming lobby and seat-test files
+  remain byte-identical to master. This combination has additional code/tests, so it receives
+  its own Debug build and full regression gate before the merge commit is pushed.
+- Own GCC12 Debug/Werror build completed with at most2 compiler jobs; full combined
+  Test_splitscreen575 cases/459466 assertions and UI137 cases/7619 assertions pass. Formatting/static/diff checks and actual agent TypeScript
+  gate pass. The restart omitted TypeScript dev dependencies; npm install --include=dev
+  restored the real compiler with no package.json/package-lock change before that gate.
+- No tested handoff, budget gate or new implementation slice until all17 fresh resulting-head
+  checks and both complete workflows pass. Retain unfinished source/test claims and one
+  synchronized continuation. Opus owns integration; no release or Signal notification.
