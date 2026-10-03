@@ -1738,3 +1738,10 @@ DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed 
 - No tested handoff, budget gate or new implementation slice until all17 fresh resulting-head
   checks and both complete workflows pass. Retain unfinished source/test claims and one
   synchronized continuation. Opus owns integration; no release or Signal notification.
+
+### 2026-10-03 — Sol PR #34 integrated (Opus)
+Merged sol/dropdown-confirm-navigation at tested head cb297a4a4 as 9899cb311 (all 17 exact-head checks green).
+Closed dropdowns now pass D-pad/stick to focus navigation; A opens, browse is silent, A confirms, B/focus loss restore.
+Closed-box stepping no longer changes values (mouse wheel still does). iwBuildOrder timer no longer commits an open mode preview.
+Addresses Deck request t_muq4pbvs1viw8z. Possible follow-up (not filed): other windows reading combo selections on
+button presses are unaffected, since only iwBuildOrder transmits on a timer.
