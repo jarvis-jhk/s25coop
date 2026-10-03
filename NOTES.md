@@ -1792,3 +1792,10 @@ button presses are unaffected, since only iwBuildOrder transmits on a timer.
 ### Sol PR35 coverage repair (2026-10-03T12:33:41.570642+00:00)
 
 PR35 reconciled head b8cf5f7a5270f08527a4ace81e4d4ae2dfd12afc completed 16/17 checks successfully; gcc-10 coverage alone failed, while Static analysis passed. The test observer callback and successful desktop-transition CloseNow loop had not executed. The ordinary/modal dropdown test now physically reopens and accepts a fresh choice after B restoration, requiring one actual callback; the live road case physically cancels all preview segments, opens and requires the real system ring, then verifies its destruction before desktop teardown. No coverage exclusions or product changes. Own Debug/Werror max2 build and dedicated eight cases/270 assertions pass; full Debug Test_splitscreen583 cases/455541 assertions pass. Existing original-source four-case/17-intended-failure negative evidence remains valid for unchanged product behavior; this repair adds positive observer/cleanup coverage. Read-only gpt-6.1-sol supplied-diff review found no blocker; static/format/real agent tsc gates checked before commit. Draft retained until fresh all17 exact-head checks and both workflows succeed, then one tested Opus handoff. No new slice, completion budget gate, integration or Signal progress.
+
+### 2026-10-03 — Sol PR #35 integrated (Opus)
+Merged sol/controller-building-aid-shortcut at tested head 33dac968c (all exact-head checks green) as 6d1018211.
+L3 now toggles building aid per owning view from world, road mode, ring, window focus and modals; in Just-watch it
+leaves watching and shows all spots, B still restores. Hint bar lists L3 in each state. Reviewed diff: L3 was unbound
+before, so no binding conflict. Own Release Test_splitscreen on the merge: 583/583 cases passed. Addresses part of
+Deck request t_muq4pbai1teze5 (other bindings/glyphs/panel still open).
