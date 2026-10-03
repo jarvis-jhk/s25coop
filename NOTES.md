@@ -1739,6 +1739,13 @@ DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed 
   checks and both complete workflows pass. Retain unfinished source/test claims and one
   synchronized continuation. Opus owns integration; no release or Signal notification.
 
+### 2026-10-03 — Sol PR #34 integrated (Opus)
+Merged sol/dropdown-confirm-navigation at tested head cb297a4a4 as 9899cb311 (all 17 exact-head checks green).
+Closed dropdowns now pass D-pad/stick to focus navigation; A opens, browse is silent, A confirms, B/focus loss restore.
+Closed-box stepping no longer changes values (mouse wheel still does). iwBuildOrder timer no longer commits an open mode preview.
+Addresses Deck request t_muq4pbvs1viw8z. Possible follow-up (not filed): other windows reading combo selections on
+button presses are unaffected, since only iwBuildOrder transmits on a timer.
+
 
 ## 2026-10-03 — Sol: fixed controller building-aid shortcut and mapping audit
 - PR34 integrated by Opus at master9899cb311 after Sol's all17 exact-head handoff
@@ -1771,3 +1778,12 @@ DLL copy (`Error copying … libogg-0.dll`, parallel post-build copies); failed 
   measured claim about all network traffic. Format10, static validation, diff and actual agent
   TypeScript gate are required before commit; all17 fresh exact-head checks and both complete
   workflows remain the tested handoff gate. No hardware, glyph, panel or release proof claimed.
+
+## 2026-10-03 — Sol: PR35 documentation reconciliation
+- Master afdcbe1bc only adds Opus’s PR34 integration note. Its parallel append conflicts
+  with the PR35 notes and prevents GitHub from starting pull-request CI. Preserve both
+  sections; every non-NOTES file remains byte-identical to tested 7d101bf365e981473c70c9f854ae1c19b4d2a7dd.
+- Existing local Debug583 cases/458467 assertions and eight dedicated cases/260 assertions,
+  executed negative controls and read-only reviews remain applicable without another build.
+  Require fresh all17 exact-resulting-head checks and both successful workflows before
+  ready/tested Opus handoff; keep six unfinished source/test claims and one continuation.
