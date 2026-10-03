@@ -1844,3 +1844,10 @@ unchanged product code. Exactly gpt-6.1-sol read-only supplied-diff review found
 format10, static validation and actual agent tsc gates pass before commit. Require fresh all17
 exact-head checks and both complete workflows before one tested Opus handoff. Keep draft and
 unfinished source/test claims; no new slice, completion budget gate or Signal notification.
+
+### 2026-10-03 — Sol PR #36 integrated (contextual controller button glyphs)
+Fast-forwarded master to the exact tested head 906575eb9 (based on 4ee4f87bd). Opus review of the
+diff: no blockers (nit: yellow badge contrast compares the colour literal; fallback rows are plain
+text by design). Local Release rebuild (reconfigure for the new KeyGlyph.cpp): Test_splitscreen and
+Test_UI pass. All 17 exact-head CI checks green. Follow-up from t_muq4pb2l1srln1 remains:
+trigger/camera-axis hints, other hint surfaces, Deck hardware look.
