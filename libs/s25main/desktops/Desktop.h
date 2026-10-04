@@ -45,6 +45,11 @@ public:
     /// oder A ohne fokussiertes Control und ohne Fenster, z.B. um ein Video zu ueberspringen.
     /// true = verbraucht.
     virtual bool Msg_PadCommand(unsigned /*slot*/, PadButton /*button*/) { return false; }
+    /// Opt in to receiving buttons before focused controls, e.g. independent local player cards.
+    /// Msg_PadCommand remains a fallback by default; A normally belongs to the focused control.
+    virtual bool HandlesPadControlCommands() const { return false; }
+    /// Whether this pad may interact with a modal window above the desktop.
+    virtual bool AllowsPadWindowInput(unsigned /*slot*/) const { return true; }
     /// Control, auf dem ein NEU hinzugekommenes Pad seinen Fokus beginnen soll.
     /// nullptr = das erste fokussierbare Control (Vorgabe). Siehe Window::GetPadEntryCtrl.
     Window* GetPadEntryCtrl(unsigned /*slot*/) override { return nullptr; }

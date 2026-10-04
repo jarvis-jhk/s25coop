@@ -63,6 +63,7 @@ public:
 
     PadRouter& GetRouter() { return router_; }
     const PadRouter& GetRouter() const { return router_; }
+    FocusPath& GetFocus(unsigned slot) { return focus_[slot]; }
     const FocusPath& GetFocus(unsigned slot) const { return focus_[slot]; }
     /// Hat dieser Slot ein Geraet?
     bool HasDevice(unsigned slot) const { return slot < MaxSlots && hasDevice_[slot]; }

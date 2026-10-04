@@ -102,6 +102,8 @@ void MenuPadInput::OnPadMove(const unsigned slot, const Position& delta)
 {
     if(slot >= MaxSlots)
         return;
+    if(rootWnd_ && desktop_ && !desktop_->AllowsPadWindowInput(slot))
+        return;
     if(delta != Position(0, 0))
         focusUntouched_[slot] = false;
     focus_[slot].OnPadMove(delta, stepMs_);
@@ -126,8 +128,21 @@ void MenuPadInput::OnPadButton(const unsigned slot, const PadButton button, cons
     if(!down)
         return;
 
+    if(rootWnd_ && desktop_ && !desktop_->AllowsPadWindowInput(slot))
+        return;
     focusUntouched_[slot] = false;
     actingSlot_ = slot;
+    const auto deviceMap = [this] {
+        std::array<PadDeviceId, MaxSlots> devices{};
+        for(const PadDeviceId device : router_.GetDevices())
+        {
+            const unsigned assignedSlot = router_.GetSlot(device);
+            if(assignedSlot < MaxSlots)
+                devices[assignedSlot] = device;
+        }
+        return devices;
+    };
+    const auto slotsBefore = deviceMap();
     // B und Start erreichen FocusPath::OnPadButton bewusst NICHT:
     //  - FocusPath::OnPadButton macht aus B ein Clear(), also "raus aus dem Fenster". Ingame ist
     //    das richtig (dahinter liegt die Welt), im Menue waere es eine Sackgasse: dahinter liegt
@@ -153,10 +168,22 @@ void MenuPadInput::OnPadButton(const unsigned slot, const PadButton button, cons
               // Videos have no controls. A can confirm the desktop itself only when no window owns input.
               || (button == PadButton::A && !rootWnd_ && !focus_[slot].GetFocused()))
     {
-        if(desktop_)
+        if(desktop_ && !rootWnd_)
             desktop_->Msg_PadCommand(slot, button);
     } else
-        focus_[slot].OnPadButton(button, down);
+    {
+        // Multi-seat desktops can keep card input with its owner before generic navigation.
+        if(rootWnd_ || !desktop_ || !desktop_->HandlesPadControlCommands() || !desktop_->Msg_PadCommand(slot, button))
+            focus_[slot].OnPadButton(button, down);
+    }
+    // PadRouter's queued edges name the slots before dispatch. A join/leave may reassign them;
+    // consume residual edges on every changed slot so they cannot act for its new controller.
+    const auto slotsAfter = deviceMap();
+    for(unsigned i = 0; i < MaxSlots; ++i)
+    {
+        if(slotsBefore[i] != slotsAfter[i])
+            swallowFrame_[i] = true;
+    }
     actingSlot_ = NoSlot;
 }
 

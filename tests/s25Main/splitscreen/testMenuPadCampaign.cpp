@@ -332,6 +332,9 @@ BOOST_FIXTURE_TEST_CASE(ACampaignMissionIsStartedWithPadInputOnly, CampaignPadFi
     BOOST_TEST(GAMECLIENT.GetMapPath().filename() == bfs::path("PadMissionTwo.SWD"));
 
     // --- 6. "Spiel starten", mit dem Pad ------------------------------------------------------
+    // The host starts at its player card; shoulders still reach the ordinary Start button.
+    for(unsigned i = 0; i < 100 && focusedId(0) != 0u; ++i)
+        press(pad, PadButton::LeftShoulder);
     BOOST_TEST_REQUIRE(focusedId(0) == 0u); // ID_btStartGame
     GAMECLIENT.SetInterface(&ci());
     press(pad, Activate);

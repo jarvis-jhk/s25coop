@@ -18,6 +18,7 @@
 #include "controls/ctrlEdit.h"
 #include "controls/ctrlGroup.h"
 #include "controls/ctrlImageButton.h"
+#include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlOptionGroup.h"
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlText.h"
@@ -610,7 +611,7 @@ void dskGameLobby::CreateSeatPanel()
     if(!GetCtrl<ctrlCheck>(ID_chkSeatsTogether))
     {
         // Keep the seat mode in the local-only panel, clear of the game settings on the right.
-        auto* chk = AddCheckBox(ID_chkSeatsTogether, DrawPoint(20, 410), Extent(360, 26), TextureColor::Grey,
+        auto* chk = AddCheckBox(ID_chkSeatsTogether, DrawPoint(20, 560), Extent(360, 26), TextureColor::Grey,
                                 _("Play one tribe together"), NormalFont, false);
         chk->setChecked(seatsTogether_);
         chk->setReadOnly(GAMECLIENT.IsHostingCampaign() || numPlayers < 2);
@@ -674,8 +675,9 @@ void dskGameLobby::CreateSeatPanel()
             COLOR_YELLOW, FontStyle{}, NormalFont);
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
-        const DrawPoint pos(20 + static_cast<int>(i % 2) * 190, 340 + static_cast<int>(i / 2) * 30);
-        AddTextButton(ID_btSeat + i, pos, Extent(180, 22), TextureColor::Green2, "", NormalFont);
+        const DrawPoint pos(20 + static_cast<int>(i % 2) * 190, 334 + static_cast<int>(i / 2) * 112);
+        AddCtrl(std::make_unique<ctrlLobbyPlayerCard>(this, ID_btSeat + i, pos, Extent(180, 108), NormalFont,
+                                                      LobbyPlayerCardModel(i, SeatCardSnapshot(i))));
     }
     UpdateSeatPanel();
 }
@@ -696,6 +698,7 @@ void dskGameLobby::SetSeatsTogether(const bool together)
         DeleteCtrl(ID_btSeat + i);
     DeleteCtrl(ID_txtSeats);
     seatsTogether_ = together;
+    GetCtrl<ctrlCheck>(ID_chkSeatsTogether)->setChecked(together);
     GAMECLIENT.SetSharedLocalViews(0);
     CreateSeatPanel();
 }
@@ -723,11 +726,13 @@ void dskGameLobby::UpdateSeatPanel()
         chk->SetVisible(visible);
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
-        auto* bt = GetCtrl<ctrlTextButton>(ID_btSeat + i);
+        auto* bt = GetCtrl<ctrlLobbyPlayerCard>(ID_btSeat + i);
         if(!bt)
             continue;
         bt->SetVisible(visible);
         LocalSeat& seat = seats_[i];
+        bt->GetModel().UpdateSnapshot(SeatCardSnapshot(i));
+        bt->SetJoined(seat.taken);
         SeatCardKind kind;
         unsigned value = 0;
         if(i == 0)
@@ -763,6 +768,111 @@ void dskGameLobby::UpdateSeatPanel()
         }
         bt->SetText(text);
     }
+}
+
+LobbyPlayerCardModel::Snapshot dskGameLobby::SeatCardSnapshot(const unsigned seat) const
+{
+    const auto& localSeat = seats_[seat];
+    const auto& player = gameLobby_->getPlayer(localSeat.playerId);
+    LobbyPlayerCardModel::Snapshot snapshot{{player.color, player.nation, player.team, seatsTogether_}, {}, {}};
+    for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
+    {
+        const auto& other = gameLobby_->getPlayer(id);
+        if(id != localSeat.playerId && other.isUsed())
+            snapshot.takenColors.push_back(other.color);
+    }
+    std::string reason;
+    if(!localSeat.taken)
+        reason = _("Press A to join");
+    else if(gameLobby_->isSavegame())
+        reason = _("Saved game");
+    else if(seatsTogether_ && seat != 0)
+        reason = _("Shared tribe: host chooses");
+    else if(!AreLocalSeatsAvailable() || GAMECLIENT.IsCoopMember()
+            || (seat != 0 && (player.ps != PlayerState::AI || player.aiInfo.type != AI::Type::Dummy)))
+        reason = _("Seat unavailable");
+    constexpr std::array ownKeys = {"ownColor", "ownNation", "ownTeam"};
+    constexpr std::array aiKeys = {"aiColor", "aiNation", "aiTeam"};
+    for(unsigned row = 0; row < ownKeys.size(); ++row)
+    {
+        snapshot.lockReasons[row] = reason;
+        if(reason.empty() && lua && !lua->IsChangeAllowed(seat == 0 ? ownKeys[row] : aiKeys[row], true))
+            snapshot.lockReasons[row] = _("Fixed by map script");
+    }
+    // Seat mode changes stand everybody up, so only the host may choose for the group.
+    snapshot.lockReasons[3] = seat != 0 ? _("Host chooses seat mode") : std::string();
+    if(GAMECLIENT.IsHostingCampaign() || gameLobby_->getNumPlayers() < 2)
+        snapshot.lockReasons[3] = _("One tribe required");
+    return snapshot;
+}
+
+bool dskGameLobby::HandleSeatCardInput(const unsigned slot, const PadButton button)
+{
+    if(seats_.empty())
+        return false;
+    auto& input = WINDOWMANAGER.GetPadInput();
+    auto& focus = input.GetFocus(slot);
+    const unsigned seat = slot == 0 ? 0 : SeatOfDevice(input.GetActingDevice());
+    if(seat >= seats_.size())
+    {
+        // A sitless pad may browse seats, but must never activate host/rule controls.
+        if(button == PadButton::A)
+        {
+            const auto* target = dynamic_cast<const ctrlLobbyPlayerCard*>(focus.GetFocused());
+            if(target)
+                OnSeatButton(target->GetModel().GetSeatId(), slot);
+            return true;
+        }
+        const auto* target = dynamic_cast<const ctrlLobbyPlayerCard*>(focus.GetFocused());
+        unsigned index = target ? target->GetModel().GetSeatId() : 1u;
+        if(button == PadButton::DpadLeft || button == PadButton::LeftShoulder)
+            index = index > 1 ? index - 1 : 1;
+        else if(button == PadButton::DpadRight || button == PadButton::RightShoulder)
+            index = std::min(index + 1, static_cast<unsigned>(seats_.size() - 1));
+        else if(button == PadButton::DpadUp)
+            index = index > 2 ? index - 2 : 1;
+        else if(button == PadButton::DpadDown)
+            index = std::min(index + 2, static_cast<unsigned>(seats_.size() - 1));
+        focus.FocusCtrl(GetCtrl<Window>(ID_btSeat + index));
+        return true;
+    }
+    auto* card = GetCtrl<ctrlLobbyPlayerCard>(ID_btSeat + seat);
+    if(slot == 0 && focus.GetFocused() != card)
+        return false; // Host shoulders leave the card for the ordinary rules/settings controls.
+    if(slot != 0)
+        focus.FocusCtrl(card);
+    UpdateSeatPanel();
+    switch(button)
+    {
+        case PadButton::DpadUp: card->GetModel().MoveRow(false); break;
+        case PadButton::DpadDown: card->GetModel().MoveRow(true); break;
+        case PadButton::DpadLeft: ApplySeatCardValue(seat, false); break;
+        case PadButton::DpadRight: ApplySeatCardValue(seat, true); break;
+        case PadButton::A: break;  // Changes apply on left/right; B is the existing stand-up action.
+        default: return slot != 0; // Guests cannot reach another seat or host settings via shoulders.
+    }
+    return true;
+}
+
+void dskGameLobby::ApplySeatCardValue(const unsigned seat, const bool forward)
+{
+    if(!AreLocalSeatsAvailable() || seat >= seats_.size())
+        return;
+    auto& model = GetCtrl<ctrlLobbyPlayerCard>(ID_btSeat + seat)->GetModel();
+    // Re-read authority and availability immediately before sending; never accept a stale copied row.
+    model.UpdateSnapshot(SeatCardSnapshot(seat));
+    const auto proposal = model.ProposeValue(forward);
+    if(!proposal)
+        return;
+    const unsigned playerId = seats_[seat].playerId;
+    switch(model.GetRow())
+    {
+        case LobbyPlayerCardModel::Row::Color: lobbyController->SetColor(playerId, proposal->color); break;
+        case LobbyPlayerCardModel::Row::Nation: lobbyController->SetNation(playerId, proposal->nation); break;
+        case LobbyPlayerCardModel::Row::Team: lobbyController->SetTeam(playerId, proposal->team); break;
+        case LobbyPlayerCardModel::Row::SharedTribe: SetSeatsTogether(proposal->sharedTribe); break;
+    }
+    // The snapshot changes only on the real server broadcast, not on an optimistic local edit.
 }
 
 bool dskGameLobby::IsSeatJoinable(const unsigned seat) const
@@ -1026,6 +1136,9 @@ unsigned dskGameLobby::GetNumPadSlots() const
 
 bool dskGameLobby::Msg_PadCommand(const unsigned slot, const PadButton button)
 {
+    // Pump captures its root before dispatch. A previous button in this same batch may open a modal.
+    if(WINDOWMANAGER.GetTopMostWindow())
+        return true;
     if(button == PadButton::Start)
     {
         // BEFUND B. Start handelt fuer ALLE: er startet die Partie und bricht einen laufenden
@@ -1049,7 +1162,7 @@ bool dskGameLobby::Msg_PadCommand(const unsigned slot, const PadButton button)
         return false;
     }
     if(button != PadButton::B)
-        return false;
+        return HandleSeatCardInput(slot, button);
 
     const unsigned mySeat = SeatOfDevice(WINDOWMANAGER.GetPadInput().GetActingDevice());
     if(mySeat > 0 && mySeat < seats_.size())
@@ -1090,13 +1203,25 @@ void dskGameLobby::AskToLeave()
 
 Window* dskGameLobby::GetPadEntryCtrl(const unsigned slot)
 {
-    if(seats_.empty() || slot == 0)
-        return nullptr; // der Hostspieler faengt wie bisher beim ersten Control an
+    if(seats_.empty())
+        return nullptr;
+    if(slot == 0)
+    {
+        UpdateSeatPanel();
+        return GetCtrl<Window>(ID_btSeat);
+    }
     // Die Sitzkarten sind unsichtbar, solange kein Pad steckt (UpdateSeatPanel). Hier steckt
     // gerade eins - und der Aufrufer sucht seinen Einstiegsfokus ueber FocusPath::Collect, das
     // unsichtbare Controls ueberspringt. Msg_PaintBefore zieht die Sichtbarkeit erst NACH
     // diesem Aufruf nach (WindowManager::Draw ruft PumpPadInput davor), also hier.
     UpdateSeatPanel();
+    // Reassignment compacts view slots, but the same controller keeps its card and row immediately.
+    const auto& router = WINDOWMANAGER.GetPadInput().GetRouter();
+    for(unsigned i = 1; i < seats_.size(); ++i)
+    {
+        if(seats_[i].taken && seats_[i].device != InvalidPadDevice && router.GetSlot(seats_[i].device) == slot)
+            return GetCtrl<Window>(ID_btSeat + i);
+    }
     // Ein neu hinzukommendes Pad sieht seinen Beitritt dort, wo er stattfindet. Das ist die
     // Uebersetzung von "Press A to join" (XR-115) in diese Oberflaeche - ohne sie laege der
     // Fokus eines Beitretenden auf "Spiel starten".
@@ -1469,7 +1594,9 @@ void dskGameLobby::Msg_ButtonClick(const unsigned ctrl_id)
         // Fensterbesitz ohne Aenderung an 100+ Erzeugungsstellen auskommt. Ein MAUSKLICK auf
         // eine Sitzkarte laeuft ohne diese Klammer und wird in OnSeatButton verworfen: ein
         // Sitzplatz ohne Pad waere ein Spieler ohne Eingabegeraet.
-        OnSeatButton(ctrl_id - ID_btSeat, WINDOWMANAGER.GetPadInput().GetActingSlot());
+        const auto device = WINDOWMANAGER.GetPadInput().GetActingDevice();
+        if(SeatOfDevice(device) == seats_.size())
+            OnSeatButton(ctrl_id - ID_btSeat, WINDOWMANAGER.GetPadInput().GetActingSlot());
         return;
     }
     if(ctrl_id >= ID_btSwap && ctrl_id < ID_btSwap + MAX_PLAYERS)
