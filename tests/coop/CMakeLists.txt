@@ -162,6 +162,16 @@ if(NOT WIN32)
     # A diverged member is caught by the server (its checksums against its leader's) and removed; the game goes on
     add_coop_member_test(CoopNet_MemberDesyncDetected 13715 OFF outofsync --desync-at 300)
 
+    # Authenticated members may issue game orders, but never host-management messages.
+    foreach(mode IN ITEMS normal state swap settings)
+        set(name CoopNet_MemberHostAuthorization_${mode})
+        add_test(NAME ${name}
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=13728
+                         -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DMODE=${mode}
+                         -P ${CMAKE_CURRENT_SOURCE_DIR}/checkNetMemberAuthorization.cmake)
+        set_tests_properties(${name} PROPERTIES TIMEOUT 100 RUN_SERIAL TRUE)
+    endforeach()
+
     # The same real member connection succeeds normally, but cannot claim the host's spare AI slot locally.
     foreach(mode IN ITEMS normal extra)
         if(mode STREQUAL "normal")
