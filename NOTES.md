@@ -1944,3 +1944,39 @@ the zoom limit) in world, road, ring, window and Just watch. Open: hardware appe
 ROADMAP M3 now lists the controller-first pre-game menu with slices 1a–6 (Jan asked, t_mustmg803mw4fb;
 design doc/coop/MenuRedesign.md). M8 gained the "AI handles every setting / uses economy addons" line
 linking doc/ai/Goals.md. Docs only. Released v0.1.10 for the PR #38 controller hints already in Unreleased.
+
+
+## Sol companion — lobby player-card model (2026-10-04)
+
+Accepted MenuRedesign slice 1a adds a pure per-seat model with four stable rows
+(colour, nation, team, shared tribe), clamped vertical navigation, bidirectional
+value proposals and bounded taken-colour skipping. Locks retain focus and a
+displayable campaign/ownership reason. Authoritative snapshots and returned
+proposals are owned copies; refresh retains seat identity/focus. The accepting
+shell must resolve pending input, revalidate permissions and apply only the
+selected field, so an older proposal cannot overwrite unrelated broadcasts.
+There are no singleton, GUI, input-router or network changes.
+
+Ten new unit cases cover every palette entry in both directions, every pair of
+current/sole-free colours, full exhaustion/custom colours, taken-colour-only
+refresh, lobby nation presentation order, all nine team policies, shared-tribe
+proposals, campaign/read-only lock reasons, malformed row ids and independent
+shared-view focus. Exactly gpt-6.1-sol read-only review found a Boost optional
+diagnostic issue; assertions now use has_value(), availability-only refresh
+coverage was added, and final review found no remaining blocker. Own GCC12 Debug/Werror cache, max two compiler jobs: all68 simple cases /
+79968 assertions passed, including new10 cases /2079 assertions. The executed
+colour-filter and lock-bypass controls each ran one intended case and failed
+5/9 assertions (exit201, no abort); restored source/full suite pass. Clang-format10,
+repository static validation, actual agent tsc and targeted Clang23 checks pass
+(the latter excludes only newer trailing-comma/internal-linkage diagnostics).
+All17 exact-head CI checks and both whole workflows remain required before
+tested handoff.
+
+Slice 1b remains separate and must wait for integration of this model: physical
+controller routing, card drawing/geometry, accepting/revalidating proposals and
+actual server broadcasts are not proven here. Remote cards/cursor colours,
+panel shell, hardware appearance and packaged release acceptance remain open.
+Existing ntfy/CI fault reporting remains in place; this pure helper has no
+background job or runtime error endpoint. PR39's repaired head9bdb6774d passed
+all17 checks and both complete workflows and was handed off once to Opus before
+this new slice; its earlier pending wording is historical.
