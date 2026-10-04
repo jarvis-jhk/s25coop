@@ -28,7 +28,9 @@
 #include "network/ClientInterface.h"
 #include "network/CreateServerInfo.h"
 #include "network/GameClient.h"
+#include "network/GameMessages.h"
 #include "network/GameServer.h"
+#include "network/NetworkPlayer.h"
 #include "random/Random.h"
 #include "world/GameWorld.h"
 #include "gameTypes/BuildingQuality.h"
@@ -36,6 +38,7 @@
 #include "gameTypes/MapDescription.h"
 #include "gameData/GameConsts.h"
 #include "s25util/Log.h"
+#include "s25util/Serializer.h"
 #include "s25util/strAlgos.h"
 #include <boost/filesystem.hpp>
 #include <boost/nowide/args.hpp>
@@ -145,6 +148,8 @@ struct Options
     bool switchNow = false;
     /// Join: being kicked by the host in the lobby is the expected outcome
     bool expectKick = false;
+    /// Test only: authenticated member sends a forbidden host-management message in the lobby
+    std::string memberHostProbe;
     /// Order a woodcutter near our HQ at this GF
     std::optional<unsigned> buildAtGF;
     /// Stop running for 2 s at this GF, as a slow machine or a hiccup on the line would
@@ -213,6 +218,37 @@ std::string describeMembers()
     for(const CoopMemberInfo& member : GAMECLIENT.GetCoopMembers())
         result += (result.empty() ? "" : " ") + member.name + "@" + std::to_string(member.leader);
     return result.empty() ? "none" : result;
+}
+
+/// Ignore only measured ping; retain every serialized player/configuration field, including host identity.
+std::vector<uint8_t> lobbyConfiguration(const GameLobby& lobby)
+{
+    Serializer ser;
+    lobby.getSettings().Serialize(ser);
+    for(auto player : lobby.getPlayers())
+    {
+        player.ping = 0;
+        player.Serialize(ser);
+    }
+    return {ser.GetData(), ser.GetData() + ser.GetLength()};
+}
+
+void sendMemberHostProbe(const std::string& probe, const GameLobby& lobby)
+{
+    NetworkPlayer& connection = GAMECLIENT.GetMainPlayer();
+    if(probe == "state")
+    {
+        connection.sendMsg(GameMessage_Player_State(1, PlayerState::Locked, AI::Info()));
+    } else if(probe == "swap")
+    {
+        connection.sendMsg(GameMessage_Player_Swap(0, 1));
+    } else
+    {
+        GlobalGameSettings settings = lobby.getSettings();
+        settings.startWares = StartWares::Minimal;
+        settings.lockedTeams = !settings.lockedTeams;
+        connection.sendMsg(GameMessage_GGSChange(settings));
+    }
 }
 
 /// What the map script recorded as campaign progress in this process (SETTINGS is per process, like on a real machine)
@@ -289,6 +325,12 @@ int run(Options& opt, Callbacks& cb)
     bool announcedConnected = false;
     unsigned seenMemberChanges = 0;
     std::string membersAtStart, switchResult;
+    std::vector<uint8_t> configurationBeforeProbe;
+    bool probeSent = false, probeVerified = false;
+    const bfs::path probeGate =
+      opt.host ? bfs::path(opt.out.string() + ".probe-ready") : bfs::path(opt.waitFor.string() + ".probe-ready");
+    const bfs::path probeReceipt =
+      opt.host ? bfs::path(opt.out.string() + ".probe-sent") : bfs::path(opt.waitFor.string() + ".probe-sent");
 
     while(true)
     {
@@ -358,6 +400,14 @@ int run(Options& opt, Callbacks& cb)
         if(state == ClientState::Config && cb.connected)
         {
             auto gameLobby = GAMECLIENT.GetGameLobby();
+            if(!opt.host && !opt.memberHostProbe.empty() && !probeSent && GAMECLIENT.IsCoopMember()
+               && bfs::exists(probeGate))
+            {
+                sendMemberHostProbe(opt.memberHostProbe, *gameLobby);
+                bnw::cout << "Sent authenticated member host probe: " << opt.memberHostProbe << std::endl;
+                writeResult(probeReceipt, opt.memberHostProbe);
+                probeSent = true;
+            }
             if(opt.switchToMember && !switchRequested && (opt.switchNow || GAMECLIENT.AreCoopMembersAllowed()))
             {
                 GAMECLIENT.JoinCoopMember(*opt.switchToMember);
@@ -421,7 +471,39 @@ int run(Options& opt, Callbacks& cb)
                 }
                 // The members as the server counts them and as the lobby lists them (the broadcast arrived)
                 const auto numListed = static_cast<unsigned>(GAMECLIENT.GetCoopMembers().size());
-                allThere &= GAMESERVER.GetNumCoopMembers() >= opt.members && numListed >= opt.members;
+                if(!opt.memberHostProbe.empty())
+                {
+                    // Member presence alone does not prove that the host's queued slot setup was acknowledged.
+                    const auto& spare = gameLobby->getPlayer(1);
+                    const bool setupApplied =
+                      gameLobby->getPlayer(0).isHost && spare.ps == PlayerState::AI
+                      && spare.aiInfo.type == AI::Type::Dummy
+                      && std::all_of(gameLobby->getPlayers().begin() + 2, gameLobby->getPlayers().end(),
+                                     [](const JoinPlayerInfo& p) { return p.ps == PlayerState::Locked; });
+                    if(configurationBeforeProbe.empty() && allThere && setupApplied
+                       && GAMESERVER.GetNumCoopMembers() == 1 && numListed == 1)
+                    {
+                        configurationBeforeProbe = lobbyConfiguration(*gameLobby);
+                        membersAtStart = describeMembers();
+                        writeResult(probeGate, "Authenticated member and host configuration ready");
+                    }
+                    allThere &= !configurationBeforeProbe.empty() && bfs::exists(probeReceipt)
+                                && GAMESERVER.GetNumCoopMembers() == 0 && numListed == 0;
+                    if(allThere && !probeVerified)
+                    {
+                        if(lobbyConfiguration(*gameLobby) != configurationBeforeProbe || GAMECLIENT.GetPlayerId() != 0)
+                        {
+                            bnw::cerr << "Host configuration changed after member host probe" << std::endl;
+                            return Failed;
+                        }
+                        bnw::cout << "Host configuration unchanged after member host probe: " << opt.memberHostProbe
+                                  << std::endl;
+                        probeVerified = true;
+                    }
+                } else
+                {
+                    allThere &= GAMESERVER.GetNumCoopMembers() >= opt.members && numListed >= opt.members;
+                }
                 if(allThere && opt.swapWith)
                 {
                     if(!swapped)
@@ -630,6 +712,7 @@ int main(int argc, char** argv)
         ("member-of-host", "Join: as a member of whichever player the host plays (what the Join Game window does)")
         ("switch-to-member", po::value<unsigned>()->notifier(checkPlayerIndex), "Join: take a slot, then become a member of this player from the lobby")
         ("switch-now", po::bool_switch(&opt.switchNow), "Join: ask to switch without waiting until members are allowed")
+        ("member-host-probe", po::value(&opt.memberHostProbe), "Test: member sends state, swap or settings; host waits for its removal before starting")
         ("expect-kick", po::bool_switch(&opt.expectKick), "Join: being kicked in the lobby is the expected outcome (exit 0)")
         ("build-at", po::value<unsigned>(), "Order a woodcutter near our HQ at this GF")
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
@@ -670,6 +753,17 @@ int main(int argc, char** argv)
     if(opt.host && options.count("map") == options.count("savegame"))
     {
         bnw::cerr << "host needs either --map or --savegame" << std::endl;
+        return SetupError;
+    }
+    if(!opt.memberHostProbe.empty()
+       && ((opt.memberHostProbe != "state" && opt.memberHostProbe != "swap" && opt.memberHostProbe != "settings")
+           || (opt.host && (opt.members != 1 || opt.players != 1 || opt.ais != std::vector<std::string>{"dummy"}))
+           || (!opt.host && !options.count("member-of"))
+           || (opt.host ? !options.count("out") : !options.count("wait-for"))))
+    {
+        bnw::cerr << "--member-host-probe needs state/swap/settings and host --players 1 --members 1 --ai dummy --out,"
+                     " or join --member-of --wait-for"
+                  << std::endl;
         return SetupError;
     }
     // Absolute now: RTTRCONFIG.Init changes the working directory
