@@ -1939,11 +1939,65 @@ Test_splitscreen in build/dev, full suite "No errors detected". Read-only gpt-6.
 source diff: no concrete defects. Hints now name right stick (camera) and LT/RT (zoom, hidden at
 the zoom limit) in world, road, ring, window and Just watch. Open: hardware appearance, panel runtime.
 
+## Sol companion — controller Building overview (2026-10-03)
+
+- Branch `sol/building-overview-browsing`, from master `89b04c9ef` after integrated PR38.
+  Claim `building-overview-browsing`: new dedicated test, existing dummy Loader helper,
+  temporary `iwBuildings.cpp` negative control and NOTES/ROADMAP.
+- Six physical-input regressions enter through real Back/system/Main-menu events and select
+  actual GamePlayer registries. Duplicate ordinary buildings are registered opposite spatial
+  order. Ordinary/military/warehouse/temple child type, GUI identity, title and wrapped owner
+  camera center are checked independently. Empty categories, Help, keyboard/mouse return,
+  five nations/eight addon combinations, D-pad row transitions and disappearance of the first
+  then last temple are exercised. Live browsing flushes to zero recorded commands. A real
+  save/rehost/record/replay preserves actual seeded buildings and the final GF/checksum.
+- `LoadDummyBuildingFiles` now supplies distinct synthetic nation icons and Wine ware/job/
+  default-temple UI sprites, preserving loaded archives and repeat-load identity. The prior
+  helper supplied building sprites but left overview button images null. Direct factory
+  seeds need empty neighboring nodes for flag/castle extensions too; cached building quality
+  alone is insufficient after direct seeding.
+- Test-body guarded initialization/cleanup avoids Boost auto-detected `setup()` and throwing
+  fixture destructors. Windows/desktops die before the saved persistent map is restored;
+  normal and reached deliberate exceptional probes check restoration before destruction.
+  Desktop activation/input frames reinstall the real-client observer.
+- Own GCC12 Debug/Werror, at most two compiler jobs. Final temple/replay/exception run:
+  three cases/1027 assertions pass. UI: all 137 cases/15498 assertions pass. Full splitscreen:
+  all 609 cases/498194 assertions pass, including all six new cases/8849 assertions. Reversing the real first-match
+  search executed one case with 445 assertions: seven intended identity/camera failures (exit201,
+  no abort). Restored `iwBuildings.cpp` is byte-identical to master. Earlier missing assets,
+  focus/filter failures and aborted unexecuted cases are development history, not evidence.
+- Exactly `gpt-6.1-sol` read-only reviews: initial oracle/navigation/command-flush points
+  addressed; final combined and Wine asset refinement reviews have no blockers. Format10,
+  diff/private-string checks and actual agent TypeScript gate precede commit. Targeted local
+  Clang-Tidy23 has no new-test diagnostics with its newer multiple-inheritance/internal-linkage
+  checks filtered; its other new checks flag existing code. Full branch Clang18/coverage CI
+  remains a mandatory gate, not inferred from that local check.
+- Legacy single-view coverage and test tooling only: no window/router/simulation changes,
+  successful harbor target, drawn numeric-count assertion, shared-view/panel integration,
+  hardware appearance or release acceptance. Existing ntfy/CI reporting stays; no private
+  endpoint in public sources. Draft until every exact-head check and BOTH complete Unit tests/
+  Static analysis workflows pass; Sol never merges its own PR.
+
 ## 2026-10-03 — menu redesign and AI goals on the roadmap
 
 ROADMAP M3 now lists the controller-first pre-game menu with slices 1a–6 (Jan asked, t_mustmg803mw4fb;
 design doc/coop/MenuRedesign.md). M8 gained the "AI handles every setting / uses economy addons" line
 linking doc/ai/Goals.md. Docs only. Released v0.1.10 for the PR #38 controller hints already in Unreleased.
+
+## Sol companion — PR39 documentation reconciliation (2026-10-03)
+
+Merged current master `9e4950d7e` after the primary released its documentation claims.
+Preserved both workers' notes and roadmap slices. Incoming master changes only NOTES,
+ROADMAP and CHANGELOG; all tested source and test bytes remain identical to `b37b169fa`.
+The prior local Debug and executed negative-control evidence above still applies.
+Fresh complete exact-head Unit tests and Static analysis are required before the tested
+PR39 handoff; keep draft until that gate passes.
+
+## 2026-10-04 — Opus integrated Sol PR #39 (controller building overview regressions)
+Reviewed exact head 9bdb6774d (17/17 checks green; Sol's Debug/Werror runs and gpt-6.1-sol review no blocker).
+Loader change only fills archives missing in tests (dummy nation icons, wine_bobs UI sprites); production loading unchanged.
+Merged as 05b92032b, re-ran `PadBuildingsTests` locally on merged master (Release): 6 cases, 8857 assertions passed.
+Branch deleted. Test-only change, so no CHANGELOG entry and no release. Still open per Sol: harbor success, drawn numeric counts, shared-view/panel/hardware.
 
 
 ## Sol companion — lobby player-card model (2026-10-04)
@@ -1963,7 +2017,8 @@ refresh, lobby nation presentation order, all nine team policies, shared-tribe
 proposals, campaign/read-only lock reasons, malformed row ids and independent
 shared-view focus. Exactly gpt-6.1-sol read-only review found a Boost optional
 diagnostic issue; assertions now use has_value(), availability-only refresh
-coverage was added, and final review found no remaining blocker. Own GCC12 Debug/Werror cache, max two compiler jobs: all68 simple cases /
+coverage was added, and final review found no remaining blocker.
+Own GCC12 Debug/Werror cache, max two compiler jobs: all68 simple cases /
 79968 assertions passed, including new10 cases /2079 assertions. The executed
 colour-filter and lock-bypass controls each ran one intended case and failed
 5/9 assertions (exit201, no abort); restored source/full suite pass. Clang-format10,
@@ -1980,3 +2035,11 @@ Existing ntfy/CI fault reporting remains in place; this pure helper has no
 background job or runtime error endpoint. PR39's repaired head9bdb6774d passed
 all17 checks and both complete workflows and was handed off once to Opus before
 this new slice; its earlier pending wording is historical.
+
+Merged current master d4348cca5 (integrated PR39); preserved both workers' notes.
+All three model/test files stay byte-identical to locally tested a2248e566;
+incoming Loader/building-overview test match the previously tested PR39 head.
+Own combined Debug/Werror build, max2 jobs: Test_simple68 cases /79849 assertions
+and Test_UI137 cases /13058 assertions passed. The model suite remains10 cases
+/2079 assertions. Model negative controls/review remain valid; combined actual
+agent tsc/static/diff checks pass. Fresh resulting-head CI is still required.
