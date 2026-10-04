@@ -86,7 +86,9 @@ public:
         bool vbo;
         bool sharedTextures;
         unsigned guiScale; ///< UI scaling in percent; 0 indicates automatic selection
-        /// Fernsehmodus. Aus (Standard) heisst: die Darstellung ist BIT-IDENTISCH zu der vor
+        /// First-run Deck automatic scale profile; stored settings, including false, win over detection.
+        bool steamDeckUi;
+        /// Fernsehmodus. Aus ohne Deck-Profil heisst: die Darstellung ist BIT-IDENTISCH zu der vor
         /// dieser Aenderung - weder die empfohlene GUI-Skalierung noch der Startzoom noch die
         /// Fensterklemme aendern sich. An heisst: die Bedienoberflaeche wird gegen eine logische
         /// Leinwand von tv::UI_REFERENCE_HEIGHT Zeilen skaliert, die Karte startet auf einem

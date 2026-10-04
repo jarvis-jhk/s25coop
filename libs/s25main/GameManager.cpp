@@ -8,7 +8,7 @@
 #include "RTTR_Assert.h"
 #include "RttrConfig.h"
 #include "Settings.h"
-#include "TvDisplay.h"
+#include "SteamDeckUi.h"
 #include "WindowManager.h"
 #include "desktops/dskCampaignVictory.h"
 #include "desktops/dskLobby.h"
@@ -59,7 +59,7 @@ bool GameManager::Start()
     videoDriver_.SetMouseWarping(settings_.global.smartCursor);
     // MUSS vor setGuiScalePercent stehen: bei "automatisch" (guiScale == 0) entscheidet die
     // Referenzhoehe, welcher Prozentwert die Automatik ueberhaupt liefert.
-    videoDriver_.setUiReferenceHeight(settings_.video.tvMode ? tv::UI_REFERENCE_HEIGHT : 0u);
+    videoDriver_.setUiReferenceHeight(deck::UiReferenceHeight(settings_.video.tvMode, settings_.video.steamDeckUi));
     videoDriver_.setGuiScalePercent(settings_.video.guiScale);
 
     /// Audiodriver laden

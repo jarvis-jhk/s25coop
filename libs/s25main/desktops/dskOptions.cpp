@@ -7,7 +7,7 @@
 #include "Loader.h"
 #include "MusicPlayer.h"
 #include "Settings.h"
-#include "TvDisplay.h"
+#include "SteamDeckUi.h"
 #include "WindowManager.h"
 #include "controls/ctrlComboBox.h"
 #include "controls/ctrlEdit.h"
@@ -649,7 +649,7 @@ void dskOptions::Msg_Group_OptionGroupChange(const unsigned /*group_id*/, const 
             // Sofort wirksam, damit der Spieler die Wirkung vom Sofa aus sieht statt sie zu
             // erraten. setUiReferenceHeight zieht bei "automatisch" die neue Empfehlung selbst
             // nach (libs/driver/src/VideoDriver.cpp) ...
-            VIDEODRIVER.setUiReferenceHeight(enabled ? tv::UI_REFERENCE_HEIGHT : 0u);
+            VIDEODRIVER.setUiReferenceHeight(deck::UiReferenceHeight(enabled, SETTINGS.video.steamDeckUi));
             // ... reichte aber nicht, wenn vorher ein fester Wert eingestellt war: dann steht
             // autoGuiScale_ im Treiber noch auf false. Diese Zeile schaltet ihn um.
             if(enabled)
