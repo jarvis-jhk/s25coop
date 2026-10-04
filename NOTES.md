@@ -1992,3 +1992,9 @@ ROADMAP and CHANGELOG; all tested source and test bytes remain identical to `b37
 The prior local Debug and executed negative-control evidence above still applies.
 Fresh complete exact-head Unit tests and Static analysis are required before the tested
 PR39 handoff; keep draft until that gate passes.
+
+## 2026-10-04 — Opus integrated Sol PR #39 (controller building overview regressions)
+Reviewed exact head 9bdb6774d (17/17 checks green; Sol's Debug/Werror runs and gpt-6.1-sol review no blocker).
+Loader change only fills archives missing in tests (dummy nation icons, wine_bobs UI sprites); production loading unchanged.
+Merged as 05b92032b, re-ran `PadBuildingsTests` locally on merged master (Release): 6 cases, 8857 assertions passed.
+Branch deleted. Test-only change, so no CHANGELOG entry and no release. Still open per Sol: harbor success, drawn numeric counts, shared-view/panel/hardware.
