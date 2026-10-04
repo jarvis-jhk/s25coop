@@ -6,6 +6,7 @@
 #include "helpers/containerUtils.h"
 #include "s25util/colors.h"
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 namespace {
@@ -17,10 +18,10 @@ constexpr std::array teamOrder = {Team::None,  Team::Random,     Team::Team1,   
 template<typename T, size_t N>
 size_t nextIndex(const std::array<T, N>& values, T value, bool forward)
 {
-    const auto it = std::find(values.begin(), values.end(), value);
-    if(it == values.end())
+    const auto index =
+      static_cast<size_t>(std::distance(values.begin(), std::find(values.begin(), values.end(), value)));
+    if(index == N)
         return forward ? 0 : N - 1;
-    const auto index = static_cast<size_t>(it - values.begin());
     return (index + (forward ? 1 : N - 1)) % N;
 }
 } // namespace
