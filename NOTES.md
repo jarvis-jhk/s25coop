@@ -5,6 +5,16 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-04 — PR #44 integrated (live read-only lobby player cards)
+
+Sol's iwLobbyPlayerCards (button "Player cards" in dskGameLobby, 4 cards/page, refreshed every paint
+from GameLobby + coop members) and shared-seat cursor colours on the local cards via the new
+input/LocalViewColor.h helper (also used by dskGameInterface::SeatColor, so lobby preview and in-game
+agree). Exact head b586691fc (Unit tests 37211398603, Static analysis 37211398538, 17 checks green);
+branch contained master, so the merge tree is byte-identical to the tested head. Opus reviewed the diff:
+read-only cards block mouse/activate/step, button sits in the free strip y60-78 above the rows. No
+blocker. CHANGELOG entries added.
+
 ## 2026-10-04 — PR #43 integrated (member host-message authorization tests)
 
 Test-only M2 hardening from Sol: coop-net `--member-host-probe state|swap|settings` sends a

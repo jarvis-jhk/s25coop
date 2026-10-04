@@ -5,6 +5,10 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- The lobby has a "Player cards" button: it shows every player and co-player with colour, nation
+  and team, four per page, and stays up to date while others join, leave or change settings.
+- With several controller players sharing one tribe, each lobby card shows the cursor colour
+  that player will have in the game.
 - In the local lobby every controller player gets their own card: move up/down to pick colour,
   nation, team or seat mode and left/right to change it, without waiting for the host.
 - On a Steam Deck, a fresh installation starts with menus and buttons sized for the handheld
