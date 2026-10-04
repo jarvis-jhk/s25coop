@@ -69,6 +69,7 @@
 #include "ingameWindows/iwTrade.h"
 #include "ingameWindows/iwTransport.h"
 #include "ingameWindows/iwVictory.h"
+#include "input/LocalViewColor.h"
 #include "input/MenuPadInput.h"
 #include "lua/GameDataLoader.h"
 #include "network/GameClient.h"
@@ -2789,9 +2790,7 @@ unsigned dskGameInterface::SeatColor(const PlayerView& view) const
     const bool shared = std::any_of(views_.begin(), views_.end(), [&view](const auto& other) {
         return other.get() != &view && other->GetPlayerId() == view.GetPlayerId();
     });
-    if(shared)
-        return PLAYER_COLORS[view.GetIndex() % PLAYER_COLORS.size()];
-    return view.GetViewer().GetWorld().GetPlayer(view.GetPlayerId()).color;
+    return LocalViewColor(view.GetIndex(), view.GetViewer().GetWorld().GetPlayer(view.GetPlayerId()).color, shared);
 }
 
 /// DER BACK-KNOPF, und warum er es ist und nicht Start:

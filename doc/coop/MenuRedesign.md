@@ -65,7 +65,12 @@ Player cards
 - 1b Cards in `dskGameLobby` for local seats: D-pad row/value, A/B, focus per
   controller; replaces the per-seat controls for controller users.
 - 1c Remote players' cards (read-only) and per-seat cursor colours in a shared
-  tribe; online and splitscreen regression with real loopback server.
+  tribe; online and splitscreen regression with real loopback server. The lobby
+  retains its editable rows and chat: a Player cards button opens a live,
+  read-only roster with four cards per page, including each co-player. Local
+  shared seats preview the colours of their actual compacted game-view order;
+  a departing seat updates the remaining previews. These are view/cursor colours,
+  independent of the shared tribe colour, not a new saved or network setting.
 
 Rules drawer
 

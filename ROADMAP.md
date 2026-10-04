@@ -183,7 +183,7 @@ What stands between that and a good couch experience, in order:
   slice, physical-input tests, mouse/keyboard unchanged:
   1a pure player-card model ✓ (PR #40, model only; shell wiring is 1b) ·
   1b local cards in the lobby ✓ (PR #42, integrated 2026-10-04) ·
-  1c remote cards and shared-tribe cursors ·
+  1c live read-only player/co-player cards and shared-seat cursor preview ◐ (Sol: local Debug green; exact-head CI required) ·
   2a staged rule edits with re-confirm · 2b rules drawer, one editor at a time · 2c online rule suggestions ·
   3a addon category table · 3b category tabs and "changed only" filter · 3c rule presets ·
   4a player profiles · 4b on-screen keyboard · 5a menu world decoupled from the lobby client ·
