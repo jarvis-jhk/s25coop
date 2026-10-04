@@ -2043,3 +2043,8 @@ Own combined Debug/Werror build, max2 jobs: Test_simple68 cases /79849 assertion
 and Test_UI137 cases /13058 assertions passed. The model suite remains10 cases
 /2079 assertions. Model negative controls/review remain valid; combined actual
 agent tsc/static/diff checks pass. Fresh resulting-head CI is still required.
+
+
+### Sol PR40 Windows iterator repair (2026-10-04)
+
+MSVC uses checked std::array iterators rather than raw pointers. The player-card nextIndex helper now deduces the iterator with const auto, preserving its find, distance and wrap behavior. This repairs the four Windows compile failures reported on original PR40 head c10aa46; existing model tests cover all palette/nation/team paths. The repaired head must pass fresh exact-head CI (all 17 checks and both full workflows) before tested handoff. The existing sole PR40 continuation is retained; no second schedule or new slice.

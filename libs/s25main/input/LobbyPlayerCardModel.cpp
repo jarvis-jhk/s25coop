@@ -17,7 +17,7 @@ constexpr std::array teamOrder = {Team::None,  Team::Random,     Team::Team1,   
 template<typename T, size_t N>
 size_t nextIndex(const std::array<T, N>& values, T value, bool forward)
 {
-    const auto* const it = std::find(values.begin(), values.end(), value);
+    const auto it = std::find(values.begin(), values.end(), value);
     if(it == values.end())
         return forward ? 0 : N - 1;
     const auto index = static_cast<size_t>(it - values.begin());
