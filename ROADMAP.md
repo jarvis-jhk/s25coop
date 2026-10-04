@@ -188,7 +188,12 @@ What stands between that and a good couch experience, in order:
   4a player profiles · 4b on-screen keyboard · 5a menu world decoupled from the lobby client ·
   5b AI replay behind the main menu · 5c ambient sound, Deck fps/battery options · 5d scene per nation/campaign ·
   6 campaign hub as the new start page.
-- ☐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
+- ◐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
+  Sol first-run display slice: exact Steam flag or Valve LCD/OLED DMI identity, persisted automatic
+  640-unit reference height (125% at1280×800), stored settings and TV/fixed-scale precedence.
+  See doc/coop/SteamDeckUi.md; dedicated and full simple/integration/UI Debug pass, fresh CI
+  pending before tested handoff. Controller layout and packaged
+  Deck appearance remain separate menu/panel/hardware work.
 - ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
   gamepad support are done).
 

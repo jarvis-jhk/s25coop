@@ -6,6 +6,7 @@
 #include "DrawPoint.h"
 #include "RTTR_Version.h"
 #include "RttrConfig.h"
+#include "SteamDeckUi.h"
 #include "TvDisplay.h"
 #include "driver/VideoInterface.h"
 #include "drivers/AudioDriverWrapper.h"
@@ -113,6 +114,7 @@ void Settings::LoadDefaults()
     video.vbo = true;
     video.sharedTextures = SHARED_TEXTURES_DEFAULT;
     video.guiScale = 0; // special value indicating automatic selection
+    video.steamDeckUi = deck::IsSteamDeck();
     // Aus: der Auslieferungszustand aendert an der Darstellung von heute NICHTS.
     video.tvMode = false;
     video.tvSafeAreaPercent = tv::SAFE_AREA_PERCENT_DEFAULT;
@@ -276,6 +278,8 @@ void Settings::Load()
         video.vbo = iniVideo->getBoolValue("vbo");
         video.sharedTextures = iniVideo->getBoolValue("shared_textures");
         video.guiScale = iniVideo->getValue("gui_scale", 0);
+        // Existing configurations keep their current automatic scale even on a Deck.
+        video.steamDeckUi = iniVideo->getValue("steam_deck_ui", false);
         // Fehlende Schluessel (jede bestehende Konfiguration) liefern hier den Aus-Zustand.
         video.tvMode = iniVideo->getValue("tv_mode", false);
         // getValue liefert einen INT, und der darf in der Datei alles sein - die Pruefung steht
@@ -500,6 +504,7 @@ void Settings::Save()
     iniVideo->setValue("vbo", video.vbo);
     iniVideo->setValue("shared_textures", video.sharedTextures);
     iniVideo->setValue("gui_scale", video.guiScale);
+    iniVideo->setValue("steam_deck_ui", video.steamDeckUi);
     iniVideo->setValue("tv_mode", video.tvMode);
     iniVideo->setValue("tv_safe_area", video.tvSafeAreaPercent);
     // };

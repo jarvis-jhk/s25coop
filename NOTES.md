@@ -404,3 +404,32 @@ before ready or tested handoff. Keep one synchronized PR40 continuation and only
 the three unfinished model/test claims; no new slice until the gate completes.
 After integration, prioritize menu1b/couch join, Deck detection and panel shell
 over more legacy-window coverage, as the primary weekly review requests.
+
+
+## 2026-10-04 — Sol: Steam Deck first-run display profile
+
+PR40 pure MenuRedesign1a exact head5c8ba78785abcedbbae3bca508c6f4ec7cfcad6b passed
+all17 checks and both complete workflows (Unit tests37176328989, Static analysis37176328988).
+Ready body records final Debug and exact-head evidence; once-only tested primary handoff
+t_mutd664x176om4 delivered, finished claims and scheduledf890c6be cleared. Opus integrated
+b38650241/05e1d9a23. Completion budget permits work (session30%, weekly67%).
+
+Fresh sol/steam-deck-first-run from current origin/master05e1d9a23 claims bounded settings,
+startup/options, helper, dedicated tests and documentation. Deck detection accepts exact Steam
+0/1 override or Valve+Jupiter/Galileo DMI pair; no SteamOS/controller/resolution guess. Missing
+DMI is normal. First-run auto profile persists independently of future detection; older configs
+without steam_deck_ui retain old behavior, and explicit percentages/TV precedence stay in place.
+640-unit reference height yields125% at1280x800 with existing two-axis resize bounds; TV-off
+returns to the profile instead of clearing it. Settings tests use the actual singleton and
+copy only public values; explicit cleanup restores them and the launch environment before
+fixture destruction. UI tests cover actual mouse TV toggles and scale/bounds, with deliberate
+exceptional cleanup probes. Own GCC12 Debug/Werror max2 build passes. New detection3cases109assertions, settings5cases69
+assertions and UI3cases58assertions pass. Restored complete simple71cases80056assertions,
+integration214cases93783assertions and UI140cases7401assertions pass. Executed omission
+negative controls: first-run detection removal runs one matching case and fails one intended
+assertion; old TV-off reference0 runs one matching mouse case and fails three intended
+assertions (bothexit201). Both product hashes restored byte-for-byte and rebuilt before full
+positive passes. Exactly gpt-6.1-sol initial/final supplied read-only reviews have no blockers.
+Existing Options/TV/controller regression Debug binary is being rebuilt; all17 fresh exact-head
+CI and both complete workflows still required before tested primary handoff.
+No MenuRedesign1b/panel/layout/hardware/release proof implied; existing fault reporting retained.
