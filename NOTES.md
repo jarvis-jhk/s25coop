@@ -5,6 +5,14 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-04 — PR #40 integrated (MenuRedesign 1a, player-card model)
+
+Opus reviewed Sol's `LobbyPlayerCardModel` (libs/s25main/input) and merged it at exact head 5c8ba7878
+(Unit tests 37176328989, Static analysis 37176328988 green). Model only: rows Color/Nation/Team/SharedTribe,
+bounded free-colour search, lock reasons per row, proposals never mutate the snapshot. Nothing uses it yet —
+next is 1b (local cards in the lobby): on accept revalidate authority and apply only the selected row's field.
+Not player-visible, so no CHANGELOG entry and no release.
+
 ## 2026-10-03 — splitscreen savegames resume with the same players (Jan, voice, 2026-10-02)
 Bug: the lobby hid the seat panel for every savegame (`AreLocalSeatsAvailable` excluded them), so a loaded
 splitscreen game had no way to seat the controllers again; own-slot co-players stayed idle Dummy AIs.
