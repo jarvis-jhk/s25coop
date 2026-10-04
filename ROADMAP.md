@@ -3,6 +3,16 @@
 The order work is done in. Each item is sized to finish in one or a few work sessions;
 anything bigger is split before it is started. Status: ☐ open · ◐ in progress · ☑ done.
 
+**Current priorities (weekly review 2026-10-04).** The core goal is a group playing a campaign
+together on one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c 1–3) work.
+What stands between that and a good couch experience, in order:
+1. Opus: M3c step 4 (a second view's open economy windows refresh) — closes shared local views.
+2. Sol: menu redesign 1a (PR #40) → 1b local player cards (= the couch join) → 1c, then 6 campaign hub.
+3. Sol: Deck detection and first-run scale (its ready backlog #0), then controller panel slice 2.
+4. Opus: M1 mission presentation (unlock/brief screens like the original) once 1–3 have no open review.
+5. Release whenever player-visible changes are on master and its CI is green — tag, push, then CHECK the
+   GitHub release exists (0.1.10 was noted as released on 2026-10-03 but its tag was never pushed).
+
 ## M0 — A version you can install and keep updated (first!)
 
 - ☑ CI: GitHub Actions builds Linux x86_64 (portable tarball/AppImage) and Windows on every
@@ -117,123 +127,32 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
     with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☑ 3 seat colours per view (focus ring, brief stripe), a road built from one view stops a crossing preview in another (2026-10-02) · ☐ 4 refresh a second view's open economy windows when the shared settings change.
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
-  Closed dropdowns now let controller directions move focus instead of immediately changing
-  settings; A opens, directions browse, A confirms and B restores. BuildOrder's actual timer
-  sends its confirmed mode while an open dropdown only previews a different one. Physical
-  D-pad/stick and real-game timer/cancellation/roundtrip regressions cover both defects;
-  exact-head CI is required before the Sol companion handoff.
-  The shared-tribe checkbox now occupies the local seat panel below the cards, clear of Goals
-  and the other settings. Five physical-input layout/scaling/seat-policy/cleanup regressions
-  and all22 existing seat cases pass in Debug; the full560-case suite passes. Exact-head CI
-  is required before the Sol companion handoff. Slot-policy snapshots wait for the initial
-  AI server broadcasts, then compare every slot and its AI settings after physical toggles.
-  Outline map now preserves identical map/window dimensions across controller zoom and reopen.
-  Four physical-input regressions cover saved zoom, shoulder endpoint clamps, mouse click/drag
-  camera targets, containment at 800x600/1280x800, immediate world/inventory invariance and
-  explicit exceptional settings restoration (Sol companion; exact-head CI required before handoff).
-  Post office retains the selected filtered letter during earlier deletions and full-inbox
-  eviction, including same-count category replacements. Eight physical-input regressions cover
-  all four filters, timeline bounds, correct delete targets, mouse/keyboard, empty/incoming mail,
-  Help/mission-goal/position links, unchanged world/inventory and explicit exceptional cleanup
-  (Sol companion; local Debug complete; exact-head CI, including executed ring-helper coverage,
-  required before handoff).
-  Merchandise statistics has five physical-input regressions for all fourteen ware toggles,
-  clear, all four time ranges and older peaks, Help/reopen, unchanged history/inventory and
-  save-backed real replay completion at the exact final GF/checksum (Sol companion; exact-head
-  CI required before handoff). The separate coarse aggregation defect is fixed on master and
-  integrated into the companion branch.
-  Its GCC16 test comparison now checks every history bucket explicitly; fresh branch CI
-  remains required before the merchandise test handoff.
-  Stock has six physical-input regressions for live whole-realm ware/people counts from two
-  warehouses, all five nations' shield icons, all eight wine/leather/charburner combinations,
-  armored-soldier details, mouse/keyboard/Help/Back, no recorded commands from browsing and
-  save-backed replay completion at the exact final GF/checksum. Explicit exceptional cleanup
-  restores settings before fixture destruction (Sol companion; local Debug complete;
-  exact-head CI required before handoff). This tests the legacy window; the panel Stock page
-  remains part of shell slice 2.
-  Building overview has physical-input regressions for first registered ordinary, military
-  and warehouse targets, specialized temple windows, camera centering, empty categories,
-  Help/Back, five nations and eight addon combinations. Save-backed replay checks the final
-  frame/checksum; live browsing flushes to zero recorded commands. These tests cover the
-  existing single-view window; successful harbor targets, drawn numeric counts and panel
-  Buildings remain separate work. Sol Debug passes all 609 cases/498194 assertions;
-  exact-head CI remains required before handoff.
-  Goods distribution now rejects replay pad/wheel/bar edits immediately without a false discard
-  warning and keeps Help available. Nineteen real-input/real-world tests cover all eight
-  wine/leather/charburner policies, all tabs and bounds, Default/reopen, mouse/timer transmission
-  and generated replay browsing/completion (Sol companion; exact-head CI evidence tracked in its PR).
-  Credits supports controller B to Main menu; its text pages stay usable when optional game graphics
-  or world data are unavailable, with physical-input and missing-resource regressions (Sol companion, 2026-09-30).
-  Campaign chooser Back now retains local/network context; chapter/campaign victory screens support
-  A/B/Start, with driver-event regressions (Sol PR #4). Remaining dialogs and menu paths stay open.
-  Options handles controller B through its existing save/validate/Back action; driver-event tests cover
-  saved text, cancelled dropdown selection, music overlay and both invalid-port confirmations.
-  Table navigation starts at row zero on the first Up/Down, initially and after clearing/reloading;
-  keyboard, controller and mouse regressions cover activation, scrolling and empty-table behavior.
-  Intro accepts controller A/B/Start to skip, also from its missing-video page, with overlay precedence,
-  single-transition/no-input-leak regressions and a locally tested original-movie path.
-  Singleplayer/Multiplayer handle controller B through their existing Back actions; all focused actions,
-  replay/login overlays, missing-save confirmation and a no-Main-menu-quit countercheck are covered.
-  Online-lobby B uses the existing disconnect/Back action; six regressions authenticate the real
-  client against a loopback TCP peer and cover all five focusable controls, overlay precedence,
-  physical input, edited chat and B bursts (Sol companion, 2026-09-30).
-  Direct-IP and the LAN browser handle controller B through their existing Back actions. Eight driver-event
-  and physical-input regressions cover all seven focusable controls, window/confirmation precedence,
-  mouse/A/keyboard behavior and B bursts stopping at Multiplayer (Sol companion, 2026-09-30).
-  Create game/map selection handles controller B through its original Back route, with four-context,
-  mouse and regular/custom-window regressions (Sol companion, 2026-09-30). The network Create Game
-  form also supports B/Escape/title close cancellation while keeping right-click inert, with
-  validation, all pad/keyboard focus targets and real-loopback lobby regressions.
-  Military sliders are covered through physical controller/mouse input with all four defender/harbor
-  addon visibility combinations, bounds, Default/reopen and real world settings after timer/close
-  transmission. Replay inputs preserve recorded values and close without a false discard warning;
-  clean replay completion and guarded fixture cleanup are exercised (Sol companion, 2026-10-01).
-  Long Readme, Help and Changelog scrolling is covered through driver and physical mouse input; scroll
-  position now clamps safely when text/visible area changes, preventing out-of-range drawing.
-  In-game Save is exercised from the controller system menu through Options in a real local game:
-  saved world bytes, row selection/overwrite, keyboard submission, validation, cancellation and
-  autosave selection are covered.
-  Construction-order list/dropdown and reorder/default buttons now have physical-input,
-  real-world command and generated-replay coverage for all eight wine/leather/charburner combinations;
-  Default retains every active building, and replay settings stay read-only with current previews.
-  Music playlist track reordering now refreshes playback; cancelled additions keep playback intact.
-  Controller regressions cover song activation, removal, confirmed/cancelled input, repeat/random
-  controls and saved files.
-  Addon Settings has eight physical-input regressions for Apply/Abort, category scroll reset,
-  dropdown cancellation, read-only and whitelist/default enforcement, exact saved config and
-  real local-server settings roundtrip (Sol companion, 2026-10-01). Policy-specific windows are
-  tested with the real lobby parent; campaign Lua routing and preset Save/Load remain separate.
-  Transport priorities now have seven physical-input/backend/replay regressions with leather on/off:
-  selection, all move buttons and boundaries, Default/reopen, mouse selection and Help return,
-  every actual ware priority, recorded updates and read-only replay policies (Sol companion, 2026-10-01).
-  Tool production has physical-input/real-world coverage with ordering on/off, all slider and
-  order bounds, Default/Zero, timer transmission, Help and generated replay browsing. Replay
-  progress input now preserves recorded priorities and closes without a false discard warning;
-  Help stays available (Sol companion, 2026-10-01).
-  General statistics now has physical-input, actual-history and replay coverage for all
-  categories/time ranges, ally/own/everyone visibility and player toggles, Help and default
-  selection on reopen. Empty scaled charts keep a neutral 0..1 range; populated scaling and
-  all player/time histories remain intact (Sol companion, 2026-10-01).
-  Other paths remain open.
-- ☐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
+  Covered with physical-input regressions (Sol PRs #4–#39; details in NOTES.md and the PRs): Back/B on
+  every main-menu path (single/multiplayer, Direct-IP, LAN, online lobby, Create game, campaign chooser,
+  Options, Credits, Intro), dropdown A-open/confirm/B-cancel, tables, long text scrolling, in-game Save,
+  addon settings, every economy window (distribution, transport, tools, military, build order), statistics,
+  merchandise, Stock, Building overview, Post, outline map, music player. Replays keep these read-only.
+  Review 2026-10-04: these exercise the LEGACY floating windows, which the controller panel (below) and the
+  menu redesign will replace for controller users. No further "exercise legacy window X" slices unless a real
+  bug is reported; open paths are covered by the panel and menu-redesign slices instead.
+- ◐ Jan's Steam Deck feedback (2026-10-01, voice; not urgent, handed to Sol as separate requests):
   - ◐ Steam, application menu and window title use "The Settlers II: Coop". Existing Steam entries
     migrate automatically on reinstall or desktop launch with Steam closed; Game Mode leaves
-    live shortcuts untouched. Binary VDF fixtures enforce BSD/GNU release parsing; Debug title and actual CLI tests pass locally (Sol);
-    exact-head CI and Opus integration still required. Confirm on the Deck after release.
+    live shortcuts untouched. Integrated (PR #30), released in 0.1.10. Confirm on the Deck.
   - ◐ Controller hints as Xbox button glyphs: per-view in-game brief badges now colour
     A/B/X/Y and label shoulders, D-pad directions, Start/Back and stick inputs, with font-metric
-    wrapping and complete text fallback for oversized groups (Sol; full Debug589/UI137 pass, CI pending).
+    wrapping and complete text fallback for oversized groups (PR #36).
     Existing contextual bindings stay authoritative. Typed right-stick and LT/RT camera/zoom
     hints now cover legacy world/road/ring/window/watch modes and actual target-zoom limits
-    (Sol camera follow-up; Debug603/603 and58 affected hint cases pass, exact-head CI pending). Other UI surfaces and
+    (PR #38; both released in 0.1.10). Other UI surfaces and
     device-specific artwork remain separate slices. Deck appearance is unverified.
     Rendering scope and fallback policy: [Controller hints](doc/coop/ControllerHints.md).
   - ◐ Fixed L3 building-position shortcut plus current in-game mapping audit in
     [ControllerMapping](doc/coop/ControllerMapping.md); eight physical/live cases and full
     583-case Debug suite pass locally. All17 exact-head CI passed; Opus integrated PR #35.
     Further bindings and panel integration remain separate gated slices.
-  - ☐ Lobby "play as a team / together" checkbox is drawn over other controls; fix the layout.
-  - ☐ Dropdowns under D-pad/stick: focus must not change the value; A opens, D-pad picks, A confirms, B cancels.
+  - ☑ Lobby "play as a team / together" checkbox is drawn over other controls; fix the layout (PR #31, 0.1.10).
+  - ☑ Dropdowns under D-pad/stick: focus must not change the value; A opens, D-pad picks, A confirms, B cancels (PR #34, 0.1.10).
   - ☐ In-game with a controller: instead of floating, movable, overlapping windows, a fixed side panel
     with tabs switched by the shoulder buttons that shows as much information as possible.
     Mouse/keyboard keep the windows. Design: [ControllerPanel](doc/coop/ControllerPanel.md).
@@ -254,7 +173,9 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
     Each slice needs fresh claims for shared input/view/page scopes, physical Debug proof
     and all exact-head CI green; use no panel code in this design-only checkpoint.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
-  players (and which controller is who). That count drives everything after it.
+  players (and which controller is who). That count drives everything after it. Review 2026-10-04: this
+  is delivered by menu-redesign slices 1a/1b (player cards, one per controller) and 6 (campaign hub);
+  do not build a separate join screen.
 - ◐ Campaign overview with artwork of every working campaign and single scenario: optional
   missing/damaged images have a consistent text fallback and do not block other previews;
   controller selection and continuation are exercised with generated campaign data.
