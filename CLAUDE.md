@@ -80,6 +80,9 @@ Wire new components (Windows, in-game crash handler) into the same path. Details
 Player language, only what a player cares about: new features, noticeable fixes. No technical
 or internal changes, no test tooling. Those go to Jan in the chat (briefly), not the changelog.
 The release notes and the in-game changelog are made from it.
+Release (review 2026-10-04): when player-visible entries are on master and that SHA's Unit tests and
+Static analysis are green, `git tag -a vX.Y.Z` and push the tag, then verify that the GitHub release
+exists with its assets before writing "released" anywhere. Then send Jan the release link.
 
 ## Talking to Jan
 Only when there is something for him to test, a decision only he can make, or a failure.
