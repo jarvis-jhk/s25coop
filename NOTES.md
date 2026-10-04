@@ -442,3 +442,53 @@ positive passes. Exactly gpt-6.1-sol initial/final supplied read-only reviews ha
 Existing Options/TV/controller regression Debug binary is being rebuilt; all17 fresh exact-head
 CI and both complete workflows still required before tested primary handoff.
 No MenuRedesign1b/panel/layout/hardware/release proof implied; existing fault reporting retained.
+
+
+## 2026-10-04 — Sol: local lobby player cards (MenuRedesign 1b)
+
+Local lobby seats now show colour swatches, nation, team and shared-tribe rows,
+with independent model focus per seat. D-pad up/down selects a row; left/right
+sends one field through the existing server controller. Only server broadcasts
+change the displayed simulation values. Host shoulders reach the ordinary
+settings and Start controls; guests stay on their own card. A joins an unclaimed
+seat and keeps a claimed seat; B retains the existing guest stand-up / host
+leave-confirmation policy. Mouse player controls and the separate seat-mode
+checkbox remain available. Changing mode still stands the guests up.
+
+Permissions are read again before sending: loaded games, Lua own/AI locks and
+shared guests keep their fields read-only with a displayed reason. A revoked
+local Dummy seat cannot continue editing between a server broadcast and paint.
+Local Free slots become normal AI on the server; the regression observes that
+actual authority change, then a Locked broadcast, before drawing. Router seats
+are not compacted during card value dispatch. Existing join/leave operations
+reassign them; residual queued edges on changed slots are consumed so a B/right
+burst cannot edit the next controller's card. Owned entry focus follows each
+controller when view-slot compaction reconciles the focus paths. Host modal windows reject guest input;
+Start cannot bypass them, including B and Start in the same event batch.
+
+The common menu router uses an explicit desktop opt-in for pre-control commands.
+An initial broad route broke existing dropdown and Intro A-fallback regressions;
+those failures were caught in the full Debug suite and the opt-in preserves the
+original focused-control contract. The three physical Start acceptance paths
+now use shoulders to reach Start from the new host-card entry focus.
+
+Twelve dedicated driver-input / real loopback tests cover four-controller row
+ownership and slot compaction, field roundtrips with independent expectations,
+colour skipping, mouse controls, shared/campaign/save locks, script locks,
+disconnects and host closure, bounds, modal ownership, batched modal creation and
+analog escape suppression. Own GCC12 Debug/Werror build, maximum two compiler
+jobs. Restored complete Debug splitscreen621cases/499946assertions and
+UI140cases/16817assertions pass; new12cases/368assertions and combined
+cards/dropdown/Intro24cases/582assertions pass. Three executed one-case omission
+controls fail the intended assertions: live authority2, modal ownership1 and
+queued-slot remap1 (all exit201). Both product hashes restored byte-for-byte,
+rebuilt, then full positive suites passed. Format10, static validation, diff and
+actual agent tsc pass. Local Clang23 reports existing/newer header diagnostics;
+new/changed source lines have no findings, pinned Clang18 remains the CI gate.
+Exactly gpt-6.1-sol read-only reviews led to live authority, modal and opt-in
+corrections; final source/opt-in/remap reviews found no blocker.
+Fresh all17 exact-head checks and both complete workflows remain the tested
+handoff gate. Existing ntfy/CI fault reporting retained; no new background job or
+private reporting endpoint. Remote cards/cursor colours (1c), nonmodal rules
+drawer (2b), main-menu couch join, panel runtime and hardware appearance remain
+separate work. No release or full-menu acceptance is implied.

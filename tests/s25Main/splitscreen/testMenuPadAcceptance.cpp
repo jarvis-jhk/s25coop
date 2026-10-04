@@ -220,8 +220,9 @@ BOOST_FIXTURE_TEST_CASE(TwoLocalPlayersStartASplitscreenGameWithPadsOnly, MenuPa
     BOOST_TEST((GAMECLIENT.GetGameLobby()->getPlayer(1).ps == PlayerState::AI));
 
     // --- 5. "Spiel starten", mit dem Pad -----------------------------------------------------
-    // ID_btStartGame ist die 0 und damit das erste fokussierbare Control der Lobby; der Fokus
-    // des Hostpads liegt seit dem Desktopwechsel dort.
+    // The host starts at its player card; shoulders still reach the ordinary Start button.
+    for(unsigned i = 0; i < 100 && focusedId(0) != 0u; ++i)
+        press(padHost, PadButton::LeftShoulder);
     BOOST_TEST_REQUIRE(focusedId(0) == 0u);
     // HIER beginnt die eine Luecke. GameClient haelt GENAU EIN ClientInterface
     // (network/GameClient.h:75), und in Produktion ist das ab jetzt dskGameLobby -> dskGameLoader.
@@ -301,6 +302,9 @@ BOOST_FIXTURE_TEST_CASE(ASinglePadStillProducesAnOrdinarySinglePlayerGame, MenuP
 
     // Dieselbe Luecke wie oben: ab dem Startknopf ersetzt der Test den Ladebildschirm.
     GAMECLIENT.SetInterface(&ci());
+    for(unsigned i = 0; i < 100 && focusedId(0) != 0u; ++i)
+        press(padHost, PadButton::LeftShoulder);
+    BOOST_TEST_REQUIRE(focusedId(0) == 0u);
     press(padHost, Activate); // "Spiel starten"
     BOOST_TEST_REQUIRE(frameUntil([] { return GAMECLIENT.GetState() == ClientState::Loading; }, 20000),
                        "loading to start");

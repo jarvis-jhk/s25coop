@@ -6,6 +6,7 @@
 
 #include "Desktop.h"
 #include "driver/PadEvent.h"
+#include "input/LobbyPlayerCardModel.h"
 #include "network/ClientInterface.h"
 #include "gameTypes/AIInfo.h"
 #include "gameTypes/PlayerState.h"
@@ -41,6 +42,8 @@ public:
     unsigned GetNumPadSlots() const override;
     bool Msg_PadCommand(unsigned slot, PadButton button) override;
     Window* GetPadEntryCtrl(unsigned slot) override;
+    bool HandlesPadControlCommands() const override { return !seats_.empty(); }
+    bool AllowsPadWindowInput(unsigned slot) const override { return seats_.empty() || slot == 0; }
 
 private:
     /// Woraus die Beschriftung einer Sitzkarte entsteht - und damit das Einzige, was sie
@@ -96,6 +99,9 @@ private:
     /// s25coop: switch the seats between "own slot" and "together with seat 1" (one tribe). Stands everybody up.
     void SetSeatsTogether(bool together);
     void UpdateSeatPanel();
+    LobbyPlayerCardModel::Snapshot SeatCardSnapshot(unsigned seat) const;
+    bool HandleSeatCardInput(unsigned slot, PadButton button);
+    void ApplySeatCardValue(unsigned seat, bool forward);
     /// Sitz dieses Geraets oder seats_.size(), wenn es keinen hat.
     unsigned SeatOfDevice(PadDeviceId device) const;
     /// Darf sich hier JETZT jemand hinsetzen?
