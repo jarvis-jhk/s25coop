@@ -5,6 +5,15 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-04 — PR #43 integrated (member host-message authorization tests)
+
+Test-only M2 hardening from Sol: coop-net `--member-host-probe state|swap|settings` sends a
+host-management message over a real authenticated member socket; the server must remove the member
+("unexpected message"), the host's serialized lobby config must be unchanged and it must reach GF1000.
+A `normal` control checks a member's woodcutter order converges. Port 13728. Exact head 4c43f3af6
+(Unit tests 37198914973, Static analysis 37198914972 green). Opus reviewed the diff (harness-only, no
+product change) and re-ran after merge in build/dbg: all 19 CoopNet_* pass (210 s). No CHANGELOG entry.
+
 ## 2026-10-04 — PR #42 integrated (MenuRedesign 1b, local lobby player cards)
 
 Opus reviewed Sol's lobby cards at exact head 1afdb7478 (Unit tests 37194713080, Static analysis
