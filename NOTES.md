@@ -5,6 +5,17 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-04 — PR #42 integrated (MenuRedesign 1b, local lobby player cards)
+
+Opus reviewed Sol's lobby cards at exact head 1afdb7478 (Unit tests 37194713080, Static analysis
+37194713142 green; Sol's gpt-6.1-sol reviews clear). Each local controller now edits its own card
+(D-pad up/down row, left/right value: colour, nation, team; seat mode host-only), authority is re-read at
+send time, guests cannot touch host modals, and slot remaps swallow queued edges. Behaviour change:
+the host pad now starts on its own card, so A there does nothing; shoulders reach Start, Start button
+still starts. Merged with --no-ff; own Debug build of Test_splitscreen + Test_UI passed (451 s).
+Not seen on a Deck/TV yet; card layout (4 seats, 108 px high, checkbox at y=560) only checked in code.
+Next per ROADMAP: 1c (remote cards), then 6 (campaign hub).
+
 ## 2026-10-04 — PR #41 integrated (first-run Steam Deck display scale)
 
 Opus + read-only gpt-6.1-sol review (no blockers) of Sol's `deck::Detect` (Steam `SteamDeck=0/1`

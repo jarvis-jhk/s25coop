@@ -7,7 +7,7 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 together on one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c 1–3) work.
 What stands between that and a good couch experience, in order:
 1. Opus: M3c step 4 (a second view's open economy windows refresh) — closes shared local views.
-2. Sol: menu redesign 1a (PR #40) → 1b local player cards (= the couch join) → 1c, then 6 campaign hub.
+2. Sol: menu redesign 1a (PR #40) ✓ → 1b local player cards ✓ (PR #42) → 1c, then 6 campaign hub.
 3. Sol: Deck detection and first-run scale (its ready backlog #0), then controller panel slice 2.
 4. Opus: M1 mission presentation (unlock/brief screens like the original) once 1–3 have no open review.
 5. Release whenever player-visible changes are on master and its CI is green — tag, push, then CHECK the
@@ -182,7 +182,7 @@ What stands between that and a good couch experience, in order:
 - ☐ Controller-first pre-game menu (Jan, 2026-10-03; design and slices: doc/coop/MenuRedesign.md). One PR per
   slice, physical-input tests, mouse/keyboard unchanged:
   1a pure player-card model ✓ (PR #40, model only; shell wiring is 1b) ·
-  1b local cards in the lobby ◐ (Sol: rendered local cards and physical routing; exact-head CI pending) ·
+  1b local cards in the lobby ✓ (PR #42, integrated 2026-10-04) ·
   1c remote cards and shared-tribe cursors ·
   2a staged rule edits with re-confirm · 2b rules drawer, one editor at a time · 2c online rule suggestions ·
   3a addon category table · 3b category tabs and "changed only" filter · 3c rule presets ·

@@ -5,6 +5,8 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- In the local lobby every controller player gets their own card: move up/down to pick colour,
+  people, team or seat mode and left/right to change it, without waiting for the host.
 - On a Steam Deck, a fresh installation starts with menus and buttons sized for the handheld
   screen (125%). Existing settings and a GUI scale you picked yourself stay as they are.
 
