@@ -329,3 +329,70 @@ Not for Jan: nothing needs his decision. Still unverified on real hardware: Deck
 campaign GUI (victory/locked buttons) — waits for his next Deck test of 0.1.10.
 Housekeeping noted, not done: /app/agent/data/siedler holds hundreds of Sol scratch logs per slice
 (state, not repo); harmless, but Sol could prune finished-PR artefacts.
+
+
+## Sol companion — lobby player-card model (2026-10-04)
+
+Accepted MenuRedesign slice 1a adds a pure per-seat model with four stable rows
+(colour, nation, team, shared tribe), clamped vertical navigation, bidirectional
+value proposals and bounded taken-colour skipping. Locks retain focus and a
+displayable campaign/ownership reason. Authoritative snapshots and returned
+proposals are owned copies; refresh retains seat identity/focus. The accepting
+shell must resolve pending input, revalidate permissions and apply only the
+selected field, so an older proposal cannot overwrite unrelated broadcasts.
+There are no singleton, GUI, input-router or network changes.
+
+Ten new unit cases cover every palette entry in both directions, every pair of
+current/sole-free colours, full exhaustion/custom colours, taken-colour-only
+refresh, lobby nation presentation order, all nine team policies, shared-tribe
+proposals, campaign/read-only lock reasons, malformed row ids and independent
+shared-view focus. Exactly gpt-6.1-sol read-only review found a Boost optional
+diagnostic issue; assertions now use has_value(), availability-only refresh
+coverage was added, and final review found no remaining blocker.
+Own GCC12 Debug/Werror cache, max two compiler jobs: all68 simple cases /
+79968 assertions passed, including new10 cases /2079 assertions. The executed
+colour-filter and lock-bypass controls each ran one intended case and failed
+5/9 assertions (exit201, no abort); restored source/full suite pass. Clang-format10,
+repository static validation, actual agent tsc and targeted Clang23 checks pass
+(the latter excludes only newer trailing-comma/internal-linkage diagnostics).
+All17 exact-head CI checks and both whole workflows remain required before
+tested handoff.
+
+Slice 1b remains separate and must wait for integration of this model: physical
+controller routing, card drawing/geometry, accepting/revalidating proposals and
+actual server broadcasts are not proven here. Remote cards/cursor colours,
+panel shell, hardware appearance and packaged release acceptance remain open.
+Existing ntfy/CI fault reporting remains in place; this pure helper has no
+background job or runtime error endpoint. PR39's repaired head9bdb6774d passed
+all17 checks and both complete workflows and was handed off once to Opus before
+this new slice; its earlier pending wording is historical.
+
+Merged current master d4348cca5 (integrated PR39); preserved both workers' notes.
+All three model/test files stay byte-identical to locally tested a2248e566;
+incoming Loader/building-overview test match the previously tested PR39 head.
+Own combined Debug/Werror build, max2 jobs: Test_simple68 cases /79849 assertions
+and Test_UI137 cases /13058 assertions passed. The model suite remains10 cases
+/2079 assertions. Model negative controls/review remain valid; combined actual
+agent tsc/static/diff checks pass. Fresh resulting-head CI is still required.
+
+
+### Sol PR40 Windows iterator repair (2026-10-04)
+
+MSVC uses checked std::array iterators rather than raw pointers. The player-card nextIndex helper now deduces the iterator with const auto, preserving its find, distance and wrap behavior. This repairs the four Windows compile failures reported on original PR40 head c10aa46; existing model tests cover all palette/nation/team paths. The repaired head must pass fresh exact-head CI (all 17 checks and both full workflows) before tested handoff. The existing sole PR40 continuation is retained; no second schedule or new slice.
+
+
+## Sol PR40 — weekly-review reconciliation (2026-10-04)
+
+Merged documentation-only master 51924790e, preserving the new NOTES archive,
+weekly review, current roadmap priorities and the complete Sol model notes.
+The Windows repair above is history: repaired implementation 44b4af8e3 uses an
+inline distance/find index so MSVC checked iterators and Clang18 qualified-auto
+both work. Its own Debug simple68 /79664 and new10 /2079 pass; earlier Debug
+UI137 /13058 and executed colour/lock controls remain valid. Every non-Markdown
+tracked file is byte-identical to that tested head; no redundant rebuild.
+Static validation, diff checks and the actual agent tsc gate pass before commit.
+Fresh resulting-head all17 checks AND both complete workflows are still required
+before ready or tested handoff. Keep one synchronized PR40 continuation and only
+the three unfinished model/test claims; no new slice until the gate completes.
+After integration, prioritize menu1b/couch join, Deck detection and panel shell
+over more legacy-window coverage, as the primary weekly review requests.
