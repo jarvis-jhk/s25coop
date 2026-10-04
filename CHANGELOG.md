@@ -3,6 +3,11 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- On a Steam Deck, a fresh installation starts with menus and buttons sized for the handheld
+  screen (125%). Existing settings and a GUI scale you picked yourself stay as they are.
+
 ## 0.1.10
 
 - Controller hints name the right stick for moving the camera and LT/RT for zoom, including

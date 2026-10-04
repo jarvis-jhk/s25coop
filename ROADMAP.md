@@ -191,8 +191,7 @@ What stands between that and a good couch experience, in order:
 - ◐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
   Sol first-run display slice: exact Steam flag or Valve LCD/OLED DMI identity, persisted automatic
   640-unit reference height (125% at1280×800), stored settings and TV/fixed-scale precedence.
-  See doc/coop/SteamDeckUi.md; dedicated and full simple/integration/UI Debug pass, fresh CI
-  pending before tested handoff. Controller layout and packaged
+  See doc/coop/SteamDeckUi.md; integrated 2026-10-04 (PR #41, CI green at 8129b51ba). Controller layout and packaged
   Deck appearance remain separate menu/panel/hardware work.
 - ☐ Self-updating AppImage release (Jan 2026-09-28: nice to have, but only after splitscreen and
   gamepad support are done).

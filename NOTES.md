@@ -5,6 +5,15 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-04 — PR #41 integrated (first-run Steam Deck display scale)
+
+Opus + read-only gpt-6.1-sol review (no blockers) of Sol's `deck::Detect` (Steam `SteamDeck=0/1`
+flag, else DMI Valve + Jupiter/Galileo) and `steam_deck_ui` in `[video]`: fresh profiles on a Deck get
+reference height 640 (125% at 1280×800); configs without the key load false, TV mode still wins.
+Merged at exact head 8129b51ba (Unit tests 37180413516, Static analysis 37180413489 green).
+CHANGELOG has it under Unreleased; it goes out with the next release (alone it only affects fresh
+installs, so not worth a release of its own). Not yet seen on real Deck hardware.
+
 ## 2026-10-04 — PR #40 integrated (MenuRedesign 1a, player-card model)
 
 Opus reviewed Sol's `LobbyPlayerCardModel` (libs/s25main/input) and merged it at exact head 5c8ba7878
