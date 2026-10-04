@@ -461,18 +461,33 @@ void Loader::LoadDummyBuildingFiles()
 {
     for(const auto nation : helpers::enumRange<Nation>())
     {
-        if(nation_gfx[nation])
-            continue;
-        auto& archive = files_[ResourceId("testbld" + std::to_string(rttr::enum_cast(nation)))].archive;
-        archive.alloc(250 + 5 * helpers::NumEnumValues_v<BuildingType>);
-        for(const auto bld : helpers::enumRange<BuildingType>())
+        if(!nation_gfx[nation])
         {
-            auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
-            libsiedler2::PixelBufferBGRA buffer(1, 1);
-            bmp->create(buffer);
-            archive.set(250 + 5 * rttr::enum_cast(bld), std::move(bmp));
+            auto& archive = files_[ResourceId("testbld" + std::to_string(rttr::enum_cast(nation)))].archive;
+            archive.alloc(250 + 5 * helpers::NumEnumValues_v<BuildingType>);
+            for(const auto bld : helpers::enumRange<BuildingType>())
+            {
+                auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
+                libsiedler2::PixelBufferBGRA buffer(1, 1);
+                bmp->create(buffer);
+                archive.set(250 + 5 * rttr::enum_cast(bld), std::move(bmp));
+            }
+            nation_gfx[nation] = &archive;
         }
-        nation_gfx[nation] = &archive;
+        // Overview buttons draw nation icons directly; the building sprites alone cannot render them.
+        if(!nationIcons_[nation])
+        {
+            auto& icons = files_[ResourceId("testicons" + std::to_string(rttr::enum_cast(nation)))].archive;
+            icons.alloc(helpers::NumEnumValues_v<BuildingType>);
+            for(const auto bld : helpers::enumRange<BuildingType>())
+            {
+                auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
+                libsiedler2::PixelBufferBGRA buffer(1, 1);
+                bmp->create(buffer);
+                icons.set(rttr::enum_cast(bld), std::move(bmp));
+            }
+            nationIcons_[nation] = &icons;
+        }
     }
     auto& charburner = files_["charburner"].archive;
     if(charburner.empty())
@@ -483,6 +498,22 @@ void Loader::LoadDummyBuildingFiles()
             libsiedler2::PixelBufferBGRA buffer(1, 1);
             bmp->create(buffer);
             charburner.push(std::move(bmp));
+        }
+    }
+    // The temple overview target draws addon wares, its job and the production-mode button.
+    auto& wine = files_["wine_bobs"].archive;
+    if(wine.empty())
+    {
+        wine.alloc(*std::max_element(wineaddon::bobIndex.begin(), wineaddon::bobIndex.end()) + 1);
+        for(const auto type :
+            {wineaddon::BobTypes::GRAPES_WARE_ICON, wineaddon::BobTypes::WINE_WARE_ICON,
+             wineaddon::BobTypes::WINEGROWER_JOB_ICON, wineaddon::BobTypes::VINTNER_JOB_ICON,
+             wineaddon::BobTypes::TEMPLESERVANT_JOB_ICON, wineaddon::BobTypes::TEMPLE_OUTPUT_WARE_ICON_RANDOM})
+        {
+            auto bmp = std::make_unique<glArchivItem_Bitmap_Raw>();
+            libsiedler2::PixelBufferBGRA buffer(1, 1);
+            bmp->create(buffer);
+            wine.set(wineaddon::bobIndex[type], std::move(bmp));
         }
     }
 }

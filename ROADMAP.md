@@ -151,6 +151,13 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
   restores settings before fixture destruction (Sol companion; local Debug complete;
   exact-head CI required before handoff). This tests the legacy window; the panel Stock page
   remains part of shell slice 2.
+  Building overview has physical-input regressions for first registered ordinary, military
+  and warehouse targets, specialized temple windows, camera centering, empty categories,
+  Help/Back, five nations and eight addon combinations. Save-backed replay checks the final
+  frame/checksum; live browsing flushes to zero recorded commands. These tests cover the
+  existing single-view window; successful harbor targets, drawn numeric counts and panel
+  Buildings remain separate work. Sol Debug passes all 609 cases/498194 assertions;
+  exact-head CI remains required before handoff.
   Goods distribution now rejects replay pad/wheel/bar edits immediately without a false discard
   warning and keeps Help available. Nineteen real-input/real-world tests cover all eight
   wine/leather/charburner policies, all tabs and bounds, Default/reopen, mouse/timer transmission
