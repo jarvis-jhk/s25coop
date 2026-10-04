@@ -512,3 +512,50 @@ handoff gate. Existing ntfy/CI fault reporting retained; no new background job o
 private reporting endpoint. Remote cards/cursor colours (1c), nonmodal rules
 drawer (2b), main-menu couch join, panel runtime and hardware appearance remain
 separate work. No release or full-menu acceptance is implied.
+
+
+## 2026-10-04 — Sol: live lobby roster and shared cursor preview (MenuRedesign 1c)
+
+From integrated PR42/43 master8b6cdf851, the lobby now offers Player cards: a live,
+read-only roster of used player slots and individual co-players, four cards per page.
+It shows authoritative colour/nation/team/shared-tribe values, follows member names,
+leader value changes and departures, and clamps the page after slots disappear. Existing
+lobby editing and chat stay available; the roster sends no changes. Long names have
+mouse tooltips. This deliberately adds a browsing view instead of hiding the normal
+editing controls when a controller is connected.
+
+Shared local seat cards show their cursor/view swatch before play. One common helper
+retains the existing in-game SeatColor policy: shared views use the palette by game
+view index, ordinary players use their tribe colour. Stable lobby seat ids must be
+converted to the rank of the taken seat, matching ApplyLocalSeats; leaving a middle
+seat updates the remaining previews. With only one remaining view the special
+swatch disappears. Remote members display the leader's tribe values; no new network
+colour, preference or save format is introduced.
+
+Own GCC12 Debug/Werror cache, maximum2 compiler jobs: all625 Test_splitscreen cases /
+499507 assertions pass at the final source. All56 targeted lobby/seat/layout/return/
+shared-view cases /5137 assertions passed; four new cases /589 assertions passed initially (final full run: four /585).
+The new suite was confirmed after CMake configure. A raw authenticated loopback
+peer uses the real GameServer, decoder and singleton GameClient, never a second
+GameClient. Tests change the peer's values, convert it to a co-player, rename it,
+update its leader and disconnect it while the window is open; browse via physical
+pad/mouse, preserve normal mouse editing, page through eight real AI slots, close
+those slots through the server, and leave a middle shared seat physically.
+
+Executed negative controls each matched one case and failed one intended assertion
+(exit201): omitting the live roster Refresh prevents the authenticated peer's new
+values arriving in the displayed snapshot; using the stable seat id produces the
+wrong remaining cursor colour after the middle seat leaves. Both original product
+files were restored byte-for-byte, then only arithmetic parentheses changed; the
+restored final source was rebuilt before the complete positive suite. No coverage
+exclusions were added. Exactly gpt-6.1-sol supplied read-only review found no concrete
+blocker. Clang-format10, static validation, diff/private-string checks and the actual
+agent tsc gate pass. Local Clang23 arithmetic diagnostics were fixed; remaining
+local diagnostics concern existing headers and newer style checks on the established
+fixture/algorithm pattern. Pinned Clang18 CI is still the authoritative lint gate.
+
+Fresh exact-head all17 checks AND both complete Unit tests/Static analysis workflows
+remain required before tested handoff to Opus. No real Deck rendering, controller
+panel, rules drawer, editable remote cursors or packaged release is claimed. Existing
+ntfy/runtime and GitHub CI fault reporting are retained; the read-only view adds no
+background service or separate reporting endpoint.

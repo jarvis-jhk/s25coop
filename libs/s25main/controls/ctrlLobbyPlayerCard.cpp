@@ -12,15 +12,31 @@
 #include <utility>
 
 ctrlLobbyPlayerCard::ctrlLobbyPlayerCard(Window* parent, const unsigned id, const DrawPoint pos, const Extent& size,
-                                         const glFont* font, LobbyPlayerCardModel model)
-    : ctrlTextButton(parent, id, pos, size, TextureColor::Green2, "", font, ""), model_(std::move(model))
+                                         const glFont* font, LobbyPlayerCardModel model, const bool readOnly)
+    : ctrlTextButton(parent, id, pos, size, TextureColor::Green2, "", font, ""), model_(std::move(model)),
+      readOnly_(readOnly)
 {}
+
+bool ctrlLobbyPlayerCard::Msg_LeftDown(const MouseCoords& mc)
+{
+    return !readOnly_ && ctrlTextButton::Msg_LeftDown(mc);
+}
+
+bool ctrlLobbyPlayerCard::Msg_LeftUp(const MouseCoords& mc)
+{
+    return !readOnly_ && ctrlTextButton::Msg_LeftUp(mc);
+}
 
 void ctrlLobbyPlayerCard::DrawContent() const
 {
     const auto origin = GetDrawPos();
     const auto width = static_cast<unsigned short>(GetSize().x - 8u);
-    font->Draw(origin + DrawPoint(4, 3), GetText(), FontStyle::LEFT, COLOR_YELLOW, width);
+    font->Draw(origin + DrawPoint(4, 3), GetText(), FontStyle::LEFT, COLOR_YELLOW, cursorColor_ ? width - 70u : width);
+    if(cursorColor_)
+    {
+        font->Draw(origin + DrawPoint(GetSize().x - 70, 3), _("Cursor"), FontStyle::LEFT, COLOR_WHITE, 48);
+        DrawRectangle(Rect(origin + DrawPoint(GetSize().x - 18, 5), Extent(10, 10)), *cursorColor_);
+    }
     if(!joined_)
         return;
     const auto& values = model_.GetSnapshot().values;
@@ -31,7 +47,7 @@ void ctrlLobbyPlayerCard::DrawContent() const
     for(unsigned row = 0; row < labels.size(); ++row)
     {
         const DrawPoint pos = origin + DrawPoint(4, 22 + (static_cast<int>(row) * 16));
-        const bool selected = static_cast<unsigned>(model_.GetRow()) == row;
+        const bool selected = !readOnly_ && static_cast<unsigned>(model_.GetRow()) == row;
         if(selected)
             DrawRectangle(Rect(pos, Extent(GetSize().x - 8u, 16)), 0xFF304860);
         font->Draw(pos, labels[row], FontStyle::LEFT,

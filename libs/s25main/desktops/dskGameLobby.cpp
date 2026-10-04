@@ -34,7 +34,9 @@
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwAddons.h"
+#include "ingameWindows/iwLobbyPlayerCards.h"
 #include "ingameWindows/iwMsgbox.h"
+#include "input/LocalViewColor.h"
 #include "input/MenuPadInput.h"
 #include "input/PadRouter.h"
 #include "lua/LuaInterfaceSettings.h"
@@ -131,6 +133,7 @@ enum CtrlIds
     /// s25coop: per-player start goods
     ID_txtColStartWares,
     ID_btStartWares,
+    ID_btPlayerCards,
 };
 template<typename T>
 constexpr T nextEnumValue(T value)
@@ -289,6 +292,9 @@ dskGameLobby::dskGameLobby(ServerType serverType, std::shared_ptr<GameLobby> gam
                        && (IsChangeAllowed("addonsAll") || IsChangeAllowed("addonsSome"));
 
     AddText(ID_txtGameName, DrawPoint(400, 5), GAMECLIENT.GetGameName(), COLOR_YELLOW, FontStyle::CENTER, LargeFont);
+
+    AddTextButton(ID_btPlayerCards, DrawPoint(30, 60), Extent(180, 18), TextureColor::Grey, _("Player cards"),
+                  NormalFont);
 
     const RowLayout layout = rowLayout(IsSinglePlayer());
     AddText(ID_txtColName, DrawPoint(30 + layout.nameWidth / 2, 40), _("Player Name"), COLOR_YELLOW, FontStyle::CENTER,
@@ -724,6 +730,10 @@ void dskGameLobby::UpdateSeatPanel()
         txt->SetVisible(visible);
     if(auto* chk = GetCtrl<Window>(ID_chkSeatsTogether))
         chk->SetVisible(visible);
+    const bool sharedCursors = seatsTogether_ && std::count_if(seats_.begin(), seats_.end(), [](const LocalSeat& seat) {
+                                                     return seat.taken;
+                                                 }) > 1;
+    unsigned viewIndex = 0;
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
         auto* bt = GetCtrl<ctrlLobbyPlayerCard>(ID_btSeat + i);
@@ -733,6 +743,11 @@ void dskGameLobby::UpdateSeatPanel()
         LocalSeat& seat = seats_[i];
         bt->GetModel().UpdateSnapshot(SeatCardSnapshot(i));
         bt->SetJoined(seat.taken);
+        bt->SetCursorColor(sharedCursors && seat.taken ? std::optional<unsigned>(
+                             LocalViewColor(viewIndex, bt->GetModel().GetSnapshot().values.color, true)) :
+                                                         std::nullopt);
+        if(seat.taken)
+            ++viewIndex;
         SeatCardKind kind;
         unsigned value = 0;
         if(i == 0)
@@ -1608,6 +1623,7 @@ void dskGameLobby::Msg_ButtonClick(const unsigned ctrl_id)
     }
     switch(ctrl_id)
     {
+        case ID_btPlayerCards: WINDOWMANAGER.ReplaceWindow(std::make_unique<iwLobbyPlayerCards>(gameLobby_)); break;
         case ID_btCoop:
         {
             const auto selection = GetCtrl<ctrlComboBox>(ID_cbCoop)->GetSelection();
