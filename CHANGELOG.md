@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.11
 
 - The lobby has a "Player cards" button: it shows every player and co-player with colour, nation
   and team, four per page, and stays up to date while others join, leave or change settings.
