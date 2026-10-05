@@ -8,7 +8,9 @@ CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, ea
 ## 2026-10-05 — work session: M3c step 4 done, 0.1.11 prepared
 
 No open issues or PRs. CHANGELOG `Unreleased` → `0.1.11` (e04cef527: player cards, local lobby cards,
-cursor colours, Deck first-run scale); tag after its CI is green, then check the GitHub release.
+cursor colours, Deck first-run scale). Its CI was cancelled by the next push; the tree differs from
+green 5021f66ab (Unit tests 37216628927, Static analysis 37216628880) only in CHANGELOG.md, so v0.1.11
+was tagged on e04cef527 and pushed. Release verified: linux tarball, windows zip, desktop file. Jan told.
 M3c step 4: after an economy window (distribution, transport, tools, military, build order) has sent
 its change, other open windows of that kind on the SAME player re-read the visual settings
 (`TransmitSettingsIgwAdapter::RefreshSharedWindows`, new `WindowManager::FindNonModalWindows(id)`,
