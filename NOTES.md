@@ -5,6 +5,13 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-05 — Fault reports runs 37360066249/37362225980 failed (GitHub outage)
+
+Both scheduled runs on 1a679b1 were cancelled after 15 min with "The job was not acquired by
+Runner of type hosted" — no step ran; githubstatus.com showed an open Actions incident
+(degraded performance). No code change. The ntfy `since` cache was not advanced and ntfy keeps
+12 h, so the next successful run picks up anything posted meanwhile.
+
 ## 2026-10-05 — work session: M3c step 4 done, 0.1.11 prepared
 
 No open issues or PRs. CHANGELOG `Unreleased` → `0.1.11` (e04cef527: player cards, local lobby cards,
