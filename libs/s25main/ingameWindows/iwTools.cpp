@@ -84,6 +84,11 @@ void iwTools::AddToolSettingSlider(unsigned id, GoodType ware)
         el->ActivateControls(false);
 }
 
+unsigned iwTools::GetSettingsPlayer() const
+{
+    return gwv.GetPlayerId();
+}
+
 void iwTools::TransmitSettings()
 {
     if(isReplay)
@@ -227,4 +232,6 @@ void iwTools::UpdateSettings(const ToolSettings& tool_settings)
 void iwTools::UpdateSettings()
 {
     UpdateSettings(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).tools_settings);
+    // Orders another view on the same player transmitted changed the visual order counts.
+    shouldUpdateTexts = true;
 }

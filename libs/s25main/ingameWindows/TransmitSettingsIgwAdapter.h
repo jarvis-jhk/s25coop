@@ -43,6 +43,9 @@ public:
     virtual void UpdateSettings() = 0;
     /// sends potential changes to the client
     virtual void TransmitSettings() = 0;
+    /// Spieler, dessen Einstellungen dieses Fenster zeigt. Zwei Ansichten auf DENSELBEN Spieler
+    /// (geteilter Stamm) zeigen dieselben Einstellungen und muessen einander nachziehen.
+    virtual unsigned GetSettingsPlayer() const = 0;
 
     void Close() override;
 
@@ -65,6 +68,10 @@ private:
     /// Ruft TransmitSettings() unter der Klammer des gemerkten Spielers. Einziger Weg, auf dem
     /// diese Fenster senden duerfen.
     void TransmitSettingsForPendingPlayer();
+    /// Nach einer geglueckten Uebertragung: gleichartige Fenster anderer Ansichten auf denselben
+    /// Spieler zeigen die neuen Werte. Eines mit eigener offener Aenderung bleibt unberuehrt -
+    /// die wird nicht still verworfen, sie gewinnt bei ihrer eigenen Uebertragung.
+    void RefreshSharedWindows();
 
     /// whether any settings where changed after the last successful transmission
     bool settingsChanged_;

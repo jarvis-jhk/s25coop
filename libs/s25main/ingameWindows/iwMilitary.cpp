@@ -77,6 +77,11 @@ iwMilitary::iwMilitary(const GameWorldViewer& gwv, GameCommandFactory& gcFactory
     iwMilitary::UpdateSettings();
 }
 
+unsigned iwMilitary::GetSettingsPlayer() const
+{
+    return gwv.GetPlayerId();
+}
+
 void iwMilitary::TransmitSettings()
 {
     if(GAMECLIENT.IsReplayModeOn())

@@ -70,7 +70,12 @@ runs through it or puts its new end flag inside it (that view's build could only
 the note would have punched holes into its overlay). Tests: `tests/s25Main/splitscreen/testSharedViews.cpp`.
 Seats are either all shared or all distinct today (lobby toggle, CLI), so a shared seat colour
 cannot collide with an unshared local player's colour; revisit if mixed setups are ever allowed.
-Open: refreshing a second view's open economy window when the shared settings change.
+Done for the rest of 6 (2026-10-05): after an economy window (distribution, transport, tools,
+military, build order) has sent its change, every other open window of the same kind on the same
+player re-reads the shared settings (`TransmitSettingsIgwAdapter::RefreshSharedWindows`). A window
+with its own unsent change is left alone and wins when it sends; then the first one follows.
+Windows of another player are never touched. Tests: the `EconomyWindows…`, `APendingSharedEdit…`
+and `DistinctPlayersWindows…` cases in `testSharedViews.cpp`.
 
 Tests: a Test_splitscreen case with two views on player 0 — both place a building, both land
 in player 0's world, one command stream; a campaign mission with two shared views in the

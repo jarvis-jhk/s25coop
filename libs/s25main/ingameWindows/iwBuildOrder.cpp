@@ -67,6 +67,11 @@ iwBuildOrder::iwBuildOrder(const GameWorldViewer& gwv)
     list->SetSelection(0);
 }
 
+unsigned iwBuildOrder::GetSettingsPlayer() const
+{
+    return gwv.GetPlayerId();
+}
+
 void iwBuildOrder::TransmitSettings()
 {
     if(GAMECLIENT.IsReplayModeOn())
@@ -220,11 +225,10 @@ void iwBuildOrder::Msg_ButtonClick(const unsigned ctrl_id)
 void iwBuildOrder::UpdateSettings()
 {
     if(GAMECLIENT.IsReplayModeOn())
-    {
         gwv.GetPlayer().FillVisualSettings(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()));
-        fillBuildOrder(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).build_order);
-        useCustomBuildOrder = GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).useCustomBuildOrder;
-    }
+    // Live too: another view on the same player may have just transmitted a new order.
+    fillBuildOrder(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).build_order);
+    useCustomBuildOrder = GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).useCustomBuildOrder;
     GetCtrl<ctrlComboBox>(6)->SetSelection(useCustomBuildOrder ? 1 : 0);
     for(unsigned char i = 0; i < pendingBuildOrder.size(); ++i)
         GetCtrl<ctrlList>(0)->SetItemText(i, _(BUILDING_NAMES[pendingBuildOrder[i]]));

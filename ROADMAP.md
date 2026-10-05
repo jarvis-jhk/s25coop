@@ -6,7 +6,7 @@ anything bigger is split before it is started. Status: ☐ open · ◐ in progre
 **Current priorities (weekly review 2026-10-04).** The core goal is a group playing a campaign
 together on one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c 1–3) work.
 What stands between that and a good couch experience, in order:
-1. Opus: M3c step 4 (a second view's open economy windows refresh) — closes shared local views.
+1. Opus: M3c step 4 ✓ (2026-10-05) — shared local views are complete; next Opus item is 4 below.
 2. Sol: menu redesign 1a (PR #40) ✓ → 1b local player cards ✓ (PR #42) → 1c, then 6 campaign hub.
 3. Sol: Deck detection and first-run scale (its ready backlog #0), then controller panel slice 2.
 4. Opus: M1 mission presentation (unlock/brief screens like the original) once 1–3 have no open review.
@@ -123,9 +123,9 @@ What stands between that and a good couch experience, in order:
   - ☑ b) coop member + additional distinct local player slots: forbidden by the pure-local-only guard.
     Real host/member Debug regressions prove refusal before loading/starting, removal of the member and continued
     host play; an ordinary member in the same topology finishes in sync (Sol companion, 2026-09-30).
-  - ☐ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
+  - ☑ c) local players share the ONE campaign player (several views, one player id) instead of taking AI slots.
     Design: doc/coop/SharedLocalViews.md. Steps: ☑ 1 GameClient views ≠ slots + CLI `--share-player` + test · ☑ 2 lobby seat "together
-    with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☑ 3 seat colours per view (focus ring, brief stripe), a road built from one view stops a crossing preview in another (2026-10-02) · ☐ 4 refresh a second view's open economy windows when the shared settings change.
+    with seat 1" (campaign: only that; 0.1.8, 2026-09-30) · ☑ 3 seat colours per view (focus ring, brief stripe), a road built from one view stops a crossing preview in another (2026-10-02) · ☑ 4 a second view's open economy windows follow the shared settings (2026-10-05).
 - ◐ Full controller navigation of the main menu and all dialogs; mouse/keyboard unchanged.
   Covered with physical-input regressions (Sol PRs #4–#39; details in NOTES.md and the PRs): Back/B on
   every main-menu path (single/multiplayer, Direct-IP, LAN, online lobby, Create game, campaign chooser,

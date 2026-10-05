@@ -5,6 +5,24 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-05 — work session: M3c step 4 done, 0.1.11 prepared
+
+No open issues or PRs. CHANGELOG `Unreleased` → `0.1.11` (e04cef527: player cards, local lobby cards,
+cursor colours, Deck first-run scale); tag after its CI is green, then check the GitHub release.
+M3c step 4: after an economy window (distribution, transport, tools, military, build order) has sent
+its change, other open windows of that kind on the SAME player re-read the visual settings
+(`TransmitSettingsIgwAdapter::RefreshSharedWindows`, new `WindowManager::FindNonModalWindows(id)`,
+pure virtual `GetSettingsPlayer()`). A window with its own unsent change is not overwritten; it wins
+when sent. iwTransport/iwBuildOrder `UpdateSettings()` now always refill from visual settings (before:
+only in replay; the only live caller is the new refresh). iwTools refresh also re-renders order texts.
+Tests (testSharedViews.cpp): all five kinds follow, pending edit kept and wins (timer and Close path),
+distinct players untouched. Negative control (refresh disabled): 6 failures across all kinds. Debug
+build/dbg: full Test_splitscreen (628 cases) and Test_UI (140) pass. Test env needs LoadDummyMapFiles/BuildingFiles and
+a leather_bobs pig icon for these windows. Codex gpt-6.1-sol review: no bugs; asked for close-path
+coverage (added). Not covered: tool order-count texts (TOOL_ORDERING addon off), network members on
+other machines (their visual settings are separate — M2 territory, not this step).
+M3c (shared local views) is complete. Next Opus item: M1 mission presentation.
+
 ## 2026-10-04 — master CI flake (Windows Debug x64)
 
 Unit tests run 37214226840 on 5ee026574 failed only in Windows Debug x64: `Error copying file (if

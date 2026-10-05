@@ -379,6 +379,17 @@ IngameWindow* WindowManager::FindNonModalWindow(unsigned id, unsigned owner) con
     return itWnd == windows.end() ? nullptr : itWnd->get();
 }
 
+std::vector<IngameWindow*> WindowManager::FindNonModalWindows(unsigned id) const
+{
+    std::vector<IngameWindow*> result;
+    for(const auto& wnd : windows)
+    {
+        if(!wnd->ShouldBeClosed() && !wnd->IsModal() && wnd->GetID() == id)
+            result.push_back(wnd.get());
+    }
+    return result;
+}
+
 Window* WindowManager::findAndActivateWindow(const Position mousePos)
 {
     Window* activeWindow = nullptr;

@@ -106,6 +106,11 @@ iwTransport::iwTransport(const GameWorldViewer& gwv, GameCommandFactory& gcFacto
     group->SetSelection(0);
 }
 
+unsigned iwTransport::GetSettingsPlayer() const
+{
+    return gwv.GetPlayerId();
+}
+
 void iwTransport::TransmitSettings()
 {
     if(GAMECLIENT.IsReplayModeOn())
@@ -241,10 +246,9 @@ void iwTransport::Msg_ButtonClick(const unsigned ctrl_id)
 void iwTransport::UpdateSettings()
 {
     if(GAMECLIENT.IsReplayModeOn())
-    {
         gwv.GetPlayer().FillVisualSettings(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()));
-        fillTransportOrder(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).transport_order);
-    }
+    // Live too: another view on the same player may have just transmitted a new order.
+    fillTransportOrder(GAMECLIENT.GetVisualSettings(gwv.GetPlayerId()).transport_order);
     auto* group = GetCtrl<ctrlOptionGroup>(6);
 
     // Einstellungen festlegen

@@ -73,6 +73,11 @@ iwDistribution::iwDistribution(const GameWorldViewer& gwv, GameCommandFactory& g
     iwDistribution::UpdateSettings();
 }
 
+unsigned iwDistribution::GetSettingsPlayer() const
+{
+    return gwv.GetPlayerId();
+}
+
 void iwDistribution::TransmitSettings()
 {
     if(GAMECLIENT.IsReplayModeOn())

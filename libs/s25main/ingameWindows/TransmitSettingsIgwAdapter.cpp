@@ -39,8 +39,23 @@ void TransmitSettingsIgwAdapter::TransmitSettingsForPendingPlayer()
     // Auch dann klammern, wenn nichts gemerkt ist: nullopt heisst dann ausdruecklich
     // "Hauptspieler". Ohne das schluege eine zufaellig offene fremde Klammer durch - etwa
     // wenn ein Padspieler ueber einen Knopf das Fenster eines anderen schliesst.
-    const GameClient::ScopedActingPlayer acting(GAMECLIENT, pendingPlayer_);
-    TransmitSettings();
+    const bool wasPending = HasPendingSettings();
+    {
+        const GameClient::ScopedActingPlayer acting(GAMECLIENT, pendingPlayer_);
+        TransmitSettings();
+    }
+    if(wasPending && !HasPendingSettings())
+        RefreshSharedWindows();
+}
+
+void TransmitSettingsIgwAdapter::RefreshSharedWindows()
+{
+    for(IngameWindow* wnd : WINDOWMANAGER.FindNonModalWindows(GetID()))
+    {
+        auto* other = dynamic_cast<TransmitSettingsIgwAdapter*>(wnd);
+        if(other && other != this && other->GetSettingsPlayer() == GetSettingsPlayer() && !other->HasPendingSettings())
+            other->UpdateSettings();
+    }
 }
 
 void TransmitSettingsIgwAdapter::Close()

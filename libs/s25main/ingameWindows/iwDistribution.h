@@ -33,6 +33,7 @@ private:
     void UpdateSettings() override;
     /// Sendet veränderte Einstellungen (an den Client), falls sie verändert wurden
     void TransmitSettings() override;
+    unsigned GetSettingsPlayer() const override;
 
     void Msg_Group_ProgressChange(unsigned group_id, unsigned ctrl_id, unsigned short position) override;
     void Msg_ButtonClick(unsigned ctrl_id) override;

@@ -217,6 +217,9 @@ public:
     /// Bewusst zweistellig und ohne einstellige Ueberladung: der Compiler soll jede Aufrufstelle
     /// zeigen, statt sie still auf "irgendein Fenster dieser Art" zurueckfallen zu lassen.
     IngameWindow* FindNonModalWindow(unsigned id, unsigned owner) const;
+    /// Alle nicht-modalen Fenster dieser Art, ueber alle Ansichten. Fuer Fenster, die einander
+    /// nachziehen muessen, wenn mehrere Ansichten dieselben Spielerdaten zeigen.
+    std::vector<IngameWindow*> FindNonModalWindows(unsigned id) const;
 
     Desktop* GetCurrentDesktop() { return curDesktop.get(); }
     /// Makes the given window (desktop or ingame window) active and all others inactive

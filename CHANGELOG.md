@@ -3,6 +3,12 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- When several controller players share one tribe, an economy window (distribution, transport,
+  tools, military, building order) that one of them has open now shows the changes another player
+  makes, instead of the old values.
+
 ## 0.1.11
 
 - The lobby has a "Player cards" button: it shows every player and co-player with colour, nation

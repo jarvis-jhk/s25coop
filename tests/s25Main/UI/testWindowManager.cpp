@@ -767,6 +767,7 @@ MOCK_BASE_CLASS(MockSettingsWnd, TransmitSettingsIgwAdapter)
     ~MockSettingsWnd() { activeWnds--; }
     MOCK_NON_CONST_METHOD(UpdateSettings, 0); // LCOV_EXCL_LINE
     MOCK_NON_CONST_METHOD(TransmitSettings, 0);
+    unsigned GetSettingsPlayer() const override { return 0; } // LCOV_EXCL_LINE
 };
 
 int MockSettingsWnd::activeWnds = 0;
