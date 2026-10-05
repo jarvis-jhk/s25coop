@@ -12,6 +12,9 @@ Runner of type hosted" — no step ran; githubstatus.com showed an open Actions 
 (degraded performance). No code change. The ntfy `since` cache was not advanced and ntfy keeps
 12 h, so the next successful run picks up anything posted meanwhile.
 
+Same outage cancelled Static analysis 37364034705 and Unit tests 37364034806 on 6baeadbcc
+(all jobs 0 steps, never acquired a runner). Both re-run 19:5x UTC; no code change needed.
+
 ## 2026-10-05 — work session: M3c step 4 done, 0.1.11 prepared
 
 No open issues or PRs. CHANGELOG `Unreleased` → `0.1.11` (e04cef527: player cards, local lobby cards,
