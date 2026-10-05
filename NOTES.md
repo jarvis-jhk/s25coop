@@ -14,6 +14,7 @@ Runner of type hosted" — no step ran; githubstatus.com showed an open Actions 
 
 Same outage cancelled Static analysis 37364034705 and Unit tests 37364034806 on 6baeadbcc
 (all jobs 0 steps, never acquired a runner). Both re-run 19:5x UTC; no code change needed.
+Fault reports 37364947335 (19:40, on 6baeadbcc) failed the same way (job cancelled, 0 steps).
 
 ## 2026-10-05 — work session: M3c step 4 done, 0.1.11 prepared
 
