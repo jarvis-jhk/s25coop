@@ -16,6 +16,9 @@ Same outage cancelled Static analysis 37364034705 and Unit tests 37364034806 on 
 (all jobs 0 steps, never acquired a runner). Both re-run 19:5x UTC; no code change needed.
 Fault reports 37364947335 (19:40, on 6baeadbcc) failed the same way (job cancelled, 0 steps).
 Fault reports 37366390859 (19:55, on b7fab06df) too: never acquired a runner, cancelled after 15 min.
+Fault reports 37367678420 and 37370047183, Unit tests 37368149814 and Static analysis 37368149799 (on
+c1f08a948/6e6a4fdb8) too — incident still open 20:45 UTC. Stopped pushing a NOTES commit per failure (each
+push started two more doomed CI runs); one-shot continuation re-runs master CI after the outage.
 
 ## 2026-10-05 — work session: M3c step 4 done, 0.1.11 prepared
 
