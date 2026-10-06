@@ -33,7 +33,7 @@ screens and can click everything.
 
 ## Screen map
 
-```
+```text
 binary → splash/intro (any button skips)
        → Title: "Press A" / click; each controller's A joins (P1–P4 strip)
        → Home
