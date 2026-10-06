@@ -3,15 +3,20 @@
 The order work is done in. Each item is sized to finish in one or a few work sessions;
 anything bigger is split before it is started. Status: ☐ open · ◐ in progress · ☑ done.
 
-**Current priorities (weekly review 2026-10-04).** The core goal is a group playing a campaign
-together on one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c 1–3) work.
-What stands between that and a good couch experience, in order:
-1. Opus: M3c step 4 ✓ (2026-10-05) — shared local views are complete; next Opus item is 4 below.
-2. Sol: menu redesign 1a (PR #40) ✓ → 1b local player cards ✓ (PR #42) → 1c, then 6 campaign hub.
-3. Sol: Deck detection and first-run scale (its ready backlog #0), then controller panel slice 2.
-4. Opus: M1 mission presentation (unlock/brief screens like the original) once 1–3 have no open review.
+**Current priorities (Jan, 2026-10-06: "be WAY more aggressive with the menu overhaul … everything from
+starting the binary to being in game, from scratch").** The core goal is a group playing a campaign together on
+one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c) work; the menus between
+starting the game and playing it are still upstream's mouse screens with controller support bolted on.
+1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
+   workers. Opus: F1 framework → F2 title/join → F3 home → F7 party. Sol, in parallel on independent scopes:
+   4b on-screen keyboard and 3a/3b addon categories now, then F9 options, F6 load game, F5 maps once F1 is in.
+   Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
+2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
+3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
+   they ride on F1's shared footer.
+4. Controller panel (in-game side panel) and M1 mission presentation after the front end's F1–F7.
 5. Release whenever player-visible changes are on master and its CI is green — tag, push, then CHECK the
-   GitHub release exists (0.1.10 was noted as released on 2026-10-03 but its tag was never pushed).
+   GitHub release exists.
 
 ## M0 — A version you can install and keep updated (first!)
 
@@ -112,6 +117,13 @@ What stands between that and a good couch experience, in order:
   the network allows co-players at once. ☑ seen in the real GUI (two clients under Xvfb: Load → lobby with co-players already allowed → join
   with "Play the host's tribe together" → both in the resumed game, no async; 2026-09-29) · ☐ deterministic loading of a save made in a
   single-player game (upstream `save-rng-state` / PR #1970) — only if a test shows an async after loading.
+- ☐ Load earlier single-player games with several players (Jan, 2026-10-06). What exists: a splitscreen save
+  re-seats its local players; any save can be loaded locally with "Play one tribe together" seats; a network
+  load lets co-players join the saved human's tribe. To do: (1) regression tests that a save made in an ordinary
+  single-player game (one human, AIs, made before s25coop's seats existed) loads with 2–4 local seats on the
+  saved tribe and with an online co-player, stays in sync and keeps the AI slots as they were; (2) optionally let a
+  joining player take over a saved AI tribe instead; (3) the deterministic-load fix above if a test shows an async;
+  (4) in the new front end this is simply F6 → F7: pick any save, the party screen fills, more players join with A.
 
 ## M3 — Splitscreen, controller and Steam Deck UI
 
@@ -174,21 +186,44 @@ What stands between that and a good couch experience, in order:
     and all exact-head CI green; use no panel code in this design-only checkpoint.
 - ☐ Couch join screen: in the main menu each gamepad presses A to join; the screen shows how many
   players (and which controller is who). That count drives everything after it. Review 2026-10-04: this
-  is delivered by menu-redesign slices 1a/1b (player cards, one per controller) and 6 (campaign hub);
-  do not build a separate join screen.
+  is delivered by front-end F2 (title/join) and F7 (party cards); do not build a separate join screen.
 - ◐ Campaign overview with artwork of every working campaign and single scenario: optional
   missing/damaged images have a consistent text fallback and do not block other previews;
   controller selection and continuation are exercised with generated campaign data.
-- ☐ Controller-first pre-game menu (Jan, 2026-10-03; design and slices: doc/coop/MenuRedesign.md). One PR per
-  slice, physical-input tests, mouse/keyboard unchanged:
-  1a pure player-card model ✓ (PR #40, model only; shell wiring is 1b) ·
-  1b local cards in the lobby ✓ (PR #42, integrated 2026-10-04) ·
-  1c live read-only player/co-player cards and shared-seat cursor preview ◐ (Sol: local Debug green; exact-head CI required) ·
-  2a staged rule edits with re-confirm · 2b rules drawer, one editor at a time · 2c online rule suggestions ·
-  3a addon category table · 3b category tabs and "changed only" filter · 3c rule presets ·
-  4a player profiles · 4b on-screen keyboard · 5a menu world decoupled from the lobby client ·
-  5b AI replay behind the main menu · 5c ambient sound, Deck fps/battery options · 5d scene per nation/campaign ·
-  6 campaign hub as the new start page.
+- ☐ **Front end from scratch** (Jan, 2026-10-06; supersedes the slice order of the 2026-10-03 pre-game menu
+  redesign, whose slices are folded in below). Every screen from starting the binary to the first game frame is
+  rebuilt controller-first, in the game's own look; mouse/keyboard work on every new screen. Design, screen map
+  and slices: [FrontEnd](doc/coop/FrontEnd.md). The old desktops stay reachable ("Classic menus" in Options) until
+  F12. Each slice: claims first, physical-input Debug tests, all exact-head CI green.
+  Already done and reused: 1a card model (PR #40), 1b local lobby cards (PR #42), 1c read-only player cards (PR #44).
+  - ☐ F1 screen framework: header, tile/list layouts for 800×600 and the Deck's 1280×800, D-pad focus, A/B with a
+    back stack, one footer help line shared with the in-game brief (Opus)
+  - ☐ F2 boot and title: skippable splash/intro, "press A / click", every controller joins with A; the joined-player
+    strip stays on every later screen (replaces the separate couch join screen) (Opus)
+  - ☐ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus)
+  - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
+  - ☐ F5 maps & scenarios browser: preview, player-count filter, a scenario is a one-mission campaign (Sol)
+  - ☐ F6 load game: save browser (thumbnail, date, players) incl. single-player saves with several players (below) (Sol)
+  - ☐ F7 party screen (lobby rewrite, local + online in one): player cards, rules drawer (2a–2c), addon categories and
+    presets (3a–3c), ready/start, join code/IP shown (Opus)
+  - ☐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
+  - ☐ F9 options: grouped settings (display/Deck, audio, controls, help footer, language), all by controller (Sol)
+  - ☐ F10 loading screen: mission/map title, tip, controller layout; then the game
+  - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
+    with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
+  - ☐ F12 retire the old desktops from the default path once every route has parity
+  - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ☐ 3a addon category
+    table + test · ☐ 3b category tabs and "changed only" filter · ☐ 4a profiles (name, colour, nation, mapping).
+- ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
+  pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new
+  footer with images: A/B/X/Y (dark button, coloured letter), LB/RB, LT/RT, View, Menu, Guide, D-pad (all/single/
+  up-down/left-right, one glyph for a grouped D-pad hint), left/right stick motion and L3/R3. Drawn from code by a
+  generator script into an asset folder of 8-bit palette BMPs (palette index 0 transparent), so the artwork is
+  reviewable and needs no licence; text badges stay the fallback when the asset is missing. A first prototype of the
+  generator exists (see NOTES.md 2026-10-06). Check against the real font height and on the Deck screen.
+- ☐ Toggleable help footer (Jan, 2026-10-06; NOT now, after F1): the description lines and the button help of the
+  in-game brief, and the footer of the new menus, can be switched full → buttons only → off. Per view in a shared
+  game (the system ring gets a "Help" entry), default in Options (F9), remembered in the settings.
 - ◐ Detect the Steam Deck and default to a layout and scale made for its 1280×800 screen.
   Sol first-run display slice: exact Steam flag or Valve LCD/OLED DMI identity, persisted automatic
   640-unit reference height (125% at1280×800), stored settings and TV/fixed-scale precedence.

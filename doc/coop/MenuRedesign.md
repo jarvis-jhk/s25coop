@@ -6,7 +6,8 @@ SPDX-License-Identifier: GPL-2.0-or-later
 
 # Pre-game menu redesign for controllers
 
-Status: accepted for the roadmap in this order, 2026-10-03 (Jan: "Pack es so
+Status: superseded in its ORDER by [FrontEnd](FrontEnd.md) (2026-10-06); the ideas below are
+slices of that plan. Originally accepted 2026-10-03 (Jan: "Pack es so
 auf die Roadmap"). Builds on concept B (campaign hub). Player cards come first.
 Keep mouse/keyboard working in every slice. The bounded slices are listed
 under "Roadmap slices" below; ROADMAP.md (M3) points here.

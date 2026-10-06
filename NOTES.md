@@ -5,6 +5,21 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-06 — Jan: front end from scratch; glyphs and help toggle on the roadmap only
+
+Jan (Signal, three messages): be "WAY more aggressive" with the menu overhaul — rebuild everything from
+starting the binary to being in game; pixel-art Xbox button images; a toggleable help footer; and load earlier
+single-player games with several players. Then: "Do neither of them now. Update the roadmap." So only planning:
+ROADMAP priorities rewritten (front end is #1 for Opus and Sol), new M3 item "Front end from scratch" with slices
+F1–F12 and design doc/coop/FrontEnd.md (MenuRedesign.md now only supplies ideas, not order); glyphs and the
+full/buttons-only/off help footer are roadmap items after F1; single-player saves with several players are an M2
+item and part of F6/F7. Sol backlog: 3a, 4b (on-screen keyboard), 3b ready now.
+Glyph prototype (not in the repo, deliberately): generator `/app/agent/data/siedler/art/padglyphs/padglyphs.py`
+writes 22 8-bit palette BMPs (A/B/X/Y, LB/RB, LT/RT, View, Menu, Guide, 7 D-pad variants, LS/RS motion, L3/R3) and a
+preview PNG; Loader folder archives accept them (index 0 transparent; `Archiv::get` returns nullptr when missing, so
+text badges can stay the fallback). Open: real NormalFont height (face buttons are 15 px), Deck look.
+Next Opus session: F1 framework.
+
 ## 2026-10-05 — Fault reports runs 37360066249/37362225980 failed (GitHub outage)
 
 Both scheduled runs on 1a679b1 were cancelled after 15 min with "The job was not acquired by
