@@ -5,6 +5,27 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-07 — PR45 primary integration review
+
+Incoming Sol handoff t_muxuo55j21w5g: PR45 tested head
+635bd8c34745e9fd907c11a1435cf507392d73b3. Independently verified all 17 checks green,
+including complete [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/37581159882)
+and [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/37581159883).
+Merged into the primary checkout on top of 985769dc6 without conflicts; addon source unchanged.
+Exactly gpt-6.1-sol read-only review of the product/tests against current controls and focus
+found no blocker in staged/preview values, whitelist authority or physical navigation.
+Review artifact: build/pr45-review.txt. Own primary GCC12 Debug rebuild (ccache, max two
+compiler jobs) passed. Complete Simple: 73 cases / 80794 assertions; UI: 146 / 20517;
+splitscreen: 658 / 497360. Logs: build/pr45-{simple,ui,splitscreen}.log. New category suite
+is present (2 / 533), and the new browser cases run in the complete splitscreen suite.
+Static validation, diff check and the actual agent TypeScript compiler all passed.
+Product/test trees match the exact-head-tested PR byte-for-byte. Integration is committed
+and pushed after these gates; fresh master CI is required before tagging the next release.
+A primary release continuation will verify that CI and publish only after its full success.
+3a/3b are implemented; F7 party page and 3c preset/victory policy remain separate work.
+Player-facing changes recorded under Unreleased. No Deck rendering or packaged-release proof.
+Existing runtime/CI fault reporting retained; no new reporting endpoint or background service.
+
 ## 2026-10-07 — release 0.1.12; Win32 Home-return CI flake
 
 Unit tests run [37574359421](https://github.com/jarvis-jhk/s25coop/actions/runs/37574359421) on master
@@ -685,6 +706,91 @@ panel, rules drawer, editable remote cursors or packaged release is claimed. Exi
 ntfy/runtime and GitHub CI fault reporting are retained; the read-only view adds no
 background service or separate reporting endpoint.
 
+
+## 2026-10-07 — Sol: player-facing addon category browser (3a/3b)
+
+From current front-end master d33ffcc3f after PR44 integration, Sol adds a pure
+exhaustive category table for registered sparse AddonIds and advisory Easier/Harder
+marks for unambiguous resource/travel constraints relative to actual defaults.
+The existing addon window uses Comfort, New content, World & economy, Combat and
+Easier tabs. Developer addons require an explicit browsing opt-in; their existing
+values are retained. Changed only filters accepted staged values against addon
+defaults. Empty views, category/filter/preset/default changes and scrollbar bounds
+are refreshed together. See doc/coop/AddonCategories.md for the classification.
+
+LB/RB cycles categories through an opt-in Window/FocusPath root hook; other windows
+retain shoulder focus traversal. D-pad and mouse still reach all editing/actions.
+Open dropdown previews survive shoulders and are not accepted by another controller
+pressing Apply/Save. Defaults/filter/preset replacement resolves a pending dropdown
+before replacing values, including the case where the new value equals its preview.
+Apply retains the existing single lobby settings callback and network protocol.
+Readonly/whitelist rules and custom Abort/B closing remain unchanged.
+
+Read-only exactly gpt-6.1-sol reviews identified missing persistence coverage and a
+default-replacement/dropdown mismatch; dedicated two-controller tests address both.
+Pure tests require every registered/declared addon to have one category, exercise
+every option/default and assert explicit difficulty orders, including SEA_ATTACK's
+unranked disabled default2. Physical tests cover category cycling, developer opt-in,
+mouse/readonly browsing, accepted/pending edits, default/filter/preset changes and
+real preset files. Existing addon lobby tests retain the real-server roundtrip and
+whitelist authority assertions, adapting navigation to category shoulders.
+
+Own merged GCC12 Debug/Werror build at maximum2 jobs and full affected Debug
+suites pass. Fresh exact-head complete Unit tests/Static analysis remain required
+before tested handoff; current CI progress/evidence are kept outside the repo.
+This supplies front-end party browsing metadata, not the F7 party rewrite, new
+presets/save/victory policy, keyboard, hardware appearance or a packaged release.
+The existing ntfy/runtime and GitHub failed-CI reporting remains in use; no private
+report endpoint is published.
+
+Earlier targeted checkpoint: the configured binaries contain both new suites.
+Own Debug/Werror addon model2 cases/533 assertions and physical addon21 cases/580
+assertions pass (new13/164, existing real-lobby8/416). Clang23 targeted checks on
+all four new/changed implementation and test sources report newer style checks and
+existing-header diagnostics; the actionable const-method/single-case-switch findings
+are corrected. Pinned Clang18 exact-head CI remains the lint gate. The initial mouse-wheel assertion was corrected to exercise the parent
+scroll guard outside the dropdown; mouse wheel on a combo remains an immediate
+accepted mouse edit. No product mouse behavior was changed. The final restored
+full Debug and executed omission results are below; exact-head CI is still pending.
+
+
+Final local gate after merging current front-end master72832cba0 (Opus F2 title/join):
+full Debug Test_simple73/80337, Test_UI146/19447 and Test_splitscreen656/499218
+cases/assertions all pass. The new suites were configured into the binaries.
+The inherited original S2 movie case is not exercised without RTTR_COOP_S2_DIR;
+this slice does not change it. No hardware or release acceptance is claimed.
+
+Three executed omission cases each fail intended assertions (exit201): missing
+changed-only filtering displays the wrong rows (two visibility failures, followed
+by an expected unreachable-control navigation exception); using an unaccepted
+preview for Apply persists2 instead of1; omitting Default's preview cancellation
+restores stale1 instead of the required2. Original iwAddons.cpp was restored
+byte-for-byte and rebuilt before all final positive suites. No coverage exclusions.
+Clang-format10, static validation, doc lint, diff/private-string checks and actual
+agent tsc pass. Keep the PR draft until all17 exact-head check runs AND both
+complete Unit tests/Static analysis workflows pass; then ready/tested handoff to
+Opus, release finished claims and run the budget gate. No new slice before handoff.
+
+
+## 2026-10-07 — Sol PR45: inherit the existing front-end CI repair
+
+Exact head6561523d failed the gcc-10 coverage check solely at inherited
+testFrontEndHome.cpp:177 (99.22%; an unexecuted shoulder loop). The new addon
+test and shared AddonPadNavigation helper both report100% line coverage.
+Current master0142389c9 already replaces that loop with the existing focus
+helper and fixes front-end Clang18 diagnostics. Merge that committed repair
+without editing Opus-owned front-end files; both workers' notes are preserved.
+Own Debug/Werror max2 rebuild and affected physical suites are the new local
+gate; all17 fresh exact-head checks and both complete workflows still required
+before ready/tested handoff. No independent addon behavior change or new slice.
+
+Repaired merge local gate passed: fresh affected Debug FrontEndPage/Home/Title,
+PartyModel and both addon physical suites, plus complete UI146cases/14664
+assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
+static validation and actual agent tsc pass. All10 Sol source/test hashes match
+the previously fully tested source. Fresh repaired-head CI supersedes old CI;
+PR45 stays draft with its source/test claims until the complete exact-head gate.
+
 ## 2026-10-07 — Sol: reusable owner-scoped controller keyboard (4b)
 
 `sol/controller-onscreen-keyboard`, based on master985769dc6: new menu modal with D-pad grid/A typing,
@@ -705,7 +811,10 @@ the underlying screen. Existing desktop-switch callers already destroy that cach
 Four matched executed omission controls reject broken device ownership, stale revision acceptance,
 closing-parent commit and cached desktop routing. Original product restored byte-for-byte and rebuilt.
 All14 keyboard physical tests pass (190 assertions). Full own Debug UI passes146 cases/13131 assertions;
-full splitscreen passes657 cases/501100 assertions. Complete exact-head CI remains the handoff gate. Exactly gpt-6.1-sol reviewed read-only; its double-delivery concern
+full splitscreen passes657 cases/501100 assertions before reconciling integrated PR45 master70d1a5dab.
+Reconciliation preserves both docs and every keyboard/incoming addon source hash; fresh affected Debug
+validation and complete exact-head CI remain the handoff gate. Exactly gpt-6.1-sol reviewed read-only; its double-delivery concern
 was rejected because handled Msg_KeyDown skips child relay; concrete lifecycle/routing findings were fixed
 and exercised. The explicit reusable-API-only scope is intentional. No coverage exclusions. Existing
 runtime/failed-CI reporting retained; no service, persisted draft or new reporting endpoint.
+

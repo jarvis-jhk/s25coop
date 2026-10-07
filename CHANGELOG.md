@@ -3,6 +3,14 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Addon settings have clearer categories, a “Changed only” filter and hints for options that
+  make resource gathering or travel easier or harder. Use LB/RB to switch categories;
+  developer options stay hidden until you choose to show them.
+- Applying or saving addon settings from another controller keeps your accepted choices and
+  leaves an unfinished dropdown preview out of the saved settings.
+
 ## 0.1.12
 
 - New title screen: every player presses A once on their controller to join (up to four), and
