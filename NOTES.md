@@ -17,6 +17,8 @@ data/siedler/master-0142389-{win32,local-full}.log. Both master workflows green 
 CHANGELOG Unreleased → 0.1.12, tagged v0.1.12 on the CHANGELOG/NOTES-only commit. Claims
 master-win32-home-return-ci and frontend-f1-framework released.
 
+v0.1.12 veröffentlicht: https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.12 — release workflow 37582133234 succeeded; Linux tarball, Windows ZIP and desktop installer uploaded. Unit tests 37582131441 and Static analysis 37582131447 also green on 153d4000b.
+
 ## 2026-10-07 — work session: front end F1 (page framework) + F3 (home page)
 
 No open issues or PRs; master CI green at 5f5b4c793. Codex is out of quota until 2026-10-10 02:23 UTC
