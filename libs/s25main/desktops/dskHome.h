@@ -44,8 +44,12 @@ public:
     static unsigned GetLastChoice() { return lastChoice_; }
     static void ForgetLastChoice() { lastChoice_ = 0; }
 
+    /// B on Home leads to the title page, where more controllers can join.
+    bool HasBackAction() const override { return true; }
+
 protected:
     void OnChoose(unsigned ctrl_id) override;
+    bool OnBackAtRoot() override;
 
 private:
     std::vector<coop::changelog::Section> pendingChangelog_;

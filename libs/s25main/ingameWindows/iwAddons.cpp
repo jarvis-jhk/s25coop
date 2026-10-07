@@ -308,14 +308,10 @@ bool iwAddons::isReadOnly(AddonId id) const
 
 void iwAddons::Msg_OptionGroupChange(const unsigned ctrl_id, const unsigned selection)
 {
-    switch(ctrl_id)
+    if(ctrl_id == ID_grpAddonGroup)
     {
-        case ID_grpAddonGroup: // richtige Kategorie anzeigen
-        {
-            (void)selection;
-            RefreshFilter();
-        }
-        break;
+        (void)selection;
+        RefreshFilter();
     }
 }
 

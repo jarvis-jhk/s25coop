@@ -175,6 +175,10 @@ enum class KeyAction
     AimRing,
     /// B on a front-end page: back to the page this one was opened from (dskFrontEndPage).
     PageBack,
+    /// A on the title page by a controller that has not joined yet (dskTitle).
+    JoinParty,
+    /// B on the title page by a joined controller: out of the party again.
+    LeaveParty,
     /// L3: view-only building spots, available before ring, focus and watch-only routing.
     ToggleConstructionAid,
     PanCamera,

@@ -101,7 +101,7 @@ struct CategoryBrowserFixture : rttr::test::MenuPadFixture
         press(pad, PadButton::A);
     }
 
-    ctrlGroup& group(AddonId id)
+    ctrlGroup& group(AddonId id) const
     {
         for(unsigned i = 0; i < model.getNumAddons(); ++i)
         {

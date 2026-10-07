@@ -75,6 +75,12 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
 - Upstream desktops opened from a page return through `frontend/MenuRoutes` (`MainMenu()`,
   `SinglePlayerMenu()`): to the home page when it was shown last, to `dskMainMenu` when "Classic menus"
   was.
+- Title (F2, `dskTitle`): every controller's first press there gives it a slot (the page offers
+  `MenuPadInput::MaxSlots`) and that press is its join - so "everybody presses A once" is literal. The
+  joined controllers are the `Party` (input/Party, kept by MenuPadInput, unplugging leaves it); the player
+  strip on every page shows the party. A/Start by a member or a click on Start opens Home; B leaves the
+  party; B on Home returns to the title. F7 must seat exactly the party in the lobby (today the lobby's
+  seat panel still asks every pad to press A again).
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"
   (the old main menu has "New menus" to come back). F12 must not retire the old menu before they have a place.
 - Tests: `tests/s25Main/UI/testFrontEndLayout.cpp`, `tests/s25Main/splitscreen/testFrontEndPage.cpp`

@@ -8,7 +8,7 @@ starting the binary to being in game, from scratch").** The core goal is a group
 one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c) work; the menus between
 starting the game and playing it are still upstream's mouse screens with controller support bolted on.
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
-   workers. Opus: F1 framework ☑ and F3 home ☑ (2026-10-07) → F2 title/join → F7 party. Sol, in parallel on
+   workers. Opus: F1 framework ☑, F3 home ☑, F2 title/join ☑ (2026-10-07) → F7 party (seat the joined party). Sol, in parallel on
    independent scopes: 4b on-screen keyboard and 3a/3b addon categories (Sol PR in progress), then F9 options, F6 load game, F5 maps
    (F1 is in: build them on dskFrontEndPage).
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
@@ -199,8 +199,9 @@ starting the game and playing it are still upstream's mouse screens with control
   Already done and reused: 1a card model (PR #40), 1b local lobby cards (PR #42), 1c read-only player cards (PR #44).
   - ☑ F1 screen framework: header, tile/list layouts for 800×600 and the Deck's 1280×800, D-pad focus, A/B with a
     back stack, one footer help line shared with the in-game brief (Opus, 2026-10-07; FrontEnd.md "Framework")
-  - ☐ F2 boot and title: skippable splash/intro, "press A / click", every controller joins with A; the joined-player
-    strip stays on every later screen (replaces the separate couch join screen) (Opus)
+  - ☑ F2 boot and title: skippable splash/intro, "press A / click", every controller joins with A; the joined-player
+    strip stays on every later screen (replaces the separate couch join screen) (Opus, 2026-10-07: dskTitle + Party;
+    B on Home returns to it. The lobby does not seat the party yet - that is F7)
   - ☑ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus,
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
@@ -217,7 +218,7 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☐ F12 retire the old desktops from the default path once every route has parity
   - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ◐ 3a addon category
     table + test · ◐ 3b category tabs and "changed only" filter (Sol: implemented together;
-    physical Debug tests and fresh exact-head CI are the handoff gate) · ☐ 4a profiles (name, colour, nation, mapping).
+    full physical Debug tests pass; fresh exact-head CI remains the handoff gate) · ☐ 4a profiles (name, colour, nation, mapping).
 - ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
   pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new
   footer with images: A/B/X/Y (dark button, coloured letter), LB/RB, LT/RT, View, Menu, Guide, D-pad (all/single/

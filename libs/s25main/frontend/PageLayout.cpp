@@ -6,14 +6,14 @@
 #include <algorithm>
 #include <limits>
 
-namespace frontend {
-
 namespace {
-    unsigned clampSub(unsigned a, unsigned b)
-    {
-        return a > b ? a - b : 0;
-    }
+unsigned clampSub(unsigned a, unsigned b)
+{
+    return a > b ? a - b : 0;
+}
 } // namespace
+
+namespace frontend {
 
 PageFrame LayoutFrame(const Extent& size, const unsigned footerLines, const unsigned lineHeight)
 {
@@ -70,9 +70,9 @@ TileGrid LayoutTiles(const Rect& area, const unsigned count, const Extent& aspec
         // A short last row is centred under the full ones, so a 7th tile does not hang off the left edge.
         const unsigned inRow = row + 1 == grid.rows ? count - row * grid.columns : grid.columns;
         const unsigned rowShift = (grid.columns - inRow) * (tileW + gap) / 2;
-        grid.tiles.emplace_back(
+        grid.tiles.push_back(Rect(
           origin + DrawPoint(static_cast<int>(rowShift + col * (tileW + gap)), static_cast<int>(row * (tileH + gap))),
-          Extent(tileW, tileH));
+          Extent(tileW, tileH)));
     }
     return grid;
 }
@@ -91,7 +91,7 @@ std::vector<Rect> LayoutList(const Rect& area, const unsigned count, const unsig
         height = std::max(rowHeight / 3, clampSub(areaSize.y, (count - 1) * gap) / count);
     const DrawPoint origin = area.getOrigin() + DrawPoint(static_cast<int>((areaSize.x - width) / 2), 0);
     for(unsigned i = 0; i < count; ++i)
-        rows.emplace_back(origin + DrawPoint(0, static_cast<int>(i * (height + gap))), Extent(width, height));
+        rows.push_back(Rect(origin + DrawPoint(0, static_cast<int>(i * (height + gap))), Extent(width, height)));
     return rows;
 }
 
@@ -104,7 +104,7 @@ std::vector<Rect> LayoutPlayerStrip(const Rect& header, const unsigned count, co
     const int left = header.right - static_cast<int>(pageMargin + width);
     const int top = header.top + static_cast<int>(clampSub(header.getSize().y, badge.y) / 2);
     for(unsigned i = 0; i < count; ++i)
-        badges.emplace_back(DrawPoint(left + static_cast<int>(i * (badge.x + gap)), top), badge);
+        badges.push_back(Rect(DrawPoint(left + static_cast<int>(i * (badge.x + gap)), top), badge));
     return badges;
 }
 

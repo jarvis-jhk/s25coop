@@ -29,8 +29,21 @@ local ctest pass except Test_drivers (no ALSA, as always). Second review pass (a
 risks - menu style set on activation not construction, "New menus" button in the old main menu as the way
 back, Home resumes the save it found instead of scanning twice. Known gap: no test resumes a real save
 from Home (ResumeSave is upstream's case 3 moved, unchanged).
-Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself.
-Next Opus: F2 title/join (press A, every controller joins, strip on every page), then F7 party.
+F2 in the same session: `dskTitle` after the splash (Home's B returns to it) and `input/Party` (joined
+controllers in join order, kept by MenuPadInput, unplugging leaves it; the player strip on every page shows
+it). The title offers MenuPadInput::MaxSlots slots, so a controller's first press gets it a slot and IS its
+join (the pick-up press is swallowed anyway). Tests FrontEndTitleTests (4) + PartyModel; negative controls
+(no auto-join, no unplug cleanup) fail. Full Debug Test_splitscreen (643) and Test_UI (146) pass.
+First CI on d33ffcc3f failed: clang-format 10 wants a different layout than local clang-format 14 for an
+anonymous namespace nested in another one (moved to top level); MSVC "ambiguous GetCtrl" inside a
+`[this]` lambda (plain loop now); GCC 16 -Wnoexcept on `vector<Rect>::emplace_back(DrawPoint, Extent)`
+(push_back(Rect(...)) now); gcc-10 coverage rejected the unexecuted `catch(...)` restore in a test (the
+fixture destructor restores the screen now). **Check formatting with the CI's clang-format 10:**
+`/app/agent/data/siedler/cf10/clang_format/data/bin/clang-format` (pip wheel unpacked there).
+Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself. Under Xvfb the client
+sometimes opens a 1024×768 window on an 800×600 screen (random; the old menus are cut off the same way) -
+check the FPS counter is visible before trusting an 800×600 screenshot.
+Next Opus: F7 party (seat exactly the joined party in the lobby, cards), then F4/F10.
 
 ## 2026-10-06 — Jan: front end from scratch; glyphs and help toggle on the roadmap only
 
@@ -683,19 +696,38 @@ mouse/readonly browsing, accepted/pending edits, default/filter/preset changes a
 real preset files. Existing addon lobby tests retain the real-server roundtrip and
 whitelist authority assertions, adapting navigation to category shoulders.
 
-Own GCC12 Debug/Werror build at maximum2 jobs is in progress. Local validation and
-fresh exact-head complete Unit tests/Static analysis remain required before tested
-handoff; current progress/evidence are kept outside the repo until those finish.
+Own merged GCC12 Debug/Werror build at maximum2 jobs and full affected Debug
+suites pass. Fresh exact-head complete Unit tests/Static analysis remain required
+before tested handoff; current CI progress/evidence are kept outside the repo.
 This supplies front-end party browsing metadata, not the F7 party rewrite, new
 presets/save/victory policy, keyboard, hardware appearance or a packaged release.
 The existing ntfy/runtime and GitHub failed-CI reporting remains in use; no private
 report endpoint is published.
 
-Local targeted checkpoint: the configured binaries contain both new suites.
+Earlier targeted checkpoint: the configured binaries contain both new suites.
 Own Debug/Werror addon model2 cases/533 assertions and physical addon21 cases/580
 assertions pass (new13/164, existing real-lobby8/416). Clang23 targeted checks on
-all four new/changed implementation and test sources have no concrete warning/error
-output. The initial mouse-wheel assertion was corrected to exercise the parent
+all four new/changed implementation and test sources report newer style checks and
+existing-header diagnostics; the actionable const-method/single-case-switch findings
+are corrected. Pinned Clang18 exact-head CI remains the lint gate. The initial mouse-wheel assertion was corrected to exercise the parent
 scroll guard outside the dropdown; mouse wheel on a combo remains an immediate
-accepted mouse edit. No product mouse behavior was changed. Complete restored
-Debug suites and executed omission controls remain required, followed by exact-head CI.
+accepted mouse edit. No product mouse behavior was changed. The final restored
+full Debug and executed omission results are below; exact-head CI is still pending.
+
+
+Final local gate after merging current front-end master72832cba0 (Opus F2 title/join):
+full Debug Test_simple73/80337, Test_UI146/19447 and Test_splitscreen656/499218
+cases/assertions all pass. The new suites were configured into the binaries.
+The inherited original S2 movie case is not exercised without RTTR_COOP_S2_DIR;
+this slice does not change it. No hardware or release acceptance is claimed.
+
+Three executed omission cases each fail intended assertions (exit201): missing
+changed-only filtering displays the wrong rows (two visibility failures, followed
+by an expected unreachable-control navigation exception); using an unaccepted
+preview for Apply persists2 instead of1; omitting Default's preview cancellation
+restores stale1 instead of the required2. Original iwAddons.cpp was restored
+byte-for-byte and rebuilt before all final positive suites. No coverage exclusions.
+Clang-format10, static validation, doc lint, diff/private-string checks and actual
+agent tsc pass. Keep the PR draft until all17 exact-head check runs AND both
+complete Unit tests/Static analysis workflows pass; then ready/tested handoff to
+Opus, release finished claims and run the budget gate. No new slice before handoff.

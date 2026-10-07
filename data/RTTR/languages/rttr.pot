@@ -6097,3 +6097,15 @@ msgstr ""
 #: libs/s25main/desktops/dskMainMenu.cpp
 msgid "New menus"
 msgstr ""
+
+#: libs/s25main/desktops/dskTitle.cpp
+msgid "Every player: press A to join"
+msgstr ""
+
+#: libs/s25main/desktops/dskTitle.cpp
+msgid "Press A"
+msgstr ""
+
+#: libs/s25main/input/PlayerBrief.cpp
+msgid "Leave"
+msgstr ""

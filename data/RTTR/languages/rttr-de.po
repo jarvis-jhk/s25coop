@@ -1790,6 +1790,10 @@ msgstr "Diskrepanz in der Ereignisanzahl: %1% Ereignisse gelesen. Erwartet: %2%.
 msgid "Every GF"
 msgstr "Jedes GF"
 
+#: libs/s25main/desktops/dskTitle.cpp
+msgid "Every player: press A to join"
+msgstr "Jeder Spieler: A drücken zum Mitspielen"
+
 msgid "Every ware of yours goes in and out through this flag. Press A to start your first road here."
 msgstr "Jede deiner Waren geht durch diese Flagge hinein und hinaus. Drück A, um hier deine erste Straße anzufangen."
 
@@ -2650,6 +2654,10 @@ msgstr "Rüstungsherstellung"
 #: libs/s25main/gameData/BuildingConsts.cpp:25
 msgid "Leatherworks"
 msgstr "Lederverarbeitung"
+
+#: libs/s25main/input/PlayerBrief.cpp
+msgid "Leave"
+msgstr "Verlassen"
 
 msgid "Left stick"
 msgstr "Linker Stick"
@@ -3868,6 +3876,10 @@ msgstr "Name der Voreinstellung"
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:141
 msgid "Preset Not Found"
 msgstr "Voreinstellung nicht gefunden"
+
+#: libs/s25main/desktops/dskTitle.cpp
+msgid "Press A"
+msgstr "A drücken"
 
 #: libs/s25main/input/PlayerBrief.cpp:141
 msgid "Press A for the build menu, or X to put a flag here instead."

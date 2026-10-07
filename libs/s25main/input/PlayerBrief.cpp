@@ -563,6 +563,8 @@ const char* KeyLabel(const KeyAction action)
         // zeigt (dskGameInterface::RingSyncFocus). "Waehlen" waere A und damit falsch.
         case KeyAction::AimRing: return _("Point");
         case KeyAction::PageBack: return _("Back");
+        case KeyAction::JoinParty: return _("Join");
+        case KeyAction::LeaveParty: return _("Leave");
     }
     return "";
 }
