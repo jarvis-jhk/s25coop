@@ -16,6 +16,7 @@
 #include <vector>
 
 class FocusPath;
+class PadRouter;
 class glArchivItem_Bitmap;
 struct MouseCoords;
 struct PersistentWindowSettings;
@@ -59,6 +60,12 @@ public:
                  glArchivItem_Bitmap* background, bool modal = false,
                  CloseBehavior closeBehavior = CloseBehavior::Regular, Window* parent = nullptr);
     ~IngameWindow() override;
+
+    /// Opt-in modal routing before generic menu focus/Back handling. Ownership names a device,
+    /// since the router may move that device to another slot while the dialog stays open.
+    virtual std::optional<bool> AllowsMenuPadInput(PadDeviceId /*device*/) const { return std::nullopt; }
+    virtual bool HandleMenuPadButton(PadDeviceId /*device*/, PadButton /*button*/) { return false; }
+    virtual void ReconcileMenuPads(const PadRouter& /*router*/) {}
 
     /// Set background image
     void SetBackground(glArchivItem_Bitmap* background) { this->background = background; }

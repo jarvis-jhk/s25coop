@@ -218,6 +218,9 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☐ F12 retire the old desktops from the default path once every route has parity
   - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ☐ 3a addon category
     table + test · ☐ 3b category tabs and "changed only" filter · ☐ 4a profiles (name, colour, nation, mapping).
+    Sol keyboard4b: reusable opt-in modal implemented on `sol/controller-onscreen-keyboard`; owner-device
+    routing, staged text, mixed input and lifetime regressions. Exact-head CI/integration remains open;
+    F7/F9 adoption and hardware acceptance are separate. See [ControllerKeyboard](doc/coop/ControllerKeyboard.md).
 - ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
   pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new
   footer with images: A/B/X/Y (dark button, coloured letter), LB/RB, LT/RT, View, Menu, Guide, D-pad (all/single/

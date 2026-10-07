@@ -684,3 +684,28 @@ remain required before tested handoff to Opus. No real Deck rendering, controlle
 panel, rules drawer, editable remote cursors or packaged release is claimed. Existing
 ntfy/runtime and GitHub CI fault reporting are retained; the read-only view adds no
 background service or separate reporting endpoint.
+
+## 2026-10-07 — Sol: reusable owner-scoped controller keyboard (4b)
+
+`sol/controller-onscreen-keyboard`, based on master985769dc6: new menu modal with D-pad grid/A typing,
+B Unicode delete, X space, Y letter case and Menu/Enter/Confirm to commit. Mouse keys and physical typing
+share a private ctrlEdit draft with the original length, filename/number restrictions and password masking.
+Legacy fields remain non-focusable by pad; F7/F9 can opt in with SetControllerKeyboardEnabled. Pad focus
+never sets an original keyboard focus bit. Confirm writes once and emits the configured change notification,
+without forwarding Enter to start a connection/send chat. No F7/F9 adoption or Deck/rendering acceptance yet.
+
+Device identity owns the modal, even after slot reassignment and a restrictive desktop slot policy.
+Default IngameWindow hooks still defer to the desktop. Owner disconnect, target/root replacement, closing
+ancestors, disable and external edit revisions cancel a draft. A weak edit-owned revision token also
+detects changed-and-restored text. Closing before notification and touching neither object afterwards
+allows a parent to replace itself safely. ClearFocus also clears the cached desktop route: the physical
+queued-input regression found that clearing only the focused controls still let a trailing Start activate
+the underlying screen. Existing desktop-switch callers already destroy that cached root.
+
+Four matched executed omission controls reject broken device ownership, stale revision acceptance,
+closing-parent commit and cached desktop routing. Original product restored byte-for-byte and rebuilt.
+All14 keyboard physical tests pass (190 assertions). Full own Debug UI passes146 cases/13131 assertions;
+full splitscreen passes657 cases/501100 assertions. Complete exact-head CI remains the handoff gate. Exactly gpt-6.1-sol reviewed read-only; its double-delivery concern
+was rejected because handled Msg_KeyDown skips child relay; concrete lifecycle/routing findings were fixed
+and exercised. The explicit reusable-API-only scope is intentional. No coverage exclusions. Existing
+runtime/failed-CI reporting retained; no service, persisted draft or new reporting endpoint.
