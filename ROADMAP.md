@@ -9,7 +9,7 @@ one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c)
 starting the game and playing it are still upstream's mouse screens with controller support bolted on.
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
    workers. Opus: F1 framework ☑, F3 home ☑, F2 title/join ☑ (2026-10-07) → F7 party (seat the joined party). Sol, in parallel on
-   independent scopes: 4b on-screen keyboard and 3a/3b addon categories, then F9 options, F6 load game, F5 maps
+   independent scopes: 4b on-screen keyboard, then F9 options, F6 load game, F5 maps (3a/3b addon categories integrated from PR45)
    (F1 is in: build them on dskFrontEndPage).
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
@@ -216,8 +216,9 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
   - ☐ F12 retire the old desktops from the default path once every route has parity
-  - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ☐ 3a addon category
-    table + test · ☐ 3b category tabs and "changed only" filter · ☐ 4a profiles (name, colour, nation, mapping).
+  - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ☑ 3a addon category
+    table + test · ☑ 3b category tabs and "changed only" filter (PR45; exhaustive metadata and
+    physical Debug tests, all 17 exact-head CI checks passed) · ☐ 4a profiles (name, colour, nation, mapping).
 - ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
   pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new
   footer with images: A/B/X/Y (dark button, coloured letter), LB/RB, LT/RT, View, Menu, Guide, D-pad (all/single/

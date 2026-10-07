@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "AddonPadNavigation.h"
 #include "GameLobby.h"
 #include "GlobalGameSettings.h"
 #include "ILobbyClient.hpp"
@@ -82,23 +83,16 @@ struct AddonsPadFixture : rttr::test::MenuPadFixture
 
     void focusUntil(const Window* target)
     {
-        // Shoulder navigation deliberately has no wrap. First search backwards, then forwards.
-        for(unsigned i = 0; i < 100 && focused(0) != target; ++i)
+        if(dynamic_cast<iwAddons*>(WINDOWMANAGER.GetTopMostWindow()))
+            rttr::test::FocusAddonControl(*this, pad, target);
+        else
         {
-            const auto* before = focused(0);
-            press(pad, PadButton::LeftShoulder);
-            if(focused(0) == before)
-                break;
+            for(unsigned i = 0; i < 100 && focused(0) != target; ++i)
+                press(pad, PadButton::LeftShoulder);
+            for(unsigned i = 0; i < 100 && focused(0) != target; ++i)
+                press(pad, PadButton::RightShoulder);
         }
-        for(unsigned i = 0; i < 100 && focused(0) != target; ++i)
-            press(pad, PadButton::RightShoulder);
-        BOOST_TEST_CONTEXT("target id=" << target->GetID() << " focusable=" << target->CanFocus()
-                                        << " visible=" << target->IsVisible()
-                                        << " parent=" << (target->GetParent() ? target->GetParent()->GetID() : 0)
-                                        << " root=" << padInput().GetFocus(0).GetRoot())
-        {
-            BOOST_TEST_REQUIRE(focused(0) == target);
-        }
+        BOOST_TEST_REQUIRE(focused(0) == target);
     }
 
     void act(const unsigned id)
@@ -107,7 +101,7 @@ struct AddonsPadFixture : rttr::test::MenuPadFixture
         press(pad, PadButton::A);
     }
 
-    void selectCategory(const AddonGroup group)
+    void selectCategory(const AddonCategory group)
     {
         auto* tabs = window->GetCtrl<ctrlOptionGroup>(categories);
         focusUntil(tabs->GetCtrl<ctrlButton>(static_cast<unsigned>(group)));
@@ -140,6 +134,10 @@ struct AddonsPadFixture : rttr::test::MenuPadFixture
 
     ctrlCheck& peaceful()
     {
+        const unsigned category = window->GetCtrl<ctrlOptionGroup>(categories)->GetSelection();
+        if(category != static_cast<unsigned>(AddonCategory::All)
+           && category != static_cast<unsigned>(AddonCategory::Easier))
+            selectCategory(AddonCategory::Easier);
         reveal(AddonId::PEACEFULMODE);
         auto* check = groupFor(AddonId::PEACEFULMODE).GetCtrl<ctrlCheck>(2);
         BOOST_TEST_REQUIRE(check != nullptr);
@@ -157,23 +155,7 @@ struct AddonsPadFixture : rttr::test::MenuPadFixture
 
     void expectSkipped(const Window* locked)
     {
-        focusUntil(window->GetCtrl<ctrlButton>(abortChanges));
-        for(const auto direction : {PadButton::LeftShoulder, PadButton::RightShoulder})
-        {
-            bool reachedEnd = false;
-            for(unsigned i = 0; i < 100; ++i)
-            {
-                BOOST_TEST(focused(0) != locked);
-                const auto* before = focused(0);
-                press(pad, direction);
-                if(focused(0) == before)
-                {
-                    reachedEnd = true;
-                    break;
-                }
-            }
-            BOOST_TEST_REQUIRE(reachedEnd);
-        }
+        BOOST_CHECK_THROW(rttr::test::FocusAddonControl(*this, pad, locked), std::runtime_error);
     }
 
     void enterOptions()
@@ -289,11 +271,11 @@ BOOST_FIXTURE_TEST_CASE(CategoryChangesResetScrollAndKeepPendingCheckboxEdits, A
         enterOptions();
         togglePeaceful();
         BOOST_TEST(window->GetCtrl<ctrlScrollBar>(scrollbar)->GetScrollPos() > 0u);
-        selectCategory(AddonGroup::Economy);
+        selectCategory(AddonCategory::Economy);
         BOOST_TEST(!groupFor(AddonId::PEACEFULMODE).IsVisible());
-        selectCategory(AddonGroup::Military);
+        selectCategory(AddonCategory::Easier);
         BOOST_TEST(peaceful().isChecked());
-        selectCategory(AddonGroup::All);
+        selectCategory(AddonCategory::All);
         BOOST_TEST(peaceful().isChecked());
         act(abortChanges);
     });
@@ -303,7 +285,7 @@ BOOST_FIXTURE_TEST_CASE(BDiscardsAddonDropdownBeforeReturningToItsParent, Addons
 {
     run([&] {
         enterOptions();
-        selectCategory(AddonGroup::Military);
+        selectCategory(AddonCategory::Combat);
         reveal(AddonId::LIMIT_CATAPULTS);
         auto* combo = groupFor(AddonId::LIMIT_CATAPULTS).GetCtrl<ctrlComboBox>(2);
         BOOST_TEST_REQUIRE(combo != nullptr);
@@ -369,7 +351,7 @@ BOOST_FIXTURE_TEST_CASE(WhitelistDefaultAndApplyPreserveLockedNonDefaultSelectio
         enterLobby();
         GAMECLIENT.GetGameLobby()->getSettings().setSelection(AddonId::LIMIT_CATAPULTS, 2);
         openPolicy(AddonChangeAllowed::WhitelistOnly);
-        selectCategory(AddonGroup::Military);
+        selectCategory(AddonCategory::Combat);
         reveal(AddonId::LIMIT_CATAPULTS);
         auto* locked = groupFor(AddonId::LIMIT_CATAPULTS).GetCtrl<ctrlComboBox>(2);
         BOOST_TEST_REQUIRE(locked != nullptr);

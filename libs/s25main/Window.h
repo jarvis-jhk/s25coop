@@ -152,6 +152,11 @@ public:
     /// Die Vorgabe tut nichts, also bleibt B ueberall sonst genau das, was es war.
     virtual bool CancelInput() { return false; }
 
+    /// Opt-in root shortcut for LB/RB tabs. Return the control that keeps focus, or nullptr
+    /// to retain ordinary shoulder focus traversal. A root may return its open dropdown to
+    /// consume the shortcut without accepting or discarding pending input.
+    virtual Window* SwitchPadTab(int /*direction*/) { return nullptr; }
+
     /// Der Fokus VERLAESST dieses Control. Ein Ereignis, kein Zustand: das Control merkt sich
     /// nichts ueber den Fokus und weiss weiterhin nicht, wer ihn hatte. Gebraucht wird es von
     /// Controls, die waehrend der Bedienung etwas AUFGEKLAPPT haben - laeuft der Fokus weiter,

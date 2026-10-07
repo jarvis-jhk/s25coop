@@ -360,8 +360,13 @@ bool FocusPath::OnPadButton(const PadButton button, const bool down)
         case PadButton::DpadRight: Step(Position(1, 0)); break;
         case PadButton::DpadUp: Step(Position(0, -1)); break;
         case PadButton::DpadDown: Step(Position(0, 1)); break;
-        case PadButton::LeftShoulder: Move(Dir::Prev); break;
-        case PadButton::RightShoulder: Move(Dir::Next); break;
+        case PadButton::LeftShoulder:
+        case PadButton::RightShoulder:
+            if(auto* target = root_->SwitchPadTab(button == PadButton::LeftShoulder ? -1 : 1))
+                FocusCtrl(target);
+            else
+                Move(button == PadButton::LeftShoulder ? Dir::Prev : Dir::Next);
+            break;
         // Start bleibt bewusst wirkungslos - er ist seit Phase 3 der Knopf, mit dem ein
         // Spieler sein Pad in die Hand nimmt, und darf keine zweite Bedeutung bekommen.
         default: break;
