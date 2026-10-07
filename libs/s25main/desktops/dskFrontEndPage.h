@@ -41,7 +41,7 @@ public:
         unsigned focusId = 0;
     };
 
-    explicit dskFrontEndPage(std::string title);
+    explicit dskFrontEndPage(const std::string& title);
     ~dskFrontEndPage() override;
 
     /// The page `factory` creates, as the root of a new trail (nothing to go back to from there).

@@ -171,11 +171,8 @@ BOOST_FIXTURE_TEST_CASE(ClassicMenusKeepTheClassicReturns, HomeFixture)
     BOOST_TEST((frontend::GetMenuStyle() == frontend::MenuStyle::Classic));
     // The old chain: main menu -> single player -> back lands in the old main menu, not on Home.
     // dskMainMenu's "Singleplayer" is its first own id (dskMenuBase::ID_FIRST_FREE).
-    const auto* single = desktop()->GetCtrl<ctrlButton>(dskMenuBase::ID_FIRST_FREE);
-    BOOST_TEST_REQUIRE(single != nullptr);
-    for(unsigned i = 0; i < 10 && focused(0) != single; ++i)
-        press(pad, PadButton::RightShoulder);
-    BOOST_TEST_REQUIRE(focused(0) == single);
+    BOOST_TEST_REQUIRE(desktop()->GetCtrl<ctrlButton>(dskMenuBase::ID_FIRST_FREE) != nullptr);
+    focusTile(dskMenuBase::ID_FIRST_FREE);
     press(pad, PadButton::A);
     frame();
     BOOST_TEST_REQUIRE(desktopAs<dskSinglePlayer>() != nullptr);
@@ -183,11 +180,8 @@ BOOST_FIXTURE_TEST_CASE(ClassicMenusKeepTheClassicReturns, HomeFixture)
     frame();
     BOOST_TEST_REQUIRE(desktopAs<dskMainMenu>() != nullptr);
     // ... and "New menus" is the way back to Home, which then owns the returns again.
-    const auto* newMenus = desktop()->GetCtrl<ctrlButton>(dskMenuBase::ID_FIRST_FREE + 10);
-    BOOST_TEST_REQUIRE(newMenus != nullptr);
-    for(unsigned i = 0; i < 12 && focused(0) != newMenus; ++i)
-        press(pad, PadButton::RightShoulder);
-    BOOST_TEST_REQUIRE(focused(0) == newMenus);
+    BOOST_TEST_REQUIRE(desktop()->GetCtrl<ctrlButton>(dskMenuBase::ID_FIRST_FREE + 10) != nullptr);
+    focusTile(dskMenuBase::ID_FIRST_FREE + 10);
     press(pad, PadButton::A);
     frame();
     BOOST_TEST_REQUIRE(desktopAs<dskHome>() != nullptr);

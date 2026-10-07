@@ -39,7 +39,11 @@ anonymous namespace nested in another one (moved to top level); MSVC "ambiguous 
 `[this]` lambda (plain loop now); GCC 16 -Wnoexcept on `vector<Rect>::emplace_back(DrawPoint, Extent)`
 (push_back(Rect(...)) now); gcc-10 coverage rejected the unexecuted `catch(...)` restore in a test (the
 fixture destructor restores the screen now). **Check formatting with the CI's clang-format 10:**
-`/app/agent/data/siedler/cf10/clang_format/data/bin/clang-format` (pip wheel unpacked there).
+`/app/agent/data/siedler/cf10/clang_format/data/bin/clang-format` (pip wheel unpacked there). CI's
+clang-tidy 18 is at `/app/agent/data/siedler/ct18/clang_tidy/data/bin/clang-tidy`: `ninja -t compdb` in
+build/dbg, strip `ccache`, then `clang-tidy -p <db> --extra-arg=-Wno-unknown-warning-option` per file -
+minutes instead of the CI job's hour+. Second CI round (72832cba0): gcc-10 coverage flagged a test loop
+whose body never ran (focus was already there) - use the shared walk helper instead of local loops.
 Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself. Under Xvfb the client
 sometimes opens a 1024×768 window on an 800×600 screen (random; the old menus are cut off the same way) -
 check the FPS counter is visible before trusting an 800×600 screenshot.
