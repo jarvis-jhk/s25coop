@@ -5,6 +5,12 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- New start screen: after the intro the game opens a full-screen home page with big tiles for
+  resuming your last game, campaigns, maps, loading a game, online play, options and more. It works
+  with a controller (D-pad, A to open, B to come back) as well as with the mouse, uses the whole
+  screen on a Steam Deck instead of stretching, and the help line at the bottom shows which buttons
+  do what. Coming back from any menu puts you on the tile you opened. The old main menu is still
+  there under "Classic menus", and its "New menus" button leads back.
 - When several controller players share one tribe, an economy window (distribution, transport,
   tools, military, building order) that one of them has open now shows the changes another player
   makes, instead of the old values.

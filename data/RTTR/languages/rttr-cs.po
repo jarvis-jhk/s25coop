@@ -1123,6 +1123,10 @@ msgstr "Výběr mise"
 msgid "Classic (Settlers 2)"
 msgstr "Klasika (Settlers 2)"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Classic menus"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:57
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:145
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:159
@@ -3014,6 +3018,10 @@ msgstr "Mapování"
 msgid "Maps"
 msgstr "Mapy"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Maps & scenarios"
+msgstr ""
+
 #: libs/s25main/addons/AddonNumScoutsExploration.h:27
 msgid "Maximal"
 msgstr "Nejvýše"
@@ -3330,6 +3338,10 @@ msgstr "Byla dokončena stavba nové loděnice"
 #: libs/s25main/desktops/dskSelectMap.cpp:103
 msgid "New maps"
 msgstr "Nové mapy"
+
+#: libs/s25main/desktops/dskMainMenu.cpp
+msgid "New menus"
+msgstr ""
 
 #: libs/s25main/buildings/nobStorehouse.cpp:20
 msgid "New storehouse finished"
@@ -3741,6 +3753,10 @@ msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:503
 msgid "Play one tribe together"
+msgstr ""
+
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Play online"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68

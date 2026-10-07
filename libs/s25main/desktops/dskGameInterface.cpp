@@ -1737,17 +1737,7 @@ void dskGameInterface::DrawBrief(const PlayerView& view,
         if(line.keyRuns.empty())
             font.Draw(pos, line.text, FontStyle{}, line.color);
         else
-        {
-            for(const auto& run : line.keyRuns)
-            {
-                const DrawPoint origin = pos + DrawPoint(static_cast<int>(run.x), 0);
-                if(run.badgeColor)
-                    brief::EmitKeyBadge(Rect(origin, Extent(run.width, font.getHeight())), run.badgeColor,
-                                        drawRectangle);
-                font.Draw(origin + DrawPoint(run.badgeColor ? brief::keyTextPadding : 0, 0), run.text, FontStyle{},
-                          run.textColor);
-            }
-        }
+            brief::DrawKeyRuns(pos, line.keyRuns, font, drawRectangle);
     });
 }
 

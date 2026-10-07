@@ -11,7 +11,7 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlTimer.h"
-#include "dskMainMenu.h"
+#include "dskHome.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwMusicPlayer.h"
 #include "mygettext/mygettext.h"
@@ -52,13 +52,13 @@ void dskSplash::Msg_Timer(const unsigned ctrl_id)
         isLoading = true;
         LoadFiles();
     } else if(isLoaded)
-        WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+        WINDOWMANAGER.Switch(dskHome::Create());
 }
 
 bool dskSplash::Msg_LeftDown(const MouseCoords& /*mc*/)
 {
     if(isLoaded)
-        WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+        WINDOWMANAGER.Switch(dskHome::Create());
 
     return true;
 }

@@ -6,7 +6,7 @@
 #include "Loader.h"
 #include "Settings.h"
 #include "WindowManager.h"
-#include "desktops/dskMainMenu.h"
+#include "frontend/MenuRoutes.h"
 
 namespace {
 constexpr unsigned ID_btContinue = 0;
@@ -51,6 +51,6 @@ bool dskCampaignVictory::Msg_KeyDown(const KeyEvent&)
 
 bool dskCampaignVictory::ShowMenu()
 {
-    WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+    WINDOWMANAGER.Switch(frontend::MainMenu());
     return true;
 }

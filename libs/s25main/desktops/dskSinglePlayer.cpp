@@ -11,9 +11,9 @@
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
 #include "dskCampaignSelection.h"
-#include "dskMainMenu.h"
 #include "dskSelectMap.h"
 #include "files.h"
+#include "frontend/MenuRoutes.h"
 #include "ingameWindows/iwConnecting.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "ingameWindows/iwPlayReplay.h"
@@ -65,48 +65,12 @@ void dskSinglePlayer::Msg_ButtonClick(const unsigned ctrl_id)
     {
         case 3: // "Letztes Spiel fortsetzen"
         {
-            const std::vector<bfs::path> savFiles = ListDir(RTTRCONFIG.ExpandPath(s25::folders::save), "sav");
-
-            bfs::path mostRecentFilepath;
-            s25util::time64_t recent = 0;
-            for(const auto& savFile : savFiles)
-            {
-                Savegame save;
-
-                // Datei öffnen
-                if(!save.Load(savFile, SaveGameDataToLoad::Header))
-                    continue;
-
-                if(save.GetSaveTime() > recent)
-                {
-                    recent = save.GetSaveTime();
-                    mostRecentFilepath = savFile;
-                }
-            }
-
-            if(recent != 0)
-            {
-                // Dateiname noch rausextrahieren aus dem Pfad
-                if(!mostRecentFilepath.has_filename())
-                    return;
-                const auto name = mostRecentFilepath.stem().string();
-
-                // Server info
-                CreateServerInfo csi = createLocalGameInfo(name);
-
-                WINDOWMANAGER.Switch(std::make_unique<dskSelectMap>(csi));
-
-                if(GAMECLIENT.HostGame(csi, {mostRecentFilepath, MapType::Savegame}))
-                    WINDOWMANAGER.ShowAfterSwitch(std::make_unique<iwConnecting>(csi.type, nullptr));
-                else
-                {
-                    WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"),
-                                                                  _("The specified file couldn't be loaded!"), nullptr,
-                                                                  MsgboxButton::Ok, MsgboxIcon::ExclamationRed));
-                }
-            } else
+            const bfs::path newest = FindNewestSave();
+            if(newest.empty())
                 WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), _("The specified file couldn't be loaded!"),
                                                               nullptr, MsgboxButton::Ok, MsgboxIcon::ExclamationRed));
+            else
+                ResumeSave(newest);
         }
         break;
         case 4: // "Replay abspielen"
@@ -116,7 +80,7 @@ void dskSinglePlayer::Msg_ButtonClick(const unsigned ctrl_id)
         break;
         case 5: // "Kampagne"
         {
-            WINDOWMANAGER.Switch(std::make_unique<dskCampaignSelection>(createLocalGameInfo(_("Campaign"))));
+            OpenCampaigns();
         }
         break;
         case 6: // "Freies Spiel"
@@ -131,10 +95,48 @@ void dskSinglePlayer::Msg_ButtonClick(const unsigned ctrl_id)
         break;
         case 8: // "Zurück"
         {
-            WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+            WINDOWMANAGER.Switch(frontend::MainMenu());
         }
         break;
     }
+}
+
+bfs::path dskSinglePlayer::FindNewestSave()
+{
+    bfs::path mostRecentFilepath;
+    s25util::time64_t recent = 0;
+    for(const auto& savFile : ListDir(RTTRCONFIG.ExpandPath(s25::folders::save), "sav"))
+    {
+        Savegame save;
+        if(!save.Load(savFile, SaveGameDataToLoad::Header))
+            continue;
+        if(save.GetSaveTime() > recent)
+        {
+            recent = save.GetSaveTime();
+            mostRecentFilepath = savFile;
+        }
+    }
+    if(recent == 0 || !mostRecentFilepath.has_filename())
+        return {};
+    return mostRecentFilepath;
+}
+
+void dskSinglePlayer::ResumeSave(const bfs::path& save)
+{
+    const CreateServerInfo csi = createLocalGameInfo(save.stem().string());
+    WINDOWMANAGER.Switch(std::make_unique<dskSelectMap>(csi));
+    if(GAMECLIENT.HostGame(csi, {save, MapType::Savegame}))
+        WINDOWMANAGER.ShowAfterSwitch(std::make_unique<iwConnecting>(csi.type, nullptr));
+    else
+    {
+        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), _("The specified file couldn't be loaded!"), nullptr,
+                                                      MsgboxButton::Ok, MsgboxIcon::ExclamationRed));
+    }
+}
+
+void dskSinglePlayer::OpenCampaigns()
+{
+    WINDOWMANAGER.Switch(std::make_unique<dskCampaignSelection>(createLocalGameInfo(_("Campaign"))));
 }
 
 void dskSinglePlayer::PrepareSinglePlayerServer()

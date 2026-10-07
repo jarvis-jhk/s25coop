@@ -18,8 +18,8 @@
 #include "desktops/dskDirectIP.h"
 #include "desktops/dskLAN.h"
 #include "desktops/dskLobby.h"
-#include "desktops/dskSinglePlayer.h"
 #include "files.h"
+#include "frontend/MenuRoutes.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "helpers/toString.h"
@@ -264,7 +264,7 @@ bool dskSelectMap::Msg_PadCommand(unsigned, const PadButton button)
 void dskSelectMap::GoBack() const
 {
     if(csi.type == ServerType::Local)
-        WINDOWMANAGER.Switch(std::make_unique<dskSinglePlayer>());
+        WINDOWMANAGER.Switch(frontend::SinglePlayerMenu());
     else if(csi.type == ServerType::LAN)
         WINDOWMANAGER.Switch(std::make_unique<dskLAN>());
     else if(csi.type == ServerType::Lobby && LOBBYCLIENT.IsLoggedIn())
@@ -398,7 +398,7 @@ void dskSelectMap::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResult
         else if(csi.type == ServerType::LAN)
             WINDOWMANAGER.Switch(std::make_unique<dskLAN>());
         else
-            WINDOWMANAGER.Switch(std::make_unique<dskSinglePlayer>());
+            WINDOWMANAGER.Switch(frontend::SinglePlayerMenu());
     }
 }
 

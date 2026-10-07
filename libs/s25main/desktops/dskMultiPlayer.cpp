@@ -9,7 +9,7 @@
 
 #include "desktops/dskDirectIP.h"
 #include "desktops/dskLAN.h"
-#include "desktops/dskMainMenu.h"
+#include "frontend/MenuRoutes.h"
 #include "ingameWindows/iwLobbyConnect.h"
 
 /** @class dskMultiPlayer
@@ -55,7 +55,7 @@ void dskMultiPlayer::Msg_ButtonClick(const unsigned ctrl_id)
             WINDOWMANAGER.Switch(std::make_unique<dskDirectIP>());
             break;
         case 6: // Zurück
-            WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+            WINDOWMANAGER.Switch(frontend::MainMenu());
             break;
     }
 }

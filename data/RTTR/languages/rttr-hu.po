@@ -1118,6 +1118,10 @@ msgstr "Válassz küldetést"
 msgid "Classic (Settlers 2)"
 msgstr "Klasszikus (Settlers 2)"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Classic menus"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:57
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:145
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:159
@@ -3011,6 +3015,10 @@ msgstr "Térképszerkesztés"
 msgid "Maps"
 msgstr "Térképek"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Maps & scenarios"
+msgstr ""
+
 #: libs/s25main/addons/AddonNumScoutsExploration.h:27
 msgid "Maximal"
 msgstr "Maximális"
@@ -3327,6 +3335,10 @@ msgstr "Egy új kikötőépület elkészült"
 #: libs/s25main/desktops/dskSelectMap.cpp:103
 msgid "New maps"
 msgstr "Új térképek"
+
+#: libs/s25main/desktops/dskMainMenu.cpp
+msgid "New menus"
+msgstr ""
 
 #: libs/s25main/buildings/nobStorehouse.cpp:20
 msgid "New storehouse finished"
@@ -3738,6 +3750,10 @@ msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:503
 msgid "Play one tribe together"
+msgstr ""
+
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Play online"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68

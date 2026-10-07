@@ -12,12 +12,12 @@
 #include "WindowManager.h"
 #include "desktops/dskCampaignVictory.h"
 #include "desktops/dskLobby.h"
-#include "desktops/dskMainMenu.h"
 #include "desktops/dskSplash.h"
 #include "driver/VideoInterface.h"
 #include "drivers/AudioDriverWrapper.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "files.h"
+#include "frontend/MenuRoutes.h"
 #include "network/GameClient.h"
 #include "network/GameServer.h"
 #include "ogl/glArchivItem_Bitmap.h"
@@ -197,7 +197,7 @@ bool GameManager::ShowMenu()
         WINDOWMANAGER.Switch(std::make_unique<dskCampaignVictory>());
     else
         // Hauptmenü zeigen
-        windowManager_.Switch(std::make_unique<dskMainMenu>());
+        windowManager_.Switch(frontend::MainMenu());
 
     return true;
 }

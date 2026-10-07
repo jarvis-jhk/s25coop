@@ -29,7 +29,7 @@
 #include "desktops/dskGameLoader.h"
 #include "desktops/dskLAN.h"
 #include "desktops/dskLobby.h"
-#include "desktops/dskSinglePlayer.h"
+#include "frontend/MenuRoutes.h"
 #include "helpers/EnumRange.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
@@ -1586,7 +1586,7 @@ void dskGameLobby::Msg_Group_ComboSelectItem(const unsigned group_id, const unsi
 void dskGameLobby::GoBack()
 {
     if(IsSinglePlayer())
-        WINDOWMANAGER.Switch(std::make_unique<dskSinglePlayer>());
+        WINDOWMANAGER.Switch(frontend::SinglePlayerMenu());
     else if(serverType == ServerType::LAN)
         WINDOWMANAGER.Switch(std::make_unique<dskLAN>());
     else if(serverType == ServerType::Lobby && lobbyClient_ && lobbyClient_->IsLoggedIn())

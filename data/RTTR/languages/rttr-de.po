@@ -1119,6 +1119,10 @@ msgstr "Missionsauswahl"
 msgid "Classic (Settlers 2)"
 msgstr "Klassisch"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Classic menus"
+msgstr "Klassische Menüs"
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:57
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:145
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:159
@@ -3014,6 +3018,10 @@ msgstr "Kartengestaltung"
 msgid "Maps"
 msgstr "Karten"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Maps & scenarios"
+msgstr "Karten & Szenarien"
+
 #: libs/s25main/addons/AddonNumScoutsExploration.h:27
 msgid "Maximal"
 msgstr "Maximal"
@@ -3330,6 +3338,10 @@ msgstr "Neues Hafengebäude fertiggestellt"
 #: libs/s25main/desktops/dskSelectMap.cpp:103
 msgid "New maps"
 msgstr "Neue"
+
+#: libs/s25main/desktops/dskMainMenu.cpp
+msgid "New menus"
+msgstr "Neue Menüs"
 
 #: libs/s25main/buildings/nobStorehouse.cpp:20
 msgid "New storehouse finished"
@@ -3742,6 +3754,10 @@ msgstr "Spielt gemeinsam eine Kampagnenmission: Die anderen treten deinem Volk a
 #: libs/s25main/desktops/dskGameLobby.cpp:503
 msgid "Play one tribe together"
 msgstr "Gemeinsam ein Volk spielen"
+
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Play online"
+msgstr "Online spielen"
 
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68
 msgid "Play the host's tribe together"

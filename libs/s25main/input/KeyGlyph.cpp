@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "KeyGlyph.h"
+#include "ogl/FontStyle.h"
 #include "ogl/glFont.h"
 #include <s25util/colors.h>
 #include <algorithm>
@@ -88,6 +89,18 @@ void EmitKeyBadge(const Rect& rect, const unsigned color, const std::function<vo
     emit(Rect(rect.getOrigin() + DrawPoint(static_cast<int>(inset), 0), Extent(size.x - (2 * inset), size.y)), color);
     if(size.y > 2)
         emit(Rect(rect.getOrigin() + DrawPoint(0, 1), Extent(size.x, size.y - 2)), color);
+}
+
+void DrawKeyRuns(const DrawPoint& pos, const std::vector<KeyRun>& runs, const glFont& font,
+                 const std::function<void(const Rect&, unsigned)>& drawRect)
+{
+    for(const auto& run : runs)
+    {
+        const DrawPoint origin = pos + DrawPoint(static_cast<int>(run.x), 0);
+        if(run.badgeColor)
+            EmitKeyBadge(Rect(origin, Extent(run.width, font.getHeight())), run.badgeColor, drawRect);
+        font.Draw(origin + DrawPoint(run.badgeColor ? keyTextPadding : 0, 0), run.text, FontStyle{}, run.textColor);
+    }
 }
 
 } // namespace brief

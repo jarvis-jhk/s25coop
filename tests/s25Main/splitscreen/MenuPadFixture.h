@@ -9,6 +9,7 @@
 #include "desktops/Desktop.h"
 #include "driver/PadEvent.h"
 #include "drivers/VideoDriverWrapper.h"
+#include "frontend/MenuRoutes.h"
 #include "input/MenuPadInput.h"
 #include "input/PadRouter.h"
 #include "mockupDrivers/MockupVideoDriver.h"
@@ -48,11 +49,14 @@ struct MenuPadFixture : uiHelper::Fixture
         // dskMainMenu haengt einen 250ms-Timer an, der eine Nachrichtenbox oeffnet
         // (dskMainMenu.cpp:56-58). Die laege ueber dem Menue und faenge den Fokus ab.
         SETTINGS.global.submitDebugData = SubmitDebugData::Yes;
+        // Upstream's return paths unless a test shows the new home page (frontend/MenuRoutes.h).
+        frontend::SetMenuStyle(frontend::MenuStyle::Classic);
     }
     // NOLINTNEXTLINE(bugprone-exception-escape)
     virtual ~MenuPadFixture()
     {
         SETTINGS.global.submitDebugData = oldSubmitDebugData_;
+        frontend::SetMenuStyle(frontend::MenuStyle::Classic);
         WINDOWMANAGER.GetPadInput().Reset();
         video.padEvents_.clear();
     }

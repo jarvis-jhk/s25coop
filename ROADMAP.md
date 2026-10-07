@@ -8,8 +8,9 @@ starting the binary to being in game, from scratch").** The core goal is a group
 one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c) work; the menus between
 starting the game and playing it are still upstream's mouse screens with controller support bolted on.
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
-   workers. Opus: F1 framework → F2 title/join → F3 home → F7 party. Sol, in parallel on independent scopes:
-   4b on-screen keyboard and 3a/3b addon categories now, then F9 options, F6 load game, F5 maps once F1 is in.
+   workers. Opus: F1 framework ☑ and F3 home ☑ (2026-10-07) → F2 title/join → F7 party. Sol, in parallel on
+   independent scopes: 4b on-screen keyboard and 3a/3b addon categories, then F9 options, F6 load game, F5 maps
+   (F1 is in: build them on dskFrontEndPage).
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
 3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
@@ -196,11 +197,13 @@ starting the game and playing it are still upstream's mouse screens with control
   and slices: [FrontEnd](doc/coop/FrontEnd.md). The old desktops stay reachable ("Classic menus" in Options) until
   F12. Each slice: claims first, physical-input Debug tests, all exact-head CI green.
   Already done and reused: 1a card model (PR #40), 1b local lobby cards (PR #42), 1c read-only player cards (PR #44).
-  - ☐ F1 screen framework: header, tile/list layouts for 800×600 and the Deck's 1280×800, D-pad focus, A/B with a
-    back stack, one footer help line shared with the in-game brief (Opus)
+  - ☑ F1 screen framework: header, tile/list layouts for 800×600 and the Deck's 1280×800, D-pad focus, A/B with a
+    back stack, one footer help line shared with the in-game brief (Opus, 2026-10-07; FrontEnd.md "Framework")
   - ☐ F2 boot and title: skippable splash/intro, "press A / click", every controller joins with A; the joined-player
     strip stays on every later screen (replaces the separate couch join screen) (Opus)
-  - ☐ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus)
+  - ☑ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus,
+    2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
+    and those return to Home. "Classic menus" leads to the old main menu.
   - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
   - ☐ F5 maps & scenarios browser: preview, player-count filter, a scenario is a one-mission campaign (Sol)
   - ☐ F6 load game: save browser (thumbnail, date, players) incl. single-player saves with several players (below) (Sol)

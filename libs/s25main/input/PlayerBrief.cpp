@@ -562,6 +562,7 @@ const char* KeyLabel(const KeyAction action)
         // Was der Stick im Ring TUT, ist zeigen - der Fokus faellt auf den Sektor, in den er
         // zeigt (dskGameInterface::RingSyncFocus). "Waehlen" waere A und damit falsch.
         case KeyAction::AimRing: return _("Point");
+        case KeyAction::PageBack: return _("Back");
     }
     return "";
 }

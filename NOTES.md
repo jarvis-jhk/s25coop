@@ -5,6 +5,33 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-07 — work session: front end F1 (page framework) + F3 (home page)
+
+No open issues or PRs; master CI green at 5f5b4c793. Codex is out of quota until 2026-10-10 02:23 UTC
+(`codex exec` answers "usage limit"), so reviews this session were done by a separate read-only Claude
+agent instead; re-check with gpt-6.1-sol once the quota is back if something looks doubtful.
+F1: `dskFrontEndPage` (header/back/title/player strip, tiles or list, footer help line via the brief's
+key badges, back stack of factories with focus restore), pure `frontend/PageLayout` and `frontend/PageKeys`,
+`brief::DrawKeyRuns` now shared with the in-game brief, `KeyAction::PageBack`, `WindowManager::IsSwitchPending`.
+F3: `dskHome` is the start screen after the splash (tiles: resume last game, campaigns, maps & scenarios,
+load game, play online, options, what's new, credits, classic menus, quit; debug-data question and
+changelog popup moved along). Upstream desktops return through `frontend/MenuRoutes` (Home if it was
+shown last, dskMainMenu after "Classic menus"); default style Classic, so tests and direct starts keep
+upstream's flow; MenuPadFixture resets it. dskSinglePlayer's entries are public statics reused by Home.
+Found by looking at the real client under Xvfb (data/siedler/frontendtest/run.sh <WxH>, screenshots
+there): a desktop queued while the window is resized never gets Msg_ScreenResize (WindowManager only
+tells the current one) - at startup Home was laid out for 1024×768 on an 800×600 screen. Pages now
+re-lay out in SetActive; regression in LayoutFollowsTheScreenIncludingTheDeck.
+Tests: Test_UI FrontEndLayout (6), Test_splitscreen FrontEndPageTests (5) and FrontEndHomeTests (4), all
+physical input; negative controls (trail not pushed, focus not restored, no relayout on resize/activate,
+routes forced classic) each fail. Debug build/dbg: full Test_splitscreen (638) and Test_UI (146) pass; other
+local ctest pass except Test_drivers (no ALSA, as always). Second review pass (agent): no bugs; applied its
+risks - menu style set on activation not construction, "New menus" button in the old main menu as the way
+back, Home resumes the save it found instead of scanning twice. Known gap: no test resumes a real save
+from Home (ResumeSave is upstream's case 3 moved, unchanged).
+Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself.
+Next Opus: F2 title/join (press A, every controller joins, strip on every page), then F7 party.
+
 ## 2026-10-06 — Jan: front end from scratch; glyphs and help toggle on the roadmap only
 
 Jan (Signal, three messages): be "WAY more aggressive" with the menu overhaul — rebuild everything from

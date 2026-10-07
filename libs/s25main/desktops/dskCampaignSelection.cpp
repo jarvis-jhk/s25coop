@@ -15,8 +15,8 @@
 #include "controls/ctrlTimer.h"
 #include "dskCampaignMissionSelection.h"
 #include "dskSelectMap.h"
-#include "dskSinglePlayer.h"
 #include "files.h"
+#include "frontend/MenuRoutes.h"
 #include "helpers/Range.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwMsgbox.h"
@@ -201,7 +201,7 @@ void dskCampaignSelection::Msg_ButtonClick(unsigned ctrl_id)
     {
         // s25coop: a network campaign came from the map selection of "Create game"
         if(csi_.type == ServerType::Local)
-            WINDOWMANAGER.Switch(std::make_unique<dskSinglePlayer>());
+            WINDOWMANAGER.Switch(frontend::SinglePlayerMenu());
         else
             WINDOWMANAGER.Switch(std::make_unique<dskSelectMap>(csi_));
     } else if(ctrl_id == ID_Next)

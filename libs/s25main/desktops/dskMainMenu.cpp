@@ -12,11 +12,13 @@
 #include "controls/ctrlTimer.h"
 #include "coop/Changelog.h"
 #include "desktops/dskCredits.h"
+#include "desktops/dskHome.h"
 #include "desktops/dskIntro.h"
 #include "desktops/dskMultiPlayer.h"
 #include "desktops/dskOptions.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTest.h"
+#include "frontend/MenuRoutes.h"
 #include "ingameWindows/iwChangelog.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "ingameWindows/iwTextfile.h"
@@ -32,7 +34,8 @@ enum
     ID_btChangelog,
     ID_btQuit,
     ID_logo,
-    ID_tmrDebugData
+    ID_tmrDebugData,
+    ID_btNewMenus
 };
 
 dskMainMenu::dskMainMenu()
@@ -51,6 +54,8 @@ dskMainMenu::dskMainMenu()
                   NormalFont);
     AddTextButton(ID_btCredits, DrawPoint(115, 370), Extent(220, 22), TextureColor::Green2, _("Credits"), NormalFont);
     AddTextButton(ID_btQuit, DrawPoint(115, 410), Extent(220, 22), TextureColor::Red1, _("Quit program"), NormalFont);
+    // s25coop: the way back to the new front end's home page (doc/coop/FrontEnd.md)
+    AddTextButton(ID_btNewMenus, DrawPoint(115, 450), Extent(220, 22), TextureColor::Grey, _("New menus"), NormalFont);
 
     AddImage(ID_logo, DrawPoint(20, 20), LOADER.GetImageN("logo", 0));
 
@@ -71,6 +76,10 @@ dskMainMenu::dskMainMenu()
 void dskMainMenu::SetActive(bool activate)
 {
     dskMenuBase::SetActive(activate);
+    // Everything that returns to "the main menu" returns here while it is the one shown
+    // (frontend/MenuRoutes.h). On activation, so a menu built but never shown changes nothing.
+    if(activate && WINDOWMANAGER.GetCurrentDesktop() == this)
+        frontend::SetMenuStyle(frontend::MenuStyle::Classic);
     // Shown on the first activation after the desktop switch, not in the constructor: the switch closes every
     // window, and one queued for it would land on whatever desktop replaced this one if the switch changed.
     if(!activate || pendingChangelog_.empty() || WINDOWMANAGER.GetCurrentDesktop() != this)
@@ -140,6 +149,7 @@ void dskMainMenu::Msg_ButtonClick(const unsigned ctrl_id)
             GLOBALVARS.notdone = false;
             break;
         case ID_btChangelog: WINDOWMANAGER.ToggleWindow(std::make_unique<iwChangelog>()); break;
+        case ID_btNewMenus: WINDOWMANAGER.Switch(dskHome::Create()); break;
         case ID_btReadme: // "Readme"
             WINDOWMANAGER.ToggleWindow(std::make_unique<iwTextfile>("readme.txt", _("Readme!")));
             break;

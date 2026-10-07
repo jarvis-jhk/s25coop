@@ -11,8 +11,8 @@
 #include "dskDirectIP.h"
 #include "dskGameInterface.h"
 #include "dskLobby.h"
-#include "dskSinglePlayer.h"
 #include "files.h"
+#include "frontend/MenuRoutes.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "network/GameClient.h"
 #include "ogl/FontStyle.h"
@@ -58,7 +58,7 @@ void dskGameLoader::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResul
         if(LOBBYCLIENT.IsLoggedIn()) // steht die Lobbyverbindung noch?
             WINDOWMANAGER.Switch(std::make_unique<dskLobby>());
         else if(loader_.getGame()->world_.IsSinglePlayer())
-            WINDOWMANAGER.Switch(std::make_unique<dskSinglePlayer>());
+            WINDOWMANAGER.Switch(frontend::SinglePlayerMenu());
         else
             WINDOWMANAGER.Switch(std::make_unique<dskDirectIP>());
     }

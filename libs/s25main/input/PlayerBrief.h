@@ -173,6 +173,8 @@ enum class KeyAction
     /// und bis zur Korrektur der einzige belegte Eingang, den die Leiste konstruktiv nicht
     /// nennen KONNTE, weil ein Stickausschlag kein PadButton ist (Befund K2/4E).
     AimRing,
+    /// B on a front-end page: back to the page this one was opened from (dskFrontEndPage).
+    PageBack,
     /// L3: view-only building spots, available before ring, focus and watch-only routing.
     ToggleConstructionAid,
     PanCamera,

@@ -9,11 +9,11 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "drivers/AudioDriverWrapper.h"
+#include "frontend/MenuRoutes.h"
 #include "ogl/FontStyle.h"
 #include "ogl/glArchivItem_Bitmap_Raw.h"
 #include "ogl/glArchivItem_Sound_Wave.h"
 
-#include "dskMainMenu.h"
 #include "libsiedler2/PixelBufferBGRA.h"
 #include <boost/format.hpp>
 #include <algorithm>
@@ -145,7 +145,7 @@ void dskIntro::finish()
     if(next_)
         WINDOWMANAGER.Switch(next_());
     else
-        WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+        WINDOWMANAGER.Switch(frontend::MainMenu());
 }
 
 bool dskIntro::Msg_PadCommand(unsigned, const PadButton button)

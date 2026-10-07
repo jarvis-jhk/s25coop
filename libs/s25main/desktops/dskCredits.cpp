@@ -9,7 +9,7 @@
 #include "controls/ctrlButton.h"
 #include "controls/ctrlTimer.h"
 #include "drivers/VideoDriverWrapper.h"
-#include "dskMainMenu.h"
+#include "frontend/MenuRoutes.h"
 #include "helpers/mathFuncs.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "lua/GameDataLoader.h"
@@ -482,7 +482,7 @@ void dskCredits::Msg_Timer(unsigned timerId)
 
 bool dskCredits::Close()
 {
-    WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+    WINDOWMANAGER.Switch(frontend::MainMenu());
     return true;
 }
 

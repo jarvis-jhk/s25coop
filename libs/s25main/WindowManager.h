@@ -175,6 +175,8 @@ public:
     void CloseNow(IngameWindow* window);
     /// merkt einen Desktop zum Wechsel vor.
     Desktop* Switch(std::unique_ptr<Desktop> desktop);
+    /// Is a desktop queued by Switch that has not replaced the current one yet?
+    bool IsSwitchPending() const { return nextdesktop != nullptr; }
     /// Process press of left mouse button
     void Msg_LeftDown(MouseCoords mc) override;
     /// Process release of left mouse button

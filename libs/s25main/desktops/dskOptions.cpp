@@ -16,10 +16,11 @@
 #include "controls/ctrlOptionGroup.h"
 #include "controls/ctrlProgress.h"
 #include "controls/ctrlTextButton.h"
+#include "desktops/dskMenuBase.h"
 #include "driver/VideoDriver.h"
 #include "drivers/AudioDriverWrapper.h"
 #include "drivers/VideoDriverWrapper.h"
-#include "dskMainMenu.h"
+#include "frontend/MenuRoutes.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "helpers/mathFuncs.h"
@@ -771,7 +772,7 @@ void dskOptions::Msg_ButtonClick(const unsigned ctrl_id)
                 return;
             }
 
-            WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>());
+            WINDOWMANAGER.Switch(frontend::MainMenu());
         }
         break;
         case ID_btAddons: WINDOWMANAGER.ToggleWindow(std::make_unique<iwAddons>(ggs)); break;
@@ -801,7 +802,7 @@ void dskOptions::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResult /
         default: break;
         // "You need to restart your game ..."
         // "The selected video driver does not support GUI scaling!"
-        case 1: WINDOWMANAGER.Switch(std::make_unique<dskMainMenu>()); break;
+        case 1: WINDOWMANAGER.Switch(frontend::MainMenu()); break;
     }
 }
 

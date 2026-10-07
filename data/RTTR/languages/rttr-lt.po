@@ -1102,6 +1102,10 @@ msgstr ""
 msgid "Classic (Settlers 2)"
 msgstr "Klasikinis (Settlers 2)"
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Classic menus"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:57
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:145
 #: libs/s25main/ingameWindows/iwPlayReplay.cpp:159
@@ -2965,6 +2969,10 @@ msgstr "Žemėlapiai"
 msgid "Maps"
 msgstr ""
 
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Maps & scenarios"
+msgstr ""
+
 #: libs/s25main/addons/AddonNumScoutsExploration.h:27
 msgid "Maximal"
 msgstr ""
@@ -3281,6 +3289,10 @@ msgstr "Naujas uostas užbaiktas"
 #: libs/s25main/desktops/dskSelectMap.cpp:103
 msgid "New maps"
 msgstr "Nauji žemėlapiai"
+
+#: libs/s25main/desktops/dskMainMenu.cpp
+msgid "New menus"
+msgstr ""
 
 #: libs/s25main/buildings/nobStorehouse.cpp:20
 msgid "New storehouse finished"
@@ -3692,6 +3704,10 @@ msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:503
 msgid "Play one tribe together"
+msgstr ""
+
+#: libs/s25main/desktops/dskHome.cpp
+msgid "Play online"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:68
