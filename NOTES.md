@@ -39,7 +39,11 @@ anonymous namespace nested in another one (moved to top level); MSVC "ambiguous 
 `[this]` lambda (plain loop now); GCC 16 -Wnoexcept on `vector<Rect>::emplace_back(DrawPoint, Extent)`
 (push_back(Rect(...)) now); gcc-10 coverage rejected the unexecuted `catch(...)` restore in a test (the
 fixture destructor restores the screen now). **Check formatting with the CI's clang-format 10:**
-`/app/agent/data/siedler/cf10/clang_format/data/bin/clang-format` (pip wheel unpacked there).
+`/app/agent/data/siedler/cf10/clang_format/data/bin/clang-format` (pip wheel unpacked there). CI's
+clang-tidy 18 is at `/app/agent/data/siedler/ct18/clang_tidy/data/bin/clang-tidy`: `ninja -t compdb` in
+build/dbg, strip `ccache`, then `clang-tidy -p <db> --extra-arg=-Wno-unknown-warning-option` per file -
+minutes instead of the CI job's hour+. Second CI round (72832cba0): gcc-10 coverage flagged a test loop
+whose body never ran (focus was already there) - use the shared walk helper instead of local loops.
 Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself. Under Xvfb the client
 sometimes opens a 1024×768 window on an 800×600 screen (random; the old menus are cut off the same way) -
 check the FPS counter is visible before trusting an 800×600 screenshot.
@@ -731,3 +735,23 @@ Clang-format10, static validation, doc lint, diff/private-string checks and actu
 agent tsc pass. Keep the PR draft until all17 exact-head check runs AND both
 complete Unit tests/Static analysis workflows pass; then ready/tested handoff to
 Opus, release finished claims and run the budget gate. No new slice before handoff.
+
+
+## 2026-10-07 — Sol PR45: inherit the existing front-end CI repair
+
+Exact head6561523d failed the gcc-10 coverage check solely at inherited
+testFrontEndHome.cpp:177 (99.22%; an unexecuted shoulder loop). The new addon
+test and shared AddonPadNavigation helper both report100% line coverage.
+Current master0142389c9 already replaces that loop with the existing focus
+helper and fixes front-end Clang18 diagnostics. Merge that committed repair
+without editing Opus-owned front-end files; both workers' notes are preserved.
+Own Debug/Werror max2 rebuild and affected physical suites are the new local
+gate; all17 fresh exact-head checks and both complete workflows still required
+before ready/tested handoff. No independent addon behavior change or new slice.
+
+Repaired merge local gate passed: fresh affected Debug FrontEndPage/Home/Title,
+PartyModel and both addon physical suites, plus complete UI146cases/14664
+assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
+static validation and actual agent tsc pass. All10 Sol source/test hashes match
+the previously fully tested source. Fresh repaired-head CI supersedes old CI;
+PR45 stays draft with its source/test claims until the complete exact-head gate.

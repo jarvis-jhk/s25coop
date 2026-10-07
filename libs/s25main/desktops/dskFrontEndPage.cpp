@@ -33,7 +33,8 @@ unsigned lineHeight()
 }
 } // namespace
 
-dskFrontEndPage::dskFrontEndPage(std::string title) : Desktop(nullptr), pageBackground_(LOADER.GetImageN("menu", 0))
+dskFrontEndPage::dskFrontEndPage(const std::string& title)
+    : Desktop(nullptr), pageBackground_(LOADER.GetImageN("menu", 0))
 {
     // Positions are actual render units (Layout), not an 800×600 design scaled up by the window.
     SetScale(false);
@@ -158,13 +159,13 @@ Window* dskFrontEndPage::GetPadEntryCtrl(unsigned /*slot*/)
 {
     if(restoreFocus_)
     {
-        Window* wnd = GetCtrl<Window>(restoreFocus_);
+        auto* wnd = GetCtrl<Window>(restoreFocus_);
         if(wnd && wnd->IsVisible() && wnd->CanFocus())
             return wnd;
     }
     for(const unsigned id : items_)
     {
-        Window* wnd = GetCtrl<Window>(id);
+        auto* wnd = GetCtrl<Window>(id);
         if(wnd && wnd->IsVisible() && wnd->CanFocus())
             return wnd;
     }
