@@ -5,6 +5,37 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-07 — recurring Windows post-build DLL copy race repaired
+
+Request t_muxwyuu985lu4 reports Unit tests 37597827253 on old master 70d1a5dab, failed only in
+Windows Release x64 Build. Exact job 112714804282 log: ai-battle's post-build copy_if_different
+could not copy libvorbisfile-3.dll into the common Release directory (MSB3073). Compilation and
+links, including Test_splitscreen, completed; ctest was skipped. Same failure class as PR34's
+libogg-0.dll and the 2026-10-04 libiconv2.dll incident, so the documented recurrence policy calls
+for a repair rather than another retry. Full private log: data/siedler/master-70d1-win64-build.log.
+
+The project-local GatherDll module keeps upstream discovery/cache and overrides only copying.
+Each generated per-target/config script locks its actual destination directory with a bounded,
+process-scoped CMake file lock, then copies the gathered DLLs; fatal errors release the lock and
+fail the build. Missing-file warnings and native-Windows/cross-compilation gates are retained.
+No submodule source edits and no serialized compilation: only colliding post-build writes wait.
+
+Own tools/ci/testRuntimeDllCopy.py configures/builds two real targets with paths containing spaces,
+executes their real generated copy scripts under a held lock, verifies both wait and copied bytes
+match. Executed lock omission bypasses the held lock; one unprotected writer makes that control
+independent of the original nondeterministic race. Both positive and negative passed on Linux;
+root Debug CMake configure passed. Windows Unit tests now run this same harness natively before
+ctest in all four configurations. Exactly gpt-6.1-sol read-only review found no production blocker;
+its negative-test Windows-race concern was fixed, final review approved. Fresh native Windows CI
+remains necessary. Existing 670-case game regression stays valid: no C++/game/test-body bytes changed
+from 22fb24f85. No repeated game build/test and no old-head retry. Existing failed-workflow reporting
+continues to reach the lane; no new reporting service or public endpoint.
+
+Coalesced t_muxx6cjm999ox documentation scope release is fulfilled; t_muxxcqu2ac9ie release gate
+follows the repaired current master and sole 71fae965 continuation. No tag/release/Signal notice until
+both complete workflows and release assets pass. Private primary-party checkpoint tracks current
+head, exact CI and retained schedule id/time; earlier 22fb24f85 checks cannot establish repair readiness.
+
 ## 2026-10-07 — F7 joined-party seating prerequisite
 
 Quota gate permitted work (weekly 2%, session 21%); open issues and PRs were empty at selection.
@@ -36,7 +67,7 @@ reporting retained, no new service/secret endpoint. No Deck/hardware or packaged
 Next: finish the full-screen F7 party page on the common page framework; do not mark F7 complete
 because the old lobby now seats a party. The previous primary release continuation 9d71cfbb was consumed during this run as request
 t_muxxcqu2ac9ie; its gate now follows this new master. One replacement continuation/checkpoint owns
-fresh CI, tag and release-assets verification. Coordination request t_muxwyuu985lu4 is fulfilled;
+fresh CI, tag and release-assets verification. Coordination request t_muxx6cjm999ox is fulfilled;
 no duplicate release schedule or progress message to Jan.
 
 ## 2026-10-07 — PR45 primary integration review

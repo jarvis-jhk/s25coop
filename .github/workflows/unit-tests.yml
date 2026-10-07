@@ -67,6 +67,8 @@ jobs:
               %cmakeFlags% ..
       - name: 'Build'
         run: cmake --build build_dir --config ${{matrix.type}} --parallel 4
+      - name: 'Verify runtime DLL copy serialization'
+        run: python tools/ci/testRuntimeDllCopy.py
       - name: 'Test'
         run: ctest --test-dir build_dir --output-on-failure -C ${{matrix.type}} --parallel 4
 

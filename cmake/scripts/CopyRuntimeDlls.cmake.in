@@ -1,0 +1,19 @@
+# Copyright (C) 2026 s25coop contributors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+set(destination [==[@RTTR_DLL_DESTINATION@]==])
+set(sources [==[@RTTR_DLL_SOURCES@]==])
+file(MAKE_DIRECTORY "${destination}")
+# All target scripts lock the destination, rather than their individual script/target names.
+file(LOCK "${destination}/.rttr-runtime-dlls.lock" GUARD PROCESS TIMEOUT 120 RESULT_VARIABLE lock_result)
+if(NOT lock_result STREQUAL "0")
+    message(FATAL_ERROR "Could not lock runtime DLL directory ${destination}: ${lock_result}")
+endif()
+foreach(source IN LISTS sources)
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${source}" "${destination}"
+                    RESULT_VARIABLE copy_result)
+    if(NOT copy_result STREQUAL "0")
+        message(FATAL_ERROR "Could not copy runtime DLL ${source} into ${destination}")
+    endif()
+endforeach()
