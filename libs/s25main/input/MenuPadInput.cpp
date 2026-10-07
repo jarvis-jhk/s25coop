@@ -36,6 +36,7 @@ void MenuPadInput::Pump(const std::vector<PadEvent>& events, const unsigned elap
     // dskGameInterface::UpdateInput.
     router_.SetNumSlots(desktop ? std::min(desktop->GetNumPadSlots(), MaxSlots) : 1u);
     router_.OnEvents(events);
+    party_.Retain([this](const PadDeviceId device) noexcept { return router_.HasDevice(device); });
 
     // Die Wurzel kann sich zwischen zwei Frames geaendert haben, ohne dass ein Padereignis
     // daran beteiligt war: ein Desktopwechsel, ein geoeffnetes Fenster, eine Nachrichtenbox.
@@ -223,6 +224,7 @@ void MenuPadInput::Reset()
 {
     ClearFocus();
     router_.Clear();
+    party_.Clear();
     hasDevice_.fill(false);
     swallowFrame_.fill(false);
     focusUntouched_.fill(false);

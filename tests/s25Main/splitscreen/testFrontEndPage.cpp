@@ -67,11 +67,17 @@ struct FrontEndPageFixture : rttr::test::MenuPadFixture
     const unsigned savedScale = VIDEODRIVER.getGuiScale().percent();
     const unsigned savedReference = VIDEODRIVER.getUiReferenceHeight();
 
+    /// Set before a test changes the screen; the destructor puts it back on every exit, also after a
+    /// failed REQUIRE.
+    bool screenChanged = false;
+
     // NOLINTNEXTLINE(bugprone-exception-escape)
     ~FrontEndPageFixture() override
     {
         WINDOWMANAGER.Switch(std::make_unique<Desktop>(nullptr));
         WINDOWMANAGER.Draw();
+        if(screenChanged)
+            restoreScreen();
     }
 
     void restoreScreen()
@@ -239,12 +245,12 @@ BOOST_FIXTURE_TEST_CASE(LayoutFollowsTheScreenIncludingTheDeck, FrontEndPageFixt
             BOOST_TEST(inside(item.GetDrawRect(), frame.content));
         }
     };
-    try
     {
         start(8);
         check(VIDEODRIVER.GetRenderSize());
         const Extent small = page().GetCtrl<Window>(TestPage::firstItem)->GetSize();
         // The Deck: 1280×800 at its automatic 125 % gives 1024×640 render units (PR #41).
+        screenChanged = true;
         SETTINGS.video.steamDeckUi = true;
         SETTINGS.video.guiScale = 0;
         SETTINGS.video.tvMode = false;
@@ -278,12 +284,7 @@ BOOST_FIXTURE_TEST_CASE(LayoutFollowsTheScreenIncludingTheDeck, FrontEndPageFixt
         BOOST_TEST_REQUIRE(page().depth == 5u);
         BOOST_TEST_REQUIRE((VIDEODRIVER.GetRenderSize() == Extent(800, 600)));
         check(Extent(800, 600));
-    } catch(...)
-    {
-        restoreScreen();
-        throw;
     }
-    restoreScreen();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -7,6 +7,7 @@
 #include "input/FocusPath.h"
 #include "input/IPadTarget.h"
 #include "input/PadRouter.h"
+#include "input/Party.h"
 #include "world/ViewportLayout.h"
 #include <array>
 #include <vector>
@@ -61,6 +62,10 @@ public:
     /// Das Geraet, das gerade handelt - InvalidPadDevice ausserhalb der Zustellung.
     PadDeviceId GetActingDevice() const;
 
+    /// Who joined on the title page (F2). Lives here because the device inventory lives here: both
+    /// must survive desktop switches, and an unplugged controller leaves both.
+    Party& GetParty() { return party_; }
+    const Party& GetParty() const { return party_; }
     PadRouter& GetRouter() { return router_; }
     const PadRouter& GetRouter() const { return router_; }
     FocusPath& GetFocus(unsigned slot) { return focus_[slot]; }
@@ -95,6 +100,7 @@ private:
     void ResetFocus(unsigned slot);
 
     PadRouter router_;
+    Party party_;
     std::array<FocusPath, MaxSlots> focus_;
     std::array<bool, MaxSlots> hasDevice_{};
     /// Der AUFNAHMEDRUCK wirkt nicht. Wer sein Pad mit A in die Hand nimmt, bekommt in

@@ -14,6 +14,7 @@
 #include "desktops/dskMultiPlayer.h"
 #include "desktops/dskOptions.h"
 #include "desktops/dskSinglePlayer.h"
+#include "desktops/dskTitle.h"
 #include "frontend/MenuRoutes.h"
 #include "ingameWindows/iwChangelog.h"
 #include "ingameWindows/iwMsgbox.h"
@@ -89,6 +90,12 @@ void dskHome::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResult mbr)
         return;
     SETTINGS.global.submitDebugData = mbr == MsgboxResult::Yes ? SubmitDebugData::Yes : SubmitDebugData::AlwaysAsk;
     SETTINGS.Save();
+}
+
+bool dskHome::OnBackAtRoot()
+{
+    WINDOWMANAGER.Switch(dskTitle::Create());
+    return true;
 }
 
 void dskHome::OnChoose(const unsigned ctrl_id)

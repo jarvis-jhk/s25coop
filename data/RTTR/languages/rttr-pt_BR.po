@@ -1791,6 +1791,10 @@ msgstr "Erro na contagem de eventos. Eventos lidos: %1%. Eventos esperados: %2%.
 msgid "Every GF"
 msgstr "Cada GF"
 
+#: libs/s25main/desktops/dskTitle.cpp
+msgid "Every player: press A to join"
+msgstr ""
+
 msgid "Every ware of yours goes in and out through this flag. Press A to start your first road here."
 msgstr ""
 
@@ -2652,6 +2656,10 @@ msgstr ""
 #, fuzzy
 msgid "Leatherworks"
 msgstr "Metalúrgica"
+
+#: libs/s25main/input/PlayerBrief.cpp
+msgid "Leave"
+msgstr ""
 
 msgid "Left stick"
 msgstr ""
@@ -3861,6 +3869,10 @@ msgstr ""
 
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:141
 msgid "Preset Not Found"
+msgstr ""
+
+#: libs/s25main/desktops/dskTitle.cpp
+msgid "Press A"
 msgstr ""
 
 #: libs/s25main/input/PlayerBrief.cpp:141

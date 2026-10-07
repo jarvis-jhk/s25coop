@@ -19,7 +19,6 @@
 #include "ogl/glFont.h"
 #include "s25util/colors.h"
 #include <algorithm>
-#include <iterator>
 
 namespace {
 constexpr Extent backButtonSize(96, 28);
@@ -211,15 +210,18 @@ void dskFrontEndPage::Layout()
     const int headerMid = header.top + static_cast<int>(header.getSize().y / 2);
 
     auto* back = GetCtrl<ctrlButton>(ID_btBack);
-    back->SetVisible(CanGoBack());
+    back->SetVisible(HasBackAction());
     back->SetPos(DrawPoint(static_cast<int>(frontend::pageMargin), headerMid - static_cast<int>(backButtonSize.y / 2)));
     const int titleLeft = static_cast<int>(frontend::pageMargin)
                           + (back->IsVisible() ? static_cast<int>(backButtonSize.x + frontend::pageMargin) : 0);
     GetCtrl<ctrlText>(ID_txtTitle)->SetPos(DrawPoint(titleLeft, headerMid));
 
     std::vector<unsigned> shown;
-    std::copy_if(items_.begin(), items_.end(), std::back_inserter(shown),
-                 [this](unsigned id) { return GetCtrl<Window>(id)->IsVisible(); });
+    for(const unsigned id : items_)
+    {
+        if(GetCtrl<Window>(id)->IsVisible())
+            shown.push_back(id);
+    }
     std::vector<Rect> rects;
     if(layout_ == ContentLayout::Tiles)
         rects = frontend::LayoutTiles(frame_.content, static_cast<unsigned>(shown.size()), tileAspect_, maxTile_).tiles;
@@ -240,6 +242,12 @@ void dskFrontEndPage::Layout()
             text->SetFont(large ? LargeFont : NormalFont);
         }
     }
+    OnLayout();
+}
+
+std::vector<brief::KeyHint> dskFrontEndPage::FooterKeys(const FocusPath& focus) const
+{
+    return frontend::PageKeys(focus, HasBackAction());
 }
 
 void dskFrontEndPage::Draw_()
@@ -255,24 +263,32 @@ void dskFrontEndPage::Draw_()
 
 void dskFrontEndPage::DrawPlayerStrip()
 {
+    // Player number and colour index per badge: the party that joined on the title page (F2), else every
+    // slot that has a controller in hand (a page shown without going through the title, e.g. in tests).
     const MenuPadInput& pads = WINDOWMANAGER.GetPadInput();
-    std::vector<unsigned> slots;
-    for(unsigned slot = 0; slot < MenuPadInput::MaxSlots; ++slot)
+    std::vector<unsigned> players;
+    const Party& party = pads.GetParty();
+    for(unsigned i = 0; i < party.Members().size(); ++i)
+        players.push_back(i);
+    if(players.empty())
     {
-        if(pads.HasDevice(slot))
-            slots.push_back(slot);
+        for(unsigned slot = 0; slot < MenuPadInput::MaxSlots; ++slot)
+        {
+            if(pads.HasDevice(slot))
+                players.push_back(slot);
+        }
     }
-    stripRects_ = frontend::LayoutPlayerStrip(frame_.header, static_cast<unsigned>(slots.size()), stripBadge);
-    for(unsigned i = 0; i < slots.size(); ++i)
+    stripRects_ = frontend::LayoutPlayerStrip(frame_.header, static_cast<unsigned>(players.size()), stripBadge);
+    for(unsigned i = 0; i < players.size(); ++i)
     {
-        // The same colour as the slot's focus ring (MenuPadInput::DrawRings) and its in-game seat.
-        const unsigned color = PLAYER_COLORS[slots[i] % PLAYER_COLORS.size()];
+        // The same colour as the player's focus ring (MenuPadInput::DrawRings) and their in-game seat.
+        const unsigned color = PLAYER_COLORS[players[i] % PLAYER_COLORS.size()];
         brief::EmitKeyBadge(stripRects_[i], color, [](const Rect& r, unsigned c) { DrawRectangle(r, c); });
         if(NormalFont)
         {
             const Rect& r = stripRects_[i];
             NormalFont->Draw(DrawPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2),
-                             "P" + std::to_string(slots[i] + 1), FontStyle::CENTER | FontStyle::VCENTER, COLOR_WHITE);
+                             "P" + std::to_string(players[i] + 1), FontStyle::CENTER | FontStyle::VCENTER, COLOR_WHITE);
         }
     }
 }
@@ -284,7 +300,7 @@ void dskFrontEndPage::DrawFooter()
     const MenuPadInput& pads = WINDOWMANAGER.GetPadInput();
     const FocusPath& focus = pads.GetFocus(0);
     if(pads.HasDevice(0) && focus.GetRoot() == this)
-        footerKeys_ = frontend::PageKeys(focus, HasBackAction());
+        footerKeys_ = FooterKeys(focus);
     else
         footerKeys_.clear();
     if(footerKeys_.empty() || !NormalFont)

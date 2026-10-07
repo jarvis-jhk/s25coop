@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+class FocusPath;
 class ctrlButton;
 
 /// One full-screen page of the new front end (doc/coop/FrontEnd.md, slice F1).
@@ -104,6 +105,11 @@ protected:
     void SetEntryFocus(unsigned ctrl_id) { restoreFocus_ = ctrl_id; }
     /// Recompute positions of everything; call after adding or hiding items.
     void Layout();
+
+    /// After every Layout(): place the page's own controls (those not added with AddItem) in GetFrame().
+    virtual void OnLayout() {}
+    /// The footer help line for the controller in slot 0. Default: frontend::PageKeys.
+    virtual std::vector<brief::KeyHint> FooterKeys(const FocusPath& focus) const;
 
     /// A content item (or any other button of the page) was clicked or activated with A.
     virtual void OnChoose(unsigned /*ctrl_id*/) {}

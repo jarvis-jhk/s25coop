@@ -29,8 +29,21 @@ local ctest pass except Test_drivers (no ALSA, as always). Second review pass (a
 risks - menu style set on activation not construction, "New menus" button in the old main menu as the way
 back, Home resumes the save it found instead of scanning twice. Known gap: no test resumes a real save
 from Home (ResumeSave is upstream's case 3 moved, unchanged).
-Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself.
-Next Opus: F2 title/join (press A, every controller joins, strip on every page), then F7 party.
+F2 in the same session: `dskTitle` after the splash (Home's B returns to it) and `input/Party` (joined
+controllers in join order, kept by MenuPadInput, unplugging leaves it; the player strip on every page shows
+it). The title offers MenuPadInput::MaxSlots slots, so a controller's first press gets it a slot and IS its
+join (the pick-up press is swallowed anyway). Tests FrontEndTitleTests (4) + PartyModel; negative controls
+(no auto-join, no unplug cleanup) fail. Full Debug Test_splitscreen (643) and Test_UI (146) pass.
+First CI on d33ffcc3f failed: clang-format 10 wants a different layout than local clang-format 14 for an
+anonymous namespace nested in another one (moved to top level); MSVC "ambiguous GetCtrl" inside a
+`[this]` lambda (plain loop now); GCC 16 -Wnoexcept on `vector<Rect>::emplace_back(DrawPoint, Extent)`
+(push_back(Rect(...)) now); gcc-10 coverage rejected the unexecuted `catch(...)` restore in a test (the
+fixture destructor restores the screen now). **Check formatting with the CI's clang-format 10:**
+`/app/agent/data/siedler/cf10/clang_format/data/bin/clang-format` (pip wheel unpacked there).
+Not seen yet: a controller on the real screen (Xvfb has no pad), the Deck itself. Under Xvfb the client
+sometimes opens a 1024×768 window on an 800×600 screen (random; the old menus are cut off the same way) -
+check the FPS counter is visible before trusting an 800×600 screenshot.
+Next Opus: F7 party (seat exactly the joined party in the lobby, cards), then F4/F10.
 
 ## 2026-10-06 — Jan: front end from scratch; glyphs and help toggle on the roadmap only
 

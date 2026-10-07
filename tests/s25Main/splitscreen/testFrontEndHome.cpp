@@ -14,6 +14,7 @@
 #include "desktops/dskOptions.h"
 #include "desktops/dskSelectMap.h"
 #include "desktops/dskSinglePlayer.h"
+#include "desktops/dskTitle.h"
 #include "driver/MouseCoords.h"
 #include "frontend/MenuRoutes.h"
 #include "ingameWindows/iwSave.h"
@@ -114,10 +115,11 @@ BOOST_FIXTURE_TEST_CASE(EntryAndFooterWithoutSavegames, HomeFixture)
         const Rect& c = home.GetFrame().content;
         BOOST_TEST((r.left >= c.left && r.right <= c.right && r.top >= c.top && r.bottom <= c.bottom));
     }
-    // B on Home does nothing (there is no "back" from the first screen).
+    // B on Home leads to the title page, where more players can join.
+    BOOST_TEST(home.HasBackAction());
     press(pad, PadButton::B);
     frame();
-    BOOST_TEST(desktopAs<dskHome>() != nullptr);
+    BOOST_TEST(desktopAs<dskTitle>() != nullptr);
     BOOST_TEST(running);
 }
 

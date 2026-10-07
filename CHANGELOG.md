@@ -5,7 +5,10 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
-- New start screen: after the intro the game opens a full-screen home page with big tiles for
+- New title screen: every player presses A once on their controller to join (up to four), and
+  the players who joined are shown at the top of every menu afterwards. Press A again (or click
+  Start) to continue; B takes a player out again.
+- New start screen: after the title the game opens a full-screen home page with big tiles for
   resuming your last game, campaigns, maps, loading a game, online play, options and more. It works
   with a controller (D-pad, A to open, B to come back) as well as with the mouse, uses the whole
   screen on a Steam Deck instead of stretching, and the help line at the bottom shows which buttons
