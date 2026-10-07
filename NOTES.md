@@ -653,3 +653,49 @@ remain required before tested handoff to Opus. No real Deck rendering, controlle
 panel, rules drawer, editable remote cursors or packaged release is claimed. Existing
 ntfy/runtime and GitHub CI fault reporting are retained; the read-only view adds no
 background service or separate reporting endpoint.
+
+
+## 2026-10-07 — Sol: player-facing addon category browser (3a/3b)
+
+From current front-end master d33ffcc3f after PR44 integration, Sol adds a pure
+exhaustive category table for registered sparse AddonIds and advisory Easier/Harder
+marks for unambiguous resource/travel constraints relative to actual defaults.
+The existing addon window uses Comfort, New content, World & economy, Combat and
+Easier tabs. Developer addons require an explicit browsing opt-in; their existing
+values are retained. Changed only filters accepted staged values against addon
+defaults. Empty views, category/filter/preset/default changes and scrollbar bounds
+are refreshed together. See doc/coop/AddonCategories.md for the classification.
+
+LB/RB cycles categories through an opt-in Window/FocusPath root hook; other windows
+retain shoulder focus traversal. D-pad and mouse still reach all editing/actions.
+Open dropdown previews survive shoulders and are not accepted by another controller
+pressing Apply/Save. Defaults/filter/preset replacement resolves a pending dropdown
+before replacing values, including the case where the new value equals its preview.
+Apply retains the existing single lobby settings callback and network protocol.
+Readonly/whitelist rules and custom Abort/B closing remain unchanged.
+
+Read-only exactly gpt-6.1-sol reviews identified missing persistence coverage and a
+default-replacement/dropdown mismatch; dedicated two-controller tests address both.
+Pure tests require every registered/declared addon to have one category, exercise
+every option/default and assert explicit difficulty orders, including SEA_ATTACK's
+unranked disabled default2. Physical tests cover category cycling, developer opt-in,
+mouse/readonly browsing, accepted/pending edits, default/filter/preset changes and
+real preset files. Existing addon lobby tests retain the real-server roundtrip and
+whitelist authority assertions, adapting navigation to category shoulders.
+
+Own GCC12 Debug/Werror build at maximum2 jobs is in progress. Local validation and
+fresh exact-head complete Unit tests/Static analysis remain required before tested
+handoff; current progress/evidence are kept outside the repo until those finish.
+This supplies front-end party browsing metadata, not the F7 party rewrite, new
+presets/save/victory policy, keyboard, hardware appearance or a packaged release.
+The existing ntfy/runtime and GitHub failed-CI reporting remains in use; no private
+report endpoint is published.
+
+Local targeted checkpoint: the configured binaries contain both new suites.
+Own Debug/Werror addon model2 cases/533 assertions and physical addon21 cases/580
+assertions pass (new13/164, existing real-lobby8/416). Clang23 targeted checks on
+all four new/changed implementation and test sources have no concrete warning/error
+output. The initial mouse-wheel assertion was corrected to exercise the parent
+scroll guard outside the dropdown; mouse wheel on a combo remains an immediate
+accepted mouse edit. No product mouse behavior was changed. Complete restored
+Debug suites and executed omission controls remain required, followed by exact-head CI.

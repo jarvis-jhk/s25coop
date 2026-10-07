@@ -5,7 +5,7 @@
 #pragma once
 
 #include "IngameWindow.h"
-#include "addons/const_addons.h"
+#include "addons/AddonCategory.h"
 #include <map>
 #include <memory>
 #include <vector>
@@ -31,11 +31,15 @@ public:
     ~iwAddons() override;
 
     void Close() override;
+    Window* SwitchPadTab(int direction) override;
 
 protected:
     void Msg_ButtonClick(unsigned ctrl_id) override;
     void Msg_OptionGroupChange(unsigned ctrl_id, unsigned selection) override;
     void Msg_ScrollChange(unsigned ctrl_id, unsigned short position) override;
+    void Msg_CheckboxChange(unsigned ctrl_id, bool checked) override;
+    void Msg_Group_CheckboxChange(unsigned group_id, unsigned ctrl_id, bool checked) override;
+    void Msg_Group_ComboSelectItem(unsigned group_id, unsigned ctrl_id, unsigned selection) override;
     bool Msg_WheelUp(const MouseCoords& mc) override;
     bool Msg_WheelDown(const MouseCoords& mc) override;
 
@@ -47,7 +51,11 @@ private:
     std::vector<std::unique_ptr<AddonGui>> addonGuis_;
 
     /// Aktualisiert die Addons, die angezeigt werden sollen
-    void UpdateView(AddonGroup selection);
+    void UpdateView();
+    void RefreshFilter();
+    Window* OpenDropdown() const;
+    /// Accepted staged values, not the temporary selection of an open controller dropdown.
+    std::vector<unsigned> stagedStatuses_;
     bool isReadOnly(AddonId) const;
     void applyAddonStates(const std::map<unsigned, unsigned>& states);
 };
