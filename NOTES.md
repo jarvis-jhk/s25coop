@@ -5,6 +5,18 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-07 — release 0.1.12; Win32 Home-return CI flake
+
+Unit tests run [37574359421](https://github.com/jarvis-jhk/s25coop/actions/runs/37574359421) on master
+0142389c9 failed once only in Windows Debug Win32 (`FrontEndHomeTests/EveryUpstreamDesktopComesBackToItsTile`,
+testFrontEndHome.cpp:81, shared by six return paths, log does not name which). Isolated case and the full
+643-case local Debug run passed; rerun of only the failed job (attempt 2) passed. Recorded as an unconfirmed
+intermittent failure, no product fix claimed. If it recurs: add per-path BOOST_TEST_CONTEXT first
+(Options validation/driver confirmation and campaign error modal are candidates). Logs in private
+data/siedler/master-0142389-{win32,local-full}.log. Both master workflows green at 0142389c9 →
+CHANGELOG Unreleased → 0.1.12, tagged v0.1.12 on the CHANGELOG/NOTES-only commit. Claims
+master-win32-home-return-ci and frontend-f1-framework released.
+
 ## 2026-10-07 — work session: front end F1 (page framework) + F3 (home page)
 
 No open issues or PRs; master CI green at 5f5b4c793. Codex is out of quota until 2026-10-10 02:23 UTC

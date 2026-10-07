@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.12
 
 - New title screen: every player presses A once on their controller to join (up to four), and
   the players who joined are shown at the top of every menu afterwards. Press A again (or click
