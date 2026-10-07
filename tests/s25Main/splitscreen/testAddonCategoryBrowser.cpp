@@ -295,6 +295,48 @@ BOOST_FIXTURE_TEST_CASE(OpenDropdownKeepsItsPreviewUntilAOrBAndFiltersSeeOnlyAcc
     });
 }
 
+BOOST_FIXTURE_TEST_CASE(MouseWheelScrollsClosedRowsButPreservesAnOpenPreview, CategoryBrowserFixture)
+{
+    run([&] {
+        model.setSelection(AddonId::NUM_SCOUTS_EXPLORATION, 1);
+        open();
+        category(AddonCategory::All);
+        auto* scroll = window->GetCtrl<ctrlScrollBar>(scrollId);
+        const MouseCoords outside(window->GetDrawPos() + DrawPoint(15, 150));
+        BOOST_TEST_REQUIRE(scroll->GetScrollPos() == 0u);
+        WINDOWMANAGER.Msg_WheelDown(outside);
+        frame();
+        BOOST_TEST(scroll->GetScrollPos() == 2u);
+        WINDOWMANAGER.Msg_WheelUp(outside);
+        frame();
+        BOOST_TEST(scroll->GetScrollPos() == 0u);
+        reveal(AddonId::NUM_SCOUTS_EXPLORATION);
+        auto* combo = group(AddonId::NUM_SCOUTS_EXPLORATION).GetCtrl<ctrlComboBox>(2);
+        focus(combo);
+        press(pad, PadButton::A);
+        press(pad, PadButton::DpadDown);
+        BOOST_TEST_REQUIRE(combo->IsListOpen());
+        BOOST_TEST_REQUIRE((combo->GetSelection() == 2u));
+        const auto before = scroll->GetScrollPos();
+        WINDOWMANAGER.Msg_WheelUp(outside);
+        frame();
+        BOOST_TEST(scroll->GetScrollPos() == before);
+        BOOST_TEST(combo->IsListOpen());
+        BOOST_TEST((combo->GetSelection() == 2u));
+        WINDOWMANAGER.Msg_WheelDown(outside);
+        frame();
+        BOOST_TEST(scroll->GetScrollPos() == before);
+        BOOST_TEST(combo->IsListOpen());
+        BOOST_TEST((combo->GetSelection() == 2u));
+        BOOST_TEST(group(AddonId::NUM_SCOUTS_EXPLORATION).GetCtrl<ctrlText>(4)->GetText() == "Easier");
+        press(pad, PadButton::B);
+        BOOST_TEST(!combo->IsListOpen());
+        BOOST_TEST((combo->GetSelection() == 1u));
+        click(window->GetCtrl<ctrlButton>(1));
+        BOOST_TEST(model.getSelection(AddonId::NUM_SCOUTS_EXPLORATION) == 1u);
+    });
+}
+
 BOOST_FIXTURE_TEST_CASE(MouseCategoriesAndReadonlyChangedSettingsRemainBrowsable, CategoryBrowserFixture)
 {
     run([&] {
@@ -448,6 +490,44 @@ BOOST_FIXTURE_TEST_CASE(LoadingAPresetDuringPreviewLeavesItsReplacementAccepted,
         auto* load = dynamic_cast<iwLoadAddonPreset*>(WINDOWMANAGER.GetTopMostWindow());
         BOOST_TEST_REQUIRE(load != nullptr);
         selectFirstPreset(load);
+        click(load->GetCtrl<ctrlButton>(iwAddonPresetsBase::ID_btAction));
+        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == window);
+        BOOST_TEST(!combo->IsListOpen());
+        BOOST_TEST((combo->GetSelection() == 2u));
+        focus(combo);
+        press(pad, PadButton::B);
+        BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == window);
+        BOOST_TEST((combo->GetSelection() == 2u));
+        click(window->GetCtrl<ctrlButton>(1));
+        BOOST_TEST(model.getSelection(AddonId::NUM_SCOUTS_EXPLORATION) == 2u);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(PresetLoadCancelsAMouseOpenedListWithoutControllerFocus, CategoryBrowserFixture)
+{
+    run([&] {
+        const auto folder = RTTRCONFIG.ExpandPath(s25::folders::addonPresets);
+        boost::filesystem::create_directories(folder);
+        libsiedler2::Archiv seed;
+        auto ini = std::make_unique<libsiedler2::ArchivItem_Ini>("addons");
+        ini->setValue(std::to_string(static_cast<unsigned>(AddonId::NUM_SCOUTS_EXPLORATION)), "2");
+        seed.push(std::move(ini));
+        BOOST_TEST_REQUIRE(libsiedler2::Write(folder / "MousePreview.ini", seed) == 0);
+        model.setSelection(AddonId::NUM_SCOUTS_EXPLORATION, 1);
+        open();
+        category(AddonCategory::Economy);
+        reveal(AddonId::NUM_SCOUTS_EXPLORATION);
+        auto* combo = group(AddonId::NUM_SCOUTS_EXPLORATION).GetCtrl<ctrlComboBox>(2);
+        focus(window->GetCtrl<ctrlButton>(5));
+        click(combo);
+        BOOST_TEST_REQUIRE(focused(0) == window->GetCtrl<ctrlButton>(5));
+        BOOST_TEST_REQUIRE(combo->IsListOpen());
+        press(pad, PadButton::A);
+        auto* load = dynamic_cast<iwLoadAddonPreset*>(WINDOWMANAGER.GetTopMostWindow());
+        BOOST_TEST_REQUIRE(load != nullptr);
+        selectFirstPreset(load);
+        // Root reconciliation must leave this mouse-owned list open until the real load callback.
+        BOOST_TEST_REQUIRE(combo->IsListOpen());
         click(load->GetCtrl<ctrlButton>(iwAddonPresetsBase::ID_btAction));
         BOOST_TEST_REQUIRE(WINDOWMANAGER.GetTopMostWindow() == window);
         BOOST_TEST(!combo->IsListOpen());
