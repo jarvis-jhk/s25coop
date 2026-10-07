@@ -5,6 +5,10 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- Controller players who joined on the title screen now get their local lobby seats without
+  pressing A again. Campaigns and loaded saves share the host's tribe; maps use separate open
+  tribes. When there are too few open seats, choose "Play one tribe together" to seat everyone.
+
 - Addon settings have clearer categories, a “Changed only” filter and hints for options that
   make resource gathering or travel easier or harder. Use LB/RB to switch categories;
   developer options stay hidden until you choose to show them.

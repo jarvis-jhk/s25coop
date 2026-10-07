@@ -5,6 +5,40 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-07 — F7 joined-party seating prerequisite
+
+Quota gate permitted work (weekly 2%, session 21%); open issues and PRs were empty at selection.
+The primary checkout was clean apart from two pre-existing untracked M3c4 logs. Sol retained
+its independent keyboard source claims. Documentation scopes were requested through the report
+API, released by Sol after its pushed checkpoint, then claimed by primary before editing.
+
+The existing local lobby now carries title-page party membership into seats in join order without
+another A press. First joined controller owns the host slot even if a former member still controls
+Home. Campaigns and loaded saves share the host's tribe; ordinary maps seat individual tribes.
+Insufficient or revoked selected seats prompt an explicit shared-mode choice, which seats the pending
+party. Unused closed cards do not block smaller parties. No partial assignment or reopened Locked/
+Occupied tribe; Classic menus, empty-party mouse play and network lobby policy retain their behavior.
+A guest's B departure survives modal reactivation. This is a tested bridge to F7, not its new page.
+
+Read-only exactly gpt-6.1-sol review found overflow recovery, stale-seat authority and unused-card
+restriction issues; all corrected with physical regressions and final approval. Artifact:
+build/party-review.txt. Own GCC12 Debug build passed, new party cases run in the actual binary;
+complete MenuPadSeatTests: 36 cases / 582 assertions. A real played save is loaded and started with
+shared views. Full Test_splitscreen passed: 670 cases / 501617 assertions (build/party-full.log).
+Executed omission of first-activation seating fails the intended local-player assertion in the
+actual title-to-lobby case (build/party-negative.log); production source restored byte-for-byte
+(SHA256 43d1d5c3acd42209715d6d6dca87c4a94fc24babede24ec315a3f1c23a515e66), rebuilt,
+and all 36 seat cases / 582 assertions pass again (build/party-restored-positive.log). Pinned clang-format10, include guards, markdownlint0.26, diff checks and the actual agent
+TypeScript compiler passed. Targeted pinned clang-tidy18 reported no user-code diagnostics on the preceding validation snapshot; fresh
+exact-head master Unit tests and Static analysis remain the release gate. Existing runtime/CI fault
+reporting retained, no new service/secret endpoint. No Deck/hardware or packaged-build acceptance.
+
+Next: finish the full-screen F7 party page on the common page framework; do not mark F7 complete
+because the old lobby now seats a party. The previous primary release continuation 9d71cfbb was consumed during this run as request
+t_muxxcqu2ac9ie; its gate now follows this new master. One replacement continuation/checkpoint owns
+fresh CI, tag and release-assets verification. Coordination request t_muxwyuu985lu4 is fulfilled;
+no duplicate release schedule or progress message to Jan.
+
 ## 2026-10-07 — PR45 primary integration review
 
 Incoming Sol handoff t_muxuo55j21w5g: PR45 tested head

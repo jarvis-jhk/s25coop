@@ -13,6 +13,8 @@
 #include "controls/ctrlGroup.h"
 #include "controls/ctrlTextButton.h"
 #include "desktops/dskGameLobby.h"
+#include "desktops/dskHome.h"
+#include "desktops/dskTitle.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwMsgbox.h"
@@ -63,6 +65,23 @@ struct LobbySeatFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixtu
         GAMECLIENT.Run();
         GAMESERVER.Run();
         WINDOWMANAGER.Draw();
+    }
+
+    void joinAtTitle(const std::vector<PadDeviceId>& devices)
+    {
+        dskHome::ForgetLastChoice();
+        WINDOWMANAGER.Switch(dskTitle::Create());
+        frame();
+        for(const auto device : devices)
+        {
+            connect(device);
+            press(device, PadButton::A);
+        }
+        BOOST_TEST_REQUIRE((padInput().GetParty().Members() == devices));
+        press(devices.front(), PadButton::A);
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<dskHome>() != nullptr);
+        BOOST_TEST_REQUIRE(router().GetNumSlots() == 1u);
     }
 
     void enterLobby()
@@ -256,6 +275,215 @@ struct LobbySeatFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixtu
 } // namespace
 
 BOOST_AUTO_TEST_SUITE(MenuPadSeatTests)
+
+BOOST_FIXTURE_TEST_CASE(MouseOnlyFrontEndKeepsOrdinaryLocalSeats, LobbySeatFixture)
+{
+    frontend::SetMenuStyle(frontend::MenuStyle::FrontEnd);
+    enterLobby();
+    settle();
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 0u);
+}
+
+BOOST_FIXTURE_TEST_CASE(AJoinedSoloHostNeedsNoOpenGuestSeat, LobbySeatFixture)
+{
+    enterLobby();
+    closeSlotWithMouse(1);
+    closeSlotWithMouse(2);
+    joinAtTitle({10});
+    enterLobbyKeepingLocalPlayers();
+    settle();
+    BOOST_TEST(topMsgbox() == nullptr);
+    BOOST_TEST(router().GetSlot(10) == 0u);
+    BOOST_TEST(localPlayers().empty());
+}
+
+BOOST_FIXTURE_TEST_CASE(TitlePartyGetsSeatsInJoinOrderWithoutAnotherPress, LobbySeatFixture)
+{
+    // Connect order and party order deliberately differ. A passive fourth pad must not play.
+    connect(12);
+    connect(11);
+    connect(10);
+    connect(13);
+    joinAtTitle({10, 12, 11});
+    enterLobby();
+    settle();
+    BOOST_TEST((localPlayers() == std::vector<uint8_t>{1, 2}));
+    BOOST_TEST(router().GetSlot(10) == 0u);
+    BOOST_TEST(router().GetSlot(12) == 1u);
+    BOOST_TEST(router().GetSlot(11) == 2u);
+    BOOST_TEST(router().GetSlot(13) == PadRouter::NoSlot);
+    BOOST_TEST((player(1).aiInfo.type == AI::Type::Dummy));
+    BOOST_TEST((player(2).aiInfo.type == AI::Type::Dummy));
+    // B leaves normally. Reactivation and paint must not undo that decision.
+    press(12, Back);
+    settle();
+    WINDOWMANAGER.Show(
+      std::make_unique<iwMsgbox>("Test", "Return to the lobby", nullptr, MsgboxButton::Ok, MsgboxIcon::ExclamationRed));
+    clickWithMouse(*topMsgbox()->GetCtrl<Window>(ID_mbYes));
+    settle();
+    BOOST_TEST((localPlayers() == std::vector<uint8_t>{2}));
+    BOOST_TEST((player(1).aiInfo.type == AI::Type::Default));
+    BOOST_TEST(router().GetSlot(11) == 1u);
+}
+
+BOOST_FIXTURE_TEST_CASE(TitleCampaignPartySharesTheTribeAndPreservesEnemies, LobbySeatFixture)
+{
+    joinAtTitle({10, 11, 12, 13});
+    hostAndEnterLobby();
+    GAMECLIENT.SetHostingCampaign(true);
+    auto pending =
+      std::make_unique<dskGameLobby>(ServerType::Local, GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(), nullptr);
+    // Fresh-map construction installs the normal AI defaults before party activation.
+    settle();
+    const auto enemy = player(1);
+    WINDOWMANAGER.Switch(std::move(pending));
+    frame();
+    settle();
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 3u);
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST((player(1).ps == enemy.ps));
+    BOOST_TEST((player(1).aiInfo == enemy.aiInfo));
+    for(unsigned i = 0; i < 4; ++i)
+        BOOST_TEST(router().GetSlot(10 + i) == i);
+    disconnect(11);
+    frame();
+    settle();
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 2u);
+    BOOST_TEST(router().GetSlot(12) == 1u);
+    BOOST_TEST(router().GetSlot(13) == 2u);
+}
+
+BOOST_FIXTURE_TEST_CASE(DisconnectedPartyMembersDoNotTakeLobbySeats, LobbySeatFixture)
+{
+    joinAtTitle({10, 11, 12});
+    disconnect(11);
+    frame();
+    enterLobby();
+    settle();
+    BOOST_TEST((localPlayers() == std::vector<uint8_t>{1}));
+    BOOST_TEST(router().GetSlot(12) == 1u);
+    BOOST_TEST(!padInput().GetParty().Contains(11));
+}
+
+BOOST_FIXTURE_TEST_CASE(ClassicMenusDoNotAutoSeatASurvivingParty, LobbySeatFixture)
+{
+    joinAtTitle({10, 11});
+    frontend::SetMenuStyle(frontend::MenuStyle::Classic);
+    enterLobby();
+    settle();
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 0u);
+    press(11, Activate);
+    settle();
+    BOOST_TEST((localPlayers() == std::vector<uint8_t>{1}));
+}
+
+BOOST_FIXTURE_TEST_CASE(TooFewOpenSeatsCanBeRecoveredByChoosingTogether, LobbySeatFixture)
+{
+    enterLobby();
+    auto pending =
+      std::make_unique<dskGameLobby>(ServerType::Local, GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(), nullptr);
+    closeSlotWithMouse(1);
+    closeSlotWithMouse(2);
+    joinAtTitle({10, 11, 12, 13});
+    WINDOWMANAGER.Switch(std::move(pending));
+    frame();
+    BOOST_TEST_REQUIRE(topMsgbox() != nullptr);
+    BOOST_TEST(localPlayers().empty());
+    clickWithMouse(*topMsgbox()->GetCtrl<Window>(ID_mbYes));
+    BOOST_TEST_REQUIRE(topMsgbox() == nullptr);
+    clickWithMouse(*togetherCheck());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 3u);
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST((player(1).ps == PlayerState::Locked));
+    BOOST_TEST((player(2).ps == PlayerState::Locked));
+    for(unsigned i = 0; i < 4; ++i)
+        BOOST_TEST(router().GetSlot(10 + i) == i);
+}
+
+BOOST_FIXTURE_TEST_CASE(AClosedSlotBetweenConstructionAndActivationStaysClosed, LobbySeatFixture)
+{
+    enterLobby();
+    auto pending =
+      std::make_unique<dskGameLobby>(ServerType::Local, GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(), nullptr);
+    // The existing host closes a slot while the new screen is still waiting to be shown.
+    closeSlotWithMouse(1);
+    joinAtTitle({10, 11});
+    WINDOWMANAGER.Switch(std::move(pending));
+    frame();
+    settle();
+    BOOST_TEST_REQUIRE(topMsgbox() != nullptr);
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST((player(1).ps == PlayerState::Locked));
+}
+
+BOOST_FIXTURE_TEST_CASE(AClosedUnusedCardDoesNotBlockASmallerParty, LobbySeatFixture)
+{
+    enterLobby();
+    auto pending =
+      std::make_unique<dskGameLobby>(ServerType::Local, GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(), nullptr);
+    closeSlotWithMouse(2);
+    joinAtTitle({10, 11});
+    WINDOWMANAGER.Switch(std::move(pending));
+    frame();
+    settle();
+    BOOST_TEST(topMsgbox() == nullptr);
+    BOOST_TEST((localPlayers() == std::vector<uint8_t>{1}));
+    BOOST_TEST((player(2).ps == PlayerState::Locked));
+    BOOST_TEST(router().GetSlot(11) == 1u);
+}
+
+BOOST_FIXTURE_TEST_CASE(AControllerThatLeftTheTitleCannotKeepTheHostSeat, LobbySeatFixture)
+{
+    joinAtTitle({10, 11, 12});
+    press(10, Back);
+    frame();
+    BOOST_TEST_REQUIRE(desktopAs<dskTitle>() != nullptr);
+    press(10, Back);
+    BOOST_TEST_REQUIRE(!padInput().GetParty().Contains(10));
+    press(11, PadButton::Start);
+    frame();
+    BOOST_TEST_REQUIRE(desktopAs<dskHome>() != nullptr);
+    BOOST_TEST_REQUIRE(router().GetSlot(10) == 0u);
+    enterLobby();
+    settle();
+    BOOST_TEST((localPlayers() == std::vector<uint8_t>{1}));
+    BOOST_TEST(router().GetSlot(11) == 0u);
+    BOOST_TEST(router().GetSlot(12) == 1u);
+}
+
+BOOST_FIXTURE_TEST_CASE(NetworkLobbyDoesNotApplyTheLocalParty, LobbySeatFixture)
+{
+    joinAtTitle({10, 11});
+    hostAndEnterLobby();
+    WINDOWMANAGER.Switch(
+      std::make_unique<dskGameLobby>(ServerType::LAN, GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(), nullptr));
+    frame();
+    settle();
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 0u);
+    BOOST_TEST(desktopAs<dskGameLobby>()->GetNumPadSlots() == 1u);
+}
+
+BOOST_FIXTURE_TEST_CASE(FrontEndSaveSharesTheHumanTribeWithItsJoinedParty, LobbySeatFixture)
+{
+    joinAtTitle({10, 11});
+    enterLobby();
+    settle();
+    BOOST_TEST_REQUIRE((localPlayers() == std::vector<uint8_t>{1}));
+    startSaveAndReload();
+    BOOST_TEST(togetherCheck()->isChecked());
+    BOOST_TEST(localPlayers().empty());
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+    BOOST_TEST((player(1).ps == PlayerState::AI));
+    BOOST_TEST((player(1).aiInfo.type == AI::Type::Default));
+    BOOST_TEST(router().GetSlot(10) == 0u);
+    BOOST_TEST(router().GetSlot(11) == 1u);
+    startFromLobby();
+    BOOST_TEST(ci().numErrors == 0u);
+    BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+}
 
 /// Der Bildschirm bietet ueberhaupt mehrere Padplaetze an - anderswo waere das ein Wettlauf um
 /// den naechsten Desktopwechsel und deshalb ausdruecklich verboten (Desktop::GetNumPadSlots).

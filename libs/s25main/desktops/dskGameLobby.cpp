@@ -578,6 +578,11 @@ void dskGameLobby::SetActive(bool activate /*= true*/)
             lua.reset();
         }
     }
+    if(activate && !joinedPartyHandled_)
+    {
+        joinedPartyHandled_ = true;
+        SeatJoinedParty();
+    }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -688,9 +693,68 @@ void dskGameLobby::CreateSeatPanel()
     UpdateSeatPanel();
 }
 
+void dskGameLobby::SeatJoinedParty()
+{
+    if(frontend::GetMenuStyle() != frontend::MenuStyle::FrontEnd || !AreLocalSeatsAvailable())
+        return;
+    auto& input = WINDOWMANAGER.GetPadInput();
+    auto& router = input.GetRouter();
+    std::vector<PadDeviceId> members;
+    for(const auto device : input.GetParty().Members())
+    {
+        if(router.HasDevice(device))
+            members.push_back(device);
+    }
+    if(members.empty())
+        return;
+
+    // A loaded tribe is shared by the joined party; saved enemy AIs are not new human slots.
+    if(gameLobby_->isSavegame())
+        SetSeatsTogether(true);
+    if(seats_.empty() && members.size() == 1u)
+    {
+        router.AssignSlot(members.front(), 0);
+        return;
+    }
+    // Lua's settings-ready callback may have closed a slot since the cards were constructed.
+    bool revoked = false;
+    if(!seatsTogether_)
+    {
+        for(unsigned i = 1; i < std::min(members.size(), seats_.size()); ++i)
+        {
+            const auto state = gameLobby_->getPlayer(seats_[i].playerId).ps;
+            if(state == PlayerState::Locked || state == PlayerState::Occupied)
+            {
+                revoked = true;
+                break;
+            }
+        }
+    }
+    if(members.size() > seats_.size() || revoked)
+    {
+        joinedPartyNeedsSeats_ = true;
+        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+          _("Not enough seats"), _("Choose 'Play one tribe together' to give every joined controller a seat."), this,
+          MsgboxButton::Ok, MsgboxIcon::ExclamationRed));
+        return;
+    }
+
+    // Home temporarily has only one navigation slot. Restore capacity before binding guests, and
+    // bind the leader explicitly: an unjoined controller may have navigated Home in the meantime.
+    joinedPartyNeedsSeats_ = false;
+    router.SetNumSlots(GetNumPadSlots());
+    for(unsigned i = 0; i < seats_.size(); ++i)
+    {
+        seats_[i].taken = i < members.size();
+        seats_[i].device = seats_[i].taken ? members[i] : InvalidPadDevice;
+    }
+    router.AssignSlot(members.front(), 0);
+    ApplyLocalSeats();
+}
+
 void dskGameLobby::SetSeatsTogether(const bool together)
 {
-    if(together == seatsTogether_ || seats_.empty())
+    if(together == seatsTogether_)
         return;
     // Everybody stands up first, in the old mode, so the slots taken for own-slot seats get back
     // what was there before
@@ -707,6 +771,8 @@ void dskGameLobby::SetSeatsTogether(const bool together)
     GetCtrl<ctrlCheck>(ID_chkSeatsTogether)->setChecked(together);
     GAMECLIENT.SetSharedLocalViews(0);
     CreateSeatPanel();
+    if(joinedPartyNeedsSeats_)
+        SeatJoinedParty();
 }
 
 void dskGameLobby::UpdateSeatPanel()

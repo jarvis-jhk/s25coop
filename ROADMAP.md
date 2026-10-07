@@ -8,7 +8,8 @@ starting the binary to being in game, from scratch").** The core goal is a group
 one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c) work; the menus between
 starting the game and playing it are still upstream's mouse screens with controller support bolted on.
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
-   workers. Opus: F1 framework ☑, F3 home ☑, F2 title/join ☑ (2026-10-07) → F7 party (seat the joined party). Sol, in parallel on
+   workers. Opus: F1 framework ☑, F3 home ☑, F2 title/join ☑ (2026-10-07) → F7 party
+   (joined-party seating prerequisite implemented; full-screen lobby next). Sol, in parallel on
    independent scopes: 4b on-screen keyboard, then F9 options, F6 load game, F5 maps (3a/3b addon categories integrated from PR45)
    (F1 is in: build them on dskFrontEndPage).
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
@@ -201,15 +202,19 @@ starting the game and playing it are still upstream's mouse screens with control
     back stack, one footer help line shared with the in-game brief (Opus, 2026-10-07; FrontEnd.md "Framework")
   - ☑ F2 boot and title: skippable splash/intro, "press A / click", every controller joins with A; the joined-player
     strip stays on every later screen (replaces the separate couch join screen) (Opus, 2026-10-07: dskTitle + Party;
-    B on Home returns to it. The lobby does not seat the party yet - that is F7)
+    B on Home returns to it. F7's prerequisite carries those joins into the local lobby)
   - ☑ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus,
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
   - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
   - ☐ F5 maps & scenarios browser: preview, player-count filter, a scenario is a one-mission campaign (Sol)
   - ☐ F6 load game: save browser (thumbnail, date, players) incl. single-player saves with several players (below) (Sol)
-  - ☐ F7 party screen (lobby rewrite, local + online in one): player cards, rules drawer (2a–2c), addon categories and
-    presets (3a–3c), ready/start, join code/IP shown (Opus)
+  - ◐ F7 party screen (lobby rewrite, local + online in one): player cards, rules drawer (2a–2c), addon categories and
+    presets (3a–3c), ready/start, join code/IP shown (Opus).
+    Joined-party seating prerequisite implemented (2026-10-07): no second lobby A press; join-order controller
+    ownership, campaign/save shared tribe, explicit shared-mode recovery when individual tribes are full,
+    current closed-slot authority and Classic/network exclusions. Physical Debug tests and read-only Sol
+    review cover this bridge; fresh master CI is the release gate. The full-screen page remains open.
   - ☐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
   - ☐ F9 options: grouped settings (display/Deck, audio, controls, help footer, language), all by controller (Sol)
   - ☐ F10 loading screen: mission/map title, tip, controller layout; then the game

@@ -96,6 +96,10 @@ private:
     /// Zusatzspieler beim Start annimmt (network/GameClient.cpp:1897-1939, 2007-2008).
     bool AreLocalSeatsAvailable() const;
     void CreateSeatPanel();
+    /// Carry title-page joins into a local lobby once; later seat edits remain the players' choice.
+    void SeatJoinedParty();
+    bool joinedPartyHandled_ = false;
+    bool joinedPartyNeedsSeats_ = false;
     /// s25coop: switch the seats between "own slot" and "together with seat 1" (one tribe). Stands everybody up.
     void SetSeatsTogether(bool together);
     void UpdateSeatPanel();

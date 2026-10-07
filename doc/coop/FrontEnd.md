@@ -79,8 +79,12 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   `MenuPadInput::MaxSlots`) and that press is its join - so "everybody presses A once" is literal. The
   joined controllers are the `Party` (input/Party, kept by MenuPadInput, unplugging leaves it); the player
   strip on every page shows the party. A/Start by a member or a click on Start opens Home; B leaves the
-  party; B on Home returns to the title. F7 must seat exactly the party in the lobby (today the lobby's
-  seat panel still asks every pad to press A again).
+  party; B on Home returns to the title. The F7 prerequisite now seats that party in a local lobby
+  without another A press, in join order.
+  Campaigns and loaded saves share the human tribe; ordinary maps use open individual tribes. If too
+  few tribes are open, the lobby asks for "Play one tribe together"; choosing it seats the pending
+  party. Closed or network-occupied tribes are never reopened. Classic menus keep their old join
+  behavior. This is the existing lobby with party carry-over, not the full-screen F7 page yet.
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"
   (the old main menu has "New menus" to come back). F12 must not retire the old menu before they have a place.
 - Tests: `tests/s25Main/UI/testFrontEndLayout.cpp`, `tests/s25Main/splitscreen/testFrontEndPage.cpp`
