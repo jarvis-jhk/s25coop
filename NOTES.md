@@ -864,3 +864,39 @@ assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
 static validation and actual agent tsc pass. All10 Sol source/test hashes match
 the previously fully tested source. Fresh repaired-head CI supersedes old CI;
 PR45 stays draft with its source/test claims until the complete exact-head gate.
+
+## 2026-10-09 — Sol F6 ordinary solo save resumes online
+
+Independent test slice on `sol/solo-save-online-resume`, starting at release master c45ae37c7;
+Home/options/save/map PR46–49 integration and the primary fork sweep are untouched. The
+`coop-net` harness can create a genuine `ServerType::Local` game with one human and no members.
+Public-map tests use a played save with Default/Hard and Dummy/Easy AI tribes and a locked
+fourth tribe, then load it online with a real host/co-player pair. The co-player's command
+must add a woodcutter to the saved human tribe; another network save and same-group reconnect
+must add the next. The saved GF, every goods/job inventory bucket, HQ positions and all
+building/site counts compare across both save boundaries. Saved AI types/levels and the locked
+tribe remain unchanged; initial/final host and member session checksums match.
+
+Deliberate member desync after the solo load and after the network resave must execute its
+scheduled RNG injection, be removed with the explicit out-of-sync reason, and leave the host
+playing. The member's loaded economy, roles and initial world are checked before accepting
+either deliberate failure. This prevents an earlier load defect from masquerading as the
+intended negative. Current-code solo provenance is not a historical pre-coop upstream world;
+thumbnails, optional AI takeover and GUI/F7/Deck acceptance remain open.
+
+Local evidence is in the private Sol checkpoint: own GCC12 Debug/Werror max2 build, preliminary
+complete 22 network CTests and final six affected/new CTests. The preliminary suite preceded
+only the final injection log/guard; final six include all three new modes and the existing
+normal/end/member desync cases. An executed real-member command omission reaches GF2000 with
+Client@0 and one woodcutter, then fails the intended second-woodcutter host assertion. Positive
+source remains unchanged by that control. Exactly gpt-6.1-sol supplied-patch read-only reviews
+prompted the save-boundary snapshots, initial desync-member checks and injection-executed guard;
+sandbox failure prevented repository inspection. Formatter10, repository static validation,
+diff checks and the actual agent TypeScript compiler pass. Local Clang23 reports only inherited
+or newer-than-CI18 diagnostics, so fresh complete CI18 remains authoritative.
+
+No game/save/network format or product route changed. Existing CI/runtime fault reporting is
+retained, with no private report URL in public source. Source/test claims are retained while
+all17 exact-head checks and both complete Unit tests/Static analysis workflows run. Sol does
+not merge its own PR or push master; primary owns review/integration. No tested handoff,
+release or hardware proof is claimed at this documentation checkpoint.
