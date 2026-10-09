@@ -8,6 +8,7 @@
 #include "controls/ctrlButton.h"
 #include "desktops/dskCampaignSelection.h"
 #include "desktops/dskCredits.h"
+#include "desktops/dskFrontEndLoad.h"
 #include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMainMenu.h"
@@ -152,13 +153,10 @@ BOOST_FIXTURE_TEST_CASE(EveryUpstreamDesktopComesBackToItsTile, HomeFixture)
     press(pad, PadButton::B);
     expectHomeFocusedOn(dskHome::ID_Credits);
 
-    // Load game opens the map selection with the load window on top: B closes the window, B again is back.
+    // Load game is a full-screen page; one B returns to the selected Home tile.
     choose(dskHome::ID_Load);
-    BOOST_TEST_REQUIRE(desktopAs<dskSelectMap>() != nullptr);
-    BOOST_TEST_REQUIRE(dynamic_cast<iwLoad*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr);
-    press(pad, PadButton::B);
-    frame();
-    BOOST_TEST_REQUIRE(desktopAs<dskSelectMap>() != nullptr);
+    BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLoad>() != nullptr);
+    BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
     press(pad, PadButton::B);
     expectHomeFocusedOn(dskHome::ID_Load);
 }

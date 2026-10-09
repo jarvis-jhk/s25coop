@@ -208,7 +208,15 @@ starting the game and playing it are still upstream's mouse screens with control
     and those return to Home. "Classic menus" leads to the old main menu.
   - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
   - ☐ F5 maps & scenarios browser: preview, player-count filter, a scenario is a one-mission campaign (Sol)
-  - ☐ F6 load game: save browser (thumbnail, date, players) incl. single-player saves with several players (below) (Sol)
+  - ◐ F6 load game (Sol): F6a full-screen metadata browser on `sol/frontend-save-browser`: scrollable newest-first
+    save list, map/date/game-time/human+AI details, Refresh preserves file identity, Load/Continue use the real
+    client/connecting/current-lobby path. Physical repaired Debug11/901 and affected69/2484 pass; unchanged catalog4/42 and UI150/11010
+    retain prior source/binary evidence. Windows occupied-port fixture repaired; fresh exact-head CI pending.
+    B/Escape returns straight to Home. The format stores no thumbnail, so this slice names that fallback.
+    F6b remains open: actual snapshot thumbnails, a provenance-backed pre-coop upstream save fixture, online
+    single-player-save co-player roundtrip and optional AI takeover. F7's full-screen party is primary-owned.
+    Current solo worlds re-encoded with 4.0 player headers, 2/4 joined local views and preserved AI/locked tribes
+    are the F6a regression gate. They do not establish actual pre-coop world compatibility or hardware acceptance.
   - ◐ F7 party screen (lobby rewrite, local + online in one): player cards, rules drawer (2a–2c), addon categories and
     presets (3a–3c), ready/start, join code/IP shown (Opus).
     Joined-party seating prerequisite implemented (2026-10-07): no second lobby A press; join-order controller

@@ -927,3 +927,72 @@ Source formatting10, static validation, private-string/diff checks and actual ag
 typecheck pass. Supplied-context Sol review findings were addressed; complete fresh
 exact-head CI (all17 and both Unit tests/Static analysis) is still required before
 ready/tested handoff. No new slice before that handoff, no hardware/release claim.
+
+## 2026-10-09 — Sol F6a full-screen save browser (local validation complete, CI pending)
+
+Fresh master57262bbe8, branch `sol/frontend-save-browser`; no dependency on the
+already handed-off PR46 keyboard / PR47 options. Claimed catalog, load page,
+Home routing, catalog/physical Home/save suites and docs before editing.
+`SaveCatalog` reads HeaderAndSettings only, sorts full timestamps with path ties,
+counts corrupt/incompatible files without blocking good saves. Full-screen
+`dskFrontEndLoad` shows scrollable saves and map/date/game-time/human+AI/name
+details. Refresh keeps identity; Load and Continue stay on the browser on failure,
+use the real HostGame/connecting path on success, and preserve one B back to Home.
+No save deletion or file writes. Existing crash/failed-CI reporting remains;
+no public report URL/service added. Saved thumbnails are not in the current
+format; fallback is explicit, snapshot rendering remains F6b alongside online
+solo-save co-player regression and optional AI takeover. Full-screen F7 is Opus's.
+Physical tests include metadata failures and current solo-world rehost with
+upstream4.0 player headers, two/four title-party controllers and unchanged
+AI/locked tribes. Current-world data is not an upstream-produced old-save fixture;
+that provenance-backed compatibility gate remains F6b.
+
+Final Debug: physical11/895, catalog4/42, affected69/2509, full UI150/11010; all pass.
+Own GCC12 Debug/Werror cache, at most2 compiler jobs. Initial full Debug baseline
+681cases/501257assertions passed before equivalent range-wrapper/public-override
+refinements and own test cast/mouse/locked-tribe strengthening; preserved binary
+hash in the private checkpoint. Final changed/affected/UI suites pass after that
+rebuild. No expensive repeat of unchanged legacy test behavior; fresh complete
+exact-head CI is still mandatory. THREE executed production omission controls
+fail intended timestamp-order / refresh-identity / deleted-Continue assertions
+(exit201 each); product restored byte-identically and rebuilt before positives.
+No coverage exclusions. Read-only exactly gpt-6.1-sol review fixed Nowide1.73
+stream paths and Debug snapshot side effects, and corrected old-world provenance
+claims. Exceptional cleanup reaches its named probe while Connecting is open;
+port restored and windows cleared before fixture destruction. Driver restore
+precedes saved video settings, asserted after normal and exceptional cleanup.
+Dedicated new suite leaves the pre-existing Debug raw artifact SHA256 unchanged.
+Clang-format10, static/private-marker/diff and actual agent typecheck gates pass;
+local Clang23 targeted checks for the pinned-CI-compatible set pass, with no
+repository check exclusions added. All17 checks and BOTH complete Unit tests /
+Static analysis workflows must pass before tested primary handoff. Draft PR,
+source/test claims retained during CI; Opus reviews/integrates. No hardware or
+release claim. No Signal progress/report under releases-only policy.
+
+
+## 2026-10-09 — Sol PR48 Windows occupied-port fixture repair
+
+Exact head43aca25b2 failed the Win32 Debug Test_splitscreen step at the two new
+save-resume lobby waits; compilation and DLL serialization checks passed.
+The logs show both clients connected to the intentionally occupied ports.
+Socket::Create enables SO_REUSEADDR, so Winsock could bind the server over
+the fixture listener and route the handshake to that silent listener.
+Fresh origin/master57262bbe8 contains no repair; merge-tree is clean.
+The fixture now reserves both stacks with an IPv6 dual-stack socket, disables
+reuse and requests Windows exclusive use before binding. It explicitly requires
+the first UI action to show the bind-error message, then closes the reservation
+and resumes through the real UI on a fresh port. A later transient connection
+timeout retries the complete host/connect route; the final lobby check remains
+fatal. Production source is unchanged. Native Windows exact-head CI remains
+mandatory; no unchanged-head infrastructure retry or tested handoff is claimed.
+Microsoft Winsock reference: https://learn.microsoft.com/windows/win32/winsock/using-so-reuseaddr-and-so-exclusiveaddruse
+
+Repair local gate: GCC12 Debug/Werror rebuild at max2 jobs, physical11/901 and
+affected69/2484 pass. Dedicated physical repeat preserves the Debug raw-artifact
+hash; the broader affected suite can write it through unchanged legacy tests,
+so that suite is not used as an artifact-purity claim. Catalog/UI product source
+and Test_UI binary match their prior passing evidence. Supplied-diff read-only
+review on exactly gpt-6.1-sol found no concrete defect; its repository reads were
+blocked by the known namespace sandbox error. Format10, static validation,
+diff/private-marker checks and actual agent tsc pass. Require all17 checks and
+both complete workflows on the repaired SHA before ready/tested handoff.
