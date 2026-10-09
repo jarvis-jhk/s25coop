@@ -101,3 +101,27 @@ player takes one over explicitly.
 
 Pixel-art Xbox button glyphs and the full/buttons-only/off help footer are on the roadmap but
 wait for F1's shared footer (Jan, 2026-10-06: "Do neither of them now").
+
+## Maps catalog (F5a)
+
+`frontend/MapCatalog` supplies metadata independently of the full-screen Home route.
+`ReadMapEntry` reads the SWD/WLD header, converts name/author to UTF-8 and checks
+supported nonzero dimensions and tribe count. It annotates an adjacent regular
+`.lua` file without loading or executing Lua. This marker does not imply campaign
+membership, mission unlocks or a one-mission campaign start policy.
+
+`ScanMaps` takes explicit source folders so the future browser can combine the
+existing nine categories and the optional installation WORLDS folder. Discovery
+is nonrecursive, accepts case-insensitive SWD/WLD suffixes, reads lexically
+identical file paths once, and sorts by displayed name then path. An optional
+player filter is an exact map-tribe count; shared controllers are not additional
+tribes. Missing folders are empty, and bad headers or unusable folders carry a
+path and reason while other sources remain visible. Filtered maps are not errors.
+Symlink aliases are not canonicalized into a new identity.
+
+Classic map selection uses the same metadata reader and keeps its category,
+error-message, mouse/pad and lazy-preview flow. Header-only browsing is not proof
+that map layers are complete: selection still fully loads and validates the map,
+then removes a failed target while leaving the other maps available. No map or
+save/network format changes. F5b supplies the full-screen controls, Home route
+and real party start; F5c defines how scenarios become one-mission campaigns.

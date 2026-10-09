@@ -855,3 +855,46 @@ assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
 static validation and actual agent tsc pass. All10 Sol source/test hashes match
 the previously fully tested source. Fresh repaired-head CI supersedes old CI;
 PR45 stays draft with its source/test claims until the complete exact-head gate.
+
+
+## 2026-10-09 — Sol F5a independent map catalog (local validation complete)
+
+Fresh master57262bbe8; ready PR46/47/48 remain primary integration work.
+Full-screen F5 Home changes overlap those routes, so this bounded independent
+slice claims MapCatalog, classic dskSelectMap metadata reader, catalog/legacy
+physical tests and docs only. No Home/lobby/router or primary checkout edits.
+Header metadata preserves UTF-8 names/authors, landscape, dimensions, tribes,
+script annotation and stable filename identity. Scanner combines explicit map
+folders, deduplicates lexical paths, sorts name/path and filters exact tribes;
+malformed/unsupported files and folder failures do not hide good maps.
+Zero/oversized dimensions and unsupported tribe counts now fail at listing rather
+than deferring that error to a preview. Adjacent Lua is never executed for listing;
+it is not evidence of campaign registration/unlocks. F5b/F5c remain open.
+Classic mouse/pad preview still loads actual layers and retains its error flow.
+Existing runtime ntfy and failed-CI issue reporting remain; no extra service or
+private report URL is added. Debug physical/catalog validation, omission checks,
+read-only gpt-6.1-sol review and complete exact-head CI precede tested handoff.
+
+
+Final local Debug/Werror gate at max2 jobs: catalog6/104, physical8/101, affected37/1029, ui152/21671, splitscreen673/501494 cases/assertions all pass.
+New catalog suite configured into Test_UI and confirmed present. Three executed
+omission controls each exit201 on intended assertions: bypassing exact-tribe
+filter, throwing on optional Lua status, and clearing instead of refreshing the
+physical preview. Both product files restored byte-for-byte and rebuilt before
+final full positive suites; no test-coverage exclusions. Read-only exactly
+gpt-6.1-sol review corrected optional Lua isolation and stale-preview test strength;
+final supplied-diff review found no concrete defect. Classic discovery consumes
+the robust catalog directly, checking candidate suffixes before status so a
+looping unrelated Lua symlink cannot hide the category. POSIX looping-symlink
+cases are omitted on Windows; native exact-head CI remains the portability gate.
+Clang-format10, static/private-marker/diff and actual agent tsc pass. Local newer
+Clang23 new-code checks pass with the CI-compatible check set; existing legacy
+header/destructor diagnostics and newer style checks remain CI18's gate. No new
+repository check exclusions. An empty-file fixture stream is named and its open
+state asserted. Original S2 movie rendering remains the existing optional
+resource-dependent fixture, not exercised without RTTR_COOP_S2_DIR.
+All17 checks AND both complete Unit tests/Static analysis workflows must pass
+at the pushed source head before ready/tested primary handoff. Current head/CI
+and sole continuation are kept in the private Sol checkpoint. No Home/party,
+full-screen F5b, campaign/scenario registration or unlocks, hardware/release
+acceptance claim. Opus owns review/integration; releases-only, no Signal progress.
