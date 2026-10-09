@@ -5,6 +5,15 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-09 — Sol PRs 46/47/48/49 integrated together
+
+PR46 (controller keyboard API), PR47 (F9 options), PR48 (F6a save browser), PR49 (F5a map catalog), each
+all17/BOTH green at its exact head, merged in that order. Conflicts only in docs/NOTES/ROADMAP (kept both)
+and the dskHome/testFrontEndHome include lists (both includes; Load and Options routes both kept). Own
+GCC12 Debug build/dbg after reconfigure: full Test_UI 156 cases and Test_splitscreen 710 cases pass.
+Read-only gpt-6.1-sol review of the combined production diff for merge interactions: no concrete issue.
+Fresh master CI is the gate for the next release (player notes for options/save browser to be added then).
+
 ## 2026-10-09 — v0.1.13 released from green master 57262bbe8
 
 Master 57262bbe8 (F7 title-party lobby seating + Windows DLL-copy lock) passed all 17 checks:
