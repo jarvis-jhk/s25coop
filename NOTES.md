@@ -897,3 +897,31 @@ repository check exclusions added. All17 checks and BOTH complete Unit tests /
 Static analysis workflows must pass before tested primary handoff. Draft PR,
 source/test claims retained during CI; Opus reviews/integrates. No hardware or
 release claim. No Signal progress/report under releases-only policy.
+
+
+## 2026-10-09 — Sol PR48 Windows occupied-port fixture repair
+
+Exact head43aca25b2 failed the Win32 Debug Test_splitscreen step at the two new
+save-resume lobby waits; compilation and DLL serialization checks passed.
+The logs show both clients connected to the intentionally occupied ports.
+Socket::Create enables SO_REUSEADDR, so Winsock could bind the server over
+the fixture listener and route the handshake to that silent listener.
+Fresh origin/master57262bbe8 contains no repair; merge-tree is clean.
+The fixture now reserves both stacks with an IPv6 dual-stack socket, disables
+reuse and requests Windows exclusive use before binding. It explicitly requires
+the first UI action to show the bind-error message, then closes the reservation
+and resumes through the real UI on a fresh port. A later transient connection
+timeout retries the complete host/connect route; the final lobby check remains
+fatal. Production source is unchanged. Native Windows exact-head CI remains
+mandatory; no unchanged-head infrastructure retry or tested handoff is claimed.
+Microsoft Winsock reference: https://learn.microsoft.com/windows/win32/winsock/using-so-reuseaddr-and-so-exclusiveaddruse
+
+Repair local gate: GCC12 Debug/Werror rebuild at max2 jobs, physical11/901 and
+affected69/2484 pass. Dedicated physical repeat preserves the Debug raw-artifact
+hash; the broader affected suite can write it through unchanged legacy tests,
+so that suite is not used as an artifact-purity claim. Catalog/UI product source
+and Test_UI binary match their prior passing evidence. Supplied-diff read-only
+review on exactly gpt-6.1-sol found no concrete defect; its repository reads were
+blocked by the known namespace sandbox error. Format10, static validation,
+diff/private-marker checks and actual agent tsc pass. Require all17 checks and
+both complete workflows on the repaired SHA before ready/tested handoff.

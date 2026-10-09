@@ -288,11 +288,22 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         saveSolo();
         joinParty(count);
         Socket occupied;
-        BOOST_TEST_REQUIRE(occupied.Listen(0, false, false));
+        // Reserve both address families: Socket::Listen enables SO_REUSEADDR, which on Windows
+        // can let the game bind the same port and connect to this silent listener instead.
+        BOOST_TEST_REQUIRE(occupied.Create(AF_INET6));
+        const int disabled = 0;
+        BOOST_TEST_REQUIRE(occupied.SetSockOpt(SO_REUSEADDR, &disabled, sizeof(disabled), SOL_SOCKET));
+        BOOST_TEST_REQUIRE(occupied.SetSockOpt(IPV6_V6ONLY, &disabled, sizeof(disabled), IPPROTO_IPV6));
+#ifdef _WIN32
+        const int exclusive = 1;
+        BOOST_TEST_REQUIRE(occupied.SetSockOpt(SO_EXCLUSIVEADDRUSE, &exclusive, sizeof(exclusive), SOL_SOCKET));
+#endif
+        BOOST_TEST_REQUIRE(occupied.Bind(0, true));
+        BOOST_TEST_REQUIRE(listen(occupied.GetSocket(), 1) == 0);
         address_t address{};
         socklen_t addressSize = sizeof(address);
         BOOST_TEST_REQUIRE(getsockname(occupied.GetSocket(), &address.sa, &addressSize) == 0);
-        const uint16_t busyPort = ntohs(address.sa_in.sin_port);
+        const uint16_t busyPort = ntohs(address.sa_in6.sin6_port);
         bool loaded = false;
         for(unsigned attempt = 0; attempt < 10 && !loaded; ++attempt)
         {
@@ -309,11 +320,13 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
                 tap(pad, PadButton::Start);
                 frame();
             }
-            BOOST_TEST_REQUIRE(until([] {
-                return desktopAs<dskGameLobby>() != nullptr
-                       || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr;
-            }));
-            loaded = desktopAs<dskGameLobby>() != nullptr;
+            if(attempt == 0)
+                BOOST_TEST_REQUIRE(dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr);
+            loaded = until([] {
+                         return desktopAs<dskGameLobby>() != nullptr
+                                || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr;
+                     })
+                     && desktopAs<dskGameLobby>() != nullptr;
             if(!loaded)
             {
                 occupied.Close();
