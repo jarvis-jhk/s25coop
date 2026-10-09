@@ -3,6 +3,15 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Options on the start screen now open full-screen pages for Display / Steam Deck, Sound and
+  music, Controls and Language, usable with controller, mouse or keyboard. The old settings
+  stay under "Advanced settings".
+- "Load game" on the start screen opens a full-screen list of your saves, newest first, with
+  map, date, play time and players. "Continue" starts your newest save directly.
+- Map selection no longer loses a whole map folder because of one unreadable file next to it.
+
 ## 0.1.13
 
 - Controller players who joined on the title screen now get their local lobby seats without
