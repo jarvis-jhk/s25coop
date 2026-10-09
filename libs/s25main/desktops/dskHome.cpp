@@ -10,9 +10,9 @@
 #include "controls/ctrlButton.h"
 #include "controls/ctrlTimer.h"
 #include "desktops/dskCredits.h"
+#include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskMainMenu.h"
 #include "desktops/dskMultiPlayer.h"
-#include "desktops/dskOptions.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
 #include "frontend/MenuRoutes.h"
@@ -114,7 +114,7 @@ void dskHome::OnChoose(const unsigned ctrl_id)
         case ID_Maps: dskSinglePlayer::PrepareSinglePlayerServer(); break;
         case ID_Load: dskSinglePlayer::PrepareLoadGame(); break;
         case ID_Online: WINDOWMANAGER.Switch(std::make_unique<dskMultiPlayer>()); break;
-        case ID_Options: WINDOWMANAGER.Switch(std::make_unique<dskOptions>()); break;
+        case ID_Options: Open([] { return std::make_unique<dskFrontEndOptions>(); }); break;
         case ID_WhatsNew: WINDOWMANAGER.ToggleWindow(std::make_unique<iwChangelog>()); break;
         case ID_Credits: WINDOWMANAGER.Switch(std::make_unique<dskCredits>()); break;
         case ID_Classic:

@@ -855,3 +855,39 @@ assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
 static validation and actual agent tsc pass. All10 Sol source/test hashes match
 the previously fully tested source. Fresh repaired-head CI supersedes old CI;
 PR45 stays draft with its source/test claims until the complete exact-head gate.
+
+## 2026-10-09 — Sol: grouped full-screen options (F9)
+
+`sol/frontend-options` starts at fetched master57262bbe8, with the bounded Home
+Options include/OnChoose wiring claimed and primary coordination t_mv0hjl4w33gvz.
+The previous keyboard PR46 stays a completed all17/BOTH-workflow handoff, not new work.
+New overview and display/audio/controls/language pages use dskFrontEndPage's factory
+trail and accepted-input persistence. Mouse/keyboard keep the same controls; Advanced
+settings and Classic menus preserve legacy-only routes. No OSK caller adoption or
+help-footer toggle in this slice. Existing runtime/CI fault reporting retained; no
+new service, token or public reporting URL.
+
+Final own Debug/Werror max2 build passes: new suite12 cases/513 assertions, affected
+front-end/title/party/legacy option/dropdown suites41/1006 and full UI146/22161.
+New suite registration was confirmed in the configured binary. Test driver
+adds only a default-false resize refusal to exercise the failed-display path; no
+shared live driver edit. Read-only supplied-context review on exactly gpt-6.1-sol
+identified audio-runtime cleanup and persistence-proof gaps: restore audio volumes/
+playlist/playback explicitly and parse the saved config archive rather than creating
+a second Settings singleton. Synchronous combo callbacks are safe here because lists
+close before parent notification and there is no child/object deletion after it;
+WindowManager updates windowedSize before desktop resize notification. Final executed
+physical/legacy suites and fresh complete exact-head CI remain the handoff gate.
+
+Three executed omission controls each fail the intended matched case (exit201):
+missing Save leaves reloaded audio127/131 instead of128/130; omitted automatic-profile
+reset keeps125/100 instead of0; omitted display rollback retains the rejected mode.
+Original source was restored byte-for-byte, rebuilt and all positive suites rerun.
+No coverage exclusions. Dropdown lists are constrained above the footer, including
+all six display rows at800×600/1280×800. A resize lowers an oversized fixed scale
+and persists it; valid custom125% stays exact. Fixtures restore saved video settings
+after driver resize callbacks, as those callbacks also update windowedSize.
+Source formatting10, static validation, private-string/diff checks and actual agent
+typecheck pass. Supplied-context Sol review findings were addressed; complete fresh
+exact-head CI (all17 and both Unit tests/Static analysis) is still required before
+ready/tested handoff. No new slice before that handoff, no hardware/release claim.

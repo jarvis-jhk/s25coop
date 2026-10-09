@@ -101,3 +101,27 @@ player takes one over explicitly.
 
 Pixel-art Xbox button glyphs and the full/buttons-only/off help footer are on the roadmap but
 wait for F1's shared footer (Jan, 2026-10-06: "Do neither of them now").
+
+## Grouped options (F9)
+
+Home → Options opens `dskFrontEndOptions`, with Display / Steam Deck, Sound/Music,
+Controls and Language pages. They use the same trail as other front-end pages: Back
+returns to the chosen category, then to Home's Options tile. Labels sit above their
+controls, so translations and values have separate space at 800×600 and 1280×800.
+
+Choices keep the shared dropdown contract: A opens, D-pad previews, A accepts and
+persists, B cancels before leaving the page. Audio sliders preserve the stored byte
+volume without rounding it on entry. Accepted display modes and sizes take effect
+through the video driver; a rejected mode keeps the working mode and shows an error.
+TV/Deck automatic profiles reset an existing fixed scale on enable; turning a profile
+off keeps a subsequently chosen fixed percentage. Language changes retain the trail;
+returning through it rebuilds the translated ancestors. Resizes cancel display-list
+previews and rebuild current size/scale choices; a fixed scale that no longer fits is
+reduced and persisted. Scrollable dropdown lists stay above the shared footer.
+
+Advanced settings keeps the upstream page for driver selection, ports/proxies,
+portraits, names and addon defaults. Classic menus opens the old main menu. Neither
+route is retired in this slice. On-screen keyboard caller adoption and the deferred
+help-footer toggle are separate work. Tests are physical input through the mock driver
+in `testFrontEndOptions.cpp`; a one-shot mock resize refusal covers recovery, and test
+cleanup restores temporary settings and driver state before fixture destruction.

@@ -45,4 +45,5 @@ public:
     unsigned long tickCount_;
     unsigned numTfinger_;
     std::vector<VideoMode> video_modes_;
+    bool rejectResize_ = false;
 };
