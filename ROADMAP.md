@@ -126,6 +126,13 @@ starting the game and playing it are still upstream's mouse screens with control
   saved tribe and with an online co-player, stays in sync and keeps the AI slots as they were; (2) optionally let a
   joining player take over a saved AI tribe instead; (3) the deterministic-load fix above if a test shows an async;
   (4) in the new front end this is simply F6 → F7: pick any save, the party screen fills, more players join with A.
+  Sol F6b online regression (2026-10-09): a played ordinary local single-human save resumes with an online
+  co-player, whose real commands reach the saved human tribe. Distinct Default/Hard and Dummy/Easy AI tribes
+  and a locked tribe survive both loads. Inventories, HQ positions and all building/site counts compare across
+  both save boundaries; saving the online game and rejoining the same group is covered. Intentional member
+  desync after either load must remove it with an explicit reason while the host continues. Public-map CTests
+  run without original S2 files; genuine pre-coop upstream-world provenance, optional AI takeover and GUI/Deck
+  acceptance remain open. Fresh exact-head CI is required before tested handoff.
 
 ## M3 — Splitscreen, controller and Steam Deck UI
 
