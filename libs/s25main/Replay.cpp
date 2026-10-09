@@ -42,7 +42,9 @@ uint8_t Replay::GetLatestMinorVersion() const
     //      StartReplay function for detailed description)
     // 8.3  Remove invalid fish for replays started from start (i.e. map instead of savegame)
     // 8.4  s25coop: per-player start goods
-    return 4;
+    // 8.5  Hunter/skinner/AI search for animals in a circle instead of a square (radius-based). Upstream
+    //      numbers this 8.4; s25coop had already shipped 8.4 for start goods, so it moves up one here.
+    return 5;
 }
 
 int Replay::GetPlayerInfoVersion() const

@@ -4,6 +4,7 @@
 
 #include "HeadlessGame.h"
 #include "EventManager.h"
+#include "GamePlayer.h"
 #include "GlobalGameSettings.h"
 #include "PlayerInfo.h"
 #include "Savegame.h"
@@ -25,7 +26,7 @@
 #    include "Windows.h"
 #endif
 
-std::vector<PlayerInfo> GeneratePlayerInfo(const std::vector<AI::Info>& ais);
+std::vector<PlayerInfo> GeneratePlayerInfo(const std::vector<AI::Info>& ais, const std::vector<Team>& teams);
 std::string ToString(const std::chrono::milliseconds& time);
 std::string HumanReadableNumber(unsigned num);
 
@@ -47,8 +48,8 @@ void printConsole(const char* fmt, ...);
 #endif
 
 HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, const std::vector<AI::Info>& ais,
-                           const bfs::path& luaPath)
-    : HeadlessGame(ggs, map, GeneratePlayerInfo(ais), luaPath)
+                           const bfs::path& luaPath, const std::vector<Team>& teams)
+    : HeadlessGame(ggs, map, GeneratePlayerInfo(ais, teams), luaPath)
 {}
 
 HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, const std::vector<PlayerInfo>& players,
@@ -60,6 +61,14 @@ HeadlessGame::HeadlessGame(const GlobalGameSettings& ggs, const bfs::path& map, 
     if(!loader.Load(map))
         throw std::runtime_error("Could not load " + map.string());
     MapLoader::SetupResources(world_);
+
+    // Establish the team alliances (ally + non-aggression pacts) exactly like GameClient::StartGame does
+    // for a fresh map. Without this, teammates have no pacts and are mutually attackable, so the AIs attack
+    // their own team; on replay GameClient *does* set up the pacts, so those recorded attack commands are
+    // handled differently and the replay desyncs (object-count divergence). MakeStartPacts is a no-op for
+    // teamless players, so this is safe regardless of whether --teams was given.
+    for(unsigned i = 0; i < world_.GetNumPlayers(); ++i)
+        world_.GetPlayer(i).MakeStartPacts();
 
     if(!luaPath.empty())
     {
@@ -345,7 +354,7 @@ void HeadlessGame::PrintState()
     lastReportGf_ = em_.GetCurrentGF();
 }
 
-std::vector<PlayerInfo> GeneratePlayerInfo(const std::vector<AI::Info>& ais)
+std::vector<PlayerInfo> GeneratePlayerInfo(const std::vector<AI::Info>& ais, const std::vector<Team>& teams)
 {
     std::vector<PlayerInfo> ret;
     for(const AI::Info& ai : ais)
@@ -360,7 +369,7 @@ std::vector<PlayerInfo> GeneratePlayerInfo(const std::vector<AI::Info>& ais)
             default: pi.name = "Dummy " + std::to_string(ret.size()); break;
         }
         pi.nation = Nation::Romans;
-        pi.team = Team::None;
+        pi.team = (ret.size() < teams.size()) ? teams[ret.size()] : Team::None;
         pi.color = PLAYER_COLORS[ret.size() % PLAYER_COLORS.size()];
         ret.push_back(pi);
     }

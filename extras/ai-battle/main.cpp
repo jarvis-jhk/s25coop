@@ -18,6 +18,7 @@
 #include "lua/LuaInterfaceBase.h"
 #include "random/Random.h"
 #include "gameTypes/MapInfo.h"
+#include "gameTypes/TeamTypes.h"
 #include "s25util/Log.h"
 #include "s25util/StringConversion.h"
 #include "s25util/System.h"
@@ -29,6 +30,7 @@
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <iomanip>
+#include <sstream>
 #if BOOST_VERSION >= 109000
 #    include <optional>
 using std::optional;
@@ -49,26 +51,32 @@ static void loadAddonsFromIni(GlobalGameSettings& ggs, const bfs::path& iniPath)
     boost::property_tree::ptree tree;
     boost::property_tree::read_ini(iniPath.string(), tree);
 
+    if(tree.empty()) // empty file -> nothing to configure, that's fine
+        return;
+
+    // Anything else is intentional configuration, so surface mistakes as hard errors instead of
+    // silently ignoring them (a mistyped section or key/value would otherwise go unnoticed).
     const auto addons = tree.get_child_optional("addons");
     if(!addons)
-    {
-        bnw::cout << "Note: no [addons] section in " << iniPath << ", using defaults.\n";
-        return;
-    }
+        throw std::runtime_error("No [addons] section in " + iniPath.string());
 
     unsigned loaded = 0;
     for(const auto& entry : *addons)
     {
+        AddonId id{};
+        unsigned value = 0;
         try
         {
-            const auto id = static_cast<AddonId>(s25util::fromStringClassic<unsigned>(entry.first));
-            const auto v = entry.second.get_value<unsigned>();
-            ggs.setSelection(id, v);
-            ++loaded;
+            id = static_cast<AddonId>(s25util::fromStringClassic<unsigned>(entry.first));
+            value = entry.second.get_value<unsigned>();
         } catch(const std::exception&)
         {
-            // Unknown or invalid entry - skip silently
+            throw std::runtime_error("Invalid addon entry '" + entry.first + "' in " + iniPath.string());
         }
+        if(!ggs.getAddon(id)) // unknown/unsupported addon id
+            throw std::runtime_error("Unknown addon id '" + entry.first + "' in " + iniPath.string());
+        ggs.setSelection(id, value);
+        ++loaded;
     }
     bnw::cout << "Loaded " << loaded << " addon settings from " << iniPath << '\n';
 }
@@ -161,33 +169,42 @@ int main(int argc, char** argv)
     bnw::nowide_filesystem();
     bnw::args _(argc, argv);
 
-    optional<std::string> replay_path;
-    optional<std::string> savegame_path;
-    optional<std::string> lua_path;
-    optional<std::string> settings_path;
-    optional<std::string> test_script_path;
-    optional<std::string> check_replay_path;
-    unsigned random_init = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-    unsigned random_ai_init = random_init;
-
     po::options_description desc("Allowed options");
+    struct
+    {
+        std::string map;
+        std::vector<std::string> ais;
+        optional<std::string> teams;
+        std::string objective, wares;
+        optional<std::string> replay_path;
+        optional<std::string> savegame_path;
+        optional<std::string> lua_path;
+        optional<std::string> settings_path;
+        optional<std::string> test_script_path;
+        optional<std::string> check_replay_path;
+        unsigned random_init =
+          static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        unsigned random_ai_init = random_init;
+        unsigned maxGF = std::numeric_limits<unsigned>::max();
+    } opts;
     // clang-format off
     desc.add_options()
         ("help,h", "Show help")
-        ("map,m", po::value<std::string>(),"Map to load (required unless --check-replay)")
-        ("ai", po::value<std::vector<std::string>>(),"AI player(s) to add (aijh | dummy) (required unless --check-replay)")
-        ("objective", po::value<std::string>()->default_value("domination"),"domination(default) | conquer | none (campaign missions: the script decides)")
-        ("wares", po::value<std::string>()->default_value("normal"),"Starting wares: vlow | low | normal (default) | alot")
-        ("settings", po::value(&settings_path),"INI file with an [addons] section to configure addon settings (optional)")
-        ("replay", po::value(&replay_path),"Filename to write replay to (optional)")
-        ("save", po::value(&savegame_path),"Filename to write savegame to (optional)")
-        ("lua", po::value(&lua_path),"Lua script to execute during the game (optional)")
-        ("random_init", po::value(&random_init),"Seed value for the random number generator (optional)")
-        ("random_ai_init", po::value(&random_ai_init),"Seed value for the AI random number generator (optional)")
-        ("maxGF", po::value<unsigned>()->default_value(std::numeric_limits<unsigned>::max()),"Maximum number of game frames to run (optional)")
+        ("map,m", po::value(&opts.map),"Map to load (required unless --check-replay)")
+        ("ai", po::value(&opts.ais),"AI player(s) to add (aijh | dummy) (required unless --check-replay)")
+        ("teams", po::value(&opts.teams),"Team assignment, e.g. \"0,1;2,3\" for a 2v2 (groups separated by ';', player indices by ','). Allied players get start pacts.")
+        ("objective", po::value(&opts.objective)->default_value("domination"),"domination(default) | conquer | none (campaign missions: the script decides)")
+        ("wares", po::value(&opts.wares)->default_value("normal"),"Starting wares: vlow | low | normal (default) | alot")
+        ("settings", po::value(&opts.settings_path),"INI file with an [addons] section to configure addon settings (optional)")
+        ("replay", po::value(&opts.replay_path),"Filename to write replay to (optional)")
+        ("save", po::value(&opts.savegame_path),"Filename to write savegame to (optional)")
+        ("lua", po::value(&opts.lua_path),"Lua script to execute during the game (optional)")
+        ("random_init", po::value(&opts.random_init),"Seed value for the random number generator (optional)")
+        ("random_ai_init", po::value(&opts.random_ai_init),"Seed value for the AI random number generator (optional)")
+        ("maxGF", po::value(&opts.maxGF),"Maximum number of game frames to run (optional)")
         ("test", "Test mode: needs --lua; the script's onTestEnd(gf) asserts on the final state, onTestFrame(gf) may issue commands through the global test. Exit code 2 on any Lua error or failed assertion")
-        ("test-script", po::value(&test_script_path),"Test mode: a second script run in the map script's Lua state, e.g. checks around a campaign mission (optional)")
-        ("check-replay", po::value(&check_replay_path),"Test mode: replay this replay headless and check that it stays in sync with the recorded game. Exit code 3 if not. --random_init overrides the recorded seed (to prove the check can fail)")
+        ("test-script", po::value(&opts.test_script_path),"Test mode: a second script run in the map script's Lua state, e.g. checks around a campaign mission (optional)")
+        ("check-replay", po::value(&opts.check_replay_path),"Test mode: replay this replay headless and check that it stays in sync with the recorded game. Exit code 3 if not. --random_init overrides the recorded seed (to prove the check can fail)")
         ("version", "Show version information and exit")
         ;
     // clang-format on
@@ -205,9 +222,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    po::variables_map options;
     try
     {
+        po::variables_map options;
         po::store(po::command_line_parser(argc, argv).options(desc).run(), options);
 
         if(options.count("help"))
@@ -224,7 +241,7 @@ int main(int argc, char** argv)
         }
 
         po::notify(options);
-        if(!check_replay_path && (!options.count("map") || !options.count("ai")))
+        if(!opts.check_replay_path && (!options.count("map") || !options.count("ai")))
             throw std::runtime_error("--map and --ai are required");
     } catch(const std::exception& e)
     {
@@ -239,8 +256,8 @@ int main(int argc, char** argv)
         for(int i = 0; i < argc; ++i)
             bnw::cout << argv[i] << " ";
         bnw::cout << std::endl;
-        bnw::cout << "random_init: " << random_init << std::endl;
-        bnw::cout << "random_ai_init: " << random_ai_init << std::endl;
+        bnw::cout << "random_init: " << opts.random_init << std::endl;
+        bnw::cout << "random_ai_init: " << opts.random_ai_init << std::endl;
         bnw::cout << std::endl;
 
         RTTRCONFIG.Init();
@@ -249,50 +266,48 @@ int main(int argc, char** argv)
         const bfs::path logDir = RTTRCONFIG.ExpandPath(s25::folders::logs);
         bfs::create_directories(logDir);
         LOG.setLogFilepath(logDir);
-        RANDOM.Init(random_init);
-        AI::getRandomGenerator().seed(random_ai_init);
+        RANDOM.Init(opts.random_init);
+        AI::getRandomGenerator().seed(opts.random_ai_init);
 
-        if(check_replay_path)
-            return checkReplay(RTTRCONFIG.ExpandPath(*check_replay_path),
-                               options.count("random_init") ? optional<unsigned>(random_init) : optional<unsigned>());
+        if(opts.check_replay_path)
+            return checkReplay(RTTRCONFIG.ExpandPath(*opts.check_replay_path),
+                               options.count("random_init") ? optional<unsigned>(opts.random_init) : optional<unsigned>());
 
-        const bfs::path mapPath = RTTRCONFIG.ExpandPath(options["map"].as<std::string>());
-        const std::vector<AI::Info> ais = ParseAIOptions(options["ai"].as<std::vector<std::string>>());
+        const bfs::path mapPath = RTTRCONFIG.ExpandPath(opts.map);
+        const std::vector<AI::Info> ais = ParseAIOptions(opts.ais);
 
         GlobalGameSettings ggs;
-        const auto objective = options["objective"].as<std::string>();
-        if(objective == "domination")
+        if(opts.objective == "domination")
             ggs.objective = GameObjective::TotalDomination;
-        else if(objective == "conquer")
+        else if(opts.objective == "conquer")
             ggs.objective = GameObjective::Conquer3_4;
-        else if(objective == "none")
+        else if(opts.objective == "none")
             ggs.objective = GameObjective::None;
         else
         {
-            bnw::cerr << "unknown objective: " << objective << std::endl;
+            bnw::cerr << "unknown objective: " << opts.objective << std::endl;
             return 1;
         }
 
-        const auto wares = options["wares"].as<std::string>();
-        if(wares == "vlow")
+        if(opts.wares == "vlow")
             ggs.startWares = StartWares::VLow;
-        else if(wares == "low")
+        else if(opts.wares == "low")
             ggs.startWares = StartWares::Low;
-        else if(wares == "normal")
+        else if(opts.wares == "normal")
             ggs.startWares = StartWares::Normal;
-        else if(wares == "alot")
+        else if(opts.wares == "alot")
             ggs.startWares = StartWares::ALot;
         else
         {
-            bnw::cerr << "Unknown wares value: " << wares << std::endl;
+            bnw::cerr << "Unknown wares value: " << opts.wares << std::endl;
             return 1;
         }
 
-        if(settings_path)
+        if(opts.settings_path)
         {
-            loadAddonsFromIni(ggs, RTTRCONFIG.ExpandPath(*settings_path));
+            loadAddonsFromIni(ggs, RTTRCONFIG.ExpandPath(*opts.settings_path));
 
-            bnw::cout << "settings: " << RTTRCONFIG.ExpandPath(*settings_path) << std::endl;
+            bnw::cout << "settings: " << RTTRCONFIG.ExpandPath(*opts.settings_path) << std::endl;
             bnw::cout << "addon selections (non-default only):" << std::endl;
             for(unsigned i = 0; i < ggs.getNumAddons(); ++i)
             {
@@ -313,25 +328,51 @@ int main(int argc, char** argv)
             }
         }
 
-        HeadlessGame game(ggs, mapPath, ais, lua_path ? RTTRCONFIG.ExpandPath(*lua_path) : bfs::path{});
-        if(replay_path)
-            game.RecordReplay(RTTRCONFIG.ExpandPath(*replay_path), random_init);
+        // Team assignment, e.g. "0,1;2,3". Player index -> Team (Team1, Team2, ...).
+        std::vector<Team> teams;
+        if(opts.teams)
+        {
+            std::stringstream groups(*opts.teams);
+            std::string group;
+            unsigned teamIdx = 0;
+            while(std::getline(groups, group, ';'))
+            {
+                const Team team = static_cast<Team>(static_cast<uint8_t>(Team::Team1) + teamIdx);
+                std::stringstream members(group);
+                std::string idx;
+                while(std::getline(members, idx, ','))
+                {
+                    if(idx.empty())
+                        continue;
+                    const auto p = static_cast<unsigned>(std::stoul(idx));
+                    if(p >= teams.size())
+                        teams.resize(p + 1, Team::None);
+                    teams[p] = team;
+                }
+                ++teamIdx;
+            }
+        }
+
+        HeadlessGame game(ggs, mapPath, ais, opts.lua_path ? RTTRCONFIG.ExpandPath(*opts.lua_path) : bfs::path{},
+                          teams);
+        if(opts.replay_path)
+            game.RecordReplay(RTTRCONFIG.ExpandPath(*opts.replay_path), opts.random_init);
 
         const bool testMode = options.count("test") > 0;
         if(testMode)
         {
-            if(!lua_path)
+            if(!opts.lua_path)
             {
                 bnw::cerr << "--test needs --lua" << std::endl;
                 return 1;
             }
             game.ShowLuaOutput();
             game.EnableTestInput();
-            if(test_script_path)
-                game.LoadTestScript(RTTRCONFIG.ExpandPath(*test_script_path));
+            if(opts.test_script_path)
+                game.LoadTestScript(RTTRCONFIG.ExpandPath(*opts.test_script_path));
         }
 
-        game.Run(options["maxGF"].as<unsigned>());
+        game.Run(opts.maxGF);
         if(testMode)
         {
             game.CheckTestEnd();
@@ -343,8 +384,8 @@ int main(int argc, char** argv)
             bnw::cout << "TEST PASSED" << std::endl;
         }
         game.Close();
-        if(savegame_path)
-            game.SaveGame(RTTRCONFIG.ExpandPath(*savegame_path));
+        if(opts.savegame_path)
+            game.SaveGame(RTTRCONFIG.ExpandPath(*opts.savegame_path));
     } catch(const LuaExecutionError& e)
     {
         // Also while the script starts (onStart, onSettingsReady ...): a test must never pass on that
