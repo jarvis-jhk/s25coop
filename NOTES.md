@@ -855,3 +855,45 @@ assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
 static validation and actual agent tsc pass. All10 Sol source/test hashes match
 the previously fully tested source. Fresh repaired-head CI supersedes old CI;
 PR45 stays draft with its source/test claims until the complete exact-head gate.
+
+
+## 2026-10-09 — Sol F6a full-screen save browser (local validation complete, CI pending)
+
+Fresh master57262bbe8, branch `sol/frontend-save-browser`; no dependency on the
+already handed-off PR46 keyboard / PR47 options. Claimed catalog, load page,
+Home routing, catalog/physical Home/save suites and docs before editing.
+`SaveCatalog` reads HeaderAndSettings only, sorts full timestamps with path ties,
+counts corrupt/incompatible files without blocking good saves. Full-screen
+`dskFrontEndLoad` shows scrollable saves and map/date/game-time/human+AI/name
+details. Refresh keeps identity; Load and Continue stay on the browser on failure,
+use the real HostGame/connecting path on success, and preserve one B back to Home.
+No save deletion or file writes. Existing crash/failed-CI reporting remains;
+no public report URL/service added. Saved thumbnails are not in the current
+format; fallback is explicit, snapshot rendering remains F6b alongside online
+solo-save co-player regression and optional AI takeover. Full-screen F7 is Opus's.
+Physical tests include metadata failures and current solo-world rehost with
+upstream4.0 player headers, two/four title-party controllers and unchanged
+AI/locked tribes. Current-world data is not an upstream-produced old-save fixture;
+that provenance-backed compatibility gate remains F6b.
+
+Final Debug: physical11/895, catalog4/42, affected69/2509, full UI150/11010; all pass.
+Own GCC12 Debug/Werror cache, at most2 compiler jobs. Initial full Debug baseline
+681cases/501257assertions passed before equivalent range-wrapper/public-override
+refinements and own test cast/mouse/locked-tribe strengthening; preserved binary
+hash in the private checkpoint. Final changed/affected/UI suites pass after that
+rebuild. No expensive repeat of unchanged legacy test behavior; fresh complete
+exact-head CI is still mandatory. THREE executed production omission controls
+fail intended timestamp-order / refresh-identity / deleted-Continue assertions
+(exit201 each); product restored byte-identically and rebuilt before positives.
+No coverage exclusions. Read-only exactly gpt-6.1-sol review fixed Nowide1.73
+stream paths and Debug snapshot side effects, and corrected old-world provenance
+claims. Exceptional cleanup reaches its named probe while Connecting is open;
+port restored and windows cleared before fixture destruction. Driver restore
+precedes saved video settings, asserted after normal and exceptional cleanup.
+Dedicated new suite leaves the pre-existing Debug raw artifact SHA256 unchanged.
+Clang-format10, static/private-marker/diff and actual agent typecheck gates pass;
+local Clang23 targeted checks for the pinned-CI-compatible set pass, with no
+repository check exclusions added. All17 checks and BOTH complete Unit tests /
+Static analysis workflows must pass before tested primary handoff. Draft PR,
+source/test claims retained during CI; Opus reviews/integrates. No hardware or
+release claim. No Signal progress/report under releases-only policy.

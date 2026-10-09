@@ -101,3 +101,35 @@ player takes one over explicitly.
 
 Pixel-art Xbox button glyphs and the full/buttons-only/off help footer are on the roadmap but
 wait for F1's shared footer (Jan, 2026-10-06: "Do neither of them now").
+
+## Save browser (F6a)
+
+Home → Load game opens `dskFrontEndLoad`. It uses the full-screen page frame and
+returns to the selected Home tile with one Back / B / Escape. The scrollable list
+starts at the newest save (full timestamp, path tie-break), with map, date, game
+time, saved human/AI tribe counts and names alongside. D-pad browses the list;
+A, Enter or double-click loads, and Load/Refresh are also clickable. Refresh
+keeps the selected file when it still exists, then falls back to the newest.
+Continue selects and starts its exact newest-save target on page activation;
+a deleted or incompatible target shows an error without starting another save.
+
+The catalog reads headers and settings only. It never loads a world for preview,
+changes the RNG or edits the save; malformed metadata is counted as unavailable.
+The current save format has no thumbnail: “No preview stored” is an explicit
+fallback, with actual snapshot thumbnails deferred to F6b. Failure stays on this
+page with an acknowledgement. A second activation in the same input batch
+cannot start another connection over the existing connecting modal.
+
+The existing client/server and connecting window lead to the current lobby;
+F7's full-screen replacement is separate. The title party is carried into local
+saved games through the existing shared-view bridge. Physical regressions load
+a current solo world re-encoded with upstream 4.0 player metadata (no portrait/start-goods
+fields or local seats) with two and four controllers, preserve AI/locked tribes and
+resume the simulation. The loading screen is the test's sole bypass because
+original S2 rendering resources are absent. This does not establish online
+co-player resume, AI takeover or Steam Deck hardware acceptance. Classic Load
+keeps its original dialog until F12.
+
+Actual pre-coop upstream-produced world/save compatibility still needs a
+provenance-backed fixture in F6b; rewritten player metadata does not establish
+that compatibility.
