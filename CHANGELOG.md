@@ -11,6 +11,10 @@ and the game will show the new sections after an update.
 - "Load game" on the start screen opens a full-screen list of your saves, newest first, with
   map, date, play time and players. "Continue" starts your newest save directly.
 - Map selection no longer loses a whole map folder because of one unreadable file next to it.
+- From Return to the Roots: new game options for how each kind of mine uses up its deposits, coins
+  training only one soldier at a time, and how far stranded soldiers look for a way home. Hunters
+  now search for animals in a circle around their hut.
+- The game no longer crashes when it closes on systems with newer SDL (such as recent SteamOS).
 
 ## 0.1.13
 
