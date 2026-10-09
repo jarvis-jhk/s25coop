@@ -18,6 +18,10 @@ namespace boost {
 class thread;
 }
 
+namespace frontend {
+struct MapCatalog;
+}
+
 class dskSelectMap final : public Desktop, public LobbyInterface
 {
 public:
@@ -33,7 +37,7 @@ public:
 private:
     void Draw_() override;
 
-    void FillTable(const std::vector<boost::filesystem::path>& files);
+    void FillTable(const frontend::MapCatalog& catalog);
 
     void Msg_OptionGroupChange(unsigned ctrl_id, unsigned selection) override;
     void Msg_ButtonClick(unsigned ctrl_id) override;

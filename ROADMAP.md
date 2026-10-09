@@ -207,7 +207,15 @@ starting the game and playing it are still upstream's mouse screens with control
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
   - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
-  - ☐ F5 maps & scenarios browser: preview, player-count filter, a scenario is a one-mission campaign (Sol)
+  - ◐ F5 maps & scenarios browser (Sol):
+    - F5a header-only map catalog on `sol/frontend-map-catalog`: SWD/WLD discovery, stable file identity,
+      name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.
+      Classic selection reuses the same metadata reader; full layer validation remains on preview.
+      Local Debug catalog6/104, physical8/101, affected37/1029, ui152/21671, splitscreen673/501494 pass. Fresh all17/BOTH exact-head CI required before tested handoff.
+    - F5b full-screen browser: lazy preview, category/player-count controls, Home back stack and real party start.
+      Starts after prior Home routes integrate. Joined controllers do not imply the same number of map tribes.
+    - F5c one-mission scenario start policy and campaign presentation: a neighboring Lua script alone does not
+      register a campaign or establish unlocks; define the campaign bridge before claiming that behavior.
   - ◐ F6 load game (Sol): F6a full-screen metadata browser on `sol/frontend-save-browser`: scrollable newest-first
     save list, map/date/game-time/human+AI details, Refresh preserves file identity, Load/Continue use the real
     client/connecting/current-lobby path. Physical repaired Debug11/901 and affected69/2484 pass; unchanged catalog4/42 and UI150/11010
