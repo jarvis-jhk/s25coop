@@ -216,7 +216,10 @@ starting the game and playing it are still upstream's mouse screens with control
     current closed-slot authority and Classic/network exclusions. Physical Debug tests and read-only Sol
     review cover this bridge; fresh master CI is the release gate. The full-screen page remains open.
   - ☐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
-  - ☐ F9 options: grouped settings (display/Deck, audio, controls, help footer, language), all by controller (Sol)
+  - ◐ F9 options: grouped full-screen display/Deck, audio, controls and language pages implemented on
+    `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
+    Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption
+    remain separate deferred work; legacy driver/proxy/portrait/addon controls stay under Advanced settings.
   - ☐ F10 loading screen: mission/map title, tip, controller layout; then the game
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)

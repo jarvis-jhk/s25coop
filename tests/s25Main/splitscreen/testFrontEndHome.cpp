@@ -8,10 +8,10 @@
 #include "controls/ctrlButton.h"
 #include "desktops/dskCampaignSelection.h"
 #include "desktops/dskCredits.h"
+#include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMainMenu.h"
 #include "desktops/dskMultiPlayer.h"
-#include "desktops/dskOptions.h"
 #include "desktops/dskSelectMap.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE(EveryUpstreamDesktopComesBackToItsTile, HomeFixture)
     expectHomeFocusedOn(dskHome::ID_Online);
 
     choose(dskHome::ID_Options);
-    BOOST_TEST_REQUIRE(desktopAs<dskOptions>() != nullptr);
+    BOOST_TEST_REQUIRE(desktopAs<dskFrontEndOptions>() != nullptr);
     press(pad, PadButton::B);
     expectHomeFocusedOn(dskHome::ID_Options);
 
