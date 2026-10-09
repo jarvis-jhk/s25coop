@@ -5,6 +5,15 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-09 — v0.1.13 released from green master 57262bbe8
+
+Master 57262bbe8 (F7 title-party lobby seating + Windows DLL-copy lock) passed all 17 checks:
+Unit tests 37604845331 and Static analysis 37604845296 both completed/success, so the native
+Windows DLL-copy repair is proven. Unreleased player notes (title-party seating, addon categories
+and accepted dropdown values) became 0.1.13. Open Sol PRs 46 (OSK), 47 (F9 options), 48 (F6a save
+browser), 49 (F5a map catalog) are all17/BOTH green and next to integrate, one at a time with fresh
+master CI. F7 full-screen party page stays the primary next item.
+
 ## 2026-10-07 — recurring Windows post-build DLL copy race repaired
 
 Request t_muxwyuu985lu4 reports Unit tests 37597827253 on old master 70d1a5dab, failed only in

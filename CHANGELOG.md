@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.13
 
 - Controller players who joined on the title screen now get their local lobby seats without
   pressing A again. Campaigns and loaded saves share the host's tribe; maps use separate open
