@@ -182,6 +182,8 @@ int main(int argc, char** argv)
         optional<std::string> settings_path;
         optional<std::string> test_script_path;
         optional<std::string> check_replay_path;
+        bool testMode = false;
+        bool seedGiven = false;
         unsigned random_init =
           static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
         unsigned random_ai_init = random_init;
@@ -241,6 +243,8 @@ int main(int argc, char** argv)
         }
 
         po::notify(options);
+        opts.testMode = options.count("test") > 0;
+        opts.seedGiven = options.count("random_init") > 0;
         if(!opts.check_replay_path && (!options.count("map") || !options.count("ai")))
             throw std::runtime_error("--map and --ai are required");
     } catch(const std::exception& e)
@@ -271,7 +275,7 @@ int main(int argc, char** argv)
 
         if(opts.check_replay_path)
             return checkReplay(RTTRCONFIG.ExpandPath(*opts.check_replay_path),
-                               options.count("random_init") ? optional<unsigned>(opts.random_init) : optional<unsigned>());
+                               opts.seedGiven ? optional<unsigned>(opts.random_init) : optional<unsigned>());
 
         const bfs::path mapPath = RTTRCONFIG.ExpandPath(opts.map);
         const std::vector<AI::Info> ais = ParseAIOptions(opts.ais);
@@ -358,7 +362,7 @@ int main(int argc, char** argv)
         if(opts.replay_path)
             game.RecordReplay(RTTRCONFIG.ExpandPath(*opts.replay_path), opts.random_init);
 
-        const bool testMode = options.count("test") > 0;
+        const bool testMode = opts.testMode;
         if(testMode)
         {
             if(!opts.lua_path)

@@ -41,7 +41,16 @@ struct CampaignArtworkFixture : rttr::test::MenuPadFixture
     rttr::test::TmpFolder data;
     rttr::test::ConfigOverride builtinOverride{"RTTR", data / "rttr"};
     rttr::test::ConfigOverride userOverride{"USERDATA", data / "user"};
-    const boost::filesystem::path goodImage = data / "z_artwork.bmp";
+    // Campaign scripts may only name game paths (<RTTR_...>) or files beside the campaign, so the artwork
+    // lives in the overridden user data folder. Two levels deep: CampaignDescription takes
+    // "<RTTR_USERDATA>/x/file" for a campaign-relative sub folder and rejects its non-alphanumeric name.
+    const boost::filesystem::path art = data / "user" / "art" / "pics";
+    const boost::filesystem::path goodImage = art / "z_artwork.bmp";
+
+    std::string gamePath(const boost::filesystem::path& file) const
+    {
+        return "<RTTR_USERDATA>/art/pics/" + file.lexically_relative(art).generic_string();
+    }
 
     void createCampaign(const std::string& name, const std::string& image, const bool selectionMap = false) const
     {
@@ -62,7 +71,7 @@ struct CampaignArtworkFixture : rttr::test::MenuPadFixture
         {
             campaign << ", selectionMap={";
             for(const auto* resource : {"background", "map", "missionMapMask", "marker", "conquered"})
-                campaign << resource << "={'" << goodImage.generic_string() << "',0},";
+                campaign << resource << "={'" << gamePath(goodImage) << "',0},";
             campaign << "backgroundOffset={0,0}, disabledColor=0x70000000, missionSelectionInfos={{0xff00ff00,4,4}}}";
         }
         campaign << "}\n";
@@ -76,30 +85,31 @@ struct CampaignArtworkFixture : rttr::test::MenuPadFixture
         BOOST_TEST_REQUIRE(bitmap->create(libsiedler2::PixelBufferBGRA(8, 8, libsiedler2::ColorBGRA(0xff00ff00))) == 0);
         libsiedler2::Archiv archive;
         archive.push(std::move(bitmap));
+        boost::filesystem::create_directories(art);
         BOOST_TEST_REQUIRE(libsiedler2::Write(goodImage, archive) == 0);
-        const auto corrupt = data / "b_artwork.bmp";
+        const auto corrupt = art / "b_artwork.bmp";
         {
             boost::nowide::ofstream file(corrupt);
             file << "not a bitmap";
             BOOST_TEST_REQUIRE(static_cast<bool>(file));
         }
         createCampaign("Absent", "");
-        createCampaign("Missing", (data / "a_artwork.bmp").generic_string());
-        createCampaign("Corrupt", corrupt.generic_string());
-        createCampaign("Valid", goodImage.generic_string());
-        const auto shortName = data / "campaign-preview.bmp";
-        const auto longName = data / "campaignpreviewlong.bmp";
+        createCampaign("Missing", gamePath(art / "a_artwork.bmp"));
+        createCampaign("Corrupt", gamePath(corrupt));
+        createCampaign("Valid", gamePath(goodImage));
+        const auto shortName = art / "campaign-preview.bmp";
+        const auto longName = art / "campaignpreviewlong.bmp";
         boost::filesystem::copy_file(goodImage, shortName);
         boost::filesystem::copy_file(goodImage, longName);
-        createCampaign("InvalidShort", shortName.generic_string());
-        createCampaign("InvalidLong", longName.generic_string());
-        boost::filesystem::create_directories(data / "good");
-        boost::filesystem::create_directories(data / "bad");
-        boost::filesystem::copy_file(goodImage, data / "good" / "preview.bmp");
-        boost::filesystem::copy_file(corrupt, data / "bad" / "preview.bmp");
-        createCampaign("CollisionGood", (data / "good" / "preview.bmp").generic_string());
-        createCampaign("CollisionBad", (data / "bad" / "preview.bmp").generic_string());
-        createCampaign("Map", corrupt.generic_string(), true);
+        createCampaign("InvalidShort", gamePath(shortName));
+        createCampaign("InvalidLong", gamePath(longName));
+        boost::filesystem::create_directories(art / "good");
+        boost::filesystem::create_directories(art / "bad");
+        boost::filesystem::copy_file(goodImage, art / "good" / "preview.bmp");
+        boost::filesystem::copy_file(corrupt, art / "bad" / "preview.bmp");
+        createCampaign("CollisionGood", gamePath(art / "good" / "preview.bmp"));
+        createCampaign("CollisionBad", gamePath(art / "bad" / "preview.bmp"));
+        createCampaign("Map", gamePath(corrupt), true);
         WINDOWMANAGER.Switch(std::make_unique<dskCampaignSelection>(CreateServerInfo(ServerType::Local, 0, "Artwork")));
         frame();
         pickUp(pad);

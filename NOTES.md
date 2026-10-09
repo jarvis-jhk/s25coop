@@ -5,6 +5,38 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-09 — fork sweep (the 2026-10-08 one, run late)
+
+Upstream master merged (101 commits: radius hunter search, ai-battle --teams, single-soldier coin training,
+configurable mine resource behaviour, stranded-soldier search, more). Decisions:
+- Replay minor: s25coop shipped 8.4 = per-player start goods; upstream's 8.4 = radius hunter search. Ours
+  keeps 8.4, the hunter change is 8.5 here (`nofHunter` checks compat >= 5). Our own replays stay readable;
+  upstream-made 8.4 replays are not compatible with this fork (would parse start goods). Accepted.
+- ai-battle: coop harness (--test/--test-script/--check-replay, objective none, replay-player ctor) kept,
+  upstream's options struct and --teams adopted; teams go through GeneratePlayerInfo into the player ctor.
+- external/languages stays vendored in data/RTTR/languages; upstream's catalogue refresh (new addon strings)
+  does not apply to our edited catalogues (29 rejected files) — new upstream addon texts show in English until
+  a msgmerge pass. Not urgent.
+- Addon categories (PR45) extended for the new addons: four mine-behaviour lists and no-output fallback in
+  Economy (S4-like exhaustion = harder, others easier), single-soldier coin training Combat/harder,
+  stranded-soldier search Comfort/neutral. testAddonCategories covers each option. INEXHAUSTIBLE_MINES is
+  now enum-only (legacy migration), so the registry test expects size-1.
+- Upstream #1886 rejects absolute image paths in campaign.lua (only <RTTR_...> or campaign-relative). Our
+  campaign-artwork test moved its images to <RTTR_USERDATA>/art/pics/. Upstream quirk: "<RTTR_X>/sub/file"
+  (exactly two levels) is mistaken for a campaign-relative sub folder and fails the alphanumeric check.
+- Upstream preset windows no longer create the PRESETS folder (the client does at startup); our addon
+  category browser fixture creates it like upstream's own test.
+- Local: own GCC12 Debug, full ctest 47/47 (Test_drivers excluded, no ALSA). gpt-6.1-sol read-only review:
+  only finding was upstream's unchecked --teams index (dev CLI, upstream code), left as is.
+- master 38b3ef439 CI: Win32 Debug FrontEndHome EveryUpstreamDesktopComesBackToItsTile failed once at the
+  expectHomeFocusedOn check (passes locally and on all other configs; rerun requested); StyleAndFormatting
+  failed on a Docker Hub 504 (infra). The sweep head supersedes that CI.
+- Forks with work since 2026-09-25: fred01 (13 commits: waterway/carry-out addons, AI leather/wine, range
+  overlay, builds) — took only the sdl2-compat crash-on-exit fix (explicit AUDIODRIVER.UnloadDriver), relevant
+  for SteamOS; rest is game logic without tests in our coop context, revisit if upstreamed.
+  morganchristiansson radius-overlay (23, upstream PR work, wait), robertmuehsig boats-transport-figures (1,
+  game logic, wait), MichalLabuda headless-replay-player (15, we have --check-replay), AngryLocomotive rebrand — skipped.
+
 ## 2026-10-09 — Sol PRs 46/47/48/49 integrated together
 
 PR46 (controller keyboard API), PR47 (F9 options), PR48 (F6a save browser), PR49 (F5a map catalog), each

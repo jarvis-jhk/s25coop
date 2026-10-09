@@ -26,7 +26,8 @@ std::optional<AddonCategory> GetAddonCategory(const AddonId id)
         case AddonId::AUTOFLAGS:
         case AddonId::NO_ARMOR_DEFAULT:
         case AddonId::ARMOR_CAPTURED_BLD:
-        case AddonId::FORESTER_FARM_FIELD_AVOIDANCE: return AddonCategory::Comfort;
+        case AddonId::FORESTER_FARM_FIELD_AVOIDANCE:
+        case AddonId::STRANDED_SOLDIER_RETURN_SEARCH: return AddonCategory::Comfort;
         case AddonId::CHARBURNER:
         case AddonId::TRADE:
         case AddonId::WINE:
@@ -37,7 +38,12 @@ std::optional<AddonCategory> GetAddonCategory(const AddonId id)
         case AddonId::BURN_DURATION:
         case AddonId::SHIP_SPEED:
         case AddonId::NUM_SCOUTS_EXPLORATION:
-        case AddonId::ECONOMY_MODE_GAME_LENGTH: return AddonCategory::Economy;
+        case AddonId::ECONOMY_MODE_GAME_LENGTH:
+        case AddonId::GRANITEMINE_RESOURCE_BEHAVIOR:
+        case AddonId::COALMINE_RESOURCE_BEHAVIOR:
+        case AddonId::IRONMINE_RESOURCE_BEHAVIOR:
+        case AddonId::GOLDMINE_RESOURCE_BEHAVIOR:
+        case AddonId::MINE_NO_OUTPUT_FALLBACK: return AddonCategory::Economy;
         case AddonId::LIMIT_CATAPULTS:
         case AddonId::DEMOLITION_PROHIBITION:
         case AddonId::STATISTICS_VISIBILITY:
@@ -45,11 +51,11 @@ std::optional<AddonCategory> GetAddonCategory(const AddonId id)
         case AddonId::ADJUST_MILITARY_STRENGTH:
         case AddonId::MAX_RANK:
         case AddonId::SEA_ATTACK:
-        case AddonId::BATTLEFIELD_PROMOTION: return AddonCategory::Combat;
+        case AddonId::BATTLEFIELD_PROMOTION:
+        case AddonId::SINGLE_SOLDIER_COIN_TRAINING: return AddonCategory::Combat;
         case AddonId::INEXHAUSTIBLE_MINES:
         case AddonId::REFUND_MATERIALS:
         case AddonId::REFUND_ON_EMERGENCY:
-        case AddonId::INEXHAUSTIBLE_GRANITEMINES:
         case AddonId::INEXHAUSTIBLE_FISH:
         case AddonId::MORE_ANIMALS:
         case AddonId::HALF_COST_MIL_EQUIP:
@@ -75,10 +81,17 @@ AddonDifficulty GetAddonDifficulty(const Addon& addon, const unsigned status)
         case AddonId::MAX_WATERWAY_LENGTH:
             return status > addon.getDefaultStatus() ? AddonDifficulty::Easier : AddonDifficulty::Harder;
         case AddonId::BURN_DURATION: return status <= 4 ? AddonDifficulty::Easier : AddonDifficulty::Harder;
+        // Default / Inexhaustible / S4-like exhaustion / Work everywhere
+        case AddonId::GRANITEMINE_RESOURCE_BEHAVIOR:
+        case AddonId::COALMINE_RESOURCE_BEHAVIOR:
+        case AddonId::IRONMINE_RESOURCE_BEHAVIOR:
+        case AddonId::GOLDMINE_RESOURCE_BEHAVIOR:
+            return status == 2 ? AddonDifficulty::Harder : AddonDifficulty::Easier;
+        case AddonId::SINGLE_SOLDIER_COIN_TRAINING: return AddonDifficulty::Harder;
         case AddonId::INEXHAUSTIBLE_MINES:
         case AddonId::REFUND_MATERIALS:
         case AddonId::REFUND_ON_EMERGENCY:
-        case AddonId::INEXHAUSTIBLE_GRANITEMINES:
+        case AddonId::MINE_NO_OUTPUT_FALLBACK:
         case AddonId::INEXHAUSTIBLE_FISH:
         case AddonId::MORE_ANIMALS:
         case AddonId::HALF_COST_MIL_EQUIP:

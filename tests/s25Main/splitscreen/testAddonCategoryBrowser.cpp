@@ -59,6 +59,12 @@ struct CategoryBrowserFixture : rttr::test::MenuPadFixture
     GlobalGameSettings model;
     iwAddons* window = nullptr;
 
+    // The game creates the presets folder at startup; the preset windows no longer do it themselves.
+    CategoryBrowserFixture()
+    {
+        boost::filesystem::create_directories(RTTRCONFIG.ExpandPath(s25::folders::addonPresets));
+    }
+
     template<class F>
     void run(F&& test)
     {

@@ -29,9 +29,10 @@ BOOST_AUTO_TEST_CASE(EveryRegisteredAddonHasOneCategoryAndDefaultIsNeutral)
         for(unsigned value = 0; value < addon.getNumOptions(); ++value)
             BOOST_TEST(static_cast<unsigned>(GetAddonDifficulty(addon, value)) <= 2u);
     }
-    BOOST_TEST(settings.getNumAddons() == rttrEnum::size<AddonId>);
+    // INEXHAUSTIBLE_MINES only survives in the enum to migrate old settings; upstream no longer registers it.
+    BOOST_TEST(settings.getNumAddons() == rttrEnum::size<AddonId> - 1u);
     for(const auto id : rttrEnum::values<AddonId>)
-        BOOST_TEST(ids.count(id) == 1u);
+        BOOST_TEST(ids.count(id) == (id == AddonId::INEXHAUSTIBLE_MINES ? 0u : 1u));
     BOOST_TEST(counts[0] == 0u);
     for(unsigned i = 1; i < counts.size(); ++i)
         BOOST_TEST(counts[i] > 0u);
@@ -65,9 +66,15 @@ BOOST_AUTO_TEST_CASE(EffectsFollowTheActualResourceAndTravelOptionOrder)
     check(AddonId::SEA_ATTACK, {D::Neutral, D::Neutral, D::Neutral});
     check(AddonId::ADJUST_MILITARY_STRENGTH, {D::Neutral, D::Neutral, D::Neutral});
     check(AddonId::AI_DEBUG_WINDOW, {D::Neutral, D::Neutral});
-    for(const auto id : {AddonId::INEXHAUSTIBLE_MINES, AddonId::INEXHAUSTIBLE_GRANITEMINES, AddonId::INEXHAUSTIBLE_FISH,
-                         AddonId::REFUND_ON_EMERGENCY, AddonId::HALF_COST_MIL_EQUIP, AddonId::PEACEFULMODE})
+    for(const auto id : {AddonId::INEXHAUSTIBLE_FISH, AddonId::REFUND_ON_EMERGENCY, AddonId::HALF_COST_MIL_EQUIP,
+                         AddonId::PEACEFULMODE})
         check(id, {D::Neutral, D::Easier});
+    for(const auto id : {AddonId::GRANITEMINE_RESOURCE_BEHAVIOR, AddonId::COALMINE_RESOURCE_BEHAVIOR,
+                         AddonId::IRONMINE_RESOURCE_BEHAVIOR, AddonId::GOLDMINE_RESOURCE_BEHAVIOR})
+        check(id, {D::Neutral, D::Easier, D::Harder, D::Easier});
+    check(AddonId::MINE_NO_OUTPUT_FALLBACK, {D::Neutral, D::Easier, D::Easier, D::Easier, D::Easier});
+    check(AddonId::SINGLE_SOLDIER_COIN_TRAINING, {D::Neutral, D::Harder});
+    check(AddonId::STRANDED_SOLDIER_RETURN_SEARCH, {D::Neutral, D::Neutral, D::Neutral, D::Neutral});
     check(AddonId::REFUND_MATERIALS, {D::Neutral, D::Easier, D::Easier, D::Easier, D::Easier});
     for(const auto id : {AddonId::MORE_ANIMALS, AddonId::FORESTER_REACH_RADIUS, AddonId::WOODCUTTER_REACH_RADIUS})
         check(id, {D::Neutral, D::Easier, D::Easier, D::Easier, D::Easier, D::Easier});
