@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(CatalogMetadataRetainsClassicMouseAndPadPreview, MapRetu
     BOOST_TEST(table->GetItemText(0, 1) == "Catalog author");
     BOOST_TEST(table->GetItemText(0, 2) == "2 Player");
     BOOST_TEST(table->GetItemText(0, 4) == "32x32");
-    BOOST_TEST(table->GetItemText(0, 5) == (userData / "MAPS/one.SwD").string());
+    BOOST_TEST(boost::filesystem::path(table->GetItemText(0, 5)) == userData / "MAPS" / "one.SwD");
     click(DrawPoint(200, 70));
     BOOST_TEST_REQUIRE(table->GetSelection());
     const auto firstPreview = page->GetCtrl<ctrlPreviewMinimap>(11)->GetCurMapSize();
@@ -181,8 +181,10 @@ BOOST_FIXTURE_TEST_CASE(CatalogMetadataRetainsClassicMouseAndPadPreview, MapRetu
     BOOST_TEST(firstPreview.y > 0u);
     BOOST_TEST(page->GetCtrl<ctrlText>(12)->GetText() == "Alpha");
     BOOST_TEST(page->GetCtrl<ctrlButton>(5)->GetEnabled());
-    for(unsigned i = 0; i < 20 && focusedId(0) != 1u; ++i)
-        press(pad, PadButton::LeftShoulder);
+    BOOST_TEST_REQUIRE(focusedId(0) == 1u);
+    press(pad, PadButton::RightShoulder);
+    BOOST_TEST_REQUIRE(focusedId(0) != 1u);
+    press(pad, PadButton::LeftShoulder);
     BOOST_TEST_REQUIRE(focusedId(0) == 1u);
     press(pad, PadButton::DpadDown);
     BOOST_TEST_REQUIRE(table->GetSelection());

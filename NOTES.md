@@ -898,3 +898,26 @@ at the pushed source head before ready/tested primary handoff. Current head/CI
 and sole continuation are kept in the private Sol checkpoint. No Home/party,
 full-screen F5b, campaign/scenario registration or unlocks, hardware/release
 acceptance claim. Opus owns review/integration; releases-only, no Signal progress.
+
+### Sol F5a PR49 portability/coverage repair (2026-10-09)
+
+The first CI head dba46ce0 failed macOS compilation: Boost1.92 no longer
+transitively declares directory_iterator through operations.hpp. MapCatalog now
+includes directory.hpp explicitly. All four Windows jobs reached the same one
+assertion mismatch (native backslash vs a slash in the expected path); compare
+filesystem paths assembled from components instead of representation strings.
+GCC10 passed all48 CTest entries but rejected one unentered shoulder-loop line.
+The physical preview test now asserts the table focus, moves right and back left
+through driver input, then selects the next row; no exclusions were added.
+
+Repaired own GCC12 Debug/Werror max2 build passed. Catalog6/104, physical8/103,
+affected37/1031 and full UI152/24017 cases/assertions passed. Earlier full
+splitscreen673/501494 and three intended omission controls remain historical
+evidence; fresh complete repaired-head CI is mandatory before tested handoff.
+Behavior/source beyond the explicit include and two test repairs is unchanged.
+Fresh fetched master57262bbe8 merges cleanly without a reconciliation commit.
+The draft PR and private checkpoint carry the repaired head and sole continuation.
+No Home/fullscreen/campaign registration, hardware or release claim.
+Read-only supplied-repair-diff review on exactly gpt-6.1-sol found no concrete
+issue; repository inspection hit the known namespace restriction. Format10,
+diff checks and the actual agent TypeScript check passed before commit.

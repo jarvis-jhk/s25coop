@@ -12,6 +12,7 @@
 #include "libsiedler2/prototypen.h"
 #include "s25util/strAlgos.h"
 #include "s25util/utf8.h"
+#include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <set>
 #include <stdexcept>
