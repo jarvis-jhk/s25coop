@@ -5,10 +5,14 @@
 #include "ctrlEdit.h"
 #include "CollisionDetection.h"
 #include "RTTR_Assert.h"
+#include "WindowManager.h"
 #include "ctrlTextDeepening.h"
+#include "desktops/Desktop.h"
 #include "driver/MouseCoords.h"
 #include "drivers/VideoDriverWrapper.h"
 #include "helpers/containerUtils.h"
+#include "ingameWindows/iwControllerKeyboard.h"
+#include "input/MenuPadInput.h"
 #include "ogl/FontStyle.h"
 #include "ogl/glFont.h"
 #include "s25util/StringConversion.h"
@@ -75,6 +79,38 @@ GetFileNameResult ctrlEdit::GetFileName(const std::string& ext) const
     if(!isValidFileName(name))
         return {FileNameStatus::Invalid, {}};
     return {FileNameStatus::Valid, std::move(name)};
+}
+
+bool ctrlEdit::CanActivate() const
+{
+    const auto& input = WINDOWMANAGER.GetPadInput();
+    if(!CanFocus() || !GetParent() || input.GetActingDevice() == InvalidPadDevice || WINDOWMANAGER.IsSwitchPending())
+        return false;
+    const Window* root = GetParent();
+    while(root->GetParent())
+        root = root->GetParent();
+    const auto* top = WINDOWMANAGER.GetTopMostWindow();
+    // Queued presses still carry the pre-dispatch focus. Opening a modal must make the
+    // original field ineligible immediately, before the next frame reconciles that focus.
+    return top ? root == top && !top->ShouldBeClosed() : root == WINDOWMANAGER.GetCurrentDesktop();
+}
+
+bool ctrlEdit::Activate()
+{
+    if(!CanActivate())
+        return false;
+    WINDOWMANAGER.Show(std::make_unique<iwControllerKeyboard>(*this, WINDOWMANAGER.GetPadInput().GetActingDevice()));
+    // Edges later in this batch still name the old root. Drop those routes immediately,
+    // so a queued Start cannot activate the desktop behind the newly opened modal.
+    WINDOWMANAGER.GetPadInput().ClearFocus();
+    return true;
+}
+
+std::shared_ptr<unsigned> ctrlEdit::KeyboardLifetime()
+{
+    if(!controllerKeyboardLifetime_)
+        controllerKeyboardLifetime_ = std::make_shared<unsigned>(0);
+    return controllerKeyboardLifetime_;
 }
 
 void ctrlEdit::SetFocus(bool focus)
@@ -226,6 +262,8 @@ void ctrlEdit::RemoveChar()
  */
 void ctrlEdit::Notify()
 {
+    if(controllerKeyboardLifetime_)
+        ++*controllerKeyboardLifetime_;
     if(!notify_ || !GetParent())
         return;
 

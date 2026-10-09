@@ -214,8 +214,24 @@ starting the game and playing it are still upstream's mouse screens with control
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
   - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
-  - ☐ F5 maps & scenarios browser: preview, player-count filter, a scenario is a one-mission campaign (Sol)
-  - ☐ F6 load game: save browser (thumbnail, date, players) incl. single-player saves with several players (below) (Sol)
+  - ◐ F5 maps & scenarios browser (Sol):
+    - F5a header-only map catalog on `sol/frontend-map-catalog`: SWD/WLD discovery, stable file identity,
+      name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.
+      Classic selection reuses the same metadata reader; full layer validation remains on preview.
+      Local Debug catalog6/104, physical8/101, affected37/1029, ui152/21671, splitscreen673/501494 pass. Fresh all17/BOTH exact-head CI required before tested handoff.
+    - F5b full-screen browser: lazy preview, category/player-count controls, Home back stack and real party start.
+      Starts after prior Home routes integrate. Joined controllers do not imply the same number of map tribes.
+    - F5c one-mission scenario start policy and campaign presentation: a neighboring Lua script alone does not
+      register a campaign or establish unlocks; define the campaign bridge before claiming that behavior.
+  - ◐ F6 load game (Sol): F6a full-screen metadata browser on `sol/frontend-save-browser`: scrollable newest-first
+    save list, map/date/game-time/human+AI details, Refresh preserves file identity, Load/Continue use the real
+    client/connecting/current-lobby path. Physical repaired Debug11/901 and affected69/2484 pass; unchanged catalog4/42 and UI150/11010
+    retain prior source/binary evidence. Windows occupied-port fixture repaired; fresh exact-head CI pending.
+    B/Escape returns straight to Home. The format stores no thumbnail, so this slice names that fallback.
+    F6b remains open: actual snapshot thumbnails, a provenance-backed pre-coop upstream save fixture, online
+    single-player-save co-player roundtrip and optional AI takeover. F7's full-screen party is primary-owned.
+    Current solo worlds re-encoded with 4.0 player headers, 2/4 joined local views and preserved AI/locked tribes
+    are the F6a regression gate. They do not establish actual pre-coop world compatibility or hardware acceptance.
   - ◐ F7 party screen (lobby rewrite, local + online in one): player cards, rules drawer (2a–2c), addon categories and
     presets (3a–3c), ready/start, join code/IP shown (Opus).
     Joined-party seating prerequisite implemented (2026-10-07): no second lobby A press; join-order controller
@@ -223,7 +239,10 @@ starting the game and playing it are still upstream's mouse screens with control
     current closed-slot authority and Classic/network exclusions. Physical Debug tests and read-only Sol
     review cover this bridge; fresh master CI is the release gate. The full-screen page remains open.
   - ☐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
-  - ☐ F9 options: grouped settings (display/Deck, audio, controls, help footer, language), all by controller (Sol)
+  - ◐ F9 options: grouped full-screen display/Deck, audio, controls and language pages implemented on
+    `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
+    Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption
+    remain separate deferred work; legacy driver/proxy/portrait/addon controls stay under Advanced settings.
   - ☐ F10 loading screen: mission/map title, tip, controller layout; then the game
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
@@ -231,6 +250,10 @@ starting the game and playing it are still upstream's mouse screens with control
   - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ☑ 3a addon category
     table + test · ☑ 3b category tabs and "changed only" filter (PR45; exhaustive metadata and
     physical Debug tests, all 17 exact-head CI checks passed) · ☐ 4a profiles (name, colour, nation, mapping).
+    Sol keyboard4b: reusable opt-in modal implemented on `sol/controller-onscreen-keyboard`; owner-device
+    routing, staged text, mixed input and lifetime regressions. Exact-head CI/integration remains open;
+    F7/F9 adoption and hardware acceptance are separate. See [ControllerKeyboard](doc/coop/ControllerKeyboard.md).
+
 - ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
   pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new
   footer with images: A/B/X/Y (dark button, coloured letter), LB/RB, LT/RT, View, Menu, Guide, D-pad (all/single/

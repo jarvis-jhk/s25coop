@@ -5,6 +5,15 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-09 — Sol PRs 46/47/48/49 integrated together
+
+PR46 (controller keyboard API), PR47 (F9 options), PR48 (F6a save browser), PR49 (F5a map catalog), each
+all17/BOTH green at its exact head, merged in that order. Conflicts only in docs/NOTES/ROADMAP (kept both)
+and the dskHome/testFrontEndHome include lists (both includes; Load and Options routes both kept). Own
+GCC12 Debug build/dbg after reconfigure: full Test_UI 156 cases and Test_splitscreen 710 cases pass.
+Read-only gpt-6.1-sol review of the combined production diff for merge interactions: no concrete issue.
+Fresh master CI is the gate for the next release (player notes for options/save browser to be added then).
+
 ## 2026-10-09 — v0.1.13 released from green master 57262bbe8
 
 Master 57262bbe8 (F7 title-party lobby seating + Windows DLL-copy lock) passed all 17 checks:
@@ -865,6 +874,203 @@ static validation and actual agent tsc pass. All10 Sol source/test hashes match
 the previously fully tested source. Fresh repaired-head CI supersedes old CI;
 PR45 stays draft with its source/test claims until the complete exact-head gate.
 
+## 2026-10-07 — Sol: reusable owner-scoped controller keyboard (4b)
+
+`sol/controller-onscreen-keyboard`, based on master985769dc6: new menu modal with D-pad grid/A typing,
+B Unicode delete, X space, Y letter case and Menu/Enter/Confirm to commit. Mouse keys and physical typing
+share a private ctrlEdit draft with the original length, filename/number restrictions and password masking.
+Legacy fields remain non-focusable by pad; F7/F9 can opt in with SetControllerKeyboardEnabled. Pad focus
+never sets an original keyboard focus bit. Confirm writes once and emits the configured change notification,
+without forwarding Enter to start a connection/send chat. No F7/F9 adoption or Deck/rendering acceptance yet.
+
+Device identity owns the modal, even after slot reassignment and a restrictive desktop slot policy.
+Default IngameWindow hooks still defer to the desktop. Owner disconnect, target/root replacement, closing
+ancestors, disable and external edit revisions cancel a draft. A weak edit-owned revision token also
+detects changed-and-restored text. Closing before notification and touching neither object afterwards
+allows a parent to replace itself safely. ClearFocus also clears the cached desktop route: the physical
+queued-input regression found that clearing only the focused controls still let a trailing Start activate
+the underlying screen. Existing desktop-switch callers already destroy that cached root.
+
+Four matched executed omission controls reject broken device ownership, stale revision acceptance,
+closing-parent commit and cached desktop routing. Original product restored byte-for-byte and rebuilt.
+All14 keyboard physical tests pass (190 assertions). Full own Debug UI passes146 cases/13131 assertions;
+full splitscreen passes657 cases/501100 assertions before reconciling integrated PR45 master70d1a5dab.
+Reconciliation preserves both docs and every keyboard/incoming addon source hash; fresh affected Debug
+validation and complete exact-head CI remain the handoff gate. Exactly gpt-6.1-sol reviewed read-only; its double-delivery concern
+was rejected because handled Msg_KeyDown skips child relay; concrete lifecycle/routing findings were fixed
+and exercised. The explicit reusable-API-only scope is intentional. No coverage exclusions. Existing
+runtime/failed-CI reporting retained; no service, persisted draft or new reporting endpoint.
+
+## 2026-10-09 — Sol: grouped full-screen options (F9)
+
+`sol/frontend-options` starts at fetched master57262bbe8, with the bounded Home
+Options include/OnChoose wiring claimed and primary coordination t_mv0hjl4w33gvz.
+The previous keyboard PR46 stays a completed all17/BOTH-workflow handoff, not new work.
+New overview and display/audio/controls/language pages use dskFrontEndPage's factory
+trail and accepted-input persistence. Mouse/keyboard keep the same controls; Advanced
+settings and Classic menus preserve legacy-only routes. No OSK caller adoption or
+help-footer toggle in this slice. Existing runtime/CI fault reporting retained; no
+new service, token or public reporting URL.
+
+Final own Debug/Werror max2 build passes: new suite12 cases/513 assertions, affected
+front-end/title/party/legacy option/dropdown suites41/1006 and full UI146/22161.
+New suite registration was confirmed in the configured binary. Test driver
+adds only a default-false resize refusal to exercise the failed-display path; no
+shared live driver edit. Read-only supplied-context review on exactly gpt-6.1-sol
+identified audio-runtime cleanup and persistence-proof gaps: restore audio volumes/
+playlist/playback explicitly and parse the saved config archive rather than creating
+a second Settings singleton. Synchronous combo callbacks are safe here because lists
+close before parent notification and there is no child/object deletion after it;
+WindowManager updates windowedSize before desktop resize notification. Final executed
+physical/legacy suites and fresh complete exact-head CI remain the handoff gate.
+
+Three executed omission controls each fail the intended matched case (exit201):
+missing Save leaves reloaded audio127/131 instead of128/130; omitted automatic-profile
+reset keeps125/100 instead of0; omitted display rollback retains the rejected mode.
+Original source was restored byte-for-byte, rebuilt and all positive suites rerun.
+No coverage exclusions. Dropdown lists are constrained above the footer, including
+all six display rows at800×600/1280×800. A resize lowers an oversized fixed scale
+and persists it; valid custom125% stays exact. Fixtures restore saved video settings
+after driver resize callbacks, as those callbacks also update windowedSize.
+Source formatting10, static validation, private-string/diff checks and actual agent
+typecheck pass. Supplied-context Sol review findings were addressed; complete fresh
+exact-head CI (all17 and both Unit tests/Static analysis) is still required before
+ready/tested handoff. No new slice before that handoff, no hardware/release claim.
+
+## 2026-10-09 — Sol F6a full-screen save browser (local validation complete, CI pending)
+
+Fresh master57262bbe8, branch `sol/frontend-save-browser`; no dependency on the
+already handed-off PR46 keyboard / PR47 options. Claimed catalog, load page,
+Home routing, catalog/physical Home/save suites and docs before editing.
+`SaveCatalog` reads HeaderAndSettings only, sorts full timestamps with path ties,
+counts corrupt/incompatible files without blocking good saves. Full-screen
+`dskFrontEndLoad` shows scrollable saves and map/date/game-time/human+AI/name
+details. Refresh keeps identity; Load and Continue stay on the browser on failure,
+use the real HostGame/connecting path on success, and preserve one B back to Home.
+No save deletion or file writes. Existing crash/failed-CI reporting remains;
+no public report URL/service added. Saved thumbnails are not in the current
+format; fallback is explicit, snapshot rendering remains F6b alongside online
+solo-save co-player regression and optional AI takeover. Full-screen F7 is Opus's.
+Physical tests include metadata failures and current solo-world rehost with
+upstream4.0 player headers, two/four title-party controllers and unchanged
+AI/locked tribes. Current-world data is not an upstream-produced old-save fixture;
+that provenance-backed compatibility gate remains F6b.
+
+Final Debug: physical11/895, catalog4/42, affected69/2509, full UI150/11010; all pass.
+Own GCC12 Debug/Werror cache, at most2 compiler jobs. Initial full Debug baseline
+681cases/501257assertions passed before equivalent range-wrapper/public-override
+refinements and own test cast/mouse/locked-tribe strengthening; preserved binary
+hash in the private checkpoint. Final changed/affected/UI suites pass after that
+rebuild. No expensive repeat of unchanged legacy test behavior; fresh complete
+exact-head CI is still mandatory. THREE executed production omission controls
+fail intended timestamp-order / refresh-identity / deleted-Continue assertions
+(exit201 each); product restored byte-identically and rebuilt before positives.
+No coverage exclusions. Read-only exactly gpt-6.1-sol review fixed Nowide1.73
+stream paths and Debug snapshot side effects, and corrected old-world provenance
+claims. Exceptional cleanup reaches its named probe while Connecting is open;
+port restored and windows cleared before fixture destruction. Driver restore
+precedes saved video settings, asserted after normal and exceptional cleanup.
+Dedicated new suite leaves the pre-existing Debug raw artifact SHA256 unchanged.
+Clang-format10, static/private-marker/diff and actual agent typecheck gates pass;
+local Clang23 targeted checks for the pinned-CI-compatible set pass, with no
+repository check exclusions added. All17 checks and BOTH complete Unit tests /
+Static analysis workflows must pass before tested primary handoff. Draft PR,
+source/test claims retained during CI; Opus reviews/integrates. No hardware or
+release claim. No Signal progress/report under releases-only policy.
+
+
+## 2026-10-09 — Sol PR48 Windows occupied-port fixture repair
+
+Exact head43aca25b2 failed the Win32 Debug Test_splitscreen step at the two new
+save-resume lobby waits; compilation and DLL serialization checks passed.
+The logs show both clients connected to the intentionally occupied ports.
+Socket::Create enables SO_REUSEADDR, so Winsock could bind the server over
+the fixture listener and route the handshake to that silent listener.
+Fresh origin/master57262bbe8 contains no repair; merge-tree is clean.
+The fixture now reserves both stacks with an IPv6 dual-stack socket, disables
+reuse and requests Windows exclusive use before binding. It explicitly requires
+the first UI action to show the bind-error message, then closes the reservation
+and resumes through the real UI on a fresh port. A later transient connection
+timeout retries the complete host/connect route; the final lobby check remains
+fatal. Production source is unchanged. Native Windows exact-head CI remains
+mandatory; no unchanged-head infrastructure retry or tested handoff is claimed.
+Microsoft Winsock reference: https://learn.microsoft.com/windows/win32/winsock/using-so-reuseaddr-and-so-exclusiveaddruse
+
+Repair local gate: GCC12 Debug/Werror rebuild at max2 jobs, physical11/901 and
+affected69/2484 pass. Dedicated physical repeat preserves the Debug raw-artifact
+hash; the broader affected suite can write it through unchanged legacy tests,
+so that suite is not used as an artifact-purity claim. Catalog/UI product source
+and Test_UI binary match their prior passing evidence. Supplied-diff read-only
+review on exactly gpt-6.1-sol found no concrete defect; its repository reads were
+blocked by the known namespace sandbox error. Format10, static validation,
+diff/private-marker checks and actual agent tsc pass. Require all17 checks and
+both complete workflows on the repaired SHA before ready/tested handoff.
+
+## 2026-10-09 — Sol F5a independent map catalog (local validation complete)
+
+Fresh master57262bbe8; ready PR46/47/48 remain primary integration work.
+Full-screen F5 Home changes overlap those routes, so this bounded independent
+slice claims MapCatalog, classic dskSelectMap metadata reader, catalog/legacy
+physical tests and docs only. No Home/lobby/router or primary checkout edits.
+Header metadata preserves UTF-8 names/authors, landscape, dimensions, tribes,
+script annotation and stable filename identity. Scanner combines explicit map
+folders, deduplicates lexical paths, sorts name/path and filters exact tribes;
+malformed/unsupported files and folder failures do not hide good maps.
+Zero/oversized dimensions and unsupported tribe counts now fail at listing rather
+than deferring that error to a preview. Adjacent Lua is never executed for listing;
+it is not evidence of campaign registration/unlocks. F5b/F5c remain open.
+Classic mouse/pad preview still loads actual layers and retains its error flow.
+Existing runtime ntfy and failed-CI issue reporting remain; no extra service or
+private report URL is added. Debug physical/catalog validation, omission checks,
+read-only gpt-6.1-sol review and complete exact-head CI precede tested handoff.
+
+
+Final local Debug/Werror gate at max2 jobs: catalog6/104, physical8/101, affected37/1029, ui152/21671, splitscreen673/501494 cases/assertions all pass.
+New catalog suite configured into Test_UI and confirmed present. Three executed
+omission controls each exit201 on intended assertions: bypassing exact-tribe
+filter, throwing on optional Lua status, and clearing instead of refreshing the
+physical preview. Both product files restored byte-for-byte and rebuilt before
+final full positive suites; no test-coverage exclusions. Read-only exactly
+gpt-6.1-sol review corrected optional Lua isolation and stale-preview test strength;
+final supplied-diff review found no concrete defect. Classic discovery consumes
+the robust catalog directly, checking candidate suffixes before status so a
+looping unrelated Lua symlink cannot hide the category. POSIX looping-symlink
+cases are omitted on Windows; native exact-head CI remains the portability gate.
+Clang-format10, static/private-marker/diff and actual agent tsc pass. Local newer
+Clang23 new-code checks pass with the CI-compatible check set; existing legacy
+header/destructor diagnostics and newer style checks remain CI18's gate. No new
+repository check exclusions. An empty-file fixture stream is named and its open
+state asserted. Original S2 movie rendering remains the existing optional
+resource-dependent fixture, not exercised without RTTR_COOP_S2_DIR.
+All17 checks AND both complete Unit tests/Static analysis workflows must pass
+at the pushed source head before ready/tested primary handoff. Current head/CI
+and sole continuation are kept in the private Sol checkpoint. No Home/party,
+full-screen F5b, campaign/scenario registration or unlocks, hardware/release
+acceptance claim. Opus owns review/integration; releases-only, no Signal progress.
+
+### Sol F5a PR49 portability/coverage repair (2026-10-09)
+
+The first CI head dba46ce0 failed macOS compilation: Boost1.92 no longer
+transitively declares directory_iterator through operations.hpp. MapCatalog now
+includes directory.hpp explicitly. All four Windows jobs reached the same one
+assertion mismatch (native backslash vs a slash in the expected path); compare
+filesystem paths assembled from components instead of representation strings.
+GCC10 passed all48 CTest entries but rejected one unentered shoulder-loop line.
+The physical preview test now asserts the table focus, moves right and back left
+through driver input, then selects the next row; no exclusions were added.
+
+Repaired own GCC12 Debug/Werror max2 build passed. Catalog6/104, physical8/103,
+affected37/1031 and full UI152/24017 cases/assertions passed. Earlier full
+splitscreen673/501494 and three intended omission controls remain historical
+evidence; fresh complete repaired-head CI is mandatory before tested handoff.
+Behavior/source beyond the explicit include and two test repairs is unchanged.
+Fresh fetched master57262bbe8 merges cleanly without a reconciliation commit.
+The draft PR and private checkpoint carry the repaired head and sole continuation.
+No Home/fullscreen/campaign registration, hardware or release claim.
+Read-only supplied-repair-diff review on exactly gpt-6.1-sol found no concrete
+issue; repository inspection hit the known namespace restriction. Format10,
+diff checks and the actual agent TypeScript check passed before commit.
+
 ## 2026-10-09 — Sol F6 ordinary solo save resumes online
 
 Independent test slice on `sol/solo-save-online-resume`, starting at release master c45ae37c7;
@@ -900,3 +1106,10 @@ retained, with no private report URL in public source. Source/test claims are re
 all17 exact-head checks and both complete Unit tests/Static analysis workflows run. Sol does
 not merge its own PR or push master; primary owns review/integration. No tested handoff,
 release or hardware proof is claimed at this documentation checkpoint.
+
+The NOTES addition conflicted with the newly integrated master; merging master38b3ef439
+preserved both sets of notes and all three Sol source/test hashes. Own Debug/Werror max2
+rebuild after CMake reconfigure passed, followed by all six affected/new network CTests
+and the complete merged Test_splitscreen suite. Source, docs and both binary hashes are
+checkpointed privately. Fresh exact-head CI on the resulting merge remains mandatory;
+the prior inherited Win32 bind failure and unaccepted403 rerun are historical.

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "dskSelectMap.h"
-#include "ListDir.h"
 #include "Loader.h"
 #include "RttrConfig.h"
 #include "RttrLobbyClient.hpp"
@@ -19,6 +18,7 @@
 #include "desktops/dskLAN.h"
 #include "desktops/dskLobby.h"
 #include "files.h"
+#include "frontend/MapCatalog.h"
 #include "frontend/MenuRoutes.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
@@ -164,15 +164,11 @@ void dskSelectMap::Msg_OptionGroupChange(const unsigned /*ctrl_id*/, unsigned se
 
     const size_t numFaultyMapsPrior = brokenMapPaths.size();
     const bfs::path mapPath = RTTRCONFIG.ExpandPath(ids[selection]);
-    FillTable(ListDir(mapPath, "swd"));
-    FillTable(ListDir(mapPath, "wld"));
-    // For own maps (WORLDS folder) also use the one in the installation folder as S2 does
+    std::vector<bfs::path> sources{mapPath};
+    // For own maps (WORLDS folder) also use the one in the installation folder as S2 does.
     if(mapPath.filename() == "WORLDS")
-    {
-        const bfs::path worldsPath = RTTRCONFIG.ExpandPath("WORLDS");
-        FillTable(ListDir(worldsPath, "swd"));
-        FillTable(ListDir(worldsPath, "wld"));
-    }
+        sources.push_back(RTTRCONFIG.ExpandPath("WORLDS"));
+    FillTable(frontend::ScanMaps(sources));
 
     if(brokenMapPaths.size() > numFaultyMapsPrior)
     {
@@ -433,38 +429,23 @@ void dskSelectMap::Draw_()
     Desktop::Draw_();
 }
 
-void dskSelectMap::FillTable(const std::vector<bfs::path>& files)
+void dskSelectMap::FillTable(const frontend::MapCatalog& catalog)
 {
     auto* table = GetCtrl<ctrlTable>(1);
-
-    for(const bfs::path& filePath : files)
+    for(const auto& failure : catalog.failures)
     {
-        if(helpers::contains(brokenMapPaths, filePath))
+        if(helpers::contains(brokenMapPaths, failure.path))
             continue;
-        // Karteninformationen laden
-        libsiedler2::Archiv map;
-        if(int ec = libsiedler2::loader::LoadMAP(filePath, map, true))
-        {
-            LOG.write(_("Failed to load map %1%: %2%\n")) % filePath % libsiedler2::getErrorString(ec);
-            brokenMapPaths.insert(filePath);
+        LOG.write(_("Failed to load map %1%: %2%\n")) % failure.path % failure.reason;
+        brokenMapPaths.insert(failure.path);
+    }
+    for(const auto& entry : catalog.entries)
+    {
+        if(helpers::contains(brokenMapPaths, entry.path))
             continue;
-        }
-
-        const libsiedler2::ArchivItem_Map_Header& header =
-          checkedCast<const libsiedler2::ArchivItem_Map*>(map[0])->getHeader();
-
-        const bfs::path luaFilepath = bfs::path(filePath).replace_extension("lua");
-        const bool hasLua = bfs::is_regular_file(luaFilepath);
-
-        // Und Zeilen vorbereiten
-        std::string players = (boost::format(_("%d Player")) % static_cast<unsigned>(header.getNumPlayers())).str();
-        std::string size = helpers::toString(header.getWidth()) + "x" + helpers::toString(header.getHeight());
-
-        std::string name = s25util::ansiToUTF8(header.getName());
-        if(hasLua)
-            name += " (*)";
-        std::string author = s25util::ansiToUTF8(header.getAuthor());
-
-        table->AddRow({name, author, players, landscapeNames[header.getGfxSet()], size, filePath.string()});
+        const std::string players = (boost::format(_("%d Player")) % entry.players).str();
+        const std::string size = helpers::toString(entry.width) + "x" + helpers::toString(entry.height);
+        const std::string name = entry.name + (entry.hasScript ? " (*)" : "");
+        table->AddRow({name, entry.author, players, landscapeNames[entry.landscape], size, entry.path.string()});
     }
 }

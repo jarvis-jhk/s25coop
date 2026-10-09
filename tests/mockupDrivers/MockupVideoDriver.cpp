@@ -39,6 +39,8 @@ bool MockupVideoDriver::CreateScreen(const std::string&, const VideoMode newSize
 
 bool MockupVideoDriver::ResizeScreen(const VideoMode newSize, DisplayMode displayMode)
 {
+    if(rejectResize_)
+        return false;
     SetNewSize(newSize, Extent(newSize.width, newSize.height));
     displayMode_ = displayMode;
     return true;

@@ -101,3 +101,83 @@ player takes one over explicitly.
 
 Pixel-art Xbox button glyphs and the full/buttons-only/off help footer are on the roadmap but
 wait for F1's shared footer (Jan, 2026-10-06: "Do neither of them now").
+
+## Grouped options (F9)
+
+Home → Options opens `dskFrontEndOptions`, with Display / Steam Deck, Sound/Music,
+Controls and Language pages. They use the same trail as other front-end pages: Back
+returns to the chosen category, then to Home's Options tile. Labels sit above their
+controls, so translations and values have separate space at 800×600 and 1280×800.
+
+Choices keep the shared dropdown contract: A opens, D-pad previews, A accepts and
+persists, B cancels before leaving the page. Audio sliders preserve the stored byte
+volume without rounding it on entry. Accepted display modes and sizes take effect
+through the video driver; a rejected mode keeps the working mode and shows an error.
+TV/Deck automatic profiles reset an existing fixed scale on enable; turning a profile
+off keeps a subsequently chosen fixed percentage. Language changes retain the trail;
+returning through it rebuilds the translated ancestors. Resizes cancel display-list
+previews and rebuild current size/scale choices; a fixed scale that no longer fits is
+reduced and persisted. Scrollable dropdown lists stay above the shared footer.
+
+Advanced settings keeps the upstream page for driver selection, ports/proxies,
+portraits, names and addon defaults. Classic menus opens the old main menu. Neither
+route is retired in this slice. On-screen keyboard caller adoption and the deferred
+help-footer toggle are separate work. Tests are physical input through the mock driver
+in `testFrontEndOptions.cpp`; a one-shot mock resize refusal covers recovery, and test
+cleanup restores temporary settings and driver state before fixture destruction.
+
+## Save browser (F6a)
+
+Home → Load game opens `dskFrontEndLoad`. It uses the full-screen page frame and
+returns to the selected Home tile with one Back / B / Escape. The scrollable list
+starts at the newest save (full timestamp, path tie-break), with map, date, game
+time, saved human/AI tribe counts and names alongside. D-pad browses the list;
+A, Enter or double-click loads, and Load/Refresh are also clickable. Refresh
+keeps the selected file when it still exists, then falls back to the newest.
+Continue selects and starts its exact newest-save target on page activation;
+a deleted or incompatible target shows an error without starting another save.
+
+The catalog reads headers and settings only. It never loads a world for preview,
+changes the RNG or edits the save; malformed metadata is counted as unavailable.
+The current save format has no thumbnail: “No preview stored” is an explicit
+fallback, with actual snapshot thumbnails deferred to F6b. Failure stays on this
+page with an acknowledgement. A second activation in the same input batch
+cannot start another connection over the existing connecting modal.
+
+The existing client/server and connecting window lead to the current lobby;
+F7's full-screen replacement is separate. The title party is carried into local
+saved games through the existing shared-view bridge. Physical regressions load
+a current solo world re-encoded with upstream 4.0 player metadata (no portrait/start-goods
+fields or local seats) with two and four controllers, preserve AI/locked tribes and
+resume the simulation. The loading screen is the test's sole bypass because
+original S2 rendering resources are absent. This does not establish online
+co-player resume, AI takeover or Steam Deck hardware acceptance. Classic Load
+keeps its original dialog until F12.
+
+Actual pre-coop upstream-produced world/save compatibility still needs a
+provenance-backed fixture in F6b; rewritten player metadata does not establish
+that compatibility.
+
+## Maps catalog (F5a)
+
+`frontend/MapCatalog` supplies metadata independently of the full-screen Home route.
+`ReadMapEntry` reads the SWD/WLD header, converts name/author to UTF-8 and checks
+supported nonzero dimensions and tribe count. It annotates an adjacent regular
+`.lua` file without loading or executing Lua. This marker does not imply campaign
+membership, mission unlocks or a one-mission campaign start policy.
+
+`ScanMaps` takes explicit source folders so the future browser can combine the
+existing nine categories and the optional installation WORLDS folder. Discovery
+is nonrecursive, accepts case-insensitive SWD/WLD suffixes, reads lexically
+identical file paths once, and sorts by displayed name then path. An optional
+player filter is an exact map-tribe count; shared controllers are not additional
+tribes. Missing folders are empty, and bad headers or unusable folders carry a
+path and reason while other sources remain visible. Filtered maps are not errors.
+Symlink aliases are not canonicalized into a new identity.
+
+Classic map selection uses the same metadata reader and keeps its category,
+error-message, mouse/pad and lazy-preview flow. Header-only browsing is not proof
+that map layers are complete: selection still fully loads and validates the map,
+then removes a failed target while leaving the other maps available. No map or
+save/network format changes. F5b supplies the full-screen controls, Home route
+and real party start; F5c defines how scenarios become one-mission campaigns.

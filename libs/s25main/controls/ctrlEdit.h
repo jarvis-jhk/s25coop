@@ -5,11 +5,13 @@
 #pragma once
 
 #include "Window.h"
+#include <memory>
 #include <string>
 
 struct MouseCoords;
 class glFont;
 class ctrlTextDeepening;
+class iwControllerKeyboard;
 struct KeyEvent;
 
 enum class EditType
@@ -55,33 +57,24 @@ public:
     bool Msg_LeftDown(const MouseCoords& mc) override;
     bool Msg_KeyDown(const KeyEvent& ke) override;
 
-    /// KEINE Fokusstation der Padnavigation - bewusst, und als einziges bedienbares Control.
-    ///
-    /// focus_ ist ein Bit AM CONTROL, nicht am Spieler, und es entscheidet, wer die Tastatur
-    /// bekommt: WindowManager::RelayKeyboardMessage schickt jeden Tastendruck an das oberste
-    /// Fenster, und dort nimmt ihn genau das Feld an, dessen focus_ gesetzt ist. Liesse man
-    /// einen Padspieler dieses Bit setzen, wanderte die Eingabe des Tastaturspielers in sein
-    /// Feld - ohne dass einer der beiden es sieht.
-    ///
-    /// Dagegen steht kein Verlust: ein Pad kann in ein Textfeld nichts eintippen. Der einzige
-    /// Weg, den es dort haette, ist der Textcursor links/rechts (FocusPath::Step). Der Tausch
-    /// waere also "der Mausspieler verliert seine Tastatur" gegen "der Padspieler darf einen
-    /// Cursor schieben, den er nicht braucht".
-    ///
-    /// Wieder aufmachen kann man das erst zusammen mit BEIDEM: einem Fokusbegriff je Spieler
-    /// (focus_ muesste zu einer Menge von Spielern werden, so wie FocusPath eine Instanz je
-    /// Spieler ist) UND einer Eingabemethode fuer Pads (Bildschirmtastatur). Bis dahin ist die
-    /// klare Grenze besser als die stille Uebernahme.
-    ///
-    /// Der Mauspfad bleibt davon voellig unberuehrt: Msg_LeftDown/SetFocus/Msg_KeyDown sind
-    /// unveraendert, der Einzelspieler merkt nichts.
-    bool CanFocus() const override { return false; }
+    /// Legacy fields remain outside pad focus. New front-end callers opt in explicitly;
+    /// focusing an opted-in field never sets the mouse/keyboard focus bit.
+    void SetControllerKeyboardEnabled(bool enabled = true) { controllerKeyboardEnabled_ = enabled; }
+    bool CanFocus() const override { return controllerKeyboardEnabled_ && !isDisabled_; }
+    bool CanActivate() const override;
+    bool Activate() override;
     bool WantsTextInput() const override { return focus_; }
 
 protected:
     void Draw_() override;
 
 private:
+    friend class iwControllerKeyboard;
+    // Created only when opening a keyboard. Lifetime plus revision invalidates a draft
+    // after destruction or any external edit, including a change back to the initial text.
+    std::shared_ptr<unsigned> KeyboardLifetime();
+    std::shared_ptr<unsigned> controllerKeyboardLifetime_;
+    bool controllerKeyboardEnabled_ = false;
     void AddChar(char32_t c);
     void RemoveChar();
     void Notify();
