@@ -13,11 +13,16 @@ MenuPadInput::MenuPadInput() = default;
 
 PadDeviceId MenuPadInput::GetActingDevice() const
 {
-    if(actingSlot_ == NoSlot)
+    return DeviceForSlot(actingSlot_);
+}
+
+PadDeviceId MenuPadInput::DeviceForSlot(const unsigned slot) const
+{
+    if(slot == NoSlot)
         return InvalidPadDevice;
     for(const PadDeviceId dev : router_.GetDevices())
     {
-        if(router_.GetSlot(dev) == actingSlot_)
+        if(router_.GetSlot(dev) == slot)
             return dev;
     }
     return InvalidPadDevice;
@@ -37,6 +42,8 @@ void MenuPadInput::Pump(const std::vector<PadEvent>& events, const unsigned elap
     router_.SetNumSlots(desktop ? std::min(desktop->GetNumPadSlots(), MaxSlots) : 1u);
     router_.OnEvents(events);
     party_.Retain([this](const PadDeviceId device) noexcept { return router_.HasDevice(device); });
+    if(rootWnd_)
+        rootWnd_->ReconcileMenuPads(router_);
 
     // Die Wurzel kann sich zwischen zwei Frames geaendert haben, ohne dass ein Padereignis
     // daran beteiligt war: ein Desktopwechsel, ein geoeffnetes Fenster, eine Nachrichtenbox.
@@ -103,8 +110,12 @@ void MenuPadInput::OnPadMove(const unsigned slot, const Position& delta)
 {
     if(slot >= MaxSlots)
         return;
-    if(rootWnd_ && desktop_ && !desktop_->AllowsPadWindowInput(slot))
-        return;
+    if(rootWnd_)
+    {
+        const auto modalPolicy = rootWnd_->AllowsMenuPadInput(DeviceForSlot(slot));
+        if(modalPolicy ? !*modalPolicy : desktop_ && !desktop_->AllowsPadWindowInput(slot))
+            return;
+    }
     if(delta != Position(0, 0))
         focusUntouched_[slot] = false;
     focus_[slot].OnPadMove(delta, stepMs_);
@@ -129,8 +140,12 @@ void MenuPadInput::OnPadButton(const unsigned slot, const PadButton button, cons
     if(!down)
         return;
 
-    if(rootWnd_ && desktop_ && !desktop_->AllowsPadWindowInput(slot))
-        return;
+    if(rootWnd_)
+    {
+        const auto modalPolicy = rootWnd_->AllowsMenuPadInput(DeviceForSlot(slot));
+        if(modalPolicy ? !*modalPolicy : desktop_ && !desktop_->AllowsPadWindowInput(slot))
+            return;
+    }
     focusUntouched_[slot] = false;
     actingSlot_ = slot;
     const auto deviceMap = [this] {
@@ -152,12 +167,11 @@ void MenuPadInput::OnPadButton(const unsigned slot, const PadButton button, cons
     //  - Start ist ingame der Knopf, mit dem ein Spieler sein Pad in die Hand nimmt, und dort
     //    bewusst wirkungslos. Im Menue ist er die Vorgabeaktion des Bildschirms.
     // Beides beantwortet der Desktop; sagt er nichts dazu, passiert nichts.
-    if(button == PadButton::B && focus_[slot].Cancel())
+    const bool modalHandled = rootWnd_ && rootWnd_->HandleMenuPadButton(GetActingDevice(), button);
+    if(modalHandled || (button == PadButton::B && focus_[slot].Cancel()))
     {
-        // Das fokussierte Control hatte eine offene, noch nicht bestaetigte Eingabe (eine
-        // aufgeklappte Liste) und hat sie verworfen. B ist damit verbraucht - es waere sonst
-        // "Fenster zu", und der Spieler verloere den ganzen Bildschirm, weil er ein
-        // Aufklappmenue wieder loswerden wollte.
+        // The modal consumed its command, or B discarded an open dropdown. Neither may
+        // also close a window or activate the desktop underneath.
     } else if(button == PadButton::B && rootWnd_)
     {
         // Steht der Spieler in einem Fenster, ist B das Fenster zu - dieselbe Wirkung, die die
@@ -218,6 +232,7 @@ void MenuPadInput::ClearFocus()
         focus.ClearSilently();
     root_ = nullptr;
     rootWnd_ = nullptr;
+    desktop_ = nullptr;
 }
 
 void MenuPadInput::Reset()

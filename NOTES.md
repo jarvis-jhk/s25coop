@@ -864,3 +864,31 @@ assertions. GCC12 Debug/Werror max2 rebuild, inherited format10, repository
 static validation and actual agent tsc pass. All10 Sol source/test hashes match
 the previously fully tested source. Fresh repaired-head CI supersedes old CI;
 PR45 stays draft with its source/test claims until the complete exact-head gate.
+
+## 2026-10-07 — Sol: reusable owner-scoped controller keyboard (4b)
+
+`sol/controller-onscreen-keyboard`, based on master985769dc6: new menu modal with D-pad grid/A typing,
+B Unicode delete, X space, Y letter case and Menu/Enter/Confirm to commit. Mouse keys and physical typing
+share a private ctrlEdit draft with the original length, filename/number restrictions and password masking.
+Legacy fields remain non-focusable by pad; F7/F9 can opt in with SetControllerKeyboardEnabled. Pad focus
+never sets an original keyboard focus bit. Confirm writes once and emits the configured change notification,
+without forwarding Enter to start a connection/send chat. No F7/F9 adoption or Deck/rendering acceptance yet.
+
+Device identity owns the modal, even after slot reassignment and a restrictive desktop slot policy.
+Default IngameWindow hooks still defer to the desktop. Owner disconnect, target/root replacement, closing
+ancestors, disable and external edit revisions cancel a draft. A weak edit-owned revision token also
+detects changed-and-restored text. Closing before notification and touching neither object afterwards
+allows a parent to replace itself safely. ClearFocus also clears the cached desktop route: the physical
+queued-input regression found that clearing only the focused controls still let a trailing Start activate
+the underlying screen. Existing desktop-switch callers already destroy that cached root.
+
+Four matched executed omission controls reject broken device ownership, stale revision acceptance,
+closing-parent commit and cached desktop routing. Original product restored byte-for-byte and rebuilt.
+All14 keyboard physical tests pass (190 assertions). Full own Debug UI passes146 cases/13131 assertions;
+full splitscreen passes657 cases/501100 assertions before reconciling integrated PR45 master70d1a5dab.
+Reconciliation preserves both docs and every keyboard/incoming addon source hash; fresh affected Debug
+validation and complete exact-head CI remain the handoff gate. Exactly gpt-6.1-sol reviewed read-only; its double-delivery concern
+was rejected because handled Msg_KeyDown skips child relay; concrete lifecycle/routing findings were fixed
+and exercised. The explicit reusable-API-only scope is intentional. No coverage exclusions. Existing
+runtime/failed-CI reporting retained; no service, persisted draft or new reporting endpoint.
+

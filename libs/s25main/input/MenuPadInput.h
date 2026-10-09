@@ -79,9 +79,10 @@ public:
     void OnRootDestroyed(const Window* wnd);
     /// Fokus aller Slots loeschen (der Geraetebestand bleibt).
     ///
-    /// STILL, ohne Window::OnFocusLost: der einzige Aufrufer im Spiel ist
-    /// WindowManager::DoDesktopSwitch, und der raeumt die Fensterliste BEVOR er hier
-    /// hereinkommt. Die Wurzel eines Slots kann also bereits geloescht sein. Wer ein Control
+    /// STILL, ohne Window::OnFocusLost: WindowManager::DoDesktopSwitch
+    /// raeumt die Fensterliste BEVOR er hier
+    /// hereinkommt. Eine neue explizite Bildschirmtastatur verwirft damit auch die noch
+    /// wartenden Routen ihrer alten Wurzel. Die Wurzel eines Slots kann bereits geloescht sein. Wer ein Control
     /// beim Fokusverlust benachrichtigen will, macht das ueber FocusPath::Clear - dort lebt
     /// die Wurzel noch.
     void ClearFocus();
@@ -98,6 +99,7 @@ private:
 
     /// Wurzel dieses Slots neu setzen und den Einstiegspunkt des Desktops beruecksichtigen.
     void ResetFocus(unsigned slot);
+    PadDeviceId DeviceForSlot(unsigned slot) const;
 
     PadRouter router_;
     Party party_;
