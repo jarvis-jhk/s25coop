@@ -14,7 +14,7 @@ and the game will show the new sections after an update.
 - From Return to the Roots: new game options for how each kind of mine uses up its deposits, coins
   training only one soldier at a time, and how far stranded soldiers look for a way home. Hunters
   now search for animals in a circle around their hut.
-- The game no longer crashes when it closes on systems with newer SDL (such as recent SteamOS).
+- Fixed a crash when closing the game on systems that provide SDL2 through sdl2-compat.
 
 ## 0.1.13
 
