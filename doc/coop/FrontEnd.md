@@ -85,6 +85,9 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   few tribes are open, the lobby asks for "Play one tribe together"; choosing it seats the pending
   party. Closed or network-occupied tribes are never reopened. Classic menus keep their old join
   behavior. This is the existing lobby with party carry-over, not the full-screen F7 page yet.
+- Seats (F7a): `frontend/LocalSeats` holds who sits where in a self-hosted local game and writes it into the
+  game state (additional local players or shared views, slot states, pad view slots). It shows nothing;
+  dskGameLobby draws its cards from it, and the F7b party page is to do the same.
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"
   (the old main menu has "New menus" to come back). F12 must not retire the old menu before they have a place.
 - Tests: `tests/s25Main/UI/testFrontEndLayout.cpp`, `tests/s25Main/splitscreen/testFrontEndPage.cpp`

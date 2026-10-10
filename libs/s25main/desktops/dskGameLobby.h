@@ -6,6 +6,7 @@
 
 #include "Desktop.h"
 #include "driver/PadEvent.h"
+#include "frontend/LocalSeats.h"
 #include "input/LobbyPlayerCardModel.h"
 #include "network/ClientInterface.h"
 #include "gameTypes/AIInfo.h"
@@ -57,37 +58,16 @@ private:
         Pad
     };
 
-    /// Ein Sitzplatz vor dem Fernseher.
+    /// Der Zustand, aus dem die AKTUELL angezeigte Beschriftung einer Sitzkarte gebaut wurde.
     ///
-    /// Der Sitz ist NICHT der Simulationsslot: `playerId` ist der Slot auf der Karte, der Index
-    /// im Vektor ist die Nummer der Ansicht auf dem Bildschirm. Beide Reihenfolgen muessen
-    /// zusammenpassen, weil dskGameInterface::CreateViews die Ansichten als "Hauptspieler vorn,
-    /// dann GetAdditionalLocalPlayers() in Vektorreihenfolge" baut.
-    struct LocalSeat
+    /// Msg_PaintBefore laeuft je Frame und ruft UpdateSeatPanel; ohne dieses Gedaechtnis
+    /// entstuenden dort je Frame bis zu vier formatierte Zeichenketten, von denen sich
+    /// zwischen zwei Frames fast nie eine aendert.
+    struct SeatCardLabel
     {
-        unsigned playerId = 0;
-        /// Pad auf diesem Sitz. InvalidPadDevice heisst "kein Pad" - der Sitz kann trotzdem
-        /// belegt sein, naemlich wenn er von --local-players kommt.
-        PadDeviceId device = InvalidPadDevice;
-        bool taken = false;
-        /// Haben WIR diesen Slot in der Hand? Nur dann darf ihn das Aufstehen anfassen.
-        ///
-        /// BEFUND 2: ohne diese Unterscheidung schrieb jeder Beitritt ALLE nicht eingenommenen
-        /// Sitze auf die Standard-KI zurueck - ein vom Host geschlossener Slot wurde wieder
-        /// KI, eine auf Schwer gestellte KI wieder leicht. Der Zuordnungsbildschirm baut seine
-        /// Sitze einmal beim Aufbau; was der Host danach einstellt, ist NICHT seine Sache.
-        bool applied = false;
-        /// Was auf dem Slot stand, bevor wir ihn genommen haben - das Ziel des Aufstehens.
-        PlayerState savedPs = PlayerState::AI;
-        AI::Info savedAi = AI::Info(AI::Type::Default, AI::Level::Easy);
-        /// Der Zustand, aus dem die AKTUELL angezeigte Beschriftung gebaut wurde.
-        ///
-        /// Msg_PaintBefore laeuft je Frame und ruft UpdateSeatPanel; ohne dieses Gedaechtnis
-        /// entstuenden dort je Frame bis zu vier formatierte Zeichenketten, von denen sich
-        /// zwischen zwei Frames fast nie eine aendert.
-        SeatCardKind cardKind = SeatCardKind::Host;
-        unsigned cardValue = 0;
-        bool cardValid = false;
+        SeatCardKind kind = SeatCardKind::Host;
+        unsigned value = 0;
+        bool valid = false;
     };
 
     /// Gibt es hier ueberhaupt Sitzplaetze zu vergeben? Nur in einer selbst gehosteten,
@@ -106,35 +86,13 @@ private:
     LobbyPlayerCardModel::Snapshot SeatCardSnapshot(unsigned seat) const;
     bool HandleSeatCardInput(unsigned slot, PadButton button);
     void ApplySeatCardValue(unsigned seat, bool forward);
-    /// Sitz dieses Geraets oder seats_.size(), wenn es keinen hat.
-    unsigned SeatOfDevice(PadDeviceId device) const;
-    /// Darf sich hier JETZT jemand hinsetzen?
-    ///
-    /// Gefragt wird der AKTUELLE Spielzustand und nicht der beim Aufbau des Bildschirms: der
-    /// Host kann den Slot inzwischen geschlossen haben, und dann ist ein Beitritt kein
-    /// Beitritt, sondern das stillschweigende Rueckgaengigmachen seiner Entscheidung.
-    bool IsSeatJoinable(unsigned seat) const;
-    void OnSeatButton(unsigned seat, unsigned slot);
     /// Sitzzustand und Spielzustand zusammenfuehren: abgezogene Pads und Sitze, die der Host
     /// inzwischen geschlossen hat. Laeuft je Frame aus Msg_PaintBefore.
     void SyncSeatsWithGameState();
-    /// Die Sitzbelegung in den Spielzustand schreiben: GAMECLIENT.SetAdditionalLocalPlayers,
-    /// Validierung, ApplyAdditionalLocalPlayers und die Padzuordnung.
-    void ApplyLocalSeats();
-    /// Ein Pad wurde abgezogen -> sein Sitz wird ausdruecklich frei. Ohne das zoege der
-    /// PadRouter von sich aus ein danebenliegendes Pad in den frei gewordenen Slot nach, und
-    /// ein Unbeteiligter saesse ungefragt auf Sitz 2 (XR-115).
-    /// Liefert true, wenn sich etwas geaendert hat - der Aufrufer schreibt es fort.
-    bool DropDisconnectedSeats();
-    /// Der Host hat einen Sitz geschlossen oder vergeben, auf dem noch jemand SITZT.
-    ///
-    /// BEFUND A, die Gegenrichtung zu BEFUND 2: IsSeatJoinable schuetzte nur den BEITRITT und
-    /// nie einen bereits gehaltenen Sitz. Uebrig blieb ein Slot, der gleichzeitig geschlossen
-    /// und lokaler Zusatzspieler war - und genau daran scheitert GameClient::SetupLocalPlayers
-    /// beim Spielstart, mit OnError(LocalPlayerSetup) und Stop(). Der Host entscheidet; der
-    /// Sitz wird ausdruecklich geraeumt und die Sitzkarte sagt es.
-    /// Liefert true, wenn sich etwas geaendert hat.
-    bool DropSeatsClosedByTheHost();
+    /// After the seats changed the game state (frontend::LocalSeats::Apply): redraw the rows and cards.
+    void ShowAppliedSeats();
+    /// A controller pressed a seat card (frontend::LocalSeats::Press).
+    void OnSeatButton(unsigned seat, unsigned slot);
     /// Letzte Klammer vor dem Countdown. Liefert false, wenn dieser Startversuch abgebrochen
     /// werden soll - der Zustand ist dann repariert und der Grund genannt.
     bool PrepareSeatsForStart();
@@ -217,7 +175,9 @@ private:
     /// What the entries of the co-player combo box stand for: member ids (host) or player ids (others)
     std::vector<unsigned> coopChoices_;
     /// Sitz 0 ist immer der Host. Leer, wenn es hier keinen Splitscreen geben kann.
-    std::vector<LocalSeat> seats_;
-    /// s25coop: every seat plays the host's tribe (shared views, doc/coop/SharedLocalViews.md) instead of a slot
+    frontend::LocalSeats seats_;
+    std::vector<SeatCardLabel> seatLabels_;
+    /// s25coop: every seat plays the host's tribe (shared views, doc/coop/SharedLocalViews.md) instead of a slot.
+    /// The mode chosen for the next build of the seats; seats_.IsTogether() is the one built.
     bool seatsTogether_ = false;
 };

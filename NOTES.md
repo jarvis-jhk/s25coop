@@ -5,6 +5,16 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-10 — F7a: seat logic extracted into frontend/LocalSeats
+
+Quota filler session. F7 split into F7a–F7d in ROADMAP. F7a moves dskGameLobby's local seat state machine
+(build, join/leave, party seating, shared/own-slot apply, unplug/closed-slot drops, start check, swaps) into
+`frontend/LocalSeats` without behaviour change; the lobby keeps the cards, labels and message boxes.
+Own GCC12 Debug build: MenuPadSeatTests 36/36, full Test_splitscreen 710/710 (502373 assertions), Test_UI 159/159.
+gpt-6.1-sol read-only review (build/f7a-review.txt): only (1) redraw after a rejected Apply — that path is
+unreachable (seats are built from slots the validation allows) and the redraw only shows seat state, accepted;
+(2) Sync runs twice before start, the second pass finds nothing, accepted. Next: F7b dskParty page.
+
 ## 2026-10-10 — v0.1.14 released from green master 43dbd3598
 
 Master 43dbd3598 (Sol PRs 46–49 integrated, fork sweep of 101 upstream commits, sdl2-compat exit fix)

@@ -231,6 +231,15 @@ starting the game and playing it are still upstream's mouse screens with control
     ownership, campaign/save shared tribe, explicit shared-mode recovery when individual tribes are full,
     current closed-slot authority and Classic/network exclusions. Physical Debug tests and read-only Sol
     review cover this bridge; fresh master CI is the release gate. The full-screen page remains open.
+    Split (2026-10-10), each one PR-sized and tested:
+    - ☑ F7a seat logic out of the lobby desktop into `frontend/LocalSeats` (no behaviour change; the existing
+      MenuPadSeat/splitscreen suites are the gate), so both lobbies share one implementation (2026-10-10).
+    - ☐ F7b `dskParty` page on dskFrontEndPage for self-hosted local games: one big card per seat (LocalSeats +
+      LobbyPlayerCardModel), "one tribe together" toggle, Start, B asks to leave; ClientInterface callbacks
+      (countdown, loading, errors) like dskGameLobby. Routed from Home when the menu style is FrontEnd; the old
+      lobby stays for Classic and online.
+    - ☐ F7c rules on the party page: map/victory/fog/start goods and the addon categories (3a–3c) as a drawer page.
+    - ☐ F7d online in the same page: network players as read-only cards, ready state, chat line, join code/IP.
   - ☐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
   - ◐ F9 options: grouped full-screen display/Deck, audio, controls and language pages implemented on
     `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
