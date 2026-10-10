@@ -114,6 +114,8 @@ struct Callbacks : ClientInterface
 struct Options
 {
     bool host = false;
+    /// Host an ordinary solo game before testing its network continuation
+    bool singlePlayer = false;
     uint16_t port = 0;
     unsigned maxGF = 0;
     unsigned players = 2;
@@ -282,6 +284,46 @@ std::string describeState(const Game& game)
     return result;
 }
 
+/// Preserve every tribe's role and AI configuration across solo -> network save loading.
+std::string describePlayerRoles(const Game& game)
+{
+    std::string result = "Player roles:";
+    for(unsigned i = 0; i < game.world_.GetNumPlayers(); i++)
+    {
+        const GamePlayer& player = game.world_.GetPlayer(i);
+        result += " p" + std::to_string(i) + " state " + std::to_string(static_cast<unsigned>(player.ps));
+        if(player.ps == PlayerState::AI)
+            result += " AI " + std::to_string(static_cast<unsigned>(player.aiInfo.type)) + " level "
+                      + std::to_string(static_cast<unsigned>(player.aiInfo.level));
+        result += ';';
+    }
+    return result;
+}
+
+/// Unlike the session checksum, this compares saved economic state across the load boundary.
+std::string describeEconomy(const Game& game)
+{
+    std::string result;
+    for(unsigned i = 0; i < game.world_.GetNumPlayers(); i++)
+    {
+        const GamePlayer& player = game.world_.GetPlayer(i);
+        const MapPoint hq = player.GetHQPos();
+        result += " p" + std::to_string(i) + " HQ " + std::to_string(hq.x) + "," + std::to_string(hq.y) + " goods";
+        const Inventory& inv = player.GetInventory();
+        for(const auto good : helpers::enumRange<GoodType>())
+            result += " " + std::to_string(inv[good]);
+        result += " people";
+        for(const auto job : helpers::enumRange<Job>())
+            result += " " + std::to_string(inv[job]);
+        const BuildingCount count = player.GetBuildingRegister().GetBuildingNums();
+        result += " buildings/sites";
+        for(const auto type : helpers::enumRange<BuildingType>())
+            result += " " + std::to_string(count.buildings[type]) + "/" + std::to_string(count.buildingSites[type]);
+        result += ';';
+    }
+    return result;
+}
+
 /// Order a woodcutter on the first spot near our HQ where one fits
 void orderWoodcutter(const Game& game)
 {
@@ -319,7 +361,7 @@ int run(Options& opt, Callbacks& cb)
     const auto numClients = static_cast<unsigned>(opt.players);
     auto nextProgress = startTime + 5s;
     unsigned maxNWFLength = 1;
-    std::string stateAtMaxGF, startGoods;
+    std::string stateAtMaxGF, startGoods, startState;
     unsigned lastTracedGF = 0;
     bool switchRequested = false, switchDone = false, kicked = false, openSlotsClosed = false, swapped = false;
     bool announcedConnected = false;
@@ -557,6 +599,10 @@ int run(Options& opt, Callbacks& cb)
                 // What the game interface does when it becomes active: runs the map script's start and unpauses
                 GAMECLIENT.OnGameStart();
                 gameStarted = true;
+                startState = "Started at GF " + std::to_string(GAMECLIENT.GetGFNumber()) + ": "
+                             + describeState(*cb.game) + "\n" + describePlayerRoles(*cb.game)
+                             + "\nLoaded economy:" + describeEconomy(*cb.game);
+                bnw::cout << startState << std::endl;
                 startGoods = describeStartGoods(*cb.game);
                 bnw::cout << startGoods << std::endl;
                 if(!opt.testScript.empty())
@@ -619,6 +665,7 @@ int run(Options& opt, Callbacks& cb)
                     }
                 }
                 stateAtMaxGF = "State at GF " + std::to_string(gf) + ": " + describeState(*cb.game);
+                stateAtMaxGF += "\nEconomy at GF " + std::to_string(gf) + ":" + describeEconomy(*cb.game);
                 if(!opt.testScript.empty())
                     stateAtMaxGF += "\nCampaign progress: " + describeCampaignProgress();
                 if(!opt.saveAt.empty() && !GAMECLIENT.SaveToFile(opt.saveAt))
@@ -632,6 +679,7 @@ int run(Options& opt, Callbacks& cb)
             {
                 // Only in this process: its world diverges, which the server must notice
                 RANDOM.Init(4711);
+                bnw::cout << "Injected desync at GF " << gf << std::endl;
                 opt.desyncAtGF.reset();
             }
             // The checksum a client takes at GF g travels with its commands for cmdDelay NWFs later, and the server
@@ -646,7 +694,10 @@ int run(Options& opt, Callbacks& cb)
                 result += std::to_string(checkedGF);
                 result += ")\n";
                 result += stateAtMaxGF;
-                result += "\n" + startGoods;
+                result += '\n';
+                result += startState;
+                result += '\n';
+                result += startGoods;
                 if(opt.host)
                 {
                     result += "\nMembers at start: ";
@@ -718,6 +769,7 @@ int main(int argc, char** argv)
         ("stall-at", po::value<unsigned>(), "Stop running for 2 s at this GF")
         ("trace", po::value(&opt.traceEvery), "Log the checksum every this many GFs")
         ("start-wares", po::value<std::string>(), "Choose these start goods for our own slot (vlow, low, normal, alot, minimal, minimalplus)")
+        ("single-player", po::bool_switch(&opt.singlePlayer), "Host: use an ordinary local solo session (requires --players 1, no members)")
         ("savegame", po::value<std::string>(), "Host: continue this savegame instead of starting --map")
         ("save", po::value<std::string>(), "Host: save the game to this file at maxGF")
         ("test-script", po::value<std::string>(), "Run this in the map script's Lua state; its onTestEnd(gf) is called at maxGF, then the campaign progress is reported")
@@ -753,6 +805,11 @@ int main(int argc, char** argv)
     if(opt.host && options.count("map") == options.count("savegame"))
     {
         bnw::cerr << "host needs either --map or --savegame" << std::endl;
+        return SetupError;
+    }
+    if(opt.singlePlayer && (!opt.host || opt.players != 1 || opt.members != 0 || opt.membersViaLobby))
+    {
+        bnw::cerr << "--single-player requires host --players 1 without members" << std::endl;
         return SetupError;
     }
     if(!opt.memberHostProbe.empty()
@@ -848,7 +905,9 @@ int main(int argc, char** argv)
         GAMECLIENT.SetInterface(&cb);
         if(opt.host)
         {
-            const CreateServerInfo csi(ServerType::Direct, opt.port, "s25coop net test");
+            const CreateServerInfo csi(opt.singlePlayer ? ServerType::Local : ServerType::Direct, opt.port,
+                                       "s25coop net test");
+            bnw::cout << "Host session: " << (opt.singlePlayer ? "single-player" : "network") << std::endl;
             const auto makeMap = [&]() {
                 if(opt.isSavegame)
                     return MapDescription(savegameArg, MapType::Savegame);

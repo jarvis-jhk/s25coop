@@ -188,6 +188,16 @@ if(NOT WIN32)
         set_tests_properties(${name} PROPERTIES TIMEOUT 400 RUN_SERIAL TRUE)
     endforeach()
 
+    # A real ordinary solo save resumes online; saved AI tribes stay AI and a co-player orders for the human tribe.
+    foreach(mode IN ITEMS sync desync desync-resave)
+        set(name CoopNet_SoloSaveResume_${mode})
+        add_test(NAME ${name}
+                 COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DMAP=${coopNetMap} -DPORT=13730
+                         -DMAX_GF=1000 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DMODE=${mode}
+                         -P ${CMAKE_CURRENT_SOURCE_DIR}/checkSoloNetResume.cmake)
+        set_tests_properties(${name} PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE)
+    endforeach()
+
     # Members in the lobby (M2 step 3): switching from a slot, refusal, kick by the host
     function(add_coop_lobby_test name port mode)
         add_test(NAME ${name}
