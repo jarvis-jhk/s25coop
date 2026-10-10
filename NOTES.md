@@ -5,6 +5,12 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-10 — Sol PR50 integrated (solo-save online resume)
+
+Test tooling only (coop-net --single-player, economy/roles lines, three CoopNet_SoloSaveResume CTests).
+Exact head d2ddb93e7 was all17/BOTH green. Merged onto master with F7a; own Debug coop-net build after
+reconfigure, all 22 CoopNet_* CTests pass locally incl. the three new ones (build/pr50-ctest.log).
+
 ## 2026-10-10 — F7a: seat logic extracted into frontend/LocalSeats
 
 Quota filler session. F7 split into F7a–F7d in ROADMAP. F7a moves dskGameLobby's local seat state machine
