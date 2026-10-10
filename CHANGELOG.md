@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.14
 
 - Options on the start screen now open full-screen pages for Display / Steam Deck, Sound and
   music, Controls and Language, usable with controller, mouse or keyboard. The old settings

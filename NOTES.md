@@ -5,6 +5,13 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-10 — v0.1.14 released from green master 43dbd3598
+
+Master 43dbd3598 (Sol PRs 46–49 integrated, fork sweep of 101 upstream commits, sdl2-compat exit fix)
+passed all 18 checks. Unreleased player notes (F9 options pages, F6a save browser, robust map list,
+upstream addons, exit crash fix) became 0.1.14. Next: F7 full-screen party page; Sol PR50
+(solo-save online resume) to review/integrate once its CI is complete.
+
 ## 2026-10-09 — fork sweep (the 2026-10-08 one, run late)
 
 Upstream master merged (101 commits: radius hunter search, ai-battle --teams, single-soldier coin training,
