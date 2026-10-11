@@ -100,6 +100,38 @@ every joined player together (the shared-views mode from M3c); a save from an or
 single-player game is no exception (Jan, 2026-10-06). The saved AI tribes stay AIs unless a
 player takes one over explicitly.
 
+## Campaigns (F4)
+
+Home → Campaigns opens an artwork grid, six campaigns per page. Built-in and user
+campaign directories share one catalog, ordered by name then directory. Every mission
+needs a supported map header and an accompanying regular Lua file; the catalog loads
+the campaign description through the existing Lua interface but never executes mission
+scripts or decodes their map layers. Broken campaigns stay isolated and are counted.
+Missing optional pictures use a text fallback. The original continent background is used
+when supplied; pictures are owned per card so equal filenames in different campaigns
+cannot overwrite each other. Keyboard arrows, Return, controller focus/A and mouse
+buttons all reach the same mission page. Back reconstructs the selected campaign page
+and restores its controller focus; Refresh retains that directory when it still exists.
+
+The mission page lists every chapter with its saved Available / Locked / Completed
+state, selected-map minimap and campaign description. Completed chapters remain playable;
+campaigns without a UID retain the existing all-chapters-playable policy. Locked rows
+can be browsed but cannot start. Pad A, Return, double-click and Continue recheck current
+progress, the selected map's full layers and its exact map/script identity against a
+fresh campaign description. Reordered/replaced/deleted campaign files require Refresh
+rather than silently starting another mission. Missing layers/scripts stay on the page
+with an error; Refresh can recover repairs. Browsing and starting do not mark a chapter
+completed: the mission script and existing campaign settings remain authoritative.
+
+The real local host/connecting/lobby path carries the Title party into shared views of
+the campaign's human tribe. Classic and network campaign choosers are unchanged. The
+new full-screen F7 party route and F8 network adoption remain primary-owned/separate;
+masked continent interaction and original mission-presentation parity belong to M1.
+Physical Debug regressions use public test maps and generated campaign metadata. They
+verify the selected Lua script's actual mission goal and synchronized two/four-controller
+games, while bypassing only the original-resource loader. Packaged Deck acceptance and
+original S2 artwork remain distinct from this fixture evidence.
+
 ## Not now
 
 Pixel-art Xbox button glyphs and the full/buttons-only/off help footer are on the roadmap but

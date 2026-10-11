@@ -1243,3 +1243,46 @@ notifications in other combo users. All17 exact-head CI checks green. Merged loc
 2376833e4 and re-ran in my own Debug cache: full Test_splitscreen and Test_UI pass. Minor nit,
 not blocking: the WORLDS directory is scanned for "Own maps" too, while the comment says "All".
 Next: F7 full-screen party (primary), F5c scenarios/campaign registration, random maps; no release yet.
+
+## Sol F4 full-screen campaigns and missions (2026-10-11)
+
+Home Campaigns now opens a paged artwork grid and a full-screen mission list.
+The catalog validates campaign descriptions, map headers and required mission
+scripts independently; missing optional images use a text fallback. Each card
+owns its full-path image archive so campaigns with identical image stems cannot
+reuse another campaign's preview. Existing continent-background artwork is used
+when declared; masked continent interaction remains a separate M1 task.
+
+Mission selection shows the saved Available/Locked/Completed state, descriptions
+and a lazy minimap. Refresh preserves file identity. Start revalidates the
+campaign uid, mission order, map/script identity, current progress and full map
+layers before using the existing local host/connecting/lobby path. Title parties
+share the campaign's human tribe. Back preserves the chosen campaign and grid
+page, including keyboard activation. Classic keeps its chooser. Primary still
+owns F7 party routing/integration; F8 online campaigns, F5c scenarios, original S2
+presentation and release/Steam Deck acceptance are separate.
+
+Own GCC12 Debug/Werror max2 build and both complete test binaries pass:
+Test_splitscreen740/503638 and Test_UI165/16137. The new campaign physical suite
+passes12 cases/697 assertions and the catalog suite6/65. Eight real starts cover
+two/four Title controllers through pad A, Continue, Enter and double-click,
+including an occupied-port failure/retry, the exact second mission's map/Lua,
+its executed onStart mission goal, actual shared game views and twelve gameframes
+without client errors or async. Only the original-resource loading desktop is
+bypassed. Layout, missing/reordered/repaired files, locks/progress revocation,
+optional/equal-stem artwork and normal/exceptional cleanup are exercised.
+
+An executed omission of keyboard trail dispatch fails the intended restored-focus
+assertion; omitting required-script validation admits three campaigns instead of
+one and fails the executed catalog assertion. Both guards were restored before
+the final build and full positive tests. A read-only gpt-6.1-sol source review
+found the keyboard trail defect before repair; a final review found no blocker.
+Source review and mocked input do not establish hardware behavior.
+
+Formatter10 equality, repository static validation, include guards, Markdown,
+diff checks and the actual agent TypeScript compiler pass. Local Clang23 reports
+no new-file warning enabled in the CI Clang18 check catalog; newer diagnostics
+are recorded privately without lint/coverage suppressions. Existing CI/runtime
+fault reporting is retained, with no private endpoint in public source. This is
+source/local validation completion only: all17 exact-head checks and both complete
+Unit tests/Static analysis workflows are mandatory before the tested handoff.

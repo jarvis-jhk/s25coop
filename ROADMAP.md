@@ -216,7 +216,12 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☑ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus,
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
-  - ☐ F4 campaigns (Sol, after F5b; review 2026-10-11): artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
+  - ◐ F4 campaigns (Sol): full-screen artwork grid and mission picker implemented on `sol/frontend-campaign-browser`.
+    Working built-in/user campaigns are isolated from bad metadata/maps/scripts; optional artwork falls back
+    to text. Saved unlock/completion state, exact mission identity and the Title party pass through the
+    existing local campaign host/lobby path. Physical Debug validation, complete exact-head CI and primary
+    review/integration are the gate; F7 adoption, M1 masked continents/original presentation and Deck
+    acceptance remain separate. Classic/network campaign menus stay available.
   - ◐ F5 maps & scenarios browser (Sol):
     - F5a header-only map catalog on `sol/frontend-map-catalog`: SWD/WLD discovery, stable file identity,
       name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.
