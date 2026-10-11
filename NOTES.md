@@ -1423,3 +1423,25 @@ Only original S2 resource loading is bypassed in the real-start fixture. No test
 Packaged art/Steam Deck, F7 full-screen party and F8 online flow remain distinct acceptance/work.
 Scenario authors: doc/coop/Scenarios.md. Existing fault reporting stays in the central ntfy→GitHub path;
 no private reporting URL or personal data is added to public source.
+
+
+## Verified v0.1.16 release (2026-10-11)
+
+v0.1.16 is published and ready to install: full-screen loading, controller
+status and fault recovery. Release workflow [38146348851](https://github.com/jarvis-jhk/s25coop/actions/runs/38146348851)
+completed successfully. The existing annotated tag/release commit
+4c4d5853d91255580c850cc84b2452621087aa23 was retained without retagging.
+Source master ab0d2dd1d passed complete [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/38140880709)
+and [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/38140880708);
+primary Debug loading11/372, splitscreen752/504662 and UI165/18217 passed.
+
+All three public assets were downloaded successfully with HTTP200 and exact
+nonempty byte counts: Install-s25coop.desktop625, Linux x86_64 tarball44782174,
+Windows x64 ZIP34515559. [Release/downloads](https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.16).
+These checks establish published downloads, not Steam Deck hardware acceptance.
+F7b remains primary next; Sol's F5c scenario work and claims remain separate.
+
+
+## Sol PR54 release-note reconciliation (2026-10-11)
+
+Merged master 39db483b5 after the v0.1.16 verification note conflicted with the F5c note. Both notes and the release changelog are retained. All nine scenario source/test hashes and the other three scenario documentation hashes remain unchanged. Own Debug max2 build completed; catalog4/40, physical9/782, full splitscreen761/505007, UI169/10490 pass. Actual agent TypeScript compiler and diff checks pass. Prior ace99d725 CI is historical; fresh all17 checks and BOTH successful workflows on this reconciliation head remain mandatory before tested handoff.
