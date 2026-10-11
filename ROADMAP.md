@@ -8,10 +8,11 @@ starting the binary to being in game, from scratch").** The core goal is a group
 one Deck/TV or over the internet. Network coop (M2) and shared local views (M3c) work; the menus between
 starting the game and playing it are still upstream's mouse screens with controller support bolted on.
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
-   workers. Opus: F1 framework ☑, F3 home ☑, F2 title/join ☑ (2026-10-07) → F7 party
-   (joined-party seating prerequisite implemented; full-screen lobby next). Sol, in parallel on
-   independent scopes: 4b on-screen keyboard, then F9 options, F6 load game, F5 maps (3a/3b addon categories integrated from PR45)
-   (F1 is in: build them on dskFrontEndPage).
+   workers. Done: F1 framework, F2 title/join, F3 home, F7a seat logic (Opus); 4b on-screen keyboard, F9 options,
+   F6a save browser, F5a map catalog, 3a/3b addon categories (Sol). Next (review 2026-10-11):
+   Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51) → **F4 campaigns**
+   (the screen closest to the goal and still unowned; build it on F5b's browser pattern and start through the
+   party screen like F5b) → F5c scenarios → F10 loading screen. F6b leftovers (thumbnails, pre-coop fixture) after that.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
 3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
@@ -19,6 +20,8 @@ starting the game and playing it are still upstream's mouse screens with control
 4. Controller panel (in-game side panel) and M1 mission presentation after the front end's F1–F7.
 5. Release whenever player-visible changes are on master and its CI is green — tag, push, then CHECK the
    GitHub release exists.
+6. Small, any worker with a gap: msgmerge pass so upstream's new addon strings (fork sweep 2026-10-09) are
+   translated again instead of showing in English; keep our edited catalogues.
 
 ## M0 — A version you can install and keep updated (first!)
 
@@ -213,7 +216,7 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☑ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus,
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
-  - ☐ F4 campaigns: artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
+  - ☐ F4 campaigns (Sol, after F5b; review 2026-10-11): artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
   - ◐ F5 maps & scenarios browser (Sol):
     - F5a header-only map catalog on `sol/frontend-map-catalog`: SWD/WLD discovery, stable file identity,
       name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.
@@ -256,12 +259,11 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
   - ☐ F12 retire the old desktops from the default path once every route has parity
-  - Independent pieces Sol can do before F1 lands: ☐ 4b on-screen keyboard (names, IP, chat) · ☑ 3a addon category
+  - Independent pieces (all but 4a done): ☑ 4b on-screen keyboard (PR46) (names, IP, chat) · ☑ 3a addon category
     table + test · ☑ 3b category tabs and "changed only" filter (PR45; exhaustive metadata and
     physical Debug tests, all 17 exact-head CI checks passed) · ☐ 4a profiles (name, colour, nation, mapping).
-    Sol keyboard4b: reusable opt-in modal implemented on `sol/controller-onscreen-keyboard`; owner-device
-    routing, staged text, mixed input and lifetime regressions. Exact-head CI/integration remains open;
-    F7/F9 adoption and hardware acceptance are separate. See [ControllerKeyboard](doc/coop/ControllerKeyboard.md).
+    Sol keyboard4b: reusable opt-in modal, owner-device routing, staged text, mixed input and lifetime
+    regressions; integrated 2026-10-09. F7/F9 adoption and hardware acceptance are separate. See [ControllerKeyboard](doc/coop/ControllerKeyboard.md).
 
 - ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
   pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new

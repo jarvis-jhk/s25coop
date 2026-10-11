@@ -5,6 +5,29 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## Wochenreview 2026-10-11
+Direction: on track. Week 3: 110 commits on master, Sol PRs #45–#50 integrated, four releases (0.1.11–0.1.14,
+each verified with 3 assets), fork sweep of 101 upstream commits done (a day late, 10-09). Master 7046fa40a
+Unit tests + Static analysis green; no issues, no fault reports. Claude week 17 % at pace 15 % (filler correctly
+skipping), Sol busy on Codex (PR51 F5b map browser, 16/17 checks green at review time). Schedules unchanged and
+right: work Mon/Wed/Fri, gated filler every 3 h, sweep 8th/22nd (next 10-22), this review Sun; Sol tick every 10 min
+plus its one CI continuation. No code off-goal: everything this week is new front end, its tests, or integration.
+Found and fixed:
+- **F4 campaigns had no owner.** It is the front-end screen closest to the goal (play campaigns together) and sat
+  ☐ while both workers took other screens. Assigned to Sol after F5b (ROADMAP F4 line, sol-backlog
+  `reviewPriority20261011`); F6b leftovers (thumbnails, pre-coop fixture) move behind F4/F5c/F10.
+- ROADMAP "Current priorities" still listed 4b/F9/F6a/F5a as Sol's upcoming work and 4b as open/CI pending —
+  rewritten with what is done and the next order for both workers.
+- Added a small gap item: msgmerge pass for upstream's new addon strings (German players see English since the sweep).
+- Removed two stray 2026-10-05 logs (m3c4-*.log) from the repo root; logs belong in build/.
+- ⚠ **VPS disk at 97 % (7.5 GB free of 193).** Siedler's share: build/dbg 4.4 G, Sol build/debug 3.2 G, ccache 4.6 G
+  (max 5 G), data/siedler 3 G (2 G are installer fixtures in dl/, keep). The rest is outside this lane; reported to
+  the self lane. If space gets tight before that is resolved: delete build/dev (0.4 G, Release, recreatable) first,
+  never the fixtures.
+Opus throughput: F7a only plus integration/sweep/releases; F7b is the next work session's item.
+Not for Jan: nothing needs his decision (disk goes via the self lane). Still unverified on real hardware: everything
+since 0.1.10 on the Deck — waits for his test.
+
 ## 2026-10-10 — Sol PR50 integrated (solo-save online resume)
 
 Test tooling only (coop-net --single-player, economy/roles lines, three CoopNet_SoloSaveResume CTests).
