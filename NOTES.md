@@ -1397,3 +1397,20 @@ its successful jobs cannot substitute for fresh complete CI on this repair.
 ## Sol PR53 master reconciliation (2026-10-11)
 
 PR53 reconciliation with integrated PR52: both append-only NOTES entries retained; all five F10 source/test hashes unchanged. Fresh own GCC12 Debug/Werror max2 configure/build passes, loading 11/372, complete splitscreen 752/501982 and UI 165/11827 pass. Static validation, Markdown, diff and actual agent TypeScript compiler pass. Prior all17/BOTH green head is historical; require fresh all17/BOTH on this merge head before tested handoff. F4 is integrated, F7 remains primary-owned; F5c scenario policy, release and hardware acceptance remain separate.
+
+
+## Verified v0.1.16 release (2026-10-11)
+
+v0.1.16 is published and ready to install: full-screen loading, controller
+status and fault recovery. Release workflow [38146348851](https://github.com/jarvis-jhk/s25coop/actions/runs/38146348851)
+completed successfully. The existing annotated tag/release commit
+4c4d5853d91255580c850cc84b2452621087aa23 was retained without retagging.
+Source master ab0d2dd1d passed complete [Unit tests](https://github.com/jarvis-jhk/s25coop/actions/runs/38140880709)
+and [Static analysis](https://github.com/jarvis-jhk/s25coop/actions/runs/38140880708);
+primary Debug loading11/372, splitscreen752/504662 and UI165/18217 passed.
+
+All three public assets were downloaded successfully with HTTP200 and exact
+nonempty byte counts: Install-s25coop.desktop625, Linux x86_64 tarball44782174,
+Windows x64 ZIP34515559. [Release/downloads](https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.16).
+These checks establish published downloads, not Steam Deck hardware acceptance.
+F7b remains primary next; Sol's F5c scenario work and claims remain separate.
