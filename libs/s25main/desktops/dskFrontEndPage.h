@@ -41,7 +41,8 @@ public:
         unsigned focusId = 0;
     };
 
-    explicit dskFrontEndPage(const std::string& title);
+    /// Loading keeps the same driver in Classic; that caller can omit the frame and retain Desktop scaling.
+    explicit dskFrontEndPage(const std::string& title, bool useFrame = true);
     ~dskFrontEndPage() override;
 
     /// The page `factory` creates, as the root of a new trail (nothing to go back to from there).
@@ -145,6 +146,7 @@ private:
     frontend::PageFrame frame_;
     std::vector<brief::KeyHint> footerKeys_;
     std::vector<Rect> stripRects_;
+    const bool useFrame_;
     /// The menu background, drawn under the header and footer bars (Desktop itself gets none, so its
     /// Draw_ can keep the fps counter running without painting over the bars).
     glArchivItem_Bitmap* pageBackground_;

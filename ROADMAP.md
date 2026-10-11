@@ -10,9 +10,9 @@ starting the game and playing it are still upstream's mouse screens with control
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
    workers. Done: F1 framework, F2 title/join, F3 home, F7a seat logic (Opus); 4b on-screen keyboard, F9 options,
    F6a save browser, F5a map catalog, 3a/3b addon categories (Sol). Next (review 2026-10-11):
-   Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51, merged) → F4 campaigns (PR #52, merged)
-   (the screen closest to the goal and still unowned; build it on F5b's browser pattern and start through the
-   party screen like F5b) → F5c scenarios → F10 loading screen. F6b leftovers (thumbnails, pre-coop fixture) after that.
+   Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51), F4 campaigns
+   (PR #52) and F10 loading screen (PR #53) are integrated. Next: F5c scenarios after auditing campaign
+   policy and ownership. F6b leftovers (thumbnails, pre-coop fixture) after that.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
 3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
@@ -267,7 +267,11 @@ starting the game and playing it are still upstream's mouse screens with control
     `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
     Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption
     remain separate deferred work; legacy driver/proxy/portrait/addon controls stay under Advanced settings.
-  - ☐ F10 loading screen: mission/map title, tip, controller layout; then the game
+  - ☑ F10 loading screen (PR #53): existing timed loader in the full-screen frame, exact client map title,
+    party strip, actual stage/wait, economy tip and in-game controller legend. Resize and error acknowledgement
+    preserve the real GameLoaded/mission-goal/game-start ordering; Classic retains its presentation.
+    Reconciliation head d9e603f5e passed all17 checks and both full CI workflows; primary integration
+    validation is recorded in NOTES. Original graphics and Deck acceptance remain separate.
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
   - ☐ F12 retire the old desktops from the default path once every route has parity

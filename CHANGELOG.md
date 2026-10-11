@@ -3,6 +3,12 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Games started from the new menus now keep the full-screen layout while loading, with the map
+  title, joined players, loading status and controller tips. Loading errors can be acknowledged
+  with a controller or mouse without accidentally activating the next menu.
+
 ## 0.1.15
 
 - "Campaigns" on the start screen opens a full-screen overview with a picture of every campaign
