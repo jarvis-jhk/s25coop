@@ -184,3 +184,44 @@ that map layers are complete: selection still fully loads and validates the map,
 then removes a failed target while leaving the other maps available. No map or
 save/network format changes. F5b supplies the full-screen controls, Home route
 and real party start; F5c defines how scenarios become one-mission campaigns.
+
+## Maps browser (F5b)
+
+Home → Maps & scenarios opens `dskFrontEndMaps` in the common full-screen frame.
+Back / B / Escape returns to the Maps tile. A scrollable list combines Classic's
+nine categories plus the optional installation WORLDS folder. Category and exact
+map-tribe-count filters are independent of how many controllers joined on Title.
+Refresh keeps the selected file identity if it still matches, otherwise selects
+the first map in name/path order. Table headers do not silently reorder selection.
+
+Only the selected map loads its full layers for a minimap preview. Name, author,
+tribe count, dimensions and adjacent-script presence are shown alongside it.
+Broken headers are counted without hiding other maps. A header-readable map with
+bad layers stays in the list with an unavailable-preview message and disabled
+Continue; repairing it and refreshing restores the same selection. Browsing never
+executes a map script. A script marker does not register a one-mission campaign;
+that policy and campaign unlocks remain F5c.
+
+D-pad and keyboard arrows browse rows. A, Enter, double-click and Continue use the
+same selected-file start. Dropdowns stage browsing until acceptance: pad A,
+keyboard Enter or a mouse selection commits, while B / Escape cancels before
+leaving the page. Mixed mouse/pad/keyboard interaction uses those same controls.
+Resize cancels an open filter, repositions its scrollable list above the footer,
+and preserves the committed filters and map selection. At render sizes too small
+for the content, the page keeps Back available and asks to enlarge the window or
+reduce the UI scale, rather than creating overflowing controls.
+
+Continue revalidates the file and full layers before hosting. A stale or failed
+selection shows an error on this page; an existing connecting modal blocks another
+start. The existing local client/server and connecting window lead to the current
+lobby. Its joined-party bridge handles individual tribes or an explicit shared
+tribe choice when the map has fewer tribes than controllers. The full-screen F7
+party page, random-map generation and scenario registration remain separate work;
+Classic's original picker is still reachable through Classic menus.
+
+Physical regressions live in `testFrontEndMaps.cpp`: categories, tribe filters,
+long lists, lazy/error previews, repaired and replaced files, mixed input, resize,
+Home return and real local-game start with two and four joined controllers. The
+four-controller case uses a three-tribe map and explicitly chooses one tribe
+together in the existing lobby. Only original-resource loading is bypassed in the
+start tests. These are mock-driver tests, not Steam Deck hardware acceptance.

@@ -11,6 +11,7 @@
 #include "controls/ctrlTimer.h"
 #include "desktops/dskCredits.h"
 #include "desktops/dskFrontEndLoad.h"
+#include "desktops/dskFrontEndMaps.h"
 #include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskMainMenu.h"
 #include "desktops/dskMultiPlayer.h"
@@ -112,7 +113,7 @@ void dskHome::OnChoose(const unsigned ctrl_id)
                 Open([save = newestSave_] { return std::make_unique<dskFrontEndLoad>(save); });
             break;
         case ID_Campaigns: dskSinglePlayer::OpenCampaigns(); break;
-        case ID_Maps: dskSinglePlayer::PrepareSinglePlayerServer(); break;
+        case ID_Maps: Open([] { return std::make_unique<dskFrontEndMaps>(); }); break;
         case ID_Load: Open([] { return std::make_unique<dskFrontEndLoad>(); }); break;
         case ID_Online: WINDOWMANAGER.Switch(std::make_unique<dskMultiPlayer>()); break;
         case ID_Options: Open([] { return std::make_unique<dskFrontEndOptions>(); }); break;

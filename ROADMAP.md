@@ -219,8 +219,12 @@ starting the game and playing it are still upstream's mouse screens with control
       name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.
       Classic selection reuses the same metadata reader; full layer validation remains on preview.
       Local Debug catalog6/104, physical8/101, affected37/1029, ui152/21671, splitscreen673/501494 pass. Fresh all17/BOTH exact-head CI required before tested handoff.
-    - F5b full-screen browser: lazy preview, category/player-count controls, Home back stack and real party start.
-      Starts after prior Home routes integrate. Joined controllers do not imply the same number of map tribes.
+    - F5b full-screen browser on `sol/frontend-map-browser`: Home trail, lazy selected-map preview,
+      all nine categories, exact tribe-count filter, stable Refresh identity and stale-file validation.
+      Physical mixed-input/resize/error and two/four-controller real start tests are the gate.
+      Local Debug physical18/915, complete splitscreen728/502583 and UI159/17125 pass;
+      exact-head all17/BOTH CI required before tested handoff.
+      Joined controllers do not imply the same number of map tribes; the current lobby owns that choice.
     - F5c one-mission scenario start policy and campaign presentation: a neighboring Lua script alone does not
       register a campaign or establish unlocks; define the campaign bridge before claiming that behavior.
   - ◐ F6 load game (Sol): F6a full-screen metadata browser on `sol/frontend-save-browser`: scrollable newest-first
