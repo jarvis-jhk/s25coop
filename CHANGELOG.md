@@ -3,6 +3,16 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- "Campaigns" on the start screen opens a full-screen overview with a picture of every campaign
+  that works. Pick one, see its missions with map preview and which are completed, available or
+  still locked, and start together: everyone who joined on the title screen plays the campaign's
+  tribe. Works with controller, mouse or keyboard.
+- "Maps & scenarios" on the start screen opens a full-screen map browser with categories, a
+  filter by number of tribes and a map preview; the players who joined on the title screen go
+  straight into the game lobby together.
+
 ## 0.1.14
 
 - Options on the start screen now open full-screen pages for Display / Steam Deck, Sound and

@@ -10,7 +10,7 @@ starting the game and playing it are still upstream's mouse screens with control
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
    workers. Done: F1 framework, F2 title/join, F3 home, F7a seat logic (Opus); 4b on-screen keyboard, F9 options,
    F6a save browser, F5a map catalog, 3a/3b addon categories (Sol). Next (review 2026-10-11):
-   Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51) → **F4 campaigns**
+   Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51, merged) → F4 campaigns (PR #52, merged)
    (the screen closest to the goal and still unowned; build it on F5b's browser pattern and start through the
    party screen like F5b) → F5c scenarios → F10 loading screen. F6b leftovers (thumbnails, pre-coop fixture) after that.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
@@ -216,7 +216,15 @@ starting the game and playing it are still upstream's mouse screens with control
   - ☑ F3 home: Continue (newest save), Campaigns, Maps & scenarios, Load, Play online, Options, What's new, Quit (Opus,
     2026-10-07). The start screen after the splash; tiles still open upstream's desktops until F4–F9 replace them,
     and those return to Home. "Classic menus" leads to the old main menu.
-  - ☐ F4 campaigns (Sol, after F5b; review 2026-10-11): artwork grid of every working campaign, mission picker with unlock state (reuses the overview)
+  - ☑ F4 campaigns (Sol, PR #52 merged 2026-10-11): full-screen artwork grid and mission picker.
+    Working built-in/user campaigns are isolated from bad metadata/maps/scripts; optional artwork falls back
+    to text. Saved unlock/completion state, exact mission identity and the Title party pass through the
+    existing local campaign host/lobby path. Physical Debug validation, complete exact-head CI and primary
+    review/integration are the gate; F7 adoption, M1 masked continents/original presentation and Deck
+    acceptance remain separate. Classic/network campaign menus stay available.
+    F4 coverage repair: separate real-start exceptional cleanup now exercised without exclusions;
+    physical Debug13/795 and complete splitscreen741/502376 pass. Product source and UI binary
+    remain unchanged; fresh all17/BOTH CI on the repaired head is still required before handoff.
   - ◐ F5 maps & scenarios browser (Sol):
     - F5a header-only map catalog on `sol/frontend-map-catalog`: SWD/WLD discovery, stable file identity,
       name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.
@@ -263,8 +271,8 @@ starting the game and playing it are still upstream's mouse screens with control
     party strip, actual stage/wait, economy tip and in-game controller legend. Resize and error acknowledgement
     preserve the real GameLoaded/mission-goal/game-start ordering; Classic retains its presentation.
     Own Debug physical11/372, splitscreen739/503161 and UI159/15349 pass; fresh all17/BOTH CI is the handoff gate. Original graphics and
-    Deck acceptance remain separate. F5c needs the pending F4 campaign bridge before implementation;
-    F10 uses fresh master and disjoint loader/test scopes while primary owns F7 and F4 integration.
+    Deck acceptance remain separate. F4 is integrated; audit F5c scenario policy and ownership before implementation;
+    F10 uses fresh master and disjoint loader/test scopes while primary owns F7 and integration.
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
   - ☐ F12 retire the old desktops from the default path once every route has parity
