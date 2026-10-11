@@ -5,6 +5,12 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-11 — v0.1.15 released from green master 0cb2378c1
+
+Master 0cb2378c1 (PR51 full-screen maps browser, PR52 full-screen campaign grid and mission picker)
+passed Unit tests and Static analysis. Unreleased player notes (Campaigns and Maps & scenarios pages)
+became 0.1.15.
+
 ## Wochenreview 2026-10-11
 Direction: on track. Week 3: 110 commits on master, Sol PRs #45–#50 integrated, four releases (0.1.11–0.1.14,
 each verified with 3 assets), fork sweep of 101 upstream commits done (a day late, 10-09). Master 7046fa40a

@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.15
 
 - "Campaigns" on the start screen opens a full-screen overview with a picture of every campaign
   that works. Pick one, see its missions with map preview and which are completed, available or
