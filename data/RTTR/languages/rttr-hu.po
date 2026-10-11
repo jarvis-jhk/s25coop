@@ -1161,6 +1161,10 @@ msgstr ""
 msgid "Coal"
 msgstr "Szén"
 
+#: libs/s25main/addons/AddonMineResourceBehavior.h:42
+msgid "Coal Mine Resource Behavior"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:21
 msgid "Coal mine"
 msgstr "Szénbánya"
@@ -1177,6 +1181,10 @@ msgstr "Érme"
 #: libs/s25main/addons/AddonCoinsCapturedBld.h:17
 msgid "Coins on captured buildings"
 msgstr "Érmeszállítás elfoglalt épületekbe"
+
+#: libs/s25main/addons/AddonSingleSoldierCoinTraining.h:14
+msgid "Coins train only one soldier"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwBaseWarehouse.cpp:61
 msgid "Collect"
@@ -1198,6 +1206,26 @@ msgstr "A megrendelt mennyiségű szerszám elkészült."
 #, c-format
 msgid "Computer %u"
 msgstr "Számítógép %u"
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:43
+msgid "Configures how coal mines consume and exhaust coal deposits."
+msgstr ""
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:61
+msgid "Configures how gold mines consume and exhaust gold deposits."
+msgstr ""
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:34
+msgid "Configures how granite mines consume and exhaust stone deposits."
+msgstr ""
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:52
+msgid "Configures how iron mines consume and exhaust iron deposits."
+msgstr ""
+
+#: libs/s25main/addons/AddonMineNoOutputFallback.h:17
+msgid "Configures what mines produce when S4-like exhaustion would produce nothing."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:240
 msgid "Confirm"
@@ -1269,6 +1297,10 @@ msgstr "Játék folytatása"
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:222
 msgid "Contract type:"
 msgstr "Szerződéstípus:"
+
+#: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:16
+msgid "Controls the search radius used by stranded soldiers when looking for a way back to a warehouse."
+msgstr ""
 
 #: libs/s25main/addons/AddonChangeGoldDeposits.h:27
 msgid "Convert to coal"
@@ -1368,6 +1400,10 @@ msgstr "Mélyen a hegyek gyomrában a bányászok vasérc után kutatnak. Az ily
 #: libs/s25main/ingameWindows/iwTransport.cpp:27
 msgid "Default"
 msgstr "Alapértelmezett"
+
+#: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:18
+msgid "Default search range (1x)"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:100
 msgid "Delete"
@@ -1832,6 +1868,10 @@ msgstr "Felderítés:"
 msgid "Extend"
 msgstr ""
 
+#: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:20
+msgid "Extended search range (2x)"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:197
 msgid "Failed to delete the selected preset."
 msgstr ""
@@ -2220,6 +2260,14 @@ msgstr "Célok:"
 msgid "Gold"
 msgstr "Arany"
 
+#: libs/s25main/addons/AddonMineResourceBehavior.h:60
+msgid "Gold Mine Resource Behavior"
+msgstr ""
+
+#: libs/s25main/addons/AddonSingleSoldierCoinTraining.h:15
+msgid "Gold coins promote only one lowest-rank soldier instead of all eligible lower-rank soldiers."
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwMilitaryBuilding.cpp:58
 msgid "Gold delivery"
 msgstr "Aranyszállítás"
@@ -2256,6 +2304,10 @@ msgstr "Gabona"
 #: libs/s25main/gameData/BuildingConsts.cpp:234
 msgid "Grain and water are needed for rearing pigs. The meat thus obtained can then be processed by a butcher."
 msgstr "A sertéstenyésztéshez gabonára és vízre van szükség. Az így nyert húst aztán a hentes dolgozza fel."
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:33
+msgid "Granite Mine Resource Behavior"
+msgstr ""
 
 #: libs/s25main/gameData/BuildingConsts.cpp:20
 msgid "Granite mine"
@@ -2545,6 +2597,10 @@ msgstr "Érvénytelen port. Az érvényes porttartomány 1-től 65535-ig terjed!
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:66
 msgid "Iron"
 msgstr "Vas"
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:51
+msgid "Iron Mine Resource Behavior"
+msgstr ""
 
 #: libs/s25main/gameData/JobConsts.cpp:34
 msgid "Iron founder"
@@ -3142,6 +3198,10 @@ msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp
 msgid "Min.+"
+msgstr ""
+
+#: libs/s25main/addons/AddonMineNoOutputFallback.h:16
+msgid "Mine No-Output Fallback"
 msgstr ""
 
 #: libs/s25main/gameData/JobConsts.cpp:30
@@ -3928,6 +3988,22 @@ msgstr "Őrvezető"
 msgid "Privatefc (1)"
 msgstr "Őrvezető (1)"
 
+#: libs/s25main/addons/AddonMineNoOutputFallback.h:19
+msgid "Produce granite 100%"
+msgstr ""
+
+#: libs/s25main/addons/AddonMineNoOutputFallback.h:18
+msgid "Produce granite 25%"
+msgstr ""
+
+#: libs/s25main/addons/AddonMineNoOutputFallback.h:18
+msgid "Produce granite 50%"
+msgstr ""
+
+#: libs/s25main/addons/AddonMineNoOutputFallback.h:19
+msgid "Produce lower grade resource"
+msgstr ""
+
 #: libs/s25main/addons/AddonMetalworksBehaviorOnZero.h:20
 msgid "Produce nothing"
 msgstr "Nem gyárt semmit"
@@ -4085,6 +4161,10 @@ msgstr "Az érmék fogadásának alapértelmezés szerinti letiltása a katonai 
 msgid "Reduce reoccupying troops accordingly"
 msgstr "Visszatelepülő katonák csökkentése a beállítás szerint"
 
+#: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:19
+msgid "Reduced search range (0.5x)"
+msgstr ""
+
 #: libs/s25main/addons/AddonRefundMaterials.h:21
 msgid "Refund 25%"
 msgstr "25% visszatérítés"
@@ -4231,6 +4311,10 @@ msgstr "Az RttR összeomlott. Szeretnéd elküldeni a hibainformációkat az Rtt
 #: libs/s25main/desktops/dskMainMenu.cpp:67
 msgid "RttR now supports sending debug data. Would you like to help us improving this game by sending debug data?"
 msgstr "Az RttR már támogatja a hibakeresési adatok küldését. Szeretnél segíteni a játék fejlesztésében az adatok elküldésével?"
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:18
+msgid "S4-like exhaustion"
+msgstr ""
 
 #: libs/s25main/network/GameServer.cpp:743
 msgid "SERVER: At GF %1%: Speed changed from %2% to %3%. NWF %4%\n"
@@ -4752,6 +4836,10 @@ msgstr ""
 #: libs/s25main/gameData/BuildingConsts.cpp:39
 msgid "Storehouse"
 msgstr "Raktár"
+
+#: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:15
+msgid "Stranded soldier return search"
+msgstr ""
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:101
 msgid "Strikes coins. Coins sent to a guard post promote the soldiers inside."
@@ -5436,6 +5524,10 @@ msgstr "Nagyon távoli"
 msgid "Very fast"
 msgstr "Nagyon gyors"
 
+#: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:21
+msgid "Very large search range (4x)"
+msgstr ""
+
 #: libs/s25main/addons/AddonMaxWaterwayLength.h:35
 msgid "Very long"
 msgstr "Nagyon hosszú"
@@ -5633,6 +5725,10 @@ msgstr "Favágó"
 #: libs/s25main/gameData/BuildingConsts.cpp:27
 msgid "Woodcutter"
 msgstr "Favágókunyhó"
+
+#: libs/s25main/addons/AddonMineResourceBehavior.h:18
+msgid "Work everywhere"
+msgstr ""
 
 #: libs/s25main/desktops/dskGameLoader.cpp:120
 msgid "World was put together and glued..."

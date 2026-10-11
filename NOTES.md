@@ -5,6 +5,39 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-11 — Sol addon translation refresh
+
+The October9 upstream sweep added mine resource behavior, depleted-mine fallback,
+single-soldier coin training and stranded-soldier return-search options. Their24
+new labels/descriptions/choices were absent from the fork's POT, so a plain
+msgmerge could never register them. `sol/addon-translation-refresh` appends those
+exact source msgids and references without replacing the template's manually
+registered pad texts. All28 PO catalogs now contain them; German has reviewed
+translations, other languages keep English fallback for the new entries.
+
+Compiled-MO comparison preserves every previously shipped message in every
+language, including existing fork controller/ware translations. All24 new German
+runtime lookups match the intended translations; all27 other catalogs return the
+original English text. No new fuzzy guesses. `msgfmt --check` passes for28 files,
+and a second msgmerge with the build's no-fuzzy options changes none of them.
+The existing Russian carriage-return warning predates this slice.
+
+Own GCC12 Debug/Werror configure and build use max2 compiler jobs.
+Test_LanguageFiles passes1 case/54092 assertions; full Debug
+Test_splitscreen passes752 cases/500478 assertions, including the
+physical addon/category controls and German controller purpose/ware regressions. Supplied-diff read-only gpt-6.1-sol review:
+no actionable findings. Static validation, markdown and actual agent TypeScript
+check pass. No C++/save/network behavior or fault-handler changes; the central
+ntfy-to-GitHub fault path remains active. Template refresh procedure recorded in
+data/RTTR/languages/README.md.
+
+This branch starts from master39db483b5, independently of handed-off scenario
+PR54 and primary F7 party work. Exact-head all17 checks plus BOTH completed
+successful Unit tests/Static analysis workflows are required before tested handoff;
+Sol opens a draft PR, never merges it. CI evidence and pending continuation live
+in the slice's private checkpoint and PR body. Original artwork/Deck acceptance,
+F6b thumbnail/save-provenance work and release are separate.
+
 ## 2026-10-11 — PR53 integrated (F10 full-screen loading)
 
 Reviewed Sol PR53 reconciliation head d9e603f5ee10c729eb0d74ef1d1f1749b7839c16;
