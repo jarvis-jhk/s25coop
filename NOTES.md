@@ -9,7 +9,15 @@ CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, ea
 
 Master 0cb2378c1 (PR51 full-screen maps browser, PR52 full-screen campaign grid and mission picker)
 passed Unit tests and Static analysis. Unreleased player notes (Campaigns and Maps & scenarios pages)
-became 0.1.15.
+became 0.1.15. Annotated tag v0.1.15 points to the documentation-only release commit
+cf9ef26afa9afa144aadee870e12b40b7158010b. Release workflow succeeded:
+https://github.com/jarvis-jhk/s25coop/actions/runs/38139316215
+Published release: https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.15
+All three assets verified uploaded, nonempty and HTTP 200: Install-s25coop.desktop,
+s25coop-0.1.15-linux-x86_64.tar.gz and s25coop-0.1.15-windows-x64.zip.
+Pre-release source-head CI: Unit tests38133739082 and Static analysis38133739041,
+both completed successfully on 0cb2378c17bda53c3ca4eec873182ee2dc7cf77b.
+The documentation-only release commit's separate CI was still running at verification.
 
 ## Wochenreview 2026-10-11
 Direction: on track. Week 3: 110 commits on master, Sol PRs #45–#50 integrated, four releases (0.1.11–0.1.14,
