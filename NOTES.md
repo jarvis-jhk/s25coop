@@ -1234,6 +1234,18 @@ workflows remain the handoff gate.
 Existing CI/runtime fault reporting is retained; no private report endpoint is
 published in the source. No release or Steam Deck hardware result is claimed.
 
+## 2026-10-11 — PR52 integrated (F4 full-screen campaigns)
+
+Primary review of Sol PR52 at b561056e4: Home → Campaigns opens dskFrontEndCampaigns (six artwork
+tiles per page, own archive per tile so equal filename stems keep their own picture) and
+dskFrontEndMissions (table with Completed/Available/Locked, minimap, recheck of uid/map/script on
+start, existing local host + SetHostingCampaign path). CampaignCatalog skips broken campaigns and
+missing scripts into `failures`. All17 exact-head CI green; merged locally, Debug Test_splitscreen
+and Test_UI pass in build/dbg (build/pr52-*.log). Review nits, not blocking: mission page re-reads the
+map file on every layout (UpdateDetails in OnLayout); the catalog parses every map header on each scan.
+CHANGELOG Unreleased now has maps + campaigns pages; release v0.1.15 once master CI is green.
+PR53 (Sol F10 loading screen) still in progress on Sol's side; Coveralls 92% patch coverage, nothing for me.
+
 ## 2026-10-11 — PR51 integrated (full-screen maps browser)
 Primary review of Sol PR51 at 8b883d93c: Home → Maps & scenarios now opens dskFrontEndMaps
 (nine Classic categories, map-tribe filter, lazy preview, revalidation on Continue, existing
@@ -1243,3 +1255,62 @@ notifications in other combo users. All17 exact-head CI checks green. Merged loc
 2376833e4 and re-ran in my own Debug cache: full Test_splitscreen and Test_UI pass. Minor nit,
 not blocking: the WORLDS directory is scanned for "Own maps" too, while the comment says "All".
 Next: F7 full-screen party (primary), F5c scenarios/campaign registration, random maps; no release yet.
+
+## Sol F4 full-screen campaigns and missions (2026-10-11)
+
+Home Campaigns now opens a paged artwork grid and a full-screen mission list.
+The catalog validates campaign descriptions, map headers and required mission
+scripts independently; missing optional images use a text fallback. Each card
+owns its full-path image archive so campaigns with identical image stems cannot
+reuse another campaign's preview. Existing continent-background artwork is used
+when declared; masked continent interaction remains a separate M1 task.
+
+Mission selection shows the saved Available/Locked/Completed state, descriptions
+and a lazy minimap. Refresh preserves file identity. Start revalidates the
+campaign uid, mission order, map/script identity, current progress and full map
+layers before using the existing local host/connecting/lobby path. Title parties
+share the campaign's human tribe. Back preserves the chosen campaign and grid
+page, including keyboard activation. Classic keeps its chooser. Primary still
+owns F7 party routing/integration; F8 online campaigns, F5c scenarios, original S2
+presentation and release/Steam Deck acceptance are separate.
+
+Own GCC12 Debug/Werror max2 build and both complete test binaries pass:
+Test_splitscreen740/503638 and Test_UI165/16137. The new campaign physical suite
+passes12 cases/697 assertions and the catalog suite6/65. Eight real starts cover
+two/four Title controllers through pad A, Continue, Enter and double-click,
+including an occupied-port failure/retry, the exact second mission's map/Lua,
+its executed onStart mission goal, actual shared game views and twelve gameframes
+without client errors or async. Only the original-resource loading desktop is
+bypassed. Layout, missing/reordered/repaired files, locks/progress revocation,
+optional/equal-stem artwork and normal/exceptional cleanup are exercised.
+
+An executed omission of keyboard trail dispatch fails the intended restored-focus
+assertion; omitting required-script validation admits three campaigns instead of
+one and fails the executed catalog assertion. Both guards were restored before
+the final build and full positive tests. A read-only gpt-6.1-sol source review
+found the keyboard trail defect before repair; a final review found no blocker.
+Source review and mocked input do not establish hardware behavior.
+
+Formatter10 equality, repository static validation, include guards, Markdown,
+diff checks and the actual agent TypeScript compiler pass. Local Clang23 reports
+no new-file warning enabled in the CI Clang18 check catalog; newer diagnostics
+are recorded privately without lint/coverage suppressions. Existing CI/runtime
+fault reporting is retained, with no private endpoint in public source. This is
+source/local validation completion only: all17 exact-head checks and both complete
+Unit tests/Static analysis workflows are mandatory before the tested handoff.
+
+F4 CI repair (2026-10-11): all15 Unit-test matrix jobs executed their tests
+successfully at ba171923fa, but gcc-10's test-line coverage gate found three
+unexecuted lines in StartFixture's exceptional cleanup. The page fixture's
+exception probes did not exercise that separate start fixture. A new regression
+starts the real two-controller Mission2 game, reaches a deliberate throw only
+after the game-state assertion, then checks stopped client, restored progress
+and port before fixture destruction. A second real start checks that server/lobby
+state was released. No coverage exclusion or product change is needed. Fresh
+Debug validation and all17/BOTH exact-head CI remain the repaired-head gate.
+The repaired Debug build passes; standalone campaign13/795 and full
+Test_splitscreen741/502376 pass (the new exception case94 assertions in each).
+All nine other campaign source/test files and the Test_UI binary keep their
+saved hashes. Formatter10 equality, static validation, diff and the actual
+agent TypeScript compiler pass. The old failed coverage head is historical;
+its successful jobs cannot substitute for fresh complete CI on this repair.

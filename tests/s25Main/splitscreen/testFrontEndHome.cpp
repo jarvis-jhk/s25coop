@@ -6,8 +6,8 @@
 #include "Loader.h"
 #include "MenuPadFixture.h"
 #include "controls/ctrlButton.h"
-#include "desktops/dskCampaignSelection.h"
 #include "desktops/dskCredits.h"
+#include "desktops/dskFrontEndCampaigns.h"
 #include "desktops/dskFrontEndLoad.h"
 #include "desktops/dskFrontEndMaps.h"
 #include "desktops/dskFrontEndOptions.h"
@@ -135,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(EveryUpstreamDesktopComesBackToItsTile, HomeFixture)
     expectHomeFocusedOn(dskHome::ID_Maps);
 
     choose(dskHome::ID_Campaigns);
-    BOOST_TEST_REQUIRE(desktopAs<dskCampaignSelection>() != nullptr);
+    BOOST_TEST_REQUIRE(desktopAs<dskFrontEndCampaigns>() != nullptr);
     press(pad, PadButton::B);
     expectHomeFocusedOn(dskHome::ID_Campaigns);
 
