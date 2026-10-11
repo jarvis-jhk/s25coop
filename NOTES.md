@@ -1397,3 +1397,29 @@ its successful jobs cannot substitute for fresh complete CI on this repair.
 ## Sol PR53 master reconciliation (2026-10-11)
 
 PR53 reconciliation with integrated PR52: both append-only NOTES entries retained; all five F10 source/test hashes unchanged. Fresh own GCC12 Debug/Werror max2 configure/build passes, loading 11/372, complete splitscreen 752/501982 and UI 165/11827 pass. Static validation, Markdown, diff and actual agent TypeScript compiler pass. Prior all17/BOTH green head is historical; require fresh all17/BOTH on this merge head before tested handoff. F4 is integrated, F7 remains primary-owned; F5c scenario policy, release and hardware acceptance remain separate.
+
+
+## Sol F5c — explicit scenario registration (2026-10-11, source complete; CI pending)
+
+Branch `sol/frontend-scenarios` from integrated master `ab0d2dd1d`, claimed independently of primary F7.
+A scenario is an existing campaign.lua registration with exactly one mission, not a guess from a
+neighboring Lua file. Maps & scenarios adds a Scenarios category; filter counts map tribes, not
+controllers. Catalog isolation/order, current campaign progress and the F4 mission start path are reused.
+The browser retains category/filter/campaign folder through Back and rechecks identity before opening
+its mission page. The mission script owns goals/victory/completion; no synthetic UID or automatic unlock.
+
+Local Debug validation passes: scenario catalog4/40, physical9/782, full splitscreen761/501877,
+full UI169/11474, built in Sol's cache with at most2 compiler jobs. The physical suite starts two/four
+joined controllers through A, mouse, Return and double-click, checks actual mission goal and first GF,
+busy-port retry and both exceptional cleanup paths. The executed negative control removed the browser
+identity guard: its changed-registration case failed at the intended assertion with exit201; guard restored
+and unchanged on the final source. Read-only gpt-6.1-sol review found a repeated-header-read isolation gap;
+CampaignEntry now owns validated metadata and scenario consumers reuse it. Final review: no remaining
+findings. Sort headers were already disabled; physical clicks verify stable registered row identity.
+Actual agent TypeScript gate, static validation, format10, header/private-marker checks and doc lint pass.
+Local LLVM23 tidy has inherited/newer-check noise; final catalog source reruns have no owned diagnostics.
+Exact-head all17 checks and BOTH complete CI workflows plus fresh merge-tree are required for tested handoff.
+Only original S2 resource loading is bypassed in the real-start fixture. No tested handoff yet.
+Packaged art/Steam Deck, F7 full-screen party and F8 online flow remain distinct acceptance/work.
+Scenario authors: doc/coop/Scenarios.md. Existing fault reporting stays in the central ntfy→GitHub path;
+no private reporting URL or personal data is added to public source.

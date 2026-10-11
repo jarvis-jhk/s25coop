@@ -6,12 +6,21 @@
 
 #include "dskFrontEndPage.h"
 #include "frontend/MapCatalog.h"
+#include "frontend/ScenarioCatalog.h"
 
-/// F5b: map browsing stays independent of lobby seating and scenario/campaign registration.
+/// Maps and explicitly registered single-mission campaigns; the existing mission page owns scenario starts.
 class dskFrontEndMaps final : public dskFrontEndPage
 {
 public:
-    dskFrontEndMaps();
+    struct BrowseState
+    {
+        unsigned category = 0;
+        unsigned players = 0;
+        boost::filesystem::path map;
+        boost::filesystem::path scenario;
+    };
+    explicit dskFrontEndMaps(std::shared_ptr<BrowseState> state = std::make_shared<BrowseState>());
+    static constexpr unsigned scenarioCategory = 10;
     enum ControlIds
     {
         ID_Category = ID_FIRST_FREE,
@@ -38,17 +47,20 @@ public:
     void Msg_TableChooseItem(unsigned ctrl_id, unsigned selection) override;
     const frontend::MapCatalog& GetCatalog() const { return catalog_; }
     boost::filesystem::path GetSelectedPath() const;
+    boost::filesystem::path GetSelectedScenarioFolder() const;
 
 protected:
     void OnLayout() override;
     void OnChoose(unsigned ctrl_id) override;
 
 private:
-    void Refresh(const boost::filesystem::path& preferred);
+    void Refresh(boost::filesystem::path preferred);
     void UpdateStatus();
     void UpdateDetails();
     void StartSelected();
     frontend::MapCatalog catalog_;
+    frontend::CampaignCatalog scenarios_;
+    std::shared_ptr<BrowseState> state_;
     bool previewReady_ = false;
     bool layoutUnavailable_ = false;
 };

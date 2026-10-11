@@ -14,6 +14,7 @@
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "driver/KeyEvent.h"
+#include "dskFrontEndMissions.h"
 #include "files.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
@@ -39,18 +40,19 @@ const std::array<const char*, 9> folders = {{s25::folders::mapsOld, s25::folders
                                              s25::folders::mapsPlayed}};
 } // namespace
 
-dskFrontEndMaps::dskFrontEndMaps() : dskFrontEndPage(_("Maps & scenarios"))
+dskFrontEndMaps::dskFrontEndMaps(std::shared_ptr<BrowseState> state)
+    : dskFrontEndPage(_("Maps & scenarios")), state_(std::move(state))
 {
     auto* category = AddComboBox(ID_Category, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, NormalFont, 150);
     for(const auto* label : {_("All maps"), _("Old maps"), _("New maps"), _("Own maps"), _("Continents"), _("Campaign"),
-                             _("RTTR"), _("Other"), _("Sea"), _("Played")})
+                             _("RTTR"), _("Other"), _("Sea"), _("Played"), _("Scenarios")})
         category->AddItem(label);
-    category->SetSelection(0);
+    category->SetSelection(state_->category);
     auto* players = AddComboBox(ID_PlayerFilter, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, NormalFont, 150);
     players->AddItem(_("All tribe counts"));
     for(unsigned count = 1; count <= MAX_PLAYERS; ++count)
         players->AddItem(helpers::format(_("%1% tribes"), count));
-    players->SetSelection(0);
+    players->SetSelection(state_->players);
     AddTable(ID_Maps, DrawPoint(0, 0), Extent(300, 200), TextureColor::Green2, NormalFont,
              {{_("Name"), 80, ctrlTable::SortType::String}, {_("Player"), 20, ctrlTable::SortType::Number}, {}});
     auto* table = GetCtrl<ctrlTable>(ID_Maps);
@@ -67,7 +69,7 @@ dskFrontEndMaps::dskFrontEndMaps() : dskFrontEndPage(_("Maps & scenarios"))
     for(unsigned id = ID_MapName; id <= ID_MapState; ++id)
         AddText(id, DrawPoint(0, 0), "", COLOR_YELLOW, FontStyle{}, NormalFont);
     SetEntryFocus(ID_Maps);
-    Refresh({});
+    Refresh(state_->map);
     Layout();
 }
 
@@ -85,8 +87,16 @@ boost::filesystem::path dskFrontEndMaps::GetSelectedPath() const
     return selection ? boost::filesystem::path(table->GetItemText(*selection, pathColumn)) : boost::filesystem::path{};
 }
 
-void dskFrontEndMaps::Refresh(const boost::filesystem::path& preferred)
+boost::filesystem::path dskFrontEndMaps::GetSelectedScenarioFolder() const
 {
+    const auto selection = GetCtrl<ctrlTable>(ID_Maps)->GetSelection();
+    return selection && *selection < scenarios_.entries.size() ? scenarios_.entries[*selection].folder :
+                                                                 boost::filesystem::path{};
+}
+
+void dskFrontEndMaps::Refresh(boost::filesystem::path preferred)
+{
+    const auto preferredScenario = state_->scenario;
     const unsigned category = *GetCtrl<ctrlComboBox>(ID_Category)->GetSelection();
     const unsigned count = *GetCtrl<ctrlComboBox>(ID_PlayerFilter)->GetSelection();
     std::vector<boost::filesystem::path> sources;
@@ -97,15 +107,33 @@ void dskFrontEndMaps::Refresh(const boost::filesystem::path& preferred)
     }
     if(category == 0 || category == 3)
         sources.push_back(RTTRCONFIG.ExpandPath("WORLDS"));
-    catalog_ = frontend::ScanMaps(sources, count ? std::optional<unsigned>(count) : std::nullopt);
+    const auto filter = count ? std::optional<unsigned>(count) : std::nullopt;
+    scenarios_ = {};
+    if(category == scenarioCategory)
+    {
+        scenarios_ = frontend::ScanScenarios(
+          {RTTRCONFIG.ExpandPath(s25::folders::campaignsBuiltin), RTTRCONFIG.ExpandPath(s25::folders::campaignsUser)},
+          filter);
+        catalog_ = {};
+        for(const auto& scenario : scenarios_.entries)
+            catalog_.entries.push_back(scenario.maps.front());
+        for(const auto& failure : scenarios_.failures)
+            catalog_.failures.push_back({failure.path, failure.reason});
+    } else
+        catalog_ = frontend::ScanMaps(sources, filter);
+    state_->category = category;
+    state_->players = count;
     auto* table = GetCtrl<ctrlTable>(ID_Maps);
     table->DeleteAllItems();
     std::optional<unsigned> chosen;
     for(const auto& map : catalog_.entries)
     {
-        if(map.path == preferred)
-            chosen = table->GetNumRows();
-        table->AddRow({map.name, std::to_string(map.players), map.path.string()});
+        const unsigned row = table->GetNumRows();
+        const bool scenario = row < scenarios_.entries.size();
+        if(map.path == preferred && (!scenario || scenarios_.entries[row].folder == preferredScenario))
+            chosen = row;
+        table->AddRow({scenario ? scenarios_.entries[row].description.name : map.name, std::to_string(map.players),
+                       map.path.string()});
     }
     if(!chosen && table->GetNumRows())
         chosen = 0;
@@ -116,11 +144,15 @@ void dskFrontEndMaps::Refresh(const boost::filesystem::path& preferred)
 
 void dskFrontEndMaps::UpdateStatus()
 {
+    const bool scenarios = state_->category == scenarioCategory;
     GetCtrl<ctrlText>(ID_Status)->SetText(
-      catalog_.entries.empty() ? _("No matching maps") : helpers::format(_("%1% maps"), catalog_.entries.size()));
+      catalog_.entries.empty() ?
+        (scenarios ? _("No matching scenarios") : _("No matching maps")) :
+        helpers::format(scenarios ? _("%1% scenarios") : _("%1% maps"), catalog_.entries.size()));
     if(!catalog_.failures.empty())
         GetCtrl<ctrlText>(ID_Status)->SetText(
-          helpers::format(_("%1% maps; %2% unavailable files"), catalog_.entries.size(), catalog_.failures.size()));
+          helpers::format(scenarios ? _("%1% scenarios; %2% unavailable files") : _("%1% maps; %2% unavailable files"),
+                          catalog_.entries.size(), catalog_.failures.size()));
 }
 
 void dskFrontEndMaps::UpdateDetails()
@@ -129,6 +161,8 @@ void dskFrontEndMaps::UpdateDetails()
     GetCtrl<ctrlButton>(ID_Continue)->SetEnabled(false);
     GetCtrl<ctrlPreviewMinimap>(ID_Preview)->SetMap(nullptr);
     const auto selected = GetSelectedPath();
+    state_->map = selected;
+    state_->scenario = GetSelectedScenarioFolder();
     const auto it =
       helpers::find_if(catalog_.entries, [&selected](const frontend::MapEntry& map) { return map.path == selected; });
     const bool found = it != catalog_.entries.end();
@@ -162,6 +196,16 @@ void dskFrontEndMaps::UpdateDetails()
           helpers::format(_("%1% tribes — %2% × %3%"), fresh.players, fresh.width, fresh.height));
         GetCtrl<ctrlText>(ID_Script)->SetText(fresh.hasScript ? _("Map script present") : _("No map script"));
         GetCtrl<ctrlText>(ID_MapState)->SetText("");
+        if(!state_->scenario.empty())
+        {
+            const auto& campaign = scenarios_.entries.at(*GetCtrl<ctrlTable>(ID_Maps)->GetSelection()).description;
+            GetCtrl<ctrlText>(ID_MapName)->SetText(campaign.name);
+            GetCtrl<ctrlText>(ID_Author)->SetText(campaign.author);
+            GetCtrl<ctrlText>(ID_Script)->SetText(campaign.shortDescription);
+            const auto status = SETTINGS.campaigns.getMissionsStatus(campaign).front();
+            GetCtrl<ctrlText>(ID_MapState)
+              ->SetText(status.conquered ? _("Completed") : (status.playable ? _("Available") : _("Locked")));
+        }
         previewReady_ = true;
         GetCtrl<ctrlButton>(ID_Continue)->SetEnabled(true);
     } catch(const std::runtime_error& error)
@@ -236,7 +280,7 @@ void dskFrontEndMaps::OnLayout()
 
 void dskFrontEndMaps::OnChoose(const unsigned ctrl_id)
 {
-    if(ctrl_id == ID_Continue)
+    if(ctrl_id == ID_Continue || ctrl_id == ID_Maps)
         StartSelected();
     else if(ctrl_id == ID_Refresh)
         Refresh(GetSelectedPath());
@@ -254,7 +298,7 @@ void dskFrontEndMaps::Msg_TableSelectItem(unsigned, const std::optional<unsigned
 
 void dskFrontEndMaps::Msg_TableChooseItem(unsigned, unsigned)
 {
-    StartSelected();
+    Msg_ButtonClick(ID_Maps);
 }
 
 bool dskFrontEndMaps::Msg_PadCommand(const unsigned slot, const PadButton button)
@@ -291,7 +335,7 @@ bool dskFrontEndMaps::Msg_KeyDown(const KeyEvent& ke)
         return true;
     if(ke.kt == KeyType::Return)
     {
-        StartSelected();
+        Msg_ButtonClick(ID_Maps);
         return true;
     }
     return false;
@@ -303,6 +347,24 @@ void dskFrontEndMaps::StartSelected()
        || GetSelectedPath().empty() || GetCtrl<ctrlComboBox>(ID_Category)->IsListOpen()
        || GetCtrl<ctrlComboBox>(ID_PlayerFilter)->IsListOpen())
         return;
+    if(!GetSelectedScenarioFolder().empty())
+    {
+        try
+        {
+            const auto folder = GetSelectedScenarioFolder();
+            const auto fresh = frontend::ReadScenario(folder);
+            const auto& old = scenarios_.entries.at(*GetCtrl<ctrlTable>(ID_Maps)->GetSelection()).description;
+            if(fresh.description.uid != old.uid || fresh.description.getMapFilePath(0) != GetSelectedPath()
+               || fresh.description.getLuaFilePath(0) != old.getLuaFilePath(0))
+                throw std::runtime_error(_("Scenario changed. Refresh before choosing a mission."));
+            Open([folder] { return std::make_unique<dskFrontEndMissions>(folder); });
+        } catch(const std::runtime_error& error)
+        {
+            WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), error.what(), nullptr, MsgboxButton::Ok,
+                                                          MsgboxIcon::ExclamationRed));
+        }
+        return;
+    }
     UpdateDetails();
     const CreateServerInfo csi(ServerType::Local, SETTINGS.server.localPort, _("Unlimited Play"));
     if(previewReady_ && GAMECLIENT.HostGame(csi, {GetSelectedPath(), MapType::OldMap}))

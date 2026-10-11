@@ -15,14 +15,14 @@ namespace frontend {
 
 CampaignEntry ReadCampaign(const boost::filesystem::path& folder)
 {
-    CampaignEntry entry{folder.lexically_normal(), {}};
+    CampaignEntry entry{folder.lexically_normal(), {}, {}};
     if(!CampaignDataLoader(entry.description, entry.folder).Load())
         throw std::runtime_error("Invalid campaign description");
     if(entry.description.getNumMaps() == 0)
         throw std::runtime_error("Campaign has no missions");
     for(unsigned i = 0; i < entry.description.getNumMaps(); ++i)
     {
-        ReadMapEntry(entry.description.getMapFilePath(i));
+        entry.maps.push_back(ReadMapEntry(entry.description.getMapFilePath(i)));
         boost::system::error_code error;
         const auto script = entry.description.getLuaFilePath(i);
         if(!boost::filesystem::is_regular_file(script, error))
