@@ -54,7 +54,7 @@ protected:
     void OnChoose(unsigned ctrl_id) override;
 
 private:
-    void Refresh(boost::filesystem::path preferred);
+    void Refresh(const boost::filesystem::path& preferred);
     void UpdateStatus();
     void UpdateDetails();
     void StartSelected();

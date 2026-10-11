@@ -69,7 +69,9 @@ dskFrontEndMaps::dskFrontEndMaps(std::shared_ptr<BrowseState> state)
     for(unsigned id = ID_MapName; id <= ID_MapState; ++id)
         AddText(id, DrawPoint(0, 0), "", COLOR_YELLOW, FontStyle{}, NormalFont);
     SetEntryFocus(ID_Maps);
-    Refresh(state_->map);
+    // Clearing the table notifies selection handlers, which can reset the shared browser state.
+    const auto preferredMap = state_->map;
+    Refresh(preferredMap);
     Layout();
 }
 
@@ -94,7 +96,7 @@ boost::filesystem::path dskFrontEndMaps::GetSelectedScenarioFolder() const
                                                                  boost::filesystem::path{};
 }
 
-void dskFrontEndMaps::Refresh(boost::filesystem::path preferred)
+void dskFrontEndMaps::Refresh(const boost::filesystem::path& preferred)
 {
     const auto preferredScenario = state_->scenario;
     const unsigned category = *GetCtrl<ctrlComboBox>(ID_Category)->GetSelection();

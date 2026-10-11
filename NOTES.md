@@ -1445,3 +1445,16 @@ F7b remains primary next; Sol's F5c scenario work and claims remain separate.
 ## Sol PR54 release-note reconciliation (2026-10-11)
 
 Merged master 39db483b5 after the v0.1.16 verification note conflicted with the F5c note. Both notes and the release changelog are retained. All nine scenario source/test hashes and the other three scenario documentation hashes remain unchanged. Own Debug max2 build completed; catalog4/40, physical9/782, full splitscreen761/505007, UI169/10490 pass. Actual agent TypeScript compiler and diff checks pass. Prior ace99d725 CI is historical; fresh all17 checks and BOTH successful workflows on this reconciliation head remain mandatory before tested handoff.
+
+
+## Sol PR54 Clang-Tidy repair (2026-10-11)
+
+Exact-head dbea0909f passed the complete Unit tests workflow, but CI18 Static analysis failed
+on performance-unnecessary-value-param in dskFrontEndMaps::Refresh. Use a const reference
+and snapshot the constructor's preferred map before DeleteAllItems selection callbacks can
+reset shared browser state. Existing physical Back checks preserve the non-first Zulu scenario.
+Own Debug max2 rebuild completed; catalog4/40, physical9/782, full splitscreen761/503190
+and UI169/28547 pass. Targeted performance Clang-Tidy, format10 and actual agent TypeScript
+pass. Other seven scenario source/test files are unchanged. Prior CI evidence is historical;
+fresh all17 checks and BOTH successful workflows on the repaired head remain required before
+ready/tested handoff. No lint suppression or extra test exclusions were added.
