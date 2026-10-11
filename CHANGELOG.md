@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.16
 
 - Games started from the new menus now keep the full-screen layout while loading, with the map
   title, joined players, loading status and controller tips. Loading errors can be acknowledged
