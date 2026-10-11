@@ -222,6 +222,9 @@ starting the game and playing it are still upstream's mouse screens with control
     existing local campaign host/lobby path. Physical Debug validation, complete exact-head CI and primary
     review/integration are the gate; F7 adoption, M1 masked continents/original presentation and Deck
     acceptance remain separate. Classic/network campaign menus stay available.
+    F4 coverage repair: separate real-start exceptional cleanup now exercised without exclusions;
+    physical Debug13/795 and complete splitscreen741/502376 pass. Product source and UI binary
+    remain unchanged; fresh all17/BOTH CI on the repaired head is still required before handoff.
   - ◐ F5 maps & scenarios browser (Sol):
     - F5a header-only map catalog on `sol/frontend-map-catalog`: SWD/WLD discovery, stable file identity,
       name/path sorting, exact tribe-count filter, malformed/unsupported map isolation and adjacent-script marker.

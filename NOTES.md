@@ -1286,3 +1286,19 @@ are recorded privately without lint/coverage suppressions. Existing CI/runtime
 fault reporting is retained, with no private endpoint in public source. This is
 source/local validation completion only: all17 exact-head checks and both complete
 Unit tests/Static analysis workflows are mandatory before the tested handoff.
+
+F4 CI repair (2026-10-11): all15 Unit-test matrix jobs executed their tests
+successfully at ba171923fa, but gcc-10's test-line coverage gate found three
+unexecuted lines in StartFixture's exceptional cleanup. The page fixture's
+exception probes did not exercise that separate start fixture. A new regression
+starts the real two-controller Mission2 game, reaches a deliberate throw only
+after the game-state assertion, then checks stopped client, restored progress
+and port before fixture destruction. A second real start checks that server/lobby
+state was released. No coverage exclusion or product change is needed. Fresh
+Debug validation and all17/BOTH exact-head CI remain the repaired-head gate.
+The repaired Debug build passes; standalone campaign13/795 and full
+Test_splitscreen741/502376 pass (the new exception case94 assertions in each).
+All nine other campaign source/test files and the Test_UI binary keep their
+saved hashes. Formatter10 equality, static validation, diff and the actual
+agent TypeScript compiler pass. The old failed coverage head is historical;
+its successful jobs cannot substitute for fresh complete CI on this repair.

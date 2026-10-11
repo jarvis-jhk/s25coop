@@ -676,4 +676,25 @@ BOOST_FIXTURE_TEST_CASE(FourControllersShareTheCampaignTribeThroughEveryInput, S
         checked([&] { host(4, input); });
 }
 
+BOOST_FIXTURE_TEST_CASE(ExceptionAfterCampaignStartStopsTheGameAndRestoresSettings, StartFixture)
+{
+    bool reached = false;
+    BOOST_CHECK_THROW(checked([&] {
+                          host(2, 0);
+                          BOOST_TEST_REQUIRE((GAMECLIENT.GetState() == ClientState::Game));
+                          SETTINGS.campaigns.setChapterCompleted("f4-start-probe", 2);
+                          reached = true;
+                          cleanupProbe();
+                      }),
+                      std::runtime_error);
+    BOOST_TEST_REQUIRE(reached);
+    BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+    BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+    BOOST_TEST((SETTINGS.campaigns.createSaveData() == savedCampaigns.createSaveData()));
+    BOOST_TEST(SETTINGS.server.localPort == savedPort);
+    // A fresh real start also checks that exceptional cleanup released the server and its lobby state.
+    checked([&] { host(2, 0); });
+    BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
