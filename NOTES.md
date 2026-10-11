@@ -1243,3 +1243,41 @@ notifications in other combo users. All17 exact-head CI checks green. Merged loc
 2376833e4 and re-ran in my own Debug cache: full Test_splitscreen and Test_UI pass. Minor nit,
 not blocking: the WORLDS directory is scanned for "Own maps" too, while the comment says "All".
 Next: F7 full-screen party (primary), F5c scenarios/campaign registration, random maps; no release yet.
+
+
+## Sol F10 full-screen loading and failure recovery (2026-10-11)
+
+Home-started games now retain the common full-screen frame while loading: exact
+client map title, joined-controller strip, actual stage and server wait, an
+economy tip and an in-game controller legend. The frame has an explicit Classic
+opt-out, preserving original artwork, scaling and accumulating messages without
+skipping an overridden parent virtual method. All other pages retain the default
+frame. Content wraps inside the shared layout, with small-render entry and real
+resize/queued-activation recovery. No new confirmation is added before play.
+
+The existing timed loader creates actual game views/postboxes before GameLoaded,
+then uses the real server start callback. Two/four-controller tests observe the
+mission script's initial goal, shared view/router ids and twelve synchronized
+frames. Resource/view/connection faults stop loading and show one controller or
+mouse acknowledgement. Inactive and reentrant faults preserve the failure text
+and cannot restart the timer or enter GameLoaded. Loading retains queued pad
+input; error A/B bursts do not act on the next page. Classic start/error paths
+and a deliberate real-start exceptional-cleanup/restart are exercised.
+
+Own GCC12 Debug/Werror max2 build passes. Physical11/372, complete
+Test_splitscreen739/503161 and Test_UI159/15349 pass after the final framework change.
+Omitting the reentrant status guard fails the two intended Loading-failed
+assertions; the guard is restored before final positive validation. A read-only
+exact gpt-6.1-sol review found the reentrant defect before repair and no final
+blocker. Original S2 graphics loading/rendering is the sole fixture bypass;
+these tests do not establish packaged rendering or Steam Deck hardware behavior.
+
+Formatter10 equality, repository static validation, include guards, Markdown,
+diff and actual agent TypeScript compiler pass. Local Clang23's loader-destructor
+warning also reproduces on independently supplied unchanged master source; the
+other recorded newer/inherited diagnostics do not justify suppressions. Fresh
+all17 exact-head checks and BOTH complete Unit tests/Static analysis workflows
+remain mandatory before ready/tested handoff. No lint or coverage exclusions
+are added. Existing installer/runtime-exit and CI fault reporting is retained;
+no private endpoint enters public source. F4 integration, F5c scenario registration,
+F7 party and release/hardware acceptance remain separate, primary-owned work.

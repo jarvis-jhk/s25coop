@@ -259,7 +259,12 @@ starting the game and playing it are still upstream's mouse screens with control
     `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
     Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption
     remain separate deferred work; legacy driver/proxy/portrait/addon controls stay under Advanced settings.
-  - ☐ F10 loading screen: mission/map title, tip, controller layout; then the game
+  - ◐ F10 loading screen (Sol): existing timed loader in the full-screen frame, exact client map title,
+    party strip, actual stage/wait, economy tip and in-game controller legend. Resize and error acknowledgement
+    preserve the real GameLoaded/mission-goal/game-start ordering; Classic retains its presentation.
+    Own Debug physical11/372, splitscreen739/503161 and UI159/15349 pass; fresh all17/BOTH CI is the handoff gate. Original graphics and
+    Deck acceptance remain separate. F5c needs the pending F4 campaign bridge before implementation;
+    F10 uses fresh master and disjoint loader/test scopes while primary owns F7 and F4 integration.
   - ☐ F11 living background behind title/home (former 5a–5d: decouple from the lobby client, recorded AI replay
     with a camera script, ambient sound, Deck fps cap/still option, one scene per nation/campaign)
   - ☐ F12 retire the old desktops from the default path once every route has parity

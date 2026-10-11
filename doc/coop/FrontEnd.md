@@ -225,3 +225,31 @@ Home return and real local-game start with two and four joined controllers. The
 four-controller case uses a three-tribe map and explicitly chooses one tribe
 together in the existing lobby. Only original-resource loading is bypassed in the
 start tests. These are mock-driver tests, not Steam Deck hardware acceptance.
+
+## Loading (F10)
+
+`dskGameLoader` uses the shared full-screen frame after Home, with the exact
+client map title, joined-controller strip, current loading stage, an economy tip
+and a short in-game controller legend. The layout uses render units, wraps the
+tip/legend and keeps them within the content area at 800×600 and 1280×800.
+Insufficient content space hides those blocks; resizing back restores them.
+Classic keeps its existing random artwork and accumulating status messages.
+
+The real timed loading sequence is retained: prepare tribes, load game resources,
+create the actual game views and their postboxes, then call `GameLoaded` and wait
+for the server's start. Mission `onStart` can therefore deliver its initial goal
+before the first simulation frames. Waiting is a genuine client/server state,
+not an invented percentage or another confirmation screen.
+
+While loading, the desktop takes no controller input, preserving queued device
+events for the game. Escape, Enter and clicks cannot leave the loading handshake.
+A resource, view or connection failure stops the timer, keeps the failure status
+and opens one acknowledgement modal. The controller can confirm it with A; mouse
+confirmation also works. Reentrant failures cannot restart the timer or continue
+into `GameLoaded`. Return keeps the existing local/lobby/direct-IP policy.
+
+`testFrontEndLoading.cpp` exercises the actual timer and local server/client with
+two and four shared views, mission-goal delivery and first gameframes. Its sole
+bypass is original S2 resource loading/rendering. These tests do not establish
+packaged graphics, native hardware or Steam Deck acceptance. F7 party integration,
+F5c scenario registration and F4 campaign integration remain separate work.

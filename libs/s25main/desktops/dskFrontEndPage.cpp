@@ -33,11 +33,12 @@ unsigned lineHeight()
 }
 } // namespace
 
-dskFrontEndPage::dskFrontEndPage(const std::string& title)
-    : Desktop(nullptr), pageBackground_(LOADER.GetImageN("menu", 0))
+dskFrontEndPage::dskFrontEndPage(const std::string& title, const bool useFrame)
+    : Desktop(nullptr), useFrame_(useFrame), pageBackground_(LOADER.GetImageN("menu", 0))
 {
     // Positions are actual render units (Layout), not an 800×600 design scaled up by the window.
-    SetScale(false);
+    if(useFrame_)
+        SetScale(false);
     AddTextButton(ID_btBack, DrawPoint(0, 0), backButtonSize, TextureColor::Red1, _("Back"), NormalFont);
     AddText(ID_txtTitle, DrawPoint(0, 0), title, COLOR_YELLOW, FontStyle::LEFT | FontStyle::VCENTER, LargeFont);
     Layout();
@@ -148,7 +149,7 @@ void dskFrontEndPage::SetActive(const bool activate)
 {
     Desktop::SetActive(activate);
     const Extent renderSize = VIDEODRIVER.GetRenderSize();
-    if(activate && GetSize() != renderSize)
+    if(useFrame_ && activate && GetSize() != renderSize)
     {
         Resize(renderSize);
         Layout();
@@ -206,6 +207,12 @@ void dskFrontEndPage::SetTitle(const std::string& title)
 
 void dskFrontEndPage::Layout()
 {
+    if(!useFrame_)
+    {
+        GetCtrl<Window>(ID_btBack)->SetVisible(false);
+        GetCtrl<Window>(ID_txtTitle)->SetVisible(false);
+        return;
+    }
     frame_ = frontend::LayoutFrame(GetSize(), footerLines, lineHeight());
     const Rect& header = frame_.header;
     const int headerMid = header.top + static_cast<int>(header.getSize().y / 2);
@@ -253,6 +260,11 @@ std::vector<brief::KeyHint> dskFrontEndPage::FooterKeys(const FocusPath& focus) 
 
 void dskFrontEndPage::Draw_()
 {
+    if(!useFrame_)
+    {
+        Desktop::Draw_();
+        return;
+    }
     if(pageBackground_)
         pageBackground_->DrawFull(GetDrawRect());
     DrawRectangle(frame_.header, barColor);
