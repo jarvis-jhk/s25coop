@@ -9,6 +9,7 @@
 #include "desktops/dskCampaignSelection.h"
 #include "desktops/dskCredits.h"
 #include "desktops/dskFrontEndLoad.h"
+#include "desktops/dskFrontEndMaps.h"
 #include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMainMenu.h"
@@ -129,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE(EveryUpstreamDesktopComesBackToItsTile, HomeFixture)
     enter();
     // Maps first: Campaigns is also where the pad starts, so it would not prove the restore.
     choose(dskHome::ID_Maps);
-    BOOST_TEST_REQUIRE(desktopAs<dskSelectMap>() != nullptr);
+    BOOST_TEST_REQUIRE(desktopAs<dskFrontEndMaps>() != nullptr);
     press(pad, PadButton::B);
     expectHomeFocusedOn(dskHome::ID_Maps);
 

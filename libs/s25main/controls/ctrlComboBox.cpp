@@ -119,10 +119,10 @@ bool ctrlComboBox::Msg_LeftDown(const MouseCoords& mc)
     // FEHLER: ein Klick auf den BEREITS AUSGEWAEHLTEN Eintrag aenderte nichts, also meldete
     // ctrlList::SetSelection nichts, also lief das einzige ShowList(false) des Auswahlpfads
     // (Msg_ListSelectItem) nie - die Liste blieb offen stehen, obwohl der Spieler gewaehlt
-    // hatte. Mit der RECHTEN Maustaste ging es, weil Msg_RightDown genau diese Absicherung
-    // seit jeher hat. Hier ist sie fuer die linke.
+    // hatte. Activate commits a changed keyboard/pad preview too: closing alone left the
+    // displayed value ahead of the parent's actual value after mixed input.
     if(!readonly && list->IsVisible() && IsPointInRect(mc.pos, list->GetDrawRect()))
-        ShowList(false);
+        Activate();
     return ret;
 }
 
@@ -139,12 +139,10 @@ bool ctrlComboBox::Msg_RightDown(const MouseCoords& mc)
     // Für Button und Liste weiterleiten (und danach erst schließen)
     bool ret = RelayMouseMessage(&Window::Msg_RightDown, mc);
 
-    // Clicked on list -> close it
-    if(!readonly && IsPointInRect(mc.pos, list->GetDrawRect()))
-    {
-        // Liste wieder ausblenden
-        ShowList(false);
-    }
+    // A changed row already notified and closed the list in Msg_ListSelectItem.
+    // The still-open case is an unchanged highlight; commit its staged value once.
+    if(!readonly && list->IsVisible() && IsPointInRect(mc.pos, list->GetDrawRect()))
+        Activate();
 
     return ret;
 }

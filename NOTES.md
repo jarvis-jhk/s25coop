@@ -1191,3 +1191,55 @@ rebuild after CMake reconfigure passed, followed by all six affected/new network
 and the complete merged Test_splitscreen suite. Source, docs and both binary hashes are
 checkpointed privately. Fresh exact-head CI on the resulting merge remains mandatory;
 the prior inherited Win32 bind failure and unaccepted403 rerun are historical.
+
+
+## Sol F5b full-screen maps browser (2026-10-10)
+
+Home Maps & scenarios now opens the shared full-screen frame with all nine map
+categories, exact map-tribe filters, stable selected-file Refresh, lazy selected
+minimap, details and adjacent-script marker. Controllers joined at Title do not
+filter tribes. A, Enter, double-click and Continue revalidate the selected map
+and use the existing local host/connecting/lobby flow. Broken headers and layers
+remain isolated; repaired files recover. Classic keeps its original picker.
+The lobby handles individual local tribes and an explicit shared-tribe choice
+when more controllers join than map tribes. Full-screen F7 remains primary-owned,
+and F5c scenario registration/unlocks, random maps and hardware acceptance are open.
+
+The physical suite exercises keyboard/mouse/pad filter commit/cancel, identity,
+80-row browsing, layer errors/repair/replacement, footer-bounded open dropdowns,
+real resize and small-render entry/recovery, normal/exceptional settings cleanup,
+and real two/four-controller starts through every start input. Start tests force
+an occupied-port failure then retry through Home, select the original map even
+when Played already holds a copy, and await the actual AI/Dummy seat broadcasts.
+Only the original-resource loading desktop is bypassed; real game view ids,
+router slots and twelve synchronized gameframes with no errors/async are checked.
+
+A supplied-source read-only gpt-6.1-sol review found a shared combo defect: mouse
+acceptance of the already highlighted pad/keyboard preview only closed the list
+and did not notify its parent. An executed unchanged-control negative failed four
+intended catalog/path assertions across both mouse buttons. The still-open mouse
+paths now use Activate, preserving single notification when changing rows already
+closed the list. The positive regression covers both left and right acceptance.
+Further reviews prompted small-area guards, exact double-click target checks and
+cleanup assertions; source review is not runtime proof.
+
+Local Sol GCC12 Debug/Werror max2 build passes. All18 new physical cases/915 assertions,
+complete Test_splitscreen728/502583 and Test_UI159/17125 pass on the saved source
+and binary hashes. The tiny-entry case separately passes221 assertions, including
+an explicit guard that the content is too small. Formatter10 equality, repository
+static validation, include guards, markdown, diff and the actual agent TypeScript
+compiler pass. Local Clang23 checks report only inherited/newer-than-CI18 rules;
+fresh exact-head all17 checks and both complete Unit tests/Static analysis
+workflows remain the handoff gate.
+Existing CI/runtime fault reporting is retained; no private report endpoint is
+published in the source. No release or Steam Deck hardware result is claimed.
+
+## 2026-10-11 — PR51 integrated (full-screen maps browser)
+Primary review of Sol PR51 at 8b883d93c: Home → Maps & scenarios now opens dskFrontEndMaps
+(nine Classic categories, map-tribe filter, lazy preview, revalidation on Continue, existing
+local host flow). ctrlComboBox mouse accept on an unchanged highlighted row now goes through
+Activate, which only notifies the parent when the value changed since opening — no extra
+notifications in other combo users. All17 exact-head CI checks green. Merged locally into
+2376833e4 and re-ran in my own Debug cache: full Test_splitscreen and Test_UI pass. Minor nit,
+not blocking: the WORLDS directory is scanned for "Own maps" too, while the comment says "All".
+Next: F7 full-screen party (primary), F5c scenarios/campaign registration, random maps; no release yet.
