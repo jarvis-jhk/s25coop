@@ -236,8 +236,14 @@ starting the game and playing it are still upstream's mouse screens with control
       Local Debug physical18/915, complete splitscreen728/502583 and UI159/17125 pass;
       exact-head all17/BOTH CI required before tested handoff.
       Joined controllers do not imply the same number of map tribes; the current lobby owns that choice.
-    - F5c one-mission scenario start policy and campaign presentation: a neighboring Lua script alone does not
-      register a campaign or establish unlocks; define the campaign bridge before claiming that behavior.
+    - ◐ F5c scenarios on `sol/frontend-scenarios`: explicit `campaign.lua` registration with exactly one mission,
+      Scenarios category, metadata isolation, exact tribe filter and saved Available/Locked/Completed state.
+      Browser identity recheck → F4 mission description/start → existing local party sharing the human tribe;
+      neighboring Lua alone creates no campaign/UID/unlocks. Back restores category/filter/folder selection.
+      Local Debug catalog4/40, physical9/782, full splitscreen761/501877 and UI169/11474 pass;
+      executed missing-identity-guard negative control fails as intended. Fresh all17/BOTH CI and clean
+      master compatibility are required before tested handoff.
+      Packaging/API: [Scenarios](doc/coop/Scenarios.md). Multi-human scenarios and F8 online adoption are separate.
   - ◐ F6 load game (Sol): F6a full-screen metadata browser on `sol/frontend-save-browser`: scrollable newest-first
     save list, map/date/game-time/human+AI details, Refresh preserves file identity, Load/Continue use the real
     client/connecting/current-lobby path. Physical repaired Debug11/901 and affected69/2484 pass; unchanged catalog4/42 and UI150/11010

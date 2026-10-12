@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "MapCatalog.h"
 #include "gameData/CampaignDescription.h"
 #include <boost/filesystem/path.hpp>
 #include <string>
@@ -15,6 +16,8 @@ struct CampaignEntry
 {
     boost::filesystem::path folder;
     CampaignDescription description;
+    /// Validated headers in mission order; discovery consumers must not reread outside isolation.
+    std::vector<MapEntry> maps;
 };
 
 struct CampaignFailure

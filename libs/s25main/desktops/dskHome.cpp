@@ -118,7 +118,11 @@ void dskHome::OnChoose(const unsigned ctrl_id)
                 return std::make_unique<dskFrontEndCampaigns>(selection);
             });
             break;
-        case ID_Maps: Open([] { return std::make_unique<dskFrontEndMaps>(); }); break;
+        case ID_Maps:
+            Open([state = std::make_shared<dskFrontEndMaps::BrowseState>()] {
+                return std::make_unique<dskFrontEndMaps>(state);
+            });
+            break;
         case ID_Load: Open([] { return std::make_unique<dskFrontEndLoad>(); }); break;
         case ID_Online: WINDOWMANAGER.Switch(std::make_unique<dskMultiPlayer>()); break;
         case ID_Options: Open([] { return std::make_unique<dskFrontEndOptions>(); }); break;

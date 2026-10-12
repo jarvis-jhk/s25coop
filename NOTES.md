@@ -1439,6 +1439,32 @@ its successful jobs cannot substitute for fresh complete CI on this repair.
 PR53 reconciliation with integrated PR52: both append-only NOTES entries retained; all five F10 source/test hashes unchanged. Fresh own GCC12 Debug/Werror max2 configure/build passes, loading 11/372, complete splitscreen 752/501982 and UI 165/11827 pass. Static validation, Markdown, diff and actual agent TypeScript compiler pass. Prior all17/BOTH green head is historical; require fresh all17/BOTH on this merge head before tested handoff. F4 is integrated, F7 remains primary-owned; F5c scenario policy, release and hardware acceptance remain separate.
 
 
+## Sol F5c — explicit scenario registration (2026-10-11, source complete; CI pending)
+
+Branch `sol/frontend-scenarios` from integrated master `ab0d2dd1d`, claimed independently of primary F7.
+A scenario is an existing campaign.lua registration with exactly one mission, not a guess from a
+neighboring Lua file. Maps & scenarios adds a Scenarios category; filter counts map tribes, not
+controllers. Catalog isolation/order, current campaign progress and the F4 mission start path are reused.
+The browser retains category/filter/campaign folder through Back and rechecks identity before opening
+its mission page. The mission script owns goals/victory/completion; no synthetic UID or automatic unlock.
+
+Local Debug validation passes: scenario catalog4/40, physical9/782, full splitscreen761/501877,
+full UI169/11474, built in Sol's cache with at most2 compiler jobs. The physical suite starts two/four
+joined controllers through A, mouse, Return and double-click, checks actual mission goal and first GF,
+busy-port retry and both exceptional cleanup paths. The executed negative control removed the browser
+identity guard: its changed-registration case failed at the intended assertion with exit201; guard restored
+and unchanged on the final source. Read-only gpt-6.1-sol review found a repeated-header-read isolation gap;
+CampaignEntry now owns validated metadata and scenario consumers reuse it. Final review: no remaining
+findings. Sort headers were already disabled; physical clicks verify stable registered row identity.
+Actual agent TypeScript gate, static validation, format10, header/private-marker checks and doc lint pass.
+Local LLVM23 tidy has inherited/newer-check noise; final catalog source reruns have no owned diagnostics.
+Exact-head all17 checks and BOTH complete CI workflows plus fresh merge-tree are required for tested handoff.
+Only original S2 resource loading is bypassed in the real-start fixture. No tested handoff yet.
+Packaged art/Steam Deck, F7 full-screen party and F8 online flow remain distinct acceptance/work.
+Scenario authors: doc/coop/Scenarios.md. Existing fault reporting stays in the central ntfy→GitHub path;
+no private reporting URL or personal data is added to public source.
+
+
 ## Verified v0.1.16 release (2026-10-11)
 
 v0.1.16 is published and ready to install: full-screen loading, controller
@@ -1454,3 +1480,21 @@ nonempty byte counts: Install-s25coop.desktop625, Linux x86_64 tarball44782174,
 Windows x64 ZIP34515559. [Release/downloads](https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.16).
 These checks establish published downloads, not Steam Deck hardware acceptance.
 F7b remains primary next; Sol's F5c scenario work and claims remain separate.
+
+
+## Sol PR54 release-note reconciliation (2026-10-11)
+
+Merged master 39db483b5 after the v0.1.16 verification note conflicted with the F5c note. Both notes and the release changelog are retained. All nine scenario source/test hashes and the other three scenario documentation hashes remain unchanged. Own Debug max2 build completed; catalog4/40, physical9/782, full splitscreen761/505007, UI169/10490 pass. Actual agent TypeScript compiler and diff checks pass. Prior ace99d725 CI is historical; fresh all17 checks and BOTH successful workflows on this reconciliation head remain mandatory before tested handoff.
+
+
+## Sol PR54 Clang-Tidy repair (2026-10-11)
+
+Exact-head dbea0909f passed the complete Unit tests workflow, but CI18 Static analysis failed
+on performance-unnecessary-value-param in dskFrontEndMaps::Refresh. Use a const reference
+and snapshot the constructor's preferred map before DeleteAllItems selection callbacks can
+reset shared browser state. Existing physical Back checks preserve the non-first Zulu scenario.
+Own Debug max2 rebuild completed; catalog4/40, physical9/782, full splitscreen761/503190
+and UI169/28547 pass. Targeted performance Clang-Tidy, format10 and actual agent TypeScript
+pass. Other seven scenario source/test files are unchanged. Prior CI evidence is historical;
+fresh all17 checks and BOTH successful workflows on the repaired head remain required before
+ready/tested handoff. No lint suppression or extra test exclusions were added.
