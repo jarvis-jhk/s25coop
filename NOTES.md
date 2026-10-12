@@ -1671,3 +1671,14 @@ throwaway GameWorldViewer unsubscribes on destruction. No findings. Primary Debu
 Test_UI174 and Test_splitscreen763 pass. Not yet released; player-visible CHANGELOG entry
 belongs with the next release. F7b party work on feature/f7b-party must merge this master
 (docs conflict only) before its own handoff.
+
+## PR57 integrated: F8a online entry and direct join (2026-10-12)
+
+Opus reviewed Sol's PR57 (exact head 324f2b2c6, all17 checks, Unit tests 38246551858 and
+Static analysis 38246551785 green) and merged it into master; libs/tests/doc identical to the
+tested head. Review: Connect mirrors iwDirectIPConnect (lastIP/ipv6 persisted, port and password
+not, coop leader COOP_LEADER_HOST, scoped onError connection resets the button and shows the
+error); Create keeps the proxy refusal. Codex gpt-6.1-sol diff review: no actionable findings.
+Primary Debug max2: Test_splitscreen and Test_UI pass. Not yet released; the player-visible
+CHANGELOG entry belongs with the next release. Follow-up from Sol: inherited AI_ADDRCONFIG
+resolver rejects numeric ::1 on IPv6-only-loopback hosts (not addressed).
