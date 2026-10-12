@@ -3,6 +3,11 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## 0.1.17
+
+- The new game options for mines and soldiers from Return to the Roots are now shown in German
+  too, when the game runs in German.
+
 ## 0.1.16
 
 - Games started from the new menus now keep the full-screen layout while loading, with the map

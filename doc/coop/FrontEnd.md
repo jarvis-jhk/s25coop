@@ -276,6 +276,31 @@ four-controller case uses a three-tribe map and explicitly chooses one tribe
 together in the existing lobby. Only original-resource loading is bypassed in the
 start tests. These are mock-driver tests, not Steam Deck hardware acceptance.
 
+## Scenarios (F5c)
+
+Maps & scenarios has a Scenarios category for explicitly registered one-mission
+campaigns from the built-in and user campaign directories. It does not infer
+campaigns from adjacent map scripts. Discovery, ordering, file validation and
+saved progress reuse F4; the tribe-count filter describes map tribes, not shared
+controllers. The selected scenario shows its name, author, short description,
+preview and Available / Locked / Completed state.
+
+A, Return, double-click or Continue opens the existing mission page with its
+full description and start policy. The browser first rechecks that registration
+still has one mission and retains the selected UID/map/script identity; changed
+registrations require Refresh. Mission start rechecks progress and layers, then
+uses the real local host/connecting/lobby and shared Title party. No new save or
+network format, synthetic UID, unlock policy or automatic completion is introduced.
+Back reconstructs the same category, tribe filter and selected campaign folder.
+Ordinary map categories and Classic remain available. A directory missing required
+files is isolated and can be repaired with Refresh.
+
+[Scenario packaging and script responsibilities](Scenarios.md). The current
+campaign schema supports one human tribe. Multi-human scenarios, F7's party page,
+F8 online front-end hosting, packaged S2 rendering and hardware acceptance are
+separate work. Physical tests cover two/four joined controllers and their real
+mission goal and gameframes, bypassing only original-resource loading.
+
 ## Loading (F10)
 
 `dskGameLoader` uses the shared full-screen frame after Home, with the exact
