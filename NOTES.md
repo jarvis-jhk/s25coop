@@ -59,6 +59,17 @@ all seven own source/test hashes. Sol pushes a draft sol/frontend-online-direct 
 and requires all17 successful exact-head checks plus BOTH completed successful
 Unit tests/Static analysis workflows before primary handoff; never merges its PR.
 
+PR57 Windows portability repair: all four native Windows jobs on b20324e30
+failed during Build at dskFrontEndConnect.cpp:141 (MSVC C2668), before tests.
+The error callback now explicitly qualifies this->GetCtrl to select the mutable
+member overload. No user behavior, tests or shared Window API changes. Rebuilt own
+Debug max2 Test_splitscreen and reran Online/Home:15 cases/565 assertions pass,
+including real failed-password retry, Abort/retry and host-tribe membership.
+Format10, whitespace and actual agent TypeScript compiler pass before commit.
+The full780-case and negative-control evidence above belongs to the original
+head; repaired-head native Windows and fresh all17/BOTH CI remain pending.
+No infrastructure retry was used for this deterministic source compile error.
+
 ## 2026-10-12 — Sol PR56 master reconciliation
 
 Merged master `33be33dff756b6f0738d2d5b8feca534252cdb4b` after primary

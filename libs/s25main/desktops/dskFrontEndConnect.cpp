@@ -138,7 +138,7 @@ void dskFrontEndConnect::OnChoose(const unsigned id)
     auto& connecting = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(ServerType::Direct, nullptr));
     onErrorConnection_ = connecting.onError.connect([this](ClientError error) {
         connecting_ = false;
-        GetCtrl<ctrlButton>(ID_Connect)->SetEnabled();
+        this->GetCtrl<ctrlButton>(ID_Connect)->SetEnabled();
         SetStatus(ClientErrorToStr(error), COLOR_RED);
     });
 }
