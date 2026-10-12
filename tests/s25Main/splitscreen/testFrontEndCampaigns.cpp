@@ -13,8 +13,8 @@
 #include "desktops/dskCampaignSelection.h"
 #include "desktops/dskFrontEndCampaigns.h"
 #include "desktops/dskFrontEndMissions.h"
-#include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
+#include "desktops/dskParty.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
 #include "driver/KeyEvent.h"
@@ -295,10 +295,9 @@ struct StartFixture : rttr::test::LocalGameFixture, CampaignFixture
                 key(KeyType::Return);
                 BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == connecting);
             }
-            ready = until([] {
-                        return desktopAs<dskGameLobby>() || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow());
-                    })
-                    && desktopAs<dskGameLobby>();
+            ready =
+              until([] { return desktopAs<dskParty>() || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()); })
+              && desktopAs<dskParty>();
             if(!ready)
             {
                 occupied.Close();

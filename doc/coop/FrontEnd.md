@@ -87,7 +87,17 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   behavior. This is the existing lobby with party carry-over, not the full-screen F7 page yet.
 - Seats (F7a): `frontend/LocalSeats` holds who sits where in a self-hosted local game and writes it into the
   game state (additional local players or shared views, slot states, pad view slots). It shows nothing;
-  dskGameLobby draws its cards from it, and the F7b party page is to do the same.
+  dskGameLobby draws its cards from it, and the F7b party page does the same.
+- Party (F7b, `dskParty`, 2026-10-12): a campaign or scenario started from the new menus opens this page
+  instead of the classic lobby (`dskParty::IsFor`, decided in iwConnecting). One big card per seat (four,
+  every seat plays the campaign's tribe), "Start game" below them. The title party is seated on arrival;
+  a further controller presses A on a free card to join and B to stand up again. Only the host seat's
+  controller (slot 0) can start (Start or the button) or leave (B/Escape/back, with a Yes/No question
+  focused on No, then Home); the host's card edits colour/nation/team through the server, guests' cards
+  are read-only ("Shared tribe: host chooses") and their D-pad never leaves the cards. Lua runs as in the
+  lobby: settings init on construction, settings-ready on activation, player-ready on Start. Ordinary maps
+  (own tribes, rules: F7c), loaded saves (their test is currently Sol's) and online games keep dskGameLobby.
+  Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`.
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"
   (the old main menu has "New menus" to come back). F12 must not retire the old menu before they have a place.
 - Tests: `tests/s25Main/UI/testFrontEndLayout.cpp`, `tests/s25Main/splitscreen/testFrontEndPage.cpp`

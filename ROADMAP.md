@@ -10,10 +10,9 @@ starting the game and playing it are still upstream's mouse screens with control
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
    workers. Done: F1 framework, F2 title/join, F3 home, F7a seat logic (Opus); 4b on-screen keyboard, F9 options,
    F6a save browser, F5a map catalog, 3a/3b addon categories (Sol). Next (review 2026-10-11):
-   Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51), F4 campaigns
-   (PR #52), F10 loading screen (PR #53) and F5c scenarios (PR #54, 2026-10-12) are integrated.
-   PR55 translations are integrated. Sol F6b tactical save previews (PR #56) are implemented on
-   `sol/frontend-save-previews`, awaiting fresh exact-head CI after master reconciliation.
+   Opus F7b party page (campaigns/scenarios done 2026-10-12; saves + maps next) → F7c rules drawer → F7d online cards.
+   Sol F5b map browser (PR #51), F4 campaigns (PR #52), F10 loading screen (PR #53), F5c scenarios (PR #54),
+   PR55 translations and F6b tactical save previews (PR #56) are integrated (2026-10-12).
    Next F6b leftover: provenance-backed pre-coop save fixture.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
@@ -272,10 +271,12 @@ starting the game and playing it are still upstream's mouse screens with control
     Split (2026-10-10), each one PR-sized and tested:
     - ☑ F7a seat logic out of the lobby desktop into `frontend/LocalSeats` (no behaviour change; the existing
       MenuPadSeat/splitscreen suites are the gate), so both lobbies share one implementation (2026-10-10).
-    - ☐ F7b `dskParty` page on dskFrontEndPage for self-hosted local games: one big card per seat (LocalSeats +
-      LobbyPlayerCardModel), "one tribe together" toggle, Start, B asks to leave; ClientInterface callbacks
-      (countdown, loading, errors) like dskGameLobby. Routed from Home when the menu style is FrontEnd; the old
-      lobby stays for Classic and online.
+    - ◐ F7b `dskParty` page on dskFrontEndPage for self-hosted local games: one big card per seat (LocalSeats +
+      LobbyPlayerCardModel), Start, B asks to leave; ClientInterface callbacks (loading, errors) like dskGameLobby.
+      ☑ campaigns and scenarios (on master 2026-10-12, branch head 3b19eecdc all17/BOTH; physical FrontEndPartyTests 6 cases, campaign/scenario start suites
+      now land on it). ☐ loaded saves (wait for Sol's claim on testFrontEndLoad.cpp to end) and the "one tribe
+      together" toggle for ordinary maps, which comes with F7c's rules, so ordinary maps stay on the old lobby
+      until then. The old lobby stays for Classic and online.
     - ☐ F7c rules on the party page: map/victory/fog/start goods and the addon categories (3a–3c) as a drawer page.
     - ☐ F7d online in the same page: network players as read-only cards, ready state, chat line, join code/IP.
   - ☐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby

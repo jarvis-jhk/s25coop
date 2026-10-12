@@ -8,6 +8,7 @@
 #include "controls/ctrlPercent.h"
 #include "controls/ctrlText.h"
 #include "desktops/dskGameLobby.h"
+#include "desktops/dskParty.h"
 #include "helpers/mathFuncs.h"
 #include "iwMsgbox.h"
 #include "network/GameClient.h"
@@ -83,8 +84,12 @@ void iwConnecting::CI_NextConnectState(const ConnectState cs)
         case ConnectState::QueryPlayerList: setStatus(_("Waiting for Playerinfo...")); break;
         case ConnectState::QuerySettings: setStatus(_("Waiting for server info...")); break;
         case ConnectState::Finished:
-            WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(serverType_, GAMECLIENT.GetGameLobby(),
-                                                                GAMECLIENT.GetPlayerId(), std::move(lobbyClient_)));
+            // s25coop: a campaign started from the new menus gets the full-screen party page (F7b)
+            if(dskParty::IsFor(serverType_))
+                WINDOWMANAGER.Switch(std::make_unique<dskParty>(GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId()));
+            else
+                WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(serverType_, GAMECLIENT.GetGameLobby(),
+                                                                    GAMECLIENT.GetPlayerId(), std::move(lobbyClient_)));
             Close();
             break;
     }
