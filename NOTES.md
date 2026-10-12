@@ -1594,3 +1594,16 @@ and UI169/28547 pass. Targeted performance Clang-Tidy, format10 and actual agent
 pass. Other seven scenario source/test files are unchanged. Prior CI evidence is historical;
 fresh all17 checks and BOTH successful workflows on the repaired head remain required before
 ready/tested handoff. No lint suppression or extra test exclusions were added.
+
+
+## PR56 integrated: fog-aware save previews (2026-10-12)
+
+Opus reviewed Sol's PR56 (exact head 7651666b8, all17 checks, Unit tests 38213435232 and
+Static analysis 38213435425 green) and merged it into master as 133b5e694 (tree identical to
+the tested head). Review: trailer is appended only after the world save succeeded, a failed
+or partial preview never fails the save, Save() truncates so overwrites drop old trailers,
+the reader skips the world bytes and checks size/signature/dimensions/checksum, and the
+throwaway GameWorldViewer unsubscribes on destruction. No findings. Primary Debug max2:
+Test_UI174 and Test_splitscreen763 pass. Not yet released; player-visible CHANGELOG entry
+belongs with the next release. F7b party work on feature/f7b-party must merge this master
+(docs conflict only) before its own handoff.
