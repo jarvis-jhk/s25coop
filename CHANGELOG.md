@@ -3,6 +3,12 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Starting a campaign or scenario from the new menus now opens a full-screen party page: one big card
+  per player, everyone who joined on the title screen is already seated, more controllers join with A
+  on a free card and leave again with B. The host starts the game with Start.
+
 ## 0.1.17
 
 - The new game options for mines and soldiers from Return to the Roots are now shown in German
