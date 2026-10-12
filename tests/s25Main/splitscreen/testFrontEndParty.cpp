@@ -10,6 +10,7 @@
 #include "controls/ctrlLobbyPlayerCard.h"
 #include "desktops/dskFrontEndCampaigns.h"
 #include "desktops/dskFrontEndMissions.h"
+#include "desktops/dskGameLoader.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskParty.h"
 #include "desktops/dskTitle.h"
@@ -297,6 +298,26 @@ BOOST_FIXTURE_TEST_CASE(UnpluggedGuestFreesItsSeat, PartyFixture)
         GAMECLIENT.SetInterface(&ci());
         click(*party().GetCtrl<Window>(dskParty::ID_Start));
         startedWith(2);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(SeatsFreezeOnceStartIsAcceptedAndThePageHandsOverToTheLoader, PartyFixture)
+{
+    checked([&] {
+        open(2);
+        auto& page = party();
+        connect(pad + 2);
+        press(pad + 2, PadButton::DpadRight);
+        BOOST_TEST_REQUIRE(router().GetSlot(pad + 2) == 2u);
+        // Start and a newcomer's A in the same input batch: the seats Start validated are the ones that load.
+        tap(pad, PadButton::Start);
+        tap(pad + 2, PadButton::A);
+        frame();
+        BOOST_TEST(page.GetSeats().NumTaken() == 2u);
+        BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+        // The page's own client interface switches to the loader (no test interface installed here).
+        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskGameLoader>() != nullptr; }));
+        BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
     });
 }
 

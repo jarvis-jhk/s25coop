@@ -299,6 +299,8 @@ bool dskParty::HandleCardInput(const unsigned slot, const PadButton button)
 
 void dskParty::ApplyCardValue(const unsigned seat, const bool forward)
 {
+    if(countdown_)
+        return;
     auto& model = GetCtrl<ctrlLobbyPlayerCard>(ID_Seat + seat)->GetModel();
     // Authority is read again right before sending; the card changes only with the server's broadcast.
     model.UpdateSnapshot(CardSnapshot(seat));
@@ -317,6 +319,9 @@ void dskParty::ApplyCardValue(const unsigned seat, const bool forward)
 
 void dskParty::OnSeatPressed(const unsigned seat, const unsigned slot)
 {
+    // Start validated these seats; a join or stand-up after it would load a party nobody checked.
+    if(countdown_)
+        return;
     if(seats_.Press(seat, WINDOWMANAGER.GetPadInput().GetActingDevice(), slot))
         UpdateCards();
 }
