@@ -6,6 +6,7 @@
 
 #include "Minimap.h"
 #include "gameTypes/MapTypes.h"
+#include "libsiedler2/PixelBufferBGRA.h"
 #include <vector>
 
 class GameWorldViewer;
@@ -41,6 +42,9 @@ class IngameMinimap : public Minimap
 public:
     IngameMinimap(const GameWorldViewer& gwv);
 
+    /// Fog-aware tactical snapshot, entirely on the CPU; never consumes the simulation RNG.
+    static libsiedler2::PixelBufferBGRA CapturePreview(const GameWorldViewer& gwv, const Extent& size);
+
     /// Merkt, vor dass ein bestimmter Punkt aktualisiert werden soll
     void UpdateNode(MapPoint pt);
 
@@ -66,4 +70,7 @@ protected:
     void BeforeDrawing() override;
     /// Alle Punkte Updaten, bei denen das DrawnObject gleich dem übergebenen drawn_object ist
     void UpdateAll(DrawnObject drawn_object);
+
+private:
+    IngameMinimap(const GameWorldViewer& gwv, bool createTexture);
 };

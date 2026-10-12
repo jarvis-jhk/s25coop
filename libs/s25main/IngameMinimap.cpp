@@ -11,12 +11,47 @@
 #include "gameData/MinimapConsts.h"
 #include "gameData/TerrainDesc.h"
 #include "libsiedler2/ColorBGRA.h"
+#include <algorithm>
+#include <limits>
+#include <stdexcept>
 
-IngameMinimap::IngameMinimap(const GameWorldViewer& gwv)
+IngameMinimap::IngameMinimap(const GameWorldViewer& gwv) : IngameMinimap(gwv, true) {}
+
+IngameMinimap::IngameMinimap(const GameWorldViewer& gwv, const bool createTexture)
     : Minimap(gwv.GetWorld().GetSize()), gwv(gwv), nodes_updated(GetMapSize().x * GetMapSize().y, false),
       dos(GetMapSize().x * GetMapSize().y, DrawnObject::Invalid), territory(true), houses(true), roads(true)
 {
-    CreateMapTexture();
+    if(createTexture)
+        CreateMapTexture();
+}
+
+libsiedler2::PixelBufferBGRA IngameMinimap::CapturePreview(const GameWorldViewer& gwv, const Extent& size)
+{
+    if(size.x > std::numeric_limits<uint16_t>::max() || size.y > std::numeric_limits<uint16_t>::max())
+        throw std::invalid_argument("Save preview dimensions exceed the pixel buffer limit");
+    IngameMinimap minimap(gwv, false);
+    const auto mapSize = minimap.GetMapSize();
+    libsiedler2::PixelBufferBGRA pixels(size.x, size.y, libsiedler2::ColorBGRA(0xFF000000));
+    if(!mapSize.x || !mapSize.y || !size.x || !size.y)
+        return pixels;
+    const unsigned sourceWidth = mapSize.x * 2u;
+    // The two stored triangle pixels are drawn with the minimap's isometric aspect, not a 2:1 node aspect.
+    const double aspect = mapSize.x * MINIMAP_SCALE_X / mapSize.y;
+    const unsigned width = std::min(size.x, std::max(1u, static_cast<unsigned>(size.y * aspect)));
+    const unsigned height = std::min(size.y, std::max(1u, static_cast<unsigned>(size.x / aspect)));
+    const unsigned left = (size.x - width) / 2;
+    const unsigned top = (size.y - height) / 2;
+    for(unsigned y = 0; y < height; ++y)
+    {
+        const unsigned mapY = y * mapSize.y / height;
+        for(unsigned x = 0; x < width; ++x)
+        {
+            const unsigned mapX = ((x * sourceWidth / width) + sourceWidth - (mapY & 1u)) % sourceWidth;
+            const MapPoint pt(mapX / 2, mapY);
+            pixels.set(left + x, top + y, libsiedler2::ColorBGRA(minimap.CalcPixelColor(pt, mapX & 1u)));
+        }
+    }
+    return pixels;
 }
 
 unsigned IngameMinimap::CalcPixelColor(const MapPoint pt, const unsigned t)

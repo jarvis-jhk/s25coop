@@ -184,10 +184,28 @@ a deleted or incompatible target shows an error without starting another save.
 
 The catalog reads headers and settings only. It never loads a world for preview,
 changes the RNG or edits the save; malformed metadata is counted as unavailable.
-The current save format has no thumbnail: “No preview stored” is an explicit
-fallback, with actual snapshot thumbnails deferred to F6b. Failure stays on this
-page with an acknowledgement. A second activation in the same input batch
+New saves include a 160×100 tactical snapshot of the saving client's visible
+map: terrain, territory, buildings and roads, with unexplored ground hidden and
+remembered fog darkened just like the in-game minimap. It is captured on the CPU
+at the saved frame, without a desktop, OpenGL or simulation RNG changes. The
+minimap's existing fog policy remembers objects, ownership and roads; ground
+terrain/shading retains the same current-world representation as the live minimap.
+The selected row alone reads the image; the catalog still only reads metadata.
+Old saves and damaged/unknown previews show “No preview stored”. Failure stays on
+this page with an acknowledgement. A second activation in the same input batch
 cannot start another connection over the existing connecting modal.
+
+The optional image is a fixed 64,016-byte trailer following the existing saved
+world, not a new world/player version or a sidecar. Its `S25PRV01` signature,
+little-endian 160×100 dimensions, BGRA pixels and FNV-1a integrity check are read
+only at the exact world-data boundary. Compressed and legacy uncompressed
+payloads are skipped without decompression; malformed lengths, unknown dimensions,
+truncated pixels or extra trailing bytes reject the preview. Existing save
+readers stop after the world and still load its unchanged bytes. Copying a save
+keeps the preview, and overwriting it truncates the previous image. A preview
+write failure leaves the successful saved world usable. No loading of old worlds
+to invent thumbnails, scene screenshots, original artwork or hardware proof is
+implied by this tactical snapshot.
 
 The existing client/server and connecting window lead to the current lobby;
 F7's full-screen replacement is separate. The title party is carried into local

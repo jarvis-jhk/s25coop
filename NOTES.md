@@ -5,6 +5,102 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+
+## 2026-10-12 — Sol PR56 master reconciliation
+
+Merged master `33be33dff756b6f0738d2d5b8feca534252cdb4b` after primary
+released its ROADMAP scope. Both notes and roadmap completion states are
+preserved; PR54 scenarios and PR55 translations are integrated, PR56 previews
+still await fresh CI. All ten Sol preview source/test hashes are unchanged.
+Own GCC12 Debug/Werror max2 configure/build completed with the inherited
+scenario sources included. Preview/scenario/campaign catalog15/112213 pass;
+physical Load/Save, scenarios, maps, campaigns and Home65/3990 pass.
+Actual agent TypeScript and whitespace checks pass. Previous repair head
+`0d141a51a` and its coverage proof remain historical evidence; fresh all17 checks
+and BOTH complete workflows on this merge head are required for tested handoff.
+Primary owns integration/F7/release; ROADMAP is released immediately after push.
+
+## 2026-10-12 — Sol PR56 CI repair
+
+Original head `3f62778d759c310e36b23d245a07ccc865ccf8b3` passed all51
+CTest entries in GCC10 but failed the coverage gate: the partial-image-write
+child kept RLIMIT_FSIZE active through normal exit, truncating shared gcov
+profiles. GCC16 separately rejected `helpers::contains_if` over PixelBuffer
+because its generic std::begin/end noexcept query diagnoses those accessors.
+Original failed job logs and CI/hash snapshots are retained in Sol state.
+No unchanged-head retry was requested.
+
+The tests now use typed pixel data pointers for their nonblack predicates.
+The child restores its original RLIMIT_FSIZE and SIGXFSZ disposition immediately
+after the real GameClient save attempt, before reload, cleanup and normal exit,
+and requires both restorations to succeed. The existing assertion still requires
+a successful save, byte-identical loadable world and incomplete optional image.
+No product, libsiedler2 or save-format change; no diagnostic suppression.
+
+Own GCC12 Debug/max2: preview5/112108 and physical Load/Save20 pass; full
+splitscreen754/503117 passes. A separate target-only GCC12 Debug coverage
+build instruments all74 Test_splitscreen translation units with CI's no-inline
+coverage flags, reusing the existing uninstrumented production/helper libraries.
+The executed child partial-write and physical20 cases leave all74 profiles valid:
+gcov-dump parses each, gcov reads matching notes/data without corruption.
+An isolated GCOV_PREFIX run of the original-head test object executes the same
+one-case save probe successfully and reproduces damaged profiles; positive
+profiles remain separate and intact. This targeted local evidence does not claim
+the whole GCC10 CI coverage gate or a local GCC16 build.
+
+Read-only gpt-6.1-sol review found no actionable issue. Actual agent TypeScript,
+clang-format10 and whitespace checks pass. Fresh exact-head all17/BOTH remains
+required before tested handoff; primary owns integration and release.
+
+## 2026-10-12 — Sol F6b tactical save previews
+
+`sol/frontend-save-previews` adds a160×100 fog-aware tactical image to new
+manual/autosaves. Capture reuses the existing minimap CPU colors without a
+framebuffer, textures or simulation RNG consumption. The selected save row
+reads a fixed optional trailer, skipping the compressed/legacy world without
+loading it; old saves and invalid images keep “No preview stored”. Dimensions and
+exact world-data boundary are checked before fixed allocation, pixel integrity
+before display.
+Copying saves preserves their pictures; overwriting truncates the old trailer.
+The existing world/player formats and serialized snapshot bytes stay unchanged.
+
+The real GameClient/save dialog writes and overwrites previews. A POSIX child
+limits writes after the complete world and16 bytes of the image trailer:
+SaveToFile still succeeds, the exact saved snapshot reloads, and the incomplete
+preview is unavailable. Child cleanup and normal exit keep the parent’s limits,
+logs and singleton lifetimes intact and allow coverage of that executed path.
+Windows keeps the portable format and physical save/overwrite regressions;
+the OS write-limit probe is POSIX-only. No production test hooks or new endpoint.
+The existing central ntfy-to-GitHub fault path remains in place.
+
+Own GCC12 Debug/Werror, max2 compiler jobs: new preview unit5/112108,
+physical Load/Save20/1428, full UI170/122739 and splitscreen754/503566 pass.
+Public-map online solo-save sync/desync/desync-after-resave:3/3 CTests,89.55s.
+Executed negative controls: disabling pixel verification fails2 assertions in
+one matched unit case; withholding browser pictures fails3 assertions in one
+matched physical case. Restored both product files byte-for-byte before further
+work. No unmatched-filter or crash exit is counted as evidence.
+
+Incoming primary PR55 was integrated while testing. The uncommitted work was
+preserved and restored on master a2baacead without conflicts; all10 own C++
+source/test hashes and all31 incoming catalog/docs files were verified intact.
+The completed fresh Debug build then passes preview5/112108, language1/54092
+and affected physical addon/German-hint/load/save suites159/33365. Full-suite
+and online evidence above is from before the translations-only base advance;
+its own C++ source/tests are identical. No redundant full simulation rerun.
+
+Read-only gpt-6.1-sol review addressed invalid world lengths and added the actual
+partial-write failure probe; final supplied-code review found no actionable
+issue. The inherited minimap intentionally uses current ground terrain/shading
+under fog while remembering objects, ownership and roads; no new fog policy.
+Later minor style and mouse-row fixture corrections are covered by the tests.
+
+Source/local validation is complete; a draft PR and exact-head ALL17 checks plus
+BOTH complete Unit tests/Static analysis workflows are required before tested
+handoff. Private checkpoint/PR body carry live counts and the sole continuation.
+Opus owns review/integration and releases. Upstream-produced pre-coop world
+provenance, AI takeover, scene artwork and hardware acceptance remain separate.
+
 ## 2026-10-12 — PR55 integrated (addon translations)
 
 Reviewed Sol PR55 exact head 1572fd961: translation-only (POT + 28 POs, 24 new msgids, German
@@ -1498,3 +1594,16 @@ and UI169/28547 pass. Targeted performance Clang-Tidy, format10 and actual agent
 pass. Other seven scenario source/test files are unchanged. Prior CI evidence is historical;
 fresh all17 checks and BOTH successful workflows on the repaired head remain required before
 ready/tested handoff. No lint suppression or extra test exclusions were added.
+
+
+## PR56 integrated: fog-aware save previews (2026-10-12)
+
+Opus reviewed Sol's PR56 (exact head 7651666b8, all17 checks, Unit tests 38213435232 and
+Static analysis 38213435425 green) and merged it into master as 133b5e694 (tree identical to
+the tested head). Review: trailer is appended only after the world save succeeded, a failed
+or partial preview never fails the save, Save() truncates so overwrites drop old trailers,
+the reader skips the world bytes and checks size/signature/dimensions/checksum, and the
+throwaway GameWorldViewer unsubscribes on destruction. No findings. Primary Debug max2:
+Test_UI174 and Test_splitscreen763 pass. Not yet released; player-visible CHANGELOG entry
+belongs with the next release. F7b party work on feature/f7b-party must merge this master
+(docs conflict only) before its own handoff.

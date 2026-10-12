@@ -13,6 +13,7 @@
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
 #include "files.h"
+#include "frontend/SavePreview.h"
 #include "helpers/optional_io.h"
 #include "ingameWindows/iwMainMenu.h"
 #include "ingameWindows/iwMsgbox.h"
@@ -22,10 +23,18 @@
 #include "gameData/GameConsts.h"
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
+#include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#ifndef _WIN32
+#    include <csignal>
+#    include <sys/resource.h>
+#    include <sys/wait.h>
+#    include <unistd.h>
+#endif
 
 namespace {
 constexpr PadDeviceId pad = 102;
@@ -209,6 +218,12 @@ struct SavePadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
         BOOST_TEST_REQUIRE(saved.sgd.GetLength() == snapshot.GetLength());
         BOOST_CHECK_EQUAL_COLLECTIONS(saved.sgd.GetData(), saved.sgd.GetData() + saved.sgd.GetLength(),
                                       snapshot.GetData(), snapshot.GetData() + snapshot.GetLength());
+        const auto preview = frontend::ReadSavePreview(saveDir / (name + ".sav"));
+        BOOST_TEST_REQUIRE(preview.has_value());
+        BOOST_TEST(preview->getWidth() == frontend::savePreviewWidth);
+        BOOST_TEST(preview->getHeight() == frontend::savePreviewHeight);
+        BOOST_TEST(std::any_of(preview->getPixels().data(), preview->getPixels().data() + preview->getNumPixels(),
+                               [](const auto color) { return color.asValue() != 0xFF000000u; }));
     }
 };
 } // namespace
@@ -260,6 +275,61 @@ BOOST_FIXTURE_TEST_CASE(KeyboardEnterAndControllerRowSelectionCanOverwriteAnExis
         BOOST_TEST(table().GetNumRows() == 1u);
     });
 }
+
+#ifndef _WIN32
+BOOST_FIXTURE_TEST_CASE(PartialPreviewWriteStillReturnsASuccessfulLoadableWorld, SavePadFixture)
+{
+    run([this] {
+        enter();
+        const auto path = saveDir / "Preview failure.sav";
+        SerializedGameData snapshot;
+        snapshot.MakeSnapshot(*ci().game);
+        BOOST_TEST_REQUIRE(GAMECLIENT.SaveToFile(path));
+        expectSave("Preview failure", snapshot, GAMECLIENT.GetGFNumber());
+        const auto worldEnd = boost::filesystem::file_size(path) - 64016;
+        rlimit limit{};
+        BOOST_TEST_REQUIRE(getrlimit(RLIMIT_FSIZE, &limit) == 0);
+        const auto originalLimit = limit;
+        limit.rlim_cur = worldEnd + 16;
+        // A child isolates the OS write-failure probe from the suite's log files and global limits.
+        const auto child = fork();
+        BOOST_TEST_REQUIRE(child >= 0);
+        if(child == 0)
+        {
+            const auto originalSignal = std::signal(SIGXFSZ, SIG_IGN);
+            const bool limited = setrlimit(RLIMIT_FSIZE, &limit) == 0;
+            const bool saved = limited && GAMECLIENT.SaveToFile(path);
+            // Gcov writes shared profiles at normal exit; the save-only limit must not truncate them.
+            const bool restoredLimit = setrlimit(RLIMIT_FSIZE, &originalLimit) == 0;
+            const bool restoredSignal = std::signal(SIGXFSZ, originalSignal) != SIG_ERR;
+            Savegame loaded;
+            const bool loadable = loaded.Load(path, SaveGameDataToLoad::All);
+            const auto size = boost::filesystem::file_size(path);
+            const bool equal =
+              loaded.sgd.GetLength() == snapshot.GetLength()
+              && std::equal(loaded.sgd.GetData(), loaded.sgd.GetData() + loaded.sgd.GetLength(), snapshot.GetData());
+            const bool good = saved && restoredLimit && restoredSignal && loadable && equal && size > worldEnd
+                              && size < worldEnd + 64016 && !frontend::ReadSavePreview(path);
+            cleanup();
+            GAMECLIENT.Stop();
+            GAMESERVER.Stop();
+            GAMECLIENT.SetInterface(&ci());
+            // Normal exit also flushes coverage counters for the executed child-side assertions.
+            std::exit(good ? 0 : 1);
+        }
+        int status = 0;
+        BOOST_TEST_REQUIRE(waitpid(child, &status, 0) == child);
+        BOOST_TEST_REQUIRE(WIFEXITED(status));
+        BOOST_TEST(WEXITSTATUS(status) == 0);
+        BOOST_TEST(!frontend::ReadSavePreview(path));
+        Savegame loaded;
+        BOOST_TEST_REQUIRE(loaded.Load(path, SaveGameDataToLoad::All));
+        BOOST_TEST_REQUIRE(loaded.sgd.GetLength() == snapshot.GetLength());
+        BOOST_CHECK_EQUAL_COLLECTIONS(loaded.sgd.GetData(), loaded.sgd.GetData() + loaded.sgd.GetLength(),
+                                      snapshot.GetData(), snapshot.GetData() + snapshot.GetLength());
+    });
+}
+#endif
 
 BOOST_FIXTURE_TEST_CASE(EmptyAndReservedFilenamesRequireAcknowledgementAndNeverSave, SavePadFixture)
 {
