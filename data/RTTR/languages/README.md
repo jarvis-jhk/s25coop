@@ -118,6 +118,35 @@ X-Poedit-SearchPath-2: data/RTTR/gamedata
 `X-Poedit-Basepath` ist relativ zum Ort von `rttr.pot`. Diese Datei liegt drei Ebenen unter
 der Repowurzel, deshalb `../../..`. Wer die Kataloge verschiebt, muss diesen Wert mitziehen.
 
+## Einzelne neue Addon-Texte nachziehen
+
+Fuer einen begrenzten Abgleich auf Linux kann `xgettext` nur die betroffenen
+Addon-Header lesen:
+
+```sh
+xgettext --from-code=UTF-8 -k_ -kgettext_noop -k__ -C --no-wrap --omit-header \
+  -o /tmp/addon-strings.po libs/s25main/addons/*.h
+```
+
+Nur msgids, die in `rttr.pot` noch fehlen, mit ihren Quellverweisen an die Vorlage
+anhaengen. Die bestehende Vorlage nicht durch diesen Teilauszug ersetzen: sie
+enthaelt auch Texte anderer Komponenten und von Hand ergaenzte Pad-Hinweise.
+`msgcomm --unique` allein ist keine Liste neuer Texte; es liefert auch Eintraege,
+die nur in der alten Vorlage stehen. Entscheidend ist die Differenz der msgids
+**des Quellauszugs minus der Vorlage**.
+
+Danach mit den oben genannten `msgmerge`-Optionen alle 28 Kataloge nachziehen.
+Neue deutsche Uebersetzungen koennen als PO-Kompendium mit `--compendium` in
+`rttr-de.po` uebernommen werden. Ohne eine gepruefte Uebersetzung bleiben neue
+Eintraege leer; keine Fuzzy-Vorschlaege bestaetigen. Ein zweiter Bau muss die
+Quellkataloge unveraendert lassen.
+
+Vor dem Commit alle `.po` mit `msgfmt --check` pruefen, die kompilierten `.mo`
+auf unveraenderte bisherige Texte vergleichen und `Test_LanguageFiles` sowie
+die betroffenen physischen Pad-Tests ausfuehren. Der Abgleich vom 2026-10-11
+registriert 24 neue Bergwerks-/Muenzen-/Soldatenoptionen; alle sind auf Deutsch
+uebersetzt, andere Sprachen behalten fuer diese neuen Texte Englisch.
+
 ## Eine Sprache uebersetzen
 
 - Die `.po` der Sprache in Poedit oeffnen.
