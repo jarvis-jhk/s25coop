@@ -19,6 +19,7 @@
 #include "desktops/dskTitle.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
+#include "frontend/SavePreview.h"
 #include "helpers/serializeEnums.h"
 #include "ingameWindows/iwConnecting.h"
 #include "ingameWindows/iwMsgbox.h"
@@ -437,6 +438,59 @@ BOOST_FIXTURE_TEST_CASE(RefreshKeepsASelectionWhenNewerFilesAppearAndRecoversAft
     BOOST_TEST(!page().GetCtrl<ctrlText>(dskFrontEndLoad::ID_Map)->IsVisible());
 }
 
+BOOST_FIXTURE_TEST_CASE(PhysicalSelectionAndRefreshReplacePreviewsWithoutLoadingAWorld, LoadFixture)
+{
+    enter();
+    const auto path = saves / "save2.sav";
+    {
+        BinaryFile file;
+        BOOST_TEST_REQUIRE(file.Open(path, OpenFileMode::WriteAppend));
+        // An intentionally invalid world: the browser must skip it, not deserialize it.
+        file.WriteUnsignedInt(4);
+        file.WriteUnsignedInt(0x12345678);
+    }
+    libsiedler2::PixelBufferBGRA pixels(frontend::savePreviewWidth, frontend::savePreviewHeight,
+                                        libsiedler2::ColorBGRA(0xFF13579B));
+    BOOST_TEST_REQUIRE(frontend::AppendSavePreview(path, pixels));
+    BOOST_TEST(!page().HasPreview()); // No eager rescan of an open row.
+    press(pad, PadButton::DpadDown);
+    BOOST_TEST(page().GetSelectedPath() == saves / "save1.sav");
+    BOOST_TEST(!page().HasPreview());
+    press(pad, PadButton::DpadUp);
+    BOOST_TEST(page().GetSelectedPath() == path);
+    BOOST_TEST(page().HasPreview());
+    BOOST_TEST(!page().GetCtrl<ctrlText>(dskFrontEndLoad::ID_Preview)->IsVisible());
+    BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+    WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Down));
+    frame();
+    BOOST_TEST(!page().HasPreview());
+    BOOST_TEST(page().GetCtrl<ctrlText>(dskFrontEndLoad::ID_Preview)->IsVisible());
+    auto* table = page().GetCtrl<ctrlTable>(dskFrontEndLoad::ID_Saves);
+    const int rowHeight = NormalFont->getHeight();
+    MouseCoords mouse(table->GetDrawPos() + DrawPoint(20, rowHeight + 10 + rowHeight / 2));
+    WINDOWMANAGER.Msg_MouseMove(mouse);
+    mouse.ldown = true;
+    WINDOWMANAGER.Msg_LeftDown(mouse);
+    mouse.ldown = false;
+    WINDOWMANAGER.Msg_LeftUp(mouse);
+    frame();
+    BOOST_TEST_REQUIRE(page().GetSelectedPath() == path);
+    BOOST_TEST(page().HasPreview());
+    makeMetadata(path, 2); // Overwrite removes the old trailer, including at the same identity.
+    press(pad, PadButton::RightShoulder);
+    press(pad, PadButton::RightShoulder);
+    BOOST_TEST_REQUIRE(focusedId(0) == dskFrontEndLoad::ID_Refresh);
+    press(pad, PadButton::A);
+    BOOST_TEST(page().GetSelectedPath() == path);
+    BOOST_TEST(!page().HasPreview());
+    BOOST_TEST(page().GetCtrl<ctrlText>(dskFrontEndLoad::ID_Preview)->IsVisible());
+    for(const auto& file : boost::filesystem::directory_iterator(saves))
+        boost::filesystem::remove(file.path());
+    press(pad, PadButton::A);
+    BOOST_TEST(!page().HasPreview());
+    BOOST_TEST(!page().GetCtrl<ctrlText>(dskFrontEndLoad::ID_Preview)->IsVisible());
+}
+
 BOOST_FIXTURE_TEST_CASE(DeletedAndIncompleteSavesFailOnTheBrowserWithoutSwitchingToMaps, LoadFixture)
 {
     enter();
@@ -577,6 +631,13 @@ BOOST_FIXTURE_TEST_CASE(LayoutKeepsTheListDetailsAndActionsAboveTheFooter, LoadF
             VIDEODRIVER.ResizeScreen(size, DisplayMode::Windowed);
             frame();
             const Rect& area = page().GetFrame().content;
+            const Rect& preview = page().GetPreviewArea();
+            BOOST_TEST(preview.getSize().x > 0u);
+            BOOST_TEST(preview.getSize().y > 0u);
+            BOOST_TEST((preview.left >= area.left && preview.right <= area.right && preview.top >= area.top
+                        && preview.bottom <= area.bottom));
+            BOOST_TEST(preview.top >= page().GetCtrl<Window>(dskFrontEndLoad::ID_Names)->GetBoundaryRect().bottom);
+            BOOST_TEST(preview.bottom < page().GetCtrl<Window>(dskFrontEndLoad::ID_Coop)->GetBoundaryRect().top);
             for(unsigned id = dskFrontEndLoad::ID_Saves; id <= dskFrontEndLoad::ID_Coop; ++id)
             {
                 const auto* control = page().GetCtrl<Window>(id);

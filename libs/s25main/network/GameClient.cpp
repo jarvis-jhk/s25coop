@@ -10,6 +10,7 @@
 #include "GameLobby.h"
 #include "GameManager.h"
 #include "GameMessage_GameCommand.h"
+#include "IngameMinimap.h"
 #include "JoinPlayerInfo.h"
 #include "LeatherLoader.h"
 #include "Loader.h"
@@ -26,6 +27,7 @@
 #include "drivers/VideoDriverWrapper.h"
 #include "factories/AIFactory.h"
 #include "files.h"
+#include "frontend/SavePreview.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "helpers/mathFuncs.h"
@@ -42,6 +44,7 @@
 #include "random/randomIO.h"
 #include "world/GameWorld.h"
 #include "world/GameWorldView.h"
+#include "world/GameWorldViewer.h"
 #include "world/MapLoader.h"
 #include "world/ViewportLayout.h"
 #include "gameTypes/RoadBuildState.h"
@@ -1908,12 +1911,26 @@ bool GameClient::SaveToFile(const boost::filesystem::path& filepath)
         // Spiel serialisieren
         save.sgd.MakeSnapshot(*game);
         // Und alles speichern
-        return save.Save(filepath, mapinfo.title);
+        if(!save.Save(filepath, mapinfo.title))
+            return false;
     } catch(const std::exception& e)
     {
         SystemChat(std::string(_("Error during saving: ")) + e.what());
         return false;
     }
+    try
+    {
+        // Capture the same world's local visibility, without a desktop, framebuffer or game-loop advance.
+        const GameWorldViewer viewer(GetPlayerId(), game->world_);
+        const auto pixels =
+          IngameMinimap::CapturePreview(viewer, Extent(frontend::savePreviewWidth, frontend::savePreviewHeight));
+        if(!frontend::AppendSavePreview(filepath, pixels))
+            LOG.write("Saved game without its optional preview: %1%\n") % filepath;
+    } catch(const std::exception& e)
+    {
+        LOG.write("Saved game without its optional preview: %1%\n") % e.what();
+    }
+    return true;
 }
 
 void GameClient::ResetVisualSettings()

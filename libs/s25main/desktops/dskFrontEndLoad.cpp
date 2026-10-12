@@ -12,6 +12,7 @@
 #include "controls/ctrlText.h"
 #include "driver/KeyEvent.h"
 #include "files.h"
+#include "frontend/SavePreview.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwConnecting.h"
@@ -105,6 +106,7 @@ void dskFrontEndLoad::Refresh(const boost::filesystem::path& preferred)
 
 void dskFrontEndLoad::UpdateDetails()
 {
+    preview_.reset();
     const auto selected = GetSelectedPath();
     const auto it = helpers::find_if(catalog_.entries,
                                      [&selected](const frontend::SaveEntry& save) { return save.path == selected; });
@@ -128,6 +130,13 @@ void dskFrontEndLoad::UpdateDetails()
     }
     GetCtrl<ctrlText>(ID_Names)->SetText(names);
     GetCtrl<ctrlText>(ID_Coop)->SetVisible(it->humans == 1);
+    if(const auto pixels = frontend::ReadSavePreview(selected))
+    {
+        preview_ = std::make_unique<glArchivItem_Bitmap_Direct>();
+        preview_->setInterpolateTexture(false);
+        preview_->create(*pixels);
+        GetCtrl<ctrlText>(ID_Preview)->SetVisible(false);
+    }
 }
 
 void dskFrontEndLoad::OnLayout()
@@ -158,6 +167,20 @@ void dskFrontEndLoad::OnLayout()
         text->SetPos(DrawPoint(detailLeft, area.top + static_cast<int>((id - ID_Map) * 36)));
         text->setMaxWidth(detailWidth);
     }
+    const unsigned previewWidth = std::min(detailWidth, frontend::savePreviewWidth * 2);
+    const unsigned availableHeight = area.getSize().y > 228 ? area.getSize().y - 228 : 0;
+    const unsigned previewHeight =
+      std::min(previewWidth * frontend::savePreviewHeight / frontend::savePreviewWidth, availableHeight);
+    const unsigned fittedWidth = previewHeight * frontend::savePreviewWidth / frontend::savePreviewHeight;
+    previewArea_ = Rect(DrawPoint(detailLeft, area.top + 180), Extent(fittedWidth, previewHeight));
+    GetCtrl<Window>(ID_Coop)->SetPos(DrawPoint(detailLeft, previewArea_.bottom + 12));
+}
+
+void dskFrontEndLoad::Draw_()
+{
+    dskFrontEndPage::Draw_();
+    if(preview_)
+        preview_->DrawFull(previewArea_);
 }
 
 void dskFrontEndLoad::OnChoose(const unsigned ctrl_id)
