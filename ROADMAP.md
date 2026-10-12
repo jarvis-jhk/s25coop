@@ -20,9 +20,8 @@ starting the game and playing it are still upstream's mouse screens with control
 4. Controller panel (in-game side panel) and M1 mission presentation after the front end's F1–F7.
 5. Release whenever player-visible changes are on master and its CI is green — tag, push, then CHECK the
    GitHub release exists.
-6. Addon translation refresh on `sol/addon-translation-refresh`: 24 missing upstream addon msgids registered
-   and translated into German, all existing fork translations retained in28 catalogs. Local Debug validation
-   below; pending exact-head CI/primary integration. Other languages retain English for the new entries.
+6. ✅ Addon translation refresh (PR55, integrated 2026-10-12): 24 upstream addon msgids registered and translated
+   into German; other languages keep English for them. Player-visible: include in the next release.
 
 ## M0 — A version you can install and keep updated (first!)
 

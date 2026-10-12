@@ -5,6 +5,13 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+## 2026-10-12 — PR55 integrated (addon translations)
+
+Reviewed Sol PR55 exact head 1572fd961: translation-only (POT + 28 POs, 24 new msgids, German
+translated, other languages English fallback); German strings read correctly. 17/17 checks and both
+workflows green on that head; merge-tree with master clean. Merged --no-ff. Player-visible: next release
+(v0.1.17) once master CI on the merge is green.
+
 ## 2026-10-11 — Sol addon translation refresh
 
 The October9 upstream sweep added mine resource behavior, depleted-mine fallback,
