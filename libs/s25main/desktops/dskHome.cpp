@@ -13,9 +13,9 @@
 #include "desktops/dskFrontEndCampaigns.h"
 #include "desktops/dskFrontEndLoad.h"
 #include "desktops/dskFrontEndMaps.h"
+#include "desktops/dskFrontEndOnline.h"
 #include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskMainMenu.h"
-#include "desktops/dskMultiPlayer.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
 #include "frontend/MenuRoutes.h"
@@ -124,7 +124,7 @@ void dskHome::OnChoose(const unsigned ctrl_id)
             });
             break;
         case ID_Load: Open([] { return std::make_unique<dskFrontEndLoad>(); }); break;
-        case ID_Online: WINDOWMANAGER.Switch(std::make_unique<dskMultiPlayer>()); break;
+        case ID_Online: Open([] { return std::make_unique<dskFrontEndOnline>(); }); break;
         case ID_Options: Open([] { return std::make_unique<dskFrontEndOptions>(); }); break;
         case ID_WhatsNew: WINDOWMANAGER.ToggleWindow(std::make_unique<iwChangelog>()); break;
         case ID_Credits: WINDOWMANAGER.Switch(std::make_unique<dskCredits>()); break;

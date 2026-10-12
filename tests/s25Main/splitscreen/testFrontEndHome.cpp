@@ -10,10 +10,10 @@
 #include "desktops/dskFrontEndCampaigns.h"
 #include "desktops/dskFrontEndLoad.h"
 #include "desktops/dskFrontEndMaps.h"
+#include "desktops/dskFrontEndOnline.h"
 #include "desktops/dskFrontEndOptions.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMainMenu.h"
-#include "desktops/dskMultiPlayer.h"
 #include "desktops/dskSelectMap.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
@@ -140,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(EveryUpstreamDesktopComesBackToItsTile, HomeFixture)
     expectHomeFocusedOn(dskHome::ID_Campaigns);
 
     choose(dskHome::ID_Online);
-    BOOST_TEST_REQUIRE(desktopAs<dskMultiPlayer>() != nullptr);
+    BOOST_TEST_REQUIRE(desktopAs<dskFrontEndOnline>() != nullptr);
     press(pad, PadButton::B);
     expectHomeFocusedOn(dskHome::ID_Online);
 
@@ -211,9 +211,8 @@ BOOST_FIXTURE_TEST_CASE(MouseOpensAndReturnsAndQuitQuits, HomeFixture)
     frame();
     BOOST_TEST_REQUIRE(desktopAs<dskHome>() != nullptr);
     click(*desktop()->GetCtrl<Window>(dskHome::ID_Online));
-    BOOST_TEST_REQUIRE(desktopAs<dskMultiPlayer>() != nullptr);
-    // dskMultiPlayer's own Back button (id 6)
-    click(*desktop()->GetCtrl<Window>(6));
+    BOOST_TEST_REQUIRE(desktopAs<dskFrontEndOnline>() != nullptr);
+    click(*desktop()->GetCtrl<Window>(dskFrontEndPage::ID_btBack));
     BOOST_TEST_REQUIRE(desktopAs<dskHome>() != nullptr);
     click(*desktop()->GetCtrl<Window>(dskHome::ID_Quit));
     BOOST_TEST(!running);
