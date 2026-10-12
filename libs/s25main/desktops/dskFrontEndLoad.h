@@ -6,9 +6,10 @@
 
 #include "dskFrontEndPage.h"
 #include "frontend/SaveCatalog.h"
+#include "ogl/glArchivItem_Bitmap_Direct.h"
 #include <boost/filesystem/path.hpp>
 
-/// F6a: metadata save browser; hosting/loading remains in GameClient and the existing lobby.
+/// Metadata save browser; hosting/loading remains in GameClient and the existing lobby.
 class dskFrontEndLoad final : public dskFrontEndPage
 {
 public:
@@ -37,10 +38,13 @@ public:
     void Msg_TableChooseItem(unsigned ctrl_id, unsigned selection) override;
     const frontend::SaveCatalog& GetCatalog() const { return catalog_; }
     boost::filesystem::path GetSelectedPath() const;
+    bool HasPreview() const { return static_cast<bool>(preview_); }
+    const Rect& GetPreviewArea() const { return previewArea_; }
 
 protected:
     void OnLayout() override;
     void OnChoose(unsigned ctrl_id) override;
+    void Draw_() override;
 
 private:
     void Refresh(const boost::filesystem::path& preferred);
@@ -48,4 +52,6 @@ private:
     void LoadSelected();
     frontend::SaveCatalog catalog_;
     boost::filesystem::path resumeOnce_;
+    std::unique_ptr<glArchivItem_Bitmap_Direct> preview_;
+    Rect previewArea_;
 };

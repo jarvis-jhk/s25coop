@@ -5,6 +5,56 @@ local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
+
+## 2026-10-12 — Sol F6b tactical save previews
+
+`sol/frontend-save-previews` adds a160×100 fog-aware tactical image to new
+manual/autosaves. Capture reuses the existing minimap CPU colors without a
+framebuffer, textures or simulation RNG consumption. The selected save row
+reads a fixed optional trailer, skipping the compressed/legacy world without
+loading it; old saves and invalid images keep “No preview stored”. Dimensions and
+exact world-data boundary are checked before fixed allocation, pixel integrity
+before display.
+Copying saves preserves their pictures; overwriting truncates the old trailer.
+The existing world/player formats and serialized snapshot bytes stay unchanged.
+
+The real GameClient/save dialog writes and overwrites previews. A POSIX child
+limits writes after the complete world and16 bytes of the image trailer:
+SaveToFile still succeeds, the exact saved snapshot reloads, and the incomplete
+preview is unavailable. Child cleanup and normal exit keep the parent’s limits,
+logs and singleton lifetimes intact and allow coverage of that executed path.
+Windows keeps the portable format and physical save/overwrite regressions;
+the OS write-limit probe is POSIX-only. No production test hooks or new endpoint.
+The existing central ntfy-to-GitHub fault path remains in place.
+
+Own GCC12 Debug/Werror, max2 compiler jobs: new preview unit5/112108,
+physical Load/Save20/1428, full UI170/122739 and splitscreen754/503566 pass.
+Public-map online solo-save sync/desync/desync-after-resave:3/3 CTests,89.55s.
+Executed negative controls: disabling pixel verification fails2 assertions in
+one matched unit case; withholding browser pictures fails3 assertions in one
+matched physical case. Restored both product files byte-for-byte before further
+work. No unmatched-filter or crash exit is counted as evidence.
+
+Incoming primary PR55 was integrated while testing. The uncommitted work was
+preserved and restored on master a2baacead without conflicts; all10 own C++
+source/test hashes and all31 incoming catalog/docs files were verified intact.
+The completed fresh Debug build then passes preview5/112108, language1/54092
+and affected physical addon/German-hint/load/save suites159/33365. Full-suite
+and online evidence above is from before the translations-only base advance;
+its own C++ source/tests are identical. No redundant full simulation rerun.
+
+Read-only gpt-6.1-sol review addressed invalid world lengths and added the actual
+partial-write failure probe; final supplied-code review found no actionable
+issue. The inherited minimap intentionally uses current ground terrain/shading
+under fog while remembering objects, ownership and roads; no new fog policy.
+Later minor style and mouse-row fixture corrections are covered by the tests.
+
+Source/local validation is complete; a draft PR and exact-head ALL17 checks plus
+BOTH complete Unit tests/Static analysis workflows are required before tested
+handoff. Private checkpoint/PR body carry live counts and the sole continuation.
+Opus owns review/integration and releases. Upstream-produced pre-coop world
+provenance, AI takeover, scene artwork and hardware acceptance remain separate.
+
 ## 2026-10-12 — PR55 integrated (addon translations)
 
 Reviewed Sol PR55 exact head 1572fd961: translation-only (POT + 28 POs, 24 new msgids, German

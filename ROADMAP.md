@@ -13,6 +13,8 @@ starting the game and playing it are still upstream's mouse screens with control
    Opus F7b party page → F7c rules drawer → F7d online cards. Sol F5b map browser (PR #51), F4 campaigns
    (PR #52) and F10 loading screen (PR #53) are integrated. Next: F5c scenarios after auditing campaign
    policy and ownership. F6b leftovers (thumbnails, pre-coop fixture) after that.
+   Sol F6b tactical save previews are implemented on `sol/frontend-save-previews`, awaiting exact-head CI;
+   PR54 scenarios are tested and awaiting primary integration; PR55 translations are integrated.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
 3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
@@ -242,9 +244,15 @@ starting the game and playing it are still upstream's mouse screens with control
     save list, map/date/game-time/human+AI details, Refresh preserves file identity, Load/Continue use the real
     client/connecting/current-lobby path. Physical repaired Debug11/901 and affected69/2484 pass; unchanged catalog4/42 and UI150/11010
     retain prior source/binary evidence. Windows occupied-port fixture repaired; fresh exact-head CI pending.
-    B/Escape returns straight to Home. The format stores no thumbnail, so this slice names that fallback.
-    F6b remains open: actual snapshot thumbnails, a provenance-backed pre-coop upstream save fixture, online
-    single-player-save co-player roundtrip and optional AI takeover. F7's full-screen party is primary-owned.
+    B/Escape returns straight to Home. F6a names the fallback for saves without a preview.
+    F6b tactical snapshot thumbnails on `sol/frontend-save-previews`: fixed optional image trailer,
+    fog-aware CPU capture on save, selected-row read without world loading, overwrite/corruption fallback.
+    Local Debug new5/112108, physical20/1428, full UI170/122739 and splitscreen754/503566 pass.
+    Incoming PR55 preserves all10 own source/test hashes; language1/54092 and affected159/33365 pass.
+    Fresh all17/BOTH CI remains the gate before tested handoff.
+    F6b remains open: a provenance-backed pre-coop upstream save fixture and optional AI takeover.
+    Current-solo online co-player roundtrips are covered by PR50 and rerun for previews (3 CTests).
+    F7's full-screen party is primary-owned.
     Current solo worlds re-encoded with 4.0 player headers, 2/4 joined local views and preserved AI/locked tribes
     are the F6a regression gate. They do not establish actual pre-coop world compatibility or hardware acceptance.
   - ◐ F7 party screen (lobby rewrite, local + online in one): player cards, rules drawer (2a–2c), addon categories and
