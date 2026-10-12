@@ -14,7 +14,6 @@
 #include "driver/MouseCoords.h"
 #include "files.h"
 #include "frontend/SavePreview.h"
-#include "helpers/containerUtils.h"
 #include "helpers/optional_io.h"
 #include "ingameWindows/iwMainMenu.h"
 #include "ingameWindows/iwMsgbox.h"
@@ -223,7 +222,8 @@ struct SavePadFixture : uiHelper::Fixture, rttr::test::LocalGameFixture
         BOOST_TEST_REQUIRE(preview.has_value());
         BOOST_TEST(preview->getWidth() == frontend::savePreviewWidth);
         BOOST_TEST(preview->getHeight() == frontend::savePreviewHeight);
-        BOOST_TEST(helpers::contains_if(*preview, [](const auto color) { return color.asValue() != 0xFF000000u; }));
+        BOOST_TEST(std::any_of(preview->getPixels().data(), preview->getPixels().data() + preview->getNumPixels(),
+                               [](const auto color) { return color.asValue() != 0xFF000000u; }));
     }
 };
 } // namespace
@@ -289,23 +289,27 @@ BOOST_FIXTURE_TEST_CASE(PartialPreviewWriteStillReturnsASuccessfulLoadableWorld,
         const auto worldEnd = boost::filesystem::file_size(path) - 64016;
         rlimit limit{};
         BOOST_TEST_REQUIRE(getrlimit(RLIMIT_FSIZE, &limit) == 0);
+        const auto originalLimit = limit;
         limit.rlim_cur = worldEnd + 16;
         // A child isolates the OS write-failure probe from the suite's log files and global limits.
         const auto child = fork();
         BOOST_TEST_REQUIRE(child >= 0);
         if(child == 0)
         {
-            std::signal(SIGXFSZ, SIG_IGN);
+            const auto originalSignal = std::signal(SIGXFSZ, SIG_IGN);
             const bool limited = setrlimit(RLIMIT_FSIZE, &limit) == 0;
             const bool saved = limited && GAMECLIENT.SaveToFile(path);
+            // Gcov writes shared profiles at normal exit; the save-only limit must not truncate them.
+            const bool restoredLimit = setrlimit(RLIMIT_FSIZE, &originalLimit) == 0;
+            const bool restoredSignal = std::signal(SIGXFSZ, originalSignal) != SIG_ERR;
             Savegame loaded;
             const bool loadable = loaded.Load(path, SaveGameDataToLoad::All);
             const auto size = boost::filesystem::file_size(path);
             const bool equal =
               loaded.sgd.GetLength() == snapshot.GetLength()
               && std::equal(loaded.sgd.GetData(), loaded.sgd.GetData() + loaded.sgd.GetLength(), snapshot.GetData());
-            const bool good = saved && loadable && equal && size > worldEnd && size < worldEnd + 64016
-                              && !frontend::ReadSavePreview(path);
+            const bool good = saved && restoredLimit && restoredSignal && loadable && equal && size > worldEnd
+                              && size < worldEnd + 64016 && !frontend::ReadSavePreview(path);
             cleanup();
             GAMECLIENT.Stop();
             GAMESERVER.Stop();

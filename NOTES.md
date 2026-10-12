@@ -6,6 +6,38 @@ S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
 
+## 2026-10-12 — Sol PR56 CI repair
+
+Original head `3f62778d759c310e36b23d245a07ccc865ccf8b3` passed all51
+CTest entries in GCC10 but failed the coverage gate: the partial-image-write
+child kept RLIMIT_FSIZE active through normal exit, truncating shared gcov
+profiles. GCC16 separately rejected `helpers::contains_if` over PixelBuffer
+because its generic std::begin/end noexcept query diagnoses those accessors.
+Original failed job logs and CI/hash snapshots are retained in Sol state.
+No unchanged-head retry was requested.
+
+The tests now use typed pixel data pointers for their nonblack predicates.
+The child restores its original RLIMIT_FSIZE and SIGXFSZ disposition immediately
+after the real GameClient save attempt, before reload, cleanup and normal exit,
+and requires both restorations to succeed. The existing assertion still requires
+a successful save, byte-identical loadable world and incomplete optional image.
+No product, libsiedler2 or save-format change; no diagnostic suppression.
+
+Own GCC12 Debug/max2: preview5/112108 and physical Load/Save20 pass; full
+splitscreen754/503117 passes. A separate target-only GCC12 Debug coverage
+build instruments all74 Test_splitscreen translation units with CI's no-inline
+coverage flags, reusing the existing uninstrumented production/helper libraries.
+The executed child partial-write and physical20 cases leave all74 profiles valid:
+gcov-dump parses each, gcov reads matching notes/data without corruption.
+An isolated GCOV_PREFIX run of the original-head test object executes the same
+one-case save probe successfully and reproduces damaged profiles; positive
+profiles remain separate and intact. This targeted local evidence does not claim
+the whole GCC10 CI coverage gate or a local GCC16 build.
+
+Read-only gpt-6.1-sol review found no actionable issue. Actual agent TypeScript,
+clang-format10 and whitespace checks pass. Fresh exact-head all17/BOTH remains
+required before tested handoff; primary owns integration and release.
+
 ## 2026-10-12 — Sol F6b tactical save previews
 
 `sol/frontend-save-previews` adds a160×100 fog-aware tactical image to new

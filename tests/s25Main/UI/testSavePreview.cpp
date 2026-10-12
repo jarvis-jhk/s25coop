@@ -7,7 +7,6 @@
 #include "IngameMinimap.h"
 #include "Savegame.h"
 #include "frontend/SavePreview.h"
-#include "helpers/containerUtils.h"
 #include "worldFixtures/CreateEmptyWorld.h"
 #include "worldFixtures/WorldFixture.h"
 #include "world/GameWorldViewer.h"
@@ -204,7 +203,8 @@ BOOST_FIXTURE_TEST_CASE(CpuCaptureUsesVisibilityAndLeavesSimulationStateUntouche
             world.SetVisibility(MapPoint(x, y), 0, Visibility::Visible);
     const auto beforeVisible = AsyncChecksum::create(*game);
     const auto visible = IngameMinimap::CapturePreview(viewer, Extent(160, 100));
-    BOOST_TEST(helpers::contains_if(visible, [](const auto color) { return color.asValue() != 0xFF000000u; }));
+    BOOST_TEST(std::any_of(visible.getPixels().data(), visible.getPixels().data() + visible.getNumPixels(),
+                           [](const auto color) { return color.asValue() != 0xFF000000u; }));
     BOOST_TEST((AsyncChecksum::create(*game) == beforeVisible));
     for(unsigned y = 0; y < world.GetHeight(); ++y)
         for(unsigned x = 0; x < world.GetWidth(); ++x)
