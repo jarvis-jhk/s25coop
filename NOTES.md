@@ -6,6 +6,59 @@ S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
 
+## 2026-10-12 — Sol F8a online entry and direct join
+
+Home's Play online tile now opens a full-screen choice page. Join Game opens a
+full-screen address/port/password form with IPv6 and host-tribe co-player choices.
+Controller fields use the existing staged keyboard; Confirm only commits the field,
+while Connect starts the existing network handshake. Mouse, keyboard Enter, B/Escape
+and visible Back share those paths. Passwords are masked and absent from settings
+and page factories. Failed handshakes retain inputs for correction/retry.
+
+Design/scope: [OnlineDirect](doc/coop/OnlineDirect.md). LAN, Internet login, host
+creation and online lobby retain their existing implementations, including the
+proxy guard and custom Abort/OK behavior. Classic menu returns stay intact. F8 LAN
+browsing/full-screen connecting/online host adoption and F7d online cards are later
+slices; F7 party integration and the shared ROADMAP remain primary-owned.
+
+Own GCC12 Debug/Werror builds use max2 compiler jobs. New physical suite passes
+10 cases/487 assertions: four sizes including800x480 and1024x640, staged controller
+keyboard ownership/commit/cancel/disconnect, masked password and empty reentry,
+numeric port boundaries, failed connect, keyboard Enter/Escape/mouse, legacy paths,
+real IPv4 password rejection/retry, real IPv6 loopback abort/retry, host-tribe
+membership and deliberately reached keyboard/handshake exceptional-cleanup probes.
+
+Executed negative controls remove password masking and the member join request:
+the matched tests fail1 and3 intended assertions. The product is restored
+byte-for-byte and rebuilt before the final positive regression run. Initial physical
+execution caught construction-time SetText callbacks before the status control
+existed; notifications now start only after all controls and initial values exist.
+Ctrl+A is unsupported by ctrlEdit; the physical replacement helper uses End and
+Backspace. The initial aborted run is failure evidence, not passing coverage.
+
+Restored final-source full Debug Test_splitscreen passes780 cases/504466 assertions
+(539s). The final dedicated physical repeat passes10 cases/487 assertions.
+
+Supplied-source read-only gpt-6.1-sol final review finds no actionable issues.
+Formatter10 equality, include guards, whitespace, repository static validation and
+actual agent TypeScript checks pass. Local Clang23 diagnostics from six checks absent
+in CI's Clang18 catalog are recorded. Its Boost signals2 NewDelete diagnostic also
+reproduces in unchanged iwDirectIPConnect; no repository suppression is added.
+Exact-head Clang18/full CI remains required before tested handoff.
+
+IPv6 validation uses the existing localhost fast path and reaches the real IPv6
+loopback socket. Numeric ::1 is correctly passed to GameClient but the inherited
+AI_ADDRCONFIG resolver rejects it when only IPv6 loopback is configured; reported
+separately for primary follow-up. Numeric IPv6 reachability in this environment is
+not claimed. Existing central public ntfy fault reporting stays active; ordinary
+invalid ports/passwords/unavailable hosts are local errors. No private endpoint,
+new network protocol, release or physical Deck/network hardware claim.
+
+Base advanced cleanly from33be33dff to masterc67c70fd3 before validation, preserving
+all seven own source/test hashes. Sol pushes a draft sol/frontend-online-direct PR
+and requires all17 successful exact-head checks plus BOTH completed successful
+Unit tests/Static analysis workflows before primary handoff; never merges its PR.
+
 ## 2026-10-12 — Sol PR56 master reconciliation
 
 Merged master `33be33dff756b6f0738d2d5b8feca534252cdb4b` after primary
