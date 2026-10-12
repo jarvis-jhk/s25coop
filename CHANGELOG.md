@@ -8,6 +8,9 @@ and the game will show the new sections after an update.
 - Starting a campaign or scenario from the new menus now opens a full-screen party page: one big card
   per player, everyone who joined on the title screen is already seated, more controllers join with A
   on a free card and leave again with B. The host starts the game with Start.
+- The list under "Load game" now shows a small map picture of the selected save: your land,
+  buildings and roads as you saw them when saving, with unexplored ground hidden. Older saves show
+  "No preview stored".
 
 ## 0.1.17
 
