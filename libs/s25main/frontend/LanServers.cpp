@@ -77,6 +77,9 @@ bool LanDiscovery::Run()
         service.ip = address.GetIp();
         if(!service.info.GetIsActive())
             services_.erase(service.ip);
+        // A malformed advertisement must neither replace a valid entry nor take one of the bounded slots.
+        else if(!ReadLanServer(service))
+            continue;
         else if(services_.count(service.ip) || services_.size() < serviceLimit)
             services_[service.ip] = std::move(service);
     }

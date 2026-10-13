@@ -670,6 +670,10 @@ BOOST_FIXTURE_TEST_CASE(LanEndpointReplacementWithdrawalVersionAndMalformedPaylo
         BOOST_TEST(lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 0u);
         advertise(3456, "Restored");
         BOOST_TEST(lan().GetCtrl<ctrlButton>(dskFrontEndLan::ID_Join)->GetEnabled());
+        // A malformed advertisement from the same address must not displace the valid entry.
+        advertise(3456, "Invalid", rttr::version::GetRevision(), true, true);
+        BOOST_TEST(lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 1u);
+        BOOST_TEST(lan().GetCtrl<ctrlButton>(dskFrontEndLan::ID_Join)->GetEnabled());
         focus(dskFrontEndLan::ID_Servers);
         // Queue the withdrawal without a paint; the next physical A must drain it before dispatch.
         advertise(3456, "Gone", rttr::version::GetRevision(), false, false, 0);
