@@ -87,6 +87,9 @@ starting the game and playing it are still upstream's mouse screens with control
   Not yet seen in a real GUI (victory screen, locked buttons) — needs Jan's Deck/Mint.
 - ☐ Mission unlocking and presentation as close to the original as possible (Roman campaign
   MISS200–209, World campaign).
+  Original Roman rule known (REA on S2.EXE, doc/research/rea.md): strictly linear n → n+1, 0 and 1
+  open from the start. Ours differs only in MISS205 also opening chapter 7; remove once MISS206 is
+  shown winnable. World campaign unlocking still to be read.
 - ☐ Original videos/intros where the original had them, if they exist in the S2 data.
 
 ## M2 — Coop: many players, one tribe

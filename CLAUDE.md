@@ -70,6 +70,14 @@ many slots as there are players.
 - End every session by updating ROADMAP.md status and `NOTES.md` (what was done, what is next,
   what is blocked) so the next session starts cold without searching.
 
+## Original behaviour: REA (Jan, 2026-10-12)
+When RTTR is unsure what the original did (campaign logic, unlocks, save formats), check S2.EXE
+with REA (npm `rea-agents`, genuine package only) on Ghidra: `tools/re/le2elf.py` makes the DOS/4GW
+exe loadable; how-to, pitfalls and findings in doc/research/rea.md. Toolchain lives outside the repo
+(JARVIS data/toolchain: rea, Ghidra 12.1.4, JDK 21); original files in data/siedler/S2. Never commit
+S2.EXE, converted binaries, game data or decompiled code; findings in our own words. For Linux/Deck
+failures, `rea capture-process` (PTY output, exit, file snapshots) needs no Ghidra.
+
 ## Fault reports (Jan, 2026-09-26)
 Everything shipped reports its own faults: ntfy.sh topic → GitHub Action → `fault-report` issue →
 this lane. None of Jan's own domains (see JARVIS memory `s25coop`) or their subdomains may ever

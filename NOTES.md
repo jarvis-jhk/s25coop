@@ -1682,3 +1682,20 @@ error); Create keeps the proxy refusal. Codex gpt-6.1-sol diff review: no action
 Primary Debug max2: Test_splitscreen and Test_UI pass. Not yet released; the player-visible
 CHANGELOG entry belongs with the next release. Follow-up from Sol: inherited AI_ADDRCONFIG
 resolver rejects numeric ::1 on IPv6-only-loopback hosts (not addressed).
+
+## REA on the original S2.EXE (2026-10-12)
+
+Request from Jan (via adhoc): use REA for original Settlers II behaviour. Ghidra has no LE
+(DOS/4GW) loader, so `tools/re/le2elf.py` converts S2.EXE into an i386 ELF (15 objects, 72689
+fixups, none skipped); REA 6.4.0 / Ghidra 12.1.4 then analyses a function in about two minutes.
+How-to and findings: doc/research/rea.md. Sol may use it the same way (own copy, never commit
+the exe, the ELF or decompiled code).
+
+First finding (M1 "mission unlocking as close to the original"): Roman progress is
+SAVE\MISSION.DAT, one '1'/'0' per mission, shipped as 1100000000 (= RTTR default {0,1}). The final
+event of each mission opens up to three missions named in `!MET_SET_FINAL_EVENT` of its RTX
+script; for Roman that is strictly n -> n+1, MISS209 opens nothing. Our MISS205.lua additionally
+opens chapter 7 (upstream TODO "remove when chapter 7 [MISS206] is playable"). Next: prove MISS206
+winnable in RTTR, then drop that extra unlock. World campaign (MISSION2.DAT, continent map) is
+separate code, still open.
+
