@@ -9,13 +9,14 @@
 #include "controls/ctrlButton.h"
 #include "controls/ctrlCheck.h"
 #include "controls/ctrlEdit.h"
+#include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "controls/ctrlTextDeepening.h"
 #include "desktops/dskFrontEndConnect.h"
+#include "desktops/dskFrontEndLan.h"
 #include "desktops/dskFrontEndOnline.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
-#include "desktops/dskLAN.h"
 #include "desktops/dskMultiPlayer.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
@@ -26,11 +27,14 @@
 #include "ingameWindows/iwMsgbox.h"
 #include "network/GameMessages.h"
 #include "gameTypes/CompressedData.h"
+#include "gameData/LanDiscoveryCfg.h"
 #include "rttr/test/ConfigOverride.hpp"
 #include "rttr/test/TmpFolder.hpp"
 #include "s25util/MessageQueue.h"
+#include "s25util/Serializer.h"
 #include "s25util/Socket.h"
 #include <boost/test/unit_test.hpp>
+#include <algorithm>
 #include <stdexcept>
 
 namespace {
@@ -54,6 +58,8 @@ struct OnlineFixture : rttr::test::MenuPadFixture
     const decltype(SETTINGS.video) savedVideo = SETTINGS.video;
     const VideoMode savedSize = VIDEODRIVER.GetWindowSize();
     const DisplayMode savedMode = VIDEODRIVER.GetDisplayMode();
+    const unsigned savedScale = VIDEODRIVER.getGuiScale().percent();
+    const unsigned savedReference = VIDEODRIVER.getUiReferenceHeight();
     bool cleaned = false;
 
     OnlineFixture()
@@ -72,6 +78,8 @@ struct OnlineFixture : rttr::test::MenuPadFixture
         GAMESERVER.Stop();
         SETTINGS.server = savedServer;
         SETTINGS.proxy = savedProxy;
+        VIDEODRIVER.setUiReferenceHeight(savedReference);
+        VIDEODRIVER.setGuiScalePercent(savedScale);
         VIDEODRIVER.ResizeScreen(savedSize, savedMode);
         SETTINGS.video = savedVideo;
         dskHome::ForgetLastChoice();
@@ -146,6 +154,48 @@ struct OnlineFixture : rttr::test::MenuPadFixture
         for(const auto character : text)
             WINDOWMANAGER.Msg_KeyDown(KeyEvent(character));
     }
+    static dskFrontEndLan& lan()
+    {
+        auto* result = desktopAs<dskFrontEndLan>();
+        BOOST_TEST_REQUIRE(result);
+        return *result;
+    }
+    void enterLan()
+    {
+        enter(false);
+        choose(Online::ID_Lan);
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLan>());
+    }
+    void advertise(uint16_t port = 2345, const std::string& name = "Fixture LAN",
+                   const std::string& revision = rttr::version::GetRevision(), bool active = true,
+                   bool malformed = false, unsigned frames = 10)
+    {
+        LANDiscoveryBase::Info packet{};
+        packet.GetMagic() = LAN_DISCOVERY_CFG.magicResponse;
+        packet.GetVersion() = LAN_DISCOVERY_CFG.version;
+        packet.GetIsActive() = active ? 1 : 0;
+        LanGameInfo info{name, true, "Fixture map", 1, 4, port, false, "Fixture version", revision};
+        Serializer ser;
+        info.Serialize(ser);
+        std::copy_n(ser.GetData(), ser.GetLength(), packet.GetPayload().data());
+        if(malformed)
+            packet.GetPayload().fill(static_cast<char>(0xff));
+        Socket sender;
+        BOOST_TEST_REQUIRE(sender.Create(AF_INET, true));
+        // BSD sendto requires the IPv4 address length, not PeerAddr's storage-union size.
+        sockaddr_in receiver{};
+        receiver.sin_family = AF_INET;
+        receiver.sin_port = htons(LAN_DISCOVERY_CFG.portResponse);
+        receiver.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        BOOST_TEST_REQUIRE(sendto(sender.GetSocket(), packet.data.data(), sizeof(packet), 0,
+                                  reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
+                           == static_cast<int>(sizeof(packet)));
+        for(unsigned i = 0; i < frames; ++i)
+        {
+            frame();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
     void back()
     {
         press(pad, PadButton::B);
@@ -181,14 +231,14 @@ struct JoinFixture : rttr::test::LocalGameFixture, OnlineFixture
         }
         BOOST_TEST_REQUIRE(ready());
     }
-    void server(bool ipv6 = false)
+    void server(bool ipv6 = false, ServerType type = ServerType::Direct)
     {
         bool started = false;
         for(unsigned i = 0; i < 10 && !started; ++i)
         {
             GAMESERVER.Stop();
             port = static_cast<uint16_t>(rttr::test::randomValue(1024, 49151));
-            started = GAMESERVER.Start(CreateServerInfo(ServerType::Direct, port, "Online test", "secret", ipv6),
+            started = GAMESERVER.Start(CreateServerInfo(type, port, "Online test", "secret", ipv6),
                                        MapDescription(mapPath(), MapType::OldMap), "host-secret");
         }
         BOOST_TEST_REQUIRE(started);
@@ -210,14 +260,14 @@ struct JoinFixture : rttr::test::LocalGameFixture, OnlineFixture
         }
     }
     void send(const GameMessage& message) { BOOST_TEST_REQUIRE(MessageQueue::sendMessage(host, message)); }
-    void joinHost()
+    void joinHost(ServerType type = ServerType::Direct)
     {
         BOOST_TEST_REQUIRE(host.Connect("127.0.0.1", port, false));
         await([&] {
             receiveHost();
             return hostSlot.has_value();
         });
-        send(GameMessage_Server_Type(ServerType::Direct, rttr::version::GetRevision()));
+        send(GameMessage_Server_Type(type, rttr::version::GetRevision()));
         await([&] {
             receiveHost();
             return hostVersion;
@@ -411,9 +461,10 @@ BOOST_FIXTURE_TEST_CASE(LegacyNetworkHostAndLobbyStayReachableWithProxyGuard, On
         back();
         BOOST_TEST_REQUIRE(desktopAs<Online>());
         choose(Online::ID_Lan);
-        BOOST_TEST_REQUIRE(desktopAs<dskLAN>());
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLan>());
         back();
-        BOOST_TEST_REQUIRE(desktopAs<dskMultiPlayer>());
+        BOOST_TEST_REQUIRE(desktopAs<Online>());
+        BOOST_TEST(focusedId(0) == Online::ID_Lan);
         back();
         BOOST_TEST_REQUIRE(desktopAs<dskHome>());
     });
@@ -543,6 +594,184 @@ BOOST_AUTO_TEST_CASE(ExceptionCleanupRestoresSettingsWithAKeyboardOrHandshakeOpe
         BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
     }
+}
+
+BOOST_FIXTURE_TEST_CASE(LanDiscoveryEmptyRefreshResizeAndBackUseThePageTrail, OnlineFixture)
+{
+    checked([&] {
+        enterLan();
+        BOOST_TEST(!lan().GetCtrl<ctrlButton>(dskFrontEndLan::ID_Join)->GetEnabled());
+        BOOST_TEST(focusedId(0) == dskFrontEndLan::ID_Refresh);
+        advertise();
+        auto* table = lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers);
+        BOOST_TEST(table->GetNumRows() == 1u);
+        BOOST_TEST(table->GetItemText(0, 0) == "(pwd) Fixture LAN");
+        BOOST_TEST(table->GetItemText(0, 1) == "Fixture map");
+        BOOST_TEST(table->GetItemText(0, 2) == "1/4");
+        for(const VideoMode size :
+            {VideoMode(800, 480), VideoMode(800, 600), VideoMode(1024, 640), VideoMode(1280, 800)})
+        {
+            BOOST_TEST_REQUIRE(VIDEODRIVER.ResizeScreen(size, DisplayMode::Windowed));
+            frame();
+            for(unsigned id = dskFrontEndLan::ID_Servers; id <= dskFrontEndLan::ID_Host; ++id)
+            {
+                const auto rect = lan().GetCtrl<Window>(id)->GetBoundaryRect();
+                const auto area = lan().GetFrame().content;
+                BOOST_TEST(rect.left >= area.left);
+                BOOST_TEST(rect.right <= area.right);
+                BOOST_TEST(rect.top >= area.top);
+                BOOST_TEST(rect.bottom <= area.bottom);
+            }
+        }
+        choose(dskFrontEndLan::ID_Refresh);
+        BOOST_TEST(table->GetNumRows() == 0u);
+        advertise(2345, "Renamed LAN");
+        BOOST_TEST_REQUIRE(table->GetSelection().has_value());
+        BOOST_TEST(table->GetItemText(*table->GetSelection(), 0) == "(pwd) Renamed LAN");
+        back();
+        BOOST_TEST_REQUIRE(desktopAs<Online>());
+        BOOST_TEST(focusedId(0) == Online::ID_Lan);
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Escape));
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<dskHome>());
+        BOOST_TEST(focusedId(0) == dskHome::ID_Online);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(LanEndpointReplacementWithdrawalVersionAndMalformedPayloadCannotJoin, OnlineFixture)
+{
+    checked([&] {
+        enterLan();
+        advertise();
+        choose(dskFrontEndLan::ID_Servers);
+        BOOST_TEST_REQUIRE(desktopAs<Page>());
+        BOOST_TEST(page().GetCtrl<ctrlEdit>(Page::ID_Host)->GetText() == "127.0.0.1");
+        BOOST_TEST(page().GetCtrl<ctrlEdit>(Page::ID_Port)->GetText() == "2345");
+        type(Page::ID_Password, U"private");
+        back();
+        advertise(3456, "Different endpoint");
+        auto* table = lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers);
+        BOOST_TEST(!table->GetSelection().has_value());
+        BOOST_TEST(!lan().GetCtrl<ctrlButton>(dskFrontEndLan::ID_Join)->GetEnabled());
+        focus(dskFrontEndLan::ID_Servers);
+        press(pad, PadButton::DpadDown);
+        choose(dskFrontEndLan::ID_Join);
+        BOOST_TEST_REQUIRE(desktopAs<Page>());
+        BOOST_TEST(page().GetCtrl<ctrlEdit>(Page::ID_Port)->GetText() == "3456");
+        BOOST_TEST(page().GetCtrl<ctrlEdit>(Page::ID_Password)->GetText().empty());
+        back();
+        advertise(3456, "Different version", "incompatible");
+        BOOST_TEST(!lan().GetCtrl<ctrlButton>(dskFrontEndLan::ID_Join)->GetEnabled());
+        choose(dskFrontEndLan::ID_Servers);
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLan>());
+        advertise(3456, "Offline", rttr::version::GetRevision(), false);
+        BOOST_TEST(lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 0u);
+        advertise(3456, "Invalid", rttr::version::GetRevision(), true, true);
+        BOOST_TEST(lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 0u);
+        advertise(3456, "Restored");
+        BOOST_TEST(lan().GetCtrl<ctrlButton>(dskFrontEndLan::ID_Join)->GetEnabled());
+        focus(dskFrontEndLan::ID_Servers);
+        // Queue the withdrawal without a paint; the next physical A must drain it before dispatch.
+        advertise(3456, "Gone", rttr::version::GetRevision(), false, false, 0);
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLan>());
+        BOOST_TEST(lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 0u);
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(LanMouseKeyboardHostProxyAndSmallWindowRecovery, OnlineFixture)
+{
+    checked([&] {
+        enterLan();
+        advertise();
+        click(*lan().GetCtrl<Window>(dskFrontEndLan::ID_Join));
+        BOOST_TEST_REQUIRE(desktopAs<Page>());
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Escape));
+        frame();
+        advertise();
+        SETTINGS.proxy.type = ProxyType::Socks4;
+        choose(dskFrontEndLan::ID_Host);
+        BOOST_TEST_REQUIRE(dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()));
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        SETTINGS.proxy.type = ProxyType::None;
+        choose(dskFrontEndLan::ID_Host);
+        BOOST_TEST_REQUIRE(dynamic_cast<iwDirectIPCreate*>(WINDOWMANAGER.GetTopMostWindow()));
+        back();
+        BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        VIDEODRIVER.setUiReferenceHeight(0);
+        VIDEODRIVER.setGuiScalePercent(100);
+        BOOST_TEST_REQUIRE(VIDEODRIVER.ResizeScreen(VideoMode(480, 320), DisplayMode::Windowed));
+        frame();
+        // Resize notifications clamp to the legacy minimum; a new page reads the actual render size.
+        enterLan();
+        BOOST_TEST_REQUIRE(lan().GetFrame().content.getSize().x < 480);
+        for(unsigned id = dskFrontEndLan::ID_Servers; id <= dskFrontEndLan::ID_Host; ++id)
+            BOOST_TEST(!lan().GetCtrl<Window>(id)->IsVisible());
+        BOOST_TEST(lan().GetCtrl<ctrlText>(dskFrontEndLan::ID_Status)->GetText()
+                   == "Reduce the UI scale or enlarge the window.");
+        BOOST_TEST_REQUIRE(VIDEODRIVER.ResizeScreen(VideoMode(1280, 800), DisplayMode::Windowed));
+        frame();
+        BOOST_TEST(lan().GetCtrl<Window>(dskFrontEndLan::ID_Servers)->IsVisible());
+        advertise();
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Down));
+        BOOST_TEST(lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetSelection().has_value());
+        click(*lan().GetCtrl<Window>(dskFrontEndLan::ID_btBack));
+        BOOST_TEST_REQUIRE(desktopAs<Online>());
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(LanPasswordRetryAndHostTribeUseTheRealLanHandshake, JoinFixture)
+{
+    checkedJoin([&] {
+        server(false, ServerType::LAN);
+        joinHost(ServerType::LAN);
+        enterLan();
+        advertise(port, "Online test");
+        auto* table = lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers);
+        focus(dskFrontEndLan::ID_Servers);
+        // Every announcement here uses the same host name, including the real server's broadcast.
+        BOOST_TEST_REQUIRE(table->GetSelection().has_value());
+        BOOST_TEST_REQUIRE(table->GetItemText(*table->GetSelection(), 0) == "(pwd) Online test");
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<Page>());
+        type(Page::ID_Password, U"wrong");
+        choose(Page::ID_Connect);
+        await([] { return WINDOWMANAGER.GetTopMostWindow() == nullptr; });
+        BOOST_TEST(page().GetCtrl<ctrlText>(Page::ID_Status)->GetText()
+                   == ClientErrorToStr(ClientError::WrongPassword));
+        type(Page::ID_Password, U"secret");
+        choose(Page::ID_Coop);
+        choose(Page::ID_Connect);
+        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        BOOST_TEST(GAMECLIENT.IsCoopMember());
+        BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
+    });
+}
+
+BOOST_AUTO_TEST_CASE(LanExceptionCleanupReleasesDiscoverySocketForReentry)
+{
+    OnlineFixture fixture;
+    bool reached = false;
+    BOOST_CHECK_THROW(fixture.checked([&] {
+        fixture.enterLan();
+        fixture.advertise();
+        BOOST_TEST_REQUIRE(OnlineFixture::lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 1u);
+        reached = true;
+        onlineCleanupProbe();
+    }),
+                      std::runtime_error);
+    BOOST_TEST(reached);
+    BOOST_TEST(fixture.cleaned);
+    fixture.checked([&] {
+        fixture.enterLan();
+        fixture.advertise();
+        BOOST_TEST(OnlineFixture::lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 1u);
+    });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

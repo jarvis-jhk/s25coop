@@ -6,7 +6,7 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "desktops/dskFrontEndConnect.h"
-#include "desktops/dskLAN.h"
+#include "desktops/dskFrontEndLan.h"
 #include "ingameWindows/iwDirectIPCreate.h"
 #include "ingameWindows/iwLobbyConnect.h"
 #include "ingameWindows/iwMsgbox.h"
@@ -31,7 +31,11 @@ void dskFrontEndOnline::OnChoose(const unsigned id)
                 return std::make_unique<dskFrontEndConnect>(state);
             });
             break;
-        case ID_Lan: WINDOWMANAGER.Switch(std::make_unique<dskLAN>()); break;
+        case ID_Lan:
+            Open([state = std::make_shared<dskFrontEndLan::BrowseState>()] {
+                return std::make_unique<dskFrontEndLan>(state);
+            });
+            break;
         case ID_Internet: WINDOWMANAGER.Show(std::make_unique<iwLobbyConnect>(), true); break;
         case ID_Host:
             if(SETTINGS.proxy.type != ProxyType::None)

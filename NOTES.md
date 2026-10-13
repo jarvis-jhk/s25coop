@@ -1699,3 +1699,74 @@ opens chapter 7 (upstream TODO "remove when chapter 7 [MISS206] is playable"). N
 winnable in RTTR, then drop that extra unlock. World campaign (MISSION2.DAT, continent map) is
 separate code, still open.
 
+
+## Sol F8b — full-screen LAN discovery and join (2026-10-13)
+
+`sol/frontend-online-lan` replaces the default Online → LAN route with a
+full-screen server table, Refresh/Join/Create and the page trail. Classic keeps
+its old browser. Endpoint identity includes address/port/family: rename and
+refresh preserve it, replacement or withdrawal clears active selection, and
+activation drains announcements before resolving the row. Revision mismatch
+blocks Join. F8a's masked, staged input form now carries ServerType::LAN through
+its real password/co-player handshake. Host creation retains its proxy guard.
+
+The first read-only gpt-6.1-sol review found the inherited discovery drain could
+monopolize the UI under sustained UDP traffic. The new browser uses its own
+protocol-compatible adapter: 16 packets/call, 128 retained addresses, deferring
+Join while announcements remain. A spare receive byte rejects oversized
+POSIX datagrams; short packets, magic/version/active bytes, unbounded string
+lengths, invalid booleans/counts/ports are rejected. The shared dependency and
+Classic are unchanged. The second read-only review found no actionable issue;
+its Socket/oversized-packet verification caveat was resolved by inspecting the
+shared socket RAII/recvfrom path and adding actual short/oversized UDP cases.
+
+Own GCC12 Debug, max2 jobs: isolated LAN/direct physical + parser/discovery
+19 cases / 853 assertions pass; final relevant Home/Page/network/lobby/create/
+table regressions 56 cases / 3681 assertions pass. Real LAN host/member sockets
+exercise a wrong password, retry and host-tribe membership; real UDP discovery,
+physical pad/mouse/keyboard, resize/small-content recovery, a withdrawal queued
+in the A-input frame and exceptional cleanup/re-entry are covered. Executed
+endpoint-retarget and doubled-receive-budget omission controls each fail two
+intended assertions; both sources were restored byte-exact, rebuilt and the
+positive regressions rerun. Local format10/static validation/diff and actual
+agent TypeScript pass. Clang23 records only newer style checks on the new page
+and existing dependency diagnostics; exact-head Clang18 CI remains required,
+with no source suppressions added.
+
+Status: implementation/local proof complete, fresh all17 checks and BOTH full
+CI workflows required before tested handoff to Opus. Design/API details in
+[OnlineLan](doc/coop/OnlineLan.md); private evidence under data/siedler/sol-lan-*.
+ROADMAP remains primary-owned. Combined "Online menus" stays started: Internet
+server/login, F4–F6 network hosting, connecting presentation and F7d cards remain.
+This is mock-renderer and loopback proof, not physical Deck/remote-LAN acceptance.
+The existing central public fault relay remains; malformed announcements and
+ordinary connection/user errors do not create reports. No private endpoint,
+release, primary integration or completed-PR claim.
+
+
+## Sol PR58 CI repair (2026-10-13)
+
+Head 87301553b7 is historical, not a tested handoff: both Clang sanitizer jobs
+failed on the new malformed all-FF advertisement probe reaching the dependency's
+Serializer::PopVarSize signed shift (127 << 28). LAN strings now decode bounded
+uint32_t varints locally, rejecting fifth-byte overflow before shifting; the
+shared dependency stays untouched. Tests also retain valid multi-byte revision
+lengths and reject oversized multi-byte name lengths.
+
+macOS reported six send failures because the UDP fixture used PeerAddr's
+storage-union size. The two senders now use a zero-initialized sockaddr_in and
+its actual size with sendto; native macOS CI is still the portability gate. GCC10
+passed all tests, then rejected one unexecuted table-search fallback. Every
+fixture advertisement has the same host name, so the redundant search is removed
+and the real selected-name/handshake assertions retained, without exclusions.
+
+Own Debug max2 final rebuild passes: LAN/direct19 cases/857 assertions; affected
+Home/Page/network/lobby/create/table56 cases/3685 assertions. A separate test
+binary instruments LanServers.cpp and Serializer.cpp with GCC12 UBSan and
+-fno-sanitize-recover=all, leaving normal objects unchanged:19/857 pass. Restoring
+the old LAN decoder in that separate binary fails the executed malformed-length
+test with the exact signed-shift diagnostic (exit1). Normal source was never
+replaced. Format10, diff checks and actual agent TypeScript pass. Fresh exact-head
+all17 checks and BOTH successful workflows are required; no handoff, release,
+hardware claim or next slice. Private evidence: sol-lan-ci-repair-* and original
+failed job logs. The combined Online menus item remains started.
