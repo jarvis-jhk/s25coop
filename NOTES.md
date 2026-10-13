@@ -1742,3 +1742,31 @@ This is mock-renderer and loopback proof, not physical Deck/remote-LAN acceptanc
 The existing central public fault relay remains; malformed announcements and
 ordinary connection/user errors do not create reports. No private endpoint,
 release, primary integration or completed-PR claim.
+
+
+## Sol PR58 CI repair (2026-10-13)
+
+Head 87301553b7 is historical, not a tested handoff: both Clang sanitizer jobs
+failed on the new malformed all-FF advertisement probe reaching the dependency's
+Serializer::PopVarSize signed shift (127 << 28). LAN strings now decode bounded
+uint32_t varints locally, rejecting fifth-byte overflow before shifting; the
+shared dependency stays untouched. Tests also retain valid multi-byte revision
+lengths and reject oversized multi-byte name lengths.
+
+macOS reported six send failures because the UDP fixture used PeerAddr's
+storage-union size. The two senders now use a zero-initialized sockaddr_in and
+its actual size with sendto; native macOS CI is still the portability gate. GCC10
+passed all tests, then rejected one unexecuted table-search fallback. Every
+fixture advertisement has the same host name, so the redundant search is removed
+and the real selected-name/handshake assertions retained, without exclusions.
+
+Own Debug max2 final rebuild passes: LAN/direct19 cases/857 assertions; affected
+Home/Page/network/lobby/create/table56 cases/3685 assertions. A separate test
+binary instruments LanServers.cpp and Serializer.cpp with GCC12 UBSan and
+-fno-sanitize-recover=all, leaving normal objects unchanged:19/857 pass. Restoring
+the old LAN decoder in that separate binary fails the executed malformed-length
+test with the exact signed-shift diagnostic (exit1). Normal source was never
+replaced. Format10, diff checks and actual agent TypeScript pass. Fresh exact-head
+all17 checks and BOTH successful workflows are required; no handoff, release,
+hardware claim or next slice. Private evidence: sol-lan-ci-repair-* and original
+failed job logs. The combined Online menus item remains started.

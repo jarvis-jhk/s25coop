@@ -182,9 +182,14 @@ struct OnlineFixture : rttr::test::MenuPadFixture
             packet.GetPayload().fill(static_cast<char>(0xff));
         Socket sender;
         BOOST_TEST_REQUIRE(sender.Create(AF_INET, true));
-        PeerAddr receiver(LAN_DISCOVERY_CFG.portResponse);
-        reinterpret_cast<sockaddr_in*>(receiver.GetAddr())->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-        BOOST_TEST_REQUIRE(sender.Send(&packet, sizeof(packet), receiver) == static_cast<int>(sizeof(packet)));
+        // BSD sendto requires the IPv4 address length, not PeerAddr's storage-union size.
+        sockaddr_in receiver{};
+        receiver.sin_family = AF_INET;
+        receiver.sin_port = htons(LAN_DISCOVERY_CFG.portResponse);
+        receiver.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        BOOST_TEST_REQUIRE(sendto(sender.GetSocket(), packet.data.data(), sizeof(packet), 0,
+                                  reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
+                           == static_cast<int>(sizeof(packet)));
         for(unsigned i = 0; i < frames; ++i)
         {
             frame();
@@ -728,13 +733,7 @@ BOOST_FIXTURE_TEST_CASE(LanPasswordRetryAndHostTribeUseTheRealLanHandshake, Join
         advertise(port, "Online test");
         auto* table = lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers);
         focus(dskFrontEndLan::ID_Servers);
-        // The real server may also advertise from the container's non-loopback interface.
-        for(unsigned i = 0; i < table->GetNumRows(); ++i)
-        {
-            if(table->GetSelection() && table->GetItemText(*table->GetSelection(), 0) == "(pwd) Online test")
-                break;
-            press(pad, PadButton::DpadDown);
-        }
+        // Every announcement here uses the same host name, including the real server's broadcast.
         BOOST_TEST_REQUIRE(table->GetSelection().has_value());
         BOOST_TEST_REQUIRE(table->GetItemText(*table->GetSelection(), 0) == "(pwd) Online test");
         press(pad, PadButton::A);

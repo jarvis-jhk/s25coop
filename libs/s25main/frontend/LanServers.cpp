@@ -11,7 +11,17 @@
 namespace {
 std::string readString(Serializer& ser, unsigned maxLength)
 {
-    const unsigned length = ser.PopVarSize();
+    // Decode untrusted varints here: the shared decoder shifts signed promoted bytes.
+    uint32_t length = 0;
+    for(unsigned shift = 0;; shift += 7)
+    {
+        const uint32_t byte = ser.PopUnsignedChar();
+        if(shift == 28 && (byte & 0xf0))
+            throw std::runtime_error("Invalid LAN string length encoding");
+        length |= (byte & 0x7f) << shift;
+        if(!(byte & 0x80))
+            break;
+    }
     if(length > maxLength || length > ser.GetBytesLeft())
         throw std::runtime_error("Invalid LAN string length");
     const auto* bytes = ser.PopAndDiscard(length);

@@ -19,7 +19,8 @@ its endpoint clears the active row and Join. A controller can explicitly choose
 a new row. Advertisements are drained again at activation so a withdrawal in
 the same input frame cannot open a stale endpoint. An incompatible revision
 stays visible and cannot join. Malformed payload lengths, boolean bytes, ports
-and player counts are rejected before entering UI state; this is ordinary
+and player counts are rejected before entering UI state. String lengths use an
+unsigned, five-byte decoder that rejects overflowing final bytes; this is ordinary
 untrusted network input and creates no fault report.
 
 Join opens F8a's address/port/password/co-player form populated from the selected
@@ -37,7 +38,7 @@ separate remaining F8/F7 slices. F8a plus F8b does not finish the combined
 "Online menus" item. The central public ntfy fault relay and CI webhook remain
 the fault path; no private queue URL belongs in this public repository.
 
-Acceptance uses actual UDP advertisements through LANDiscoveryClient, physical
+Acceptance uses actual UDP advertisements through the bounded LanDiscovery adapter, physical
 pad/mouse/keyboard navigation, endpoint change/withdrawal/re-entry, malformed
 payloads, real LAN password failure/retry and host-tribe co-player handshake,
 exceptional cleanup and the legacy network regression suites. These tests use

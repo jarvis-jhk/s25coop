@@ -46,6 +46,11 @@ BOOST_AUTO_TEST_CASE(ProductionSerializationRetainsEndpointAndMetadata)
     ipv6.hasPwd = false;
     BOOST_TEST(frontend::ReadLanServer(service(ipv6))->Key() == "127.0.0.1:2345/6");
     BOOST_TEST(!frontend::ReadLanServer(service(ipv6))->info.hasPwd);
+    auto longRevision = game();
+    longRevision.revision = std::string(128, 'r');
+    const auto longParsed = frontend::ReadLanServer(service(longRevision));
+    BOOST_TEST_REQUIRE(longParsed.has_value());
+    BOOST_TEST(longParsed->info.revision == longRevision.revision);
 }
 BOOST_AUTO_TEST_CASE(RejectsInvalidCountsPortsAndEmptyAddresses)
 {
@@ -71,7 +76,7 @@ BOOST_AUTO_TEST_CASE(UntrustedStringLengthsAndBooleanBytesDoNotAllocateOrAssert)
     auto packet = service(game());
     packet.info.GetPayload()[6] = 2; // After length byte and "Alpha": password boolean.
     BOOST_TEST(!frontend::ReadLanServer(packet).has_value());
-    for(const unsigned length : {65u, std::numeric_limits<unsigned>::max()})
+    for(const unsigned length : {65u, 128u, std::numeric_limits<unsigned>::max()})
     {
         Serializer ser;
         ser.PushVarSize(length);
@@ -104,8 +109,11 @@ BOOST_FIXTURE_TEST_CASE(DiscoveryBoundsInvalidTrafficAndRetainsTheProductionWire
     BOOST_TEST(discovery.Start());
     Socket sender;
     BOOST_TEST_REQUIRE(sender.Create(AF_INET, true));
-    PeerAddr receiver(LAN_DISCOVERY_CFG.portResponse);
-    reinterpret_cast<sockaddr_in*>(receiver.GetAddr())->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    // BSD sendto requires the IPv4 address length, not PeerAddr's storage-union size.
+    sockaddr_in receiver{};
+    receiver.sin_family = AF_INET;
+    receiver.sin_port = htons(LAN_DISCOVERY_CFG.portResponse);
+    receiver.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     LANDiscoveryBase::Info packet{};
     packet.GetMagic() = LAN_DISCOVERY_CFG.magicResponse;
     packet.GetVersion() = LAN_DISCOVERY_CFG.version;
@@ -123,10 +131,14 @@ BOOST_FIXTURE_TEST_CASE(DiscoveryBoundsInvalidTrafficAndRetainsTheProductionWire
         std::array<char, sizeof(invalid) + 1> bytes{};
         std::copy(invalid.data.begin(), invalid.data.end(), bytes.begin());
         const int size = sizeof(invalid) - (kind == 3 ? 1 : 0) + (kind == 4 ? 1 : 0);
-        BOOST_TEST_REQUIRE(sender.Send(bytes.data(), size, receiver) == size);
+        BOOST_TEST_REQUIRE(sendto(sender.GetSocket(), bytes.data(), size, 0,
+                                  reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
+                           == size);
     }
     packet.GetPayload() = service(game()).info.GetPayload();
-    BOOST_TEST_REQUIRE(sender.Send(&packet, sizeof(packet), receiver) == static_cast<int>(sizeof(packet)));
+    BOOST_TEST_REQUIRE(sendto(sender.GetSocket(), packet.data.data(), sizeof(packet), 0,
+                              reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
+                       == static_cast<int>(sizeof(packet)));
     BOOST_TEST(!discovery.Run());
     BOOST_TEST(discovery.GetServices().empty());
     BOOST_TEST(discovery.Run());
@@ -134,7 +146,9 @@ BOOST_FIXTURE_TEST_CASE(DiscoveryBoundsInvalidTrafficAndRetainsTheProductionWire
     BOOST_TEST_REQUIRE(frontend::ReadLanServer(discovery.GetServices().begin()->second).has_value());
     BOOST_TEST(frontend::ReadLanServer(discovery.GetServices().begin()->second)->Key() == "127.0.0.1:2345/4");
     packet.GetIsActive() = 0;
-    BOOST_TEST_REQUIRE(sender.Send(&packet, sizeof(packet), receiver) == static_cast<int>(sizeof(packet)));
+    BOOST_TEST_REQUIRE(sendto(sender.GetSocket(), packet.data.data(), sizeof(packet), 0,
+                              reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
+                       == static_cast<int>(sizeof(packet)));
     BOOST_TEST(discovery.Run());
     BOOST_TEST(discovery.GetServices().empty());
     discovery.Refresh();
