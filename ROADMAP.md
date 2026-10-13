@@ -285,7 +285,9 @@ starting the game and playing it are still upstream's mouse screens with control
   - ◐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
     - ☑ F8a online entry + direct join: Home → Play online is a full-screen page (Join/LAN/Internet/Create);
       Join Game is a full-screen address/port/password form with IPv6 and host-tribe co-play (PR57, 2026-10-12).
-      Remaining: full-screen LAN/server browser, F4–F6 network hosting, connecting presentation, F7d cards.
+    - ☑ F8b LAN browser: Home → Play online → LAN is a full-screen, bounded UDP discovery list with
+      Refresh/Join/Create, stable endpoint selection and the masked password/co-player form (PR58, 2026-10-13).
+      Remaining: Internet/server login, F4–F6 network hosting, connecting presentation, F7d cards.
   - ◐ F9 options: grouped full-screen display/Deck, audio, controls and language pages implemented on
     `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
     Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption

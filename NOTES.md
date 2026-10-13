@@ -1683,6 +1683,20 @@ Primary Debug max2: Test_splitscreen and Test_UI pass. Not yet released; the pla
 CHANGELOG entry belongs with the next release. Follow-up from Sol: inherited AI_ADDRCONFIG
 resolver rejects numeric ::1 on IPv6-only-loopback hosts (not addressed).
 
+## PR58 integrated: F8b LAN browser (2026-10-13)
+
+Opus reviewed Sol's PR58 (exact head 009eb7601, all17 checks, Unit tests 38356620014 and Static
+analysis 38356620033 green) and merged it into master. Codex gpt-6.1-sol diff review found two
+points: (1) active advertisements entered the bounded service map before payload validation, so a
+malformed packet could displace a valid entry from the same address or take one of the 128 slots —
+fixed on master: `LanDiscovery::Run` drops anything `ReadLanServer` rejects; new assertion in
+LanEndpointReplacement… (negative control without the fix fails its two intended checks).
+(2) Discovery entries are keyed by IP only, so two hosts on one address/different ports overwrite
+each other — inherited from the classic LANDiscoveryClient protocol (withdrawals carry no stable
+endpoint key); not addressed, deferred. Primary Debug max2: Test_splitscreen and Test_UI pass.
+Last siedler-sol PR: that lane is retired; future Sol slices come as roadmap ticks in this lane.
+Not yet released; CHANGELOG entry with the next release.
+
 ## REA on the original S2.EXE (2026-10-12)
 
 Request from Jan (via adhoc): use REA for original Settlers II behaviour. Ghidra has no LE
