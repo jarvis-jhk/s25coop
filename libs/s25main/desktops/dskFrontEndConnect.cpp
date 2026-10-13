@@ -124,7 +124,7 @@ void dskFrontEndConnect::OnChoose(const unsigned id)
         return;
     }
     const std::string host = GetCtrl<ctrlEdit>(ID_Host)->GetText();
-    if(!GAMECLIENT.Connect(host, GetCtrl<ctrlEdit>(ID_Password)->GetText(), ServerType::Direct, *port, false,
+    if(!GAMECLIENT.Connect(host, GetCtrl<ctrlEdit>(ID_Password)->GetText(), state_->serverType, *port, false,
                            state_->ipv6, state_->coop ? COOP_LEADER_HOST : 0xFF))
     {
         SetStatus(_("Connection failed!"), COLOR_RED);
@@ -135,7 +135,7 @@ void dskFrontEndConnect::OnChoose(const unsigned id)
     connecting_ = true;
     GetCtrl<ctrlButton>(ID_Connect)->SetEnabled(false);
     SetStatus(_("Connecting with Host..."), COLOR_YELLOW);
-    auto& connecting = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(ServerType::Direct, nullptr));
+    auto& connecting = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(state_->serverType, nullptr));
     onErrorConnection_ = connecting.onError.connect([this](ClientError error) {
         connecting_ = false;
         this->GetCtrl<ctrlButton>(ID_Connect)->SetEnabled();

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "dskFrontEndPage.h"
+#include "gameTypes/ServerType.h"
 #include <boost/signals2/connection.hpp>
 
 /// F8a: direct join owns input only; the existing connecting driver owns the handshake.
@@ -18,6 +19,7 @@ public:
         std::string port;
         bool ipv6;
         bool coop = false;
+        ServerType serverType = ServerType::Direct;
     };
     explicit dskFrontEndConnect(std::shared_ptr<JoinState> state = std::make_shared<JoinState>());
     Window* GetPadEntryCtrl(unsigned slot) override;

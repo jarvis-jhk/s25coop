@@ -1699,3 +1699,46 @@ opens chapter 7 (upstream TODO "remove when chapter 7 [MISS206] is playable"). N
 winnable in RTTR, then drop that extra unlock. World campaign (MISSION2.DAT, continent map) is
 separate code, still open.
 
+
+## Sol F8b — full-screen LAN discovery and join (2026-10-13)
+
+`sol/frontend-online-lan` replaces the default Online → LAN route with a
+full-screen server table, Refresh/Join/Create and the page trail. Classic keeps
+its old browser. Endpoint identity includes address/port/family: rename and
+refresh preserve it, replacement or withdrawal clears active selection, and
+activation drains announcements before resolving the row. Revision mismatch
+blocks Join. F8a's masked, staged input form now carries ServerType::LAN through
+its real password/co-player handshake. Host creation retains its proxy guard.
+
+The first read-only gpt-6.1-sol review found the inherited discovery drain could
+monopolize the UI under sustained UDP traffic. The new browser uses its own
+protocol-compatible adapter: 16 packets/call, 128 retained addresses, deferring
+Join while announcements remain. A spare receive byte rejects oversized
+POSIX datagrams; short packets, magic/version/active bytes, unbounded string
+lengths, invalid booleans/counts/ports are rejected. The shared dependency and
+Classic are unchanged. The second read-only review found no actionable issue;
+its Socket/oversized-packet verification caveat was resolved by inspecting the
+shared socket RAII/recvfrom path and adding actual short/oversized UDP cases.
+
+Own GCC12 Debug, max2 jobs: isolated LAN/direct physical + parser/discovery
+19 cases / 853 assertions pass; final relevant Home/Page/network/lobby/create/
+table regressions 56 cases / 3681 assertions pass. Real LAN host/member sockets
+exercise a wrong password, retry and host-tribe membership; real UDP discovery,
+physical pad/mouse/keyboard, resize/small-content recovery, a withdrawal queued
+in the A-input frame and exceptional cleanup/re-entry are covered. Executed
+endpoint-retarget and doubled-receive-budget omission controls each fail two
+intended assertions; both sources were restored byte-exact, rebuilt and the
+positive regressions rerun. Local format10/static validation/diff and actual
+agent TypeScript pass. Clang23 records only newer style checks on the new page
+and existing dependency diagnostics; exact-head Clang18 CI remains required,
+with no source suppressions added.
+
+Status: implementation/local proof complete, fresh all17 checks and BOTH full
+CI workflows required before tested handoff to Opus. Design/API details in
+[OnlineLan](doc/coop/OnlineLan.md); private evidence under data/siedler/sol-lan-*.
+ROADMAP remains primary-owned. Combined "Online menus" stays started: Internet
+server/login, F4–F6 network hosting, connecting presentation and F7d cards remain.
+This is mock-renderer and loopback proof, not physical Deck/remote-LAN acceptance.
+The existing central public fault relay remains; malformed announcements and
+ordinary connection/user errors do not create reports. No private endpoint,
+release, primary integration or completed-PR claim.
