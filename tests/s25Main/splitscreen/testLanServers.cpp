@@ -8,7 +8,9 @@
 #include "s25util/Serializer.h"
 #include <boost/test/unit_test.hpp>
 #include <algorithm>
+#include <chrono>
 #include <limits>
+#include <thread>
 
 namespace {
 LANDiscoveryClient::ServiceInfo service(LanGameInfo info)
@@ -149,7 +151,15 @@ BOOST_FIXTURE_TEST_CASE(DiscoveryBoundsInvalidTrafficAndRetainsTheProductionWire
     BOOST_TEST_REQUIRE(sendto(sender.GetSocket(), packet.data.data(), sizeof(packet), 0,
                               reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
                        == static_cast<int>(sizeof(packet)));
-    BOOST_TEST(discovery.Run());
+    // Loopback delivery is asynchronous on macOS: the withdrawal may not be readable yet right after sendto.
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    do
+    {
+        BOOST_TEST(discovery.Run());
+        if(discovery.GetServices().empty())
+            break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    } while(std::chrono::steady_clock::now() < deadline);
     BOOST_TEST(discovery.GetServices().empty());
     discovery.Refresh();
     BOOST_TEST(discovery.Run());

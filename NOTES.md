@@ -1784,3 +1784,7 @@ replaced. Format10, diff checks and actual agent TypeScript pass. Fresh exact-he
 all17 checks and BOTH successful workflows are required; no handoff, release,
 hardware claim or next slice. Private evidence: sol-lan-ci-repair-* and original
 failed job logs. The combined Online menus item remains started.
+
+- 2026-10-13: master b172ddb failed only on macOS (Test_splitscreen, testLanServers.cpp:153): the inactive
+  LAN withdrawal was read right after sendto, but macOS loopback delivery is asynchronous. The test now
+  polls Run() for up to 5 s until the entry is gone; product code unchanged. Linux Debug LanServerTests pass.
