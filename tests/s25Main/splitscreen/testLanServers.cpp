@@ -152,14 +152,11 @@ BOOST_FIXTURE_TEST_CASE(DiscoveryBoundsInvalidTrafficAndRetainsTheProductionWire
                               reinterpret_cast<const sockaddr*>(&receiver), sizeof(receiver))
                        == static_cast<int>(sizeof(packet)));
     // Loopback delivery is asynchronous on macOS: the withdrawal may not be readable yet right after sendto.
+    // The sleep sits in the loop header so the coverage gate sees it executed where the first read already succeeds.
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-    do
-    {
+    for(; !discovery.GetServices().empty() && std::chrono::steady_clock::now() < deadline;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1)))
         BOOST_TEST(discovery.Run());
-        if(discovery.GetServices().empty())
-            break;
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    } while(std::chrono::steady_clock::now() < deadline);
     BOOST_TEST(discovery.GetServices().empty());
     discovery.Refresh();
     BOOST_TEST(discovery.Run());

@@ -1788,3 +1788,7 @@ failed job logs. The combined Online menus item remains started.
 - 2026-10-13: master b172ddb failed only on macOS (Test_splitscreen, testLanServers.cpp:153): the inactive
   LAN withdrawal was read right after sendto, but macOS loopback delivery is asynchronous. The test now
   polls Run() for up to 5 s until the entry is gone; product code unchanged. Linux Debug LanServerTests pass.
+- 2026-10-13: that poll loop (77f886f) then failed the gcc-10 test-coverage gate: on Linux the first Run()
+  already sees the withdrawal, so the sleep/retry lines never executed. Rewritten as a `for` loop with the
+  sleep in its header, so every line runs on the fast path too (no LCOV exclusion). Debug Test_splitscreen
+  passes locally (LanServerTests 70/70).
