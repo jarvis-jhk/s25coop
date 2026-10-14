@@ -6,6 +6,13 @@ S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
 
+## 2026-10-14 — Release 0.1.19
+
+Continuation 57cdd1a3: master 81ad4f3ea (docs only after ebe8956ee) had green Unit tests (38501441079) and
+Static analysis (38501441153). CHANGELOG Unreleased → 0.1.19 (99a1b98fe), tag v0.1.19, release workflow
+38509252689 green; https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.19 has the Linux tar.gz, the Windows
+zip and Install-s25coop.desktop. Jan informed.
+
 ## 2026-10-14 — F7b: saves open the party page
 
 Work session (bfa0b45f). No open issues/PRs. `dskParty::IsFor` now also takes savegames loaded from the new
