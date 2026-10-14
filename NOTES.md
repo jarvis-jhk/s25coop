@@ -19,7 +19,8 @@ that host D-pad input changes nothing; new OwnSlotSave… and NetworkSave… cas
 6 lock + 3 value failures; no conversion → AI check fails; no Free conversion → start never reaches Loading.
 Note: the server's SetPlayerState echo takes a few frames — assert with until(), not immediately.
 Codex gpt-6.1-sol diff review: no findings. Ordinary maps stay on dskGameLobby until F7c (toggle + rules).
-Own Debug max2: full Test_splitscreen (Running 791 test cases) and Test_UI (Running 174 test cases) pass. Not yet released.
+Own Debug max2: full Test_splitscreen (791 cases) and Test_UI (174 cases) pass. Release 0.1.19 (F8a, F8b, saves on the party page)
+is left to one-shot continuation 57cdd1a3 (04:00 UTC) once ebe8956ee CI is green.
 
 ## 2026-10-12 — Sol F8a online entry and direct join
 
