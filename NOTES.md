@@ -11,7 +11,7 @@ CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, ea
 Continuation 57cdd1a3: master 81ad4f3ea (docs only after ebe8956ee) had green Unit tests (38501441079) and
 Static analysis (38501441153). CHANGELOG Unreleased → 0.1.19 (99a1b98fe), tag v0.1.19, release workflow
 38509252689 green; https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.19 has the Linux tar.gz, the Windows
-zip and Install-s25coop.desktop. Jan informed.
+zip and Install-s25coop.desktop. jarvis_reply with the link was attempted three times; each call was cut off without a result, so delivery to Jan is unconfirmed.
 
 ## 2026-10-14 — F7b: saves open the party page
 
