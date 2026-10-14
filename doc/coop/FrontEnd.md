@@ -95,9 +95,13 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   controller (slot 0) can start (Start or the button) or leave (B/Escape/back, with a Yes/No question
   focused on No, then Home); the host's card edits colour/nation/team through the server, guests' cards
   are read-only ("Shared tribe: host chooses") and their D-pad never leaves the cards. Lua runs as in the
-  lobby: settings init on construction, settings-ready on activation, player-ready on Start. Ordinary maps
-  (own tribes, rules: F7c), loaded saves (their test is currently Sol's) and online games keep dskGameLobby.
-  Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`.
+  lobby: settings init on construction, settings-ready on activation, player-ready on Start. Saves loaded from
+  the new menus open it too (2026-10-14): every card is locked ("Saved game"; the server would otherwise
+  accept colour/nation/team changes on a save), the party shares the host's tribe, and the slots nobody here
+  can take get a Default AI - a further local player's own slot (idle AI "Local player N",
+  `LocalSeats::FormerLocalPlayers`) and a past network player's free slot, which the server refuses to start
+  with. Saved AIs stay as they are. Ordinary maps (own tribes, rules: F7c) and online games keep dskGameLobby.
+  Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`, saves in `testFrontEndLoad.cpp`.
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"
   (the old main menu has "New menus" to come back). F12 must not retire the old menu before they have a place.
 - Tests: `tests/s25Main/UI/testFrontEndLayout.cpp`, `tests/s25Main/splitscreen/testFrontEndPage.cpp`

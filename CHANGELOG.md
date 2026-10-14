@@ -3,6 +3,15 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- "Play online" on the start screen now opens full-screen pages: join a game by address (with an
+  on-screen keyboard for controllers), or pick a game in your local network from a list that updates
+  by itself.
+- Loading a save from the new menus now opens the full-screen party page too: everyone who joined plays
+  the saved tribe together, and the other tribes keep playing. A tribe a co-player played on its own
+  in splitscreen, or a player who is no longer there, is taken over by the computer.
+
 ## 0.1.18
 
 - Starting a campaign or scenario from the new menus now opens a full-screen party page: one big card

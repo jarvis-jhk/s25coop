@@ -6,14 +6,31 @@
 #include "GameLobby.h"
 #include "JoinPlayerInfo.h"
 #include "helpers/containerUtils.h"
+#include "helpers/format.hpp"
 #include "input/PadRouter.h"
 #include "network/GameClient.h"
 #include "network/IGameLobbyController.h"
 #include "world/ViewportLayout.h"
 #include "s25util/Log.h"
 #include <algorithm>
+#include <mygettext/mygettext.h>
 
 namespace frontend {
+
+std::vector<uint8_t> LocalSeats::FormerLocalPlayers(const GameLobby& lobby, const unsigned mainPlayerId)
+{
+    std::vector<uint8_t> ids;
+    for(unsigned id = 0; id < lobby.getNumPlayers(); ++id)
+    {
+        const JoinPlayerInfo& player = lobby.getPlayer(id);
+        if(id == mainPlayerId || player.ps != PlayerState::AI || player.aiInfo.type != AI::Type::Dummy)
+            continue;
+        if(player.name == helpers::format(_("Local player %1%"), id + 1)
+           || player.name == helpers::format("Local player %1%", id + 1))
+            ids.push_back(static_cast<uint8_t>(id));
+    }
+    return ids;
+}
 
 void LocalSeats::Build(const GameLobby& lobby, IGameLobbyController& controller, PadRouter& router,
                        const unsigned localPlayerId, const bool together)

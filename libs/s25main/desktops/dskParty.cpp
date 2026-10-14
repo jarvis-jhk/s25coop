@@ -14,6 +14,7 @@
 #include "desktops/dskGameLoader.h"
 #include "driver/KeyEvent.h"
 #include "frontend/MenuRoutes.h"
+#include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
 #include "ingameWindows/iwMsgbox.h"
 #include "input/LocalViewColor.h"
@@ -43,7 +44,7 @@ bool dskParty::IsFor(const ServerType serverType)
 {
     const auto lobby = GAMECLIENT.GetGameLobby();
     return serverType == ServerType::Local && frontend::GetMenuStyle() == frontend::MenuStyle::FrontEnd && lobby
-           && lobby->isHost() && !lobby->isSavegame() && GAMECLIENT.IsHostingCampaign()
+           && lobby->isHost() && (lobby->isSavegame() || GAMECLIENT.IsHostingCampaign())
            && !GAMECLIENT.IsAIBattleModeOn();
 }
 
@@ -60,7 +61,7 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
             error = _("Lua script was found but failed to load. Map might not work as expected!");
         else if(!lua_->CheckScriptVersion())
             error = _("Lua script uses a different version and cannot be used. Map might not work as expected!");
-        else if(!lua_->EventSettingsInit(true, false))
+        else if(!lua_->EventSettingsInit(true, gameLobby_->isSavegame()))
         {
             LOG.write(_("Lua was disabled by the script itself\n"));
             lua_.reset();
@@ -74,15 +75,32 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
         if(!lua_)
             lobbyController_->RemoveLuaScript();
     }
-    for(unsigned i = 0; i < gameLobby_->getNumPlayers(); ++i)
+    if(gameLobby_->isSavegame())
     {
-        if(!gameLobby_->getPlayer(i).isHost)
-            lobbyController_->SetPlayerState(i, PlayerState::AI, AI::Info(AI::Type::Default, AI::Level::Easy));
+        // The saved tribes stay as they were, but every one of them needs somebody to play it: the party shares
+        // the host's tribe and nobody can take another seat here. A tribe a further local player played in its
+        // own slot (an idle AI since saving) and one a network player left (a free slot, which the server would
+        // refuse to start with) get a real AI, so they keep playing instead of standing still.
+        const auto formerLocal = frontend::LocalSeats::FormerLocalPlayers(*gameLobby_, localPlayerId_);
+        for(unsigned i = 0; i < gameLobby_->getNumPlayers(); ++i)
+        {
+            if(gameLobby_->getPlayer(i).ps == PlayerState::Free || helpers::contains(formerLocal, i))
+                lobbyController_->SetPlayerState(i, PlayerState::AI, AI::Info(AI::Type::Default, AI::Level::Easy));
+        }
+    } else
+    {
+        for(unsigned i = 0; i < gameLobby_->getNumPlayers(); ++i)
+        {
+            if(!gameLobby_->getPlayer(i).isHost)
+                lobbyController_->SetPlayerState(i, PlayerState::AI, AI::Info(AI::Type::Default, AI::Level::Easy));
+        }
     }
 
     AddText(ID_Map, DrawPoint(0, 0), GAMECLIENT.GetMapTitle(), COLOR_YELLOW, FontStyle::CENTER, LargeFont);
-    AddText(ID_Mode, DrawPoint(0, 0), _("Everyone plays the campaign's tribe together."), COLOR_YELLOW,
-            FontStyle::CENTER, NormalFont);
+    AddText(ID_Mode, DrawPoint(0, 0),
+            gameLobby_->isSavegame() ? _("Everyone plays the saved tribe together.") :
+                                       _("Everyone plays the campaign's tribe together."),
+            COLOR_YELLOW, FontStyle::CENTER, NormalFont);
     AddText(ID_Hint, DrawPoint(0, 0), _("More players: press A on a free seat."), COLOR_YELLOW, FontStyle::CENTER,
             NormalFont);
     CreateSeats();
@@ -173,6 +191,8 @@ LobbyPlayerCardModel::Snapshot dskParty::CardSnapshot(const unsigned seat) const
     std::string reason;
     if(!seats_[seat].taken)
         reason = _("Press A to join");
+    else if(gameLobby_->isSavegame())
+        reason = _("Saved game");
     else if(seat != 0)
         reason = _("Shared tribe: host chooses");
     constexpr std::array ownKeys = {"ownColor", "ownNation", "ownTeam"};

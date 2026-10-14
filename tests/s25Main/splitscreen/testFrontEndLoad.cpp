@@ -9,12 +9,14 @@
 #include "PadFixture.h"
 #include "Savegame.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "desktops/PlayerView.h"
 #include "desktops/dskFrontEndLoad.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
+#include "desktops/dskParty.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
 #include "driver/KeyEvent.h"
@@ -171,7 +173,17 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         }
         return done();
     }
-    void saveSolo()
+    /// How the save's header writes slot 1, a saved idle AI in the actual world.
+    enum class Slot1
+    {
+        Saved,
+        /// As GameClient::ApplyAdditionalLocalPlayers leaves a further local player's own slot (idle AI
+        /// "Local player 2"), as in a save played in own slots.
+        FormerLocal,
+        /// A human, as in a save of a network game: it comes back as a free slot.
+        PastHuman,
+    };
+    void saveSolo(Slot1 slot1 = Slot1::Saved)
     {
         hostAndEnterLobby();
         const unsigned numPlayers = GAMECLIENT.GetGameLobby()->getNumPlayers();
@@ -236,12 +248,14 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
             players.PushUnsignedChar(save.GetNumPlayers());
             for(const auto& player : savedPlayers)
             {
-                helpers::pushEnum<uint8_t>(players, player.ps);
+                const bool second = &player == &savedPlayers[1];
+                const PlayerState ps = second && slot1 == Slot1::PastHuman ? PlayerState::Occupied : player.ps;
+                helpers::pushEnum<uint8_t>(players, ps);
                 if(!player.isUsed())
                     continue;
-                if(player.ps == PlayerState::AI)
+                if(ps == PlayerState::AI)
                     player.aiInfo.serialize(players);
-                players.PushLongString(player.name);
+                players.PushLongString(second && slot1 == Slot1::FormerLocal ? "Local player 2" : player.name);
                 helpers::pushEnum<uint8_t>(players, player.nation);
                 players.PushUnsignedInt(player.color);
                 helpers::pushEnum<uint8_t>(players, player.team);
@@ -284,9 +298,9 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         press(pad, PadButton::A);
         frame();
     }
-    void openAndLoad(unsigned count, bool continueTile)
+    void openAndLoad(unsigned count, bool continueTile, Slot1 slot1 = Slot1::Saved)
     {
-        saveSolo();
+        saveSolo(slot1);
         joinParty(count);
         Socket occupied;
         // Reserve both address families: Socket::Listen enables SO_REUSEADDR, which on Windows
@@ -324,10 +338,10 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
             if(attempt == 0)
                 BOOST_TEST_REQUIRE(dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr);
             loaded = until([] {
-                         return desktopAs<dskGameLobby>() != nullptr
+                         return desktopAs<dskParty>() != nullptr
                                 || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()) != nullptr;
                      })
-                     && desktopAs<dskGameLobby>() != nullptr;
+                     && desktopAs<dskParty>() != nullptr;
             if(!loaded)
             {
                 occupied.Close();
@@ -344,18 +358,48 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         BOOST_TEST(GAMECLIENT.GetAdditionalLocalPlayers().empty());
         const auto lobby = GAMECLIENT.GetGameLobby();
         BOOST_TEST_REQUIRE(lobby->getNumPlayers() == savedPlayers.size());
+        if(slot1 != Slot1::Saved)
+            BOOST_TEST(until([&lobby] { return lobby->getPlayer(1).aiInfo.type == AI::Type::Default; }));
         for(unsigned i = 1; i < savedPlayers.size(); ++i)
         {
             const auto& actual = lobby->getPlayer(i);
             const auto& expected = savedPlayers[i];
             BOOST_TEST((actual.ps == expected.ps));
-            BOOST_TEST((actual.aiInfo.type == expected.aiInfo.type));
+            // A former local player's own tribe would stand still as an idle AI, a past human's free slot would
+            // refuse the start; both get a real AI.
+            if(slot1 != Slot1::Saved && i == 1)
+                BOOST_TEST((actual.aiInfo.type == AI::Type::Default));
+            else
+                BOOST_TEST((actual.aiInfo.type == expected.aiInfo.type));
             BOOST_TEST((actual.aiInfo.level == expected.aiInfo.level));
             BOOST_TEST(actual.color == expected.color);
             BOOST_TEST((actual.nation == expected.nation));
         }
         for(unsigned i = 0; i < count; ++i)
             BOOST_TEST(router().GetSlot(pad + i) == i);
+        // The full-screen party page: everybody on the saved tribe, whose colour/nation/team the save owns.
+        auto* party = desktopAs<dskParty>();
+        BOOST_TEST(party->GetCtrl<ctrlText>(dskParty::ID_Mode)->GetText()
+                   == "Everyone plays the saved tribe together.");
+        BOOST_TEST_REQUIRE(party->GetSeats().NumTaken() == count);
+        for(unsigned i = 0; i < count; ++i)
+        {
+            const auto& model = party->GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Seat + i)->GetModel();
+            for(unsigned row = 0; row < 3; ++row)
+                BOOST_TEST(model.GetSnapshot().lockReasons[row] == "Saved game");
+        }
+        const auto hostBefore = lobby->getPlayer(GAMECLIENT.GetPlayerId());
+        for(unsigned n = 0; n < 15 && focusedId(0) != dskParty::ID_Seat; ++n)
+            press(pad, focusedId(0) < dskParty::ID_Seat ? PadButton::RightShoulder : PadButton::LeftShoulder);
+        BOOST_TEST_REQUIRE(focusedId(0) == dskParty::ID_Seat);
+        for(const auto button : {PadButton::DpadRight, PadButton::DpadDown, PadButton::DpadRight, PadButton::DpadDown,
+                                 PadButton::DpadRight})
+            press(pad, button);
+        for(unsigned n = 0; n < 20; ++n)
+            frame();
+        BOOST_TEST(lobby->getPlayer(GAMECLIENT.GetPlayerId()).color == hostBefore.color);
+        BOOST_TEST((lobby->getPlayer(GAMECLIENT.GetPlayerId()).nation == hostBefore.nation));
+        BOOST_TEST((lobby->getPlayer(GAMECLIENT.GetPlayerId()).team == hostBefore.team));
         // Only the loading screen is bypassed: the mock data cannot draw original S2 resources.
         GAMECLIENT.SetInterface(&ci());
         press(pad, PadButton::Start);
@@ -568,6 +612,16 @@ BOOST_FIXTURE_TEST_CASE(SoloWorldWithLegacyPlayerHeaderResumesWithTwoJoinedPlaye
 BOOST_FIXTURE_TEST_CASE(ContinueResumesSoloWorldWithLegacyPlayerHeaderAndFourPlayers, ResumeFixture)
 {
     checked([&] { openAndLoad(4, true); });
+}
+
+BOOST_FIXTURE_TEST_CASE(OwnSlotSaveGivesTheFormerLocalTribeARealAiOnThePartyPage, ResumeFixture)
+{
+    checked([&] { openAndLoad(2, false, Slot1::FormerLocal); });
+}
+
+BOOST_FIXTURE_TEST_CASE(NetworkSaveGivesThePastHumanTribeARealAiAndStarts, ResumeFixture)
+{
+    checked([&] { openAndLoad(2, false, Slot1::PastHuman); });
 }
 
 BOOST_FIXTURE_TEST_CASE(DeletedContinueTargetDoesNotStartAnotherSave, LoadFixture)

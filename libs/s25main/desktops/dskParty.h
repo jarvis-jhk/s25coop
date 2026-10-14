@@ -17,11 +17,11 @@ enum class ServerType : uint16_t;
 
 /// The full-screen party page (doc/coop/FrontEnd.md, slice F7b): who plays, on which seat, then Start.
 ///
-/// It replaces the classic lobby for self-hosted local campaign and scenario starts from the new menus.
-/// Those have no rules to choose (the mission script owns them), so the page is only the seats: one big
-/// card per seat, drawn from the same frontend::LocalSeats as the classic lobby's seat panel. Every seat
-/// plays the campaign's tribe. Ordinary maps (rules and own tribes: F7c), saves and online games keep
-/// dskGameLobby for now.
+/// It replaces the classic lobby for self-hosted local campaign, scenario and savegame starts from the new
+/// menus. Those have no rules to choose (the mission script or the save owns them), so the page is only the
+/// seats: one big card per seat, drawn from the same frontend::LocalSeats as the classic lobby's seat panel.
+/// Every seat plays the host's tribe; a save's tribes keep their colour, nation and team. Ordinary maps
+/// (rules and own tribes: F7c) and online games keep dskGameLobby for now.
 class dskParty final : public dskFrontEndPage, public ClientInterface
 {
 public:
@@ -85,7 +85,8 @@ private:
     unsigned localPlayerId_;
     std::unique_ptr<GameLobbyController> lobbyController_;
     std::unique_ptr<LuaInterfaceSettings> lua_;
-    /// Always "together": a campaign has one human tribe. The own-slot mode arrives with ordinary maps (F7c).
+    /// Always "together": a campaign has one human tribe, and a loaded save is shared by the party. The own-slot mode
+    /// arrives with ordinary maps (F7c).
     frontend::LocalSeats seats_;
     bool activated_ = false;
     bool countdown_ = false;

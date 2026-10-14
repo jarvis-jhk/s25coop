@@ -6,6 +6,21 @@ S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path,
 CI lessons (clang-tidy, coverage, GCC/Boost quirks), Sol integration routine, earlier weekly reviews.
 
 
+## 2026-10-14 — F7b: saves open the party page
+
+Work session (bfa0b45f). No open issues/PRs. `dskParty::IsFor` now also takes savegames loaded from the new
+menus (local, host, FrontEnd style). On a save every card is locked "Saved game": without the lock the server
+accepted the host's colour/nation/team changes on a save (seen in the negative control). The party shares the
+host's tribe; slots nobody here can take get a Default/Easy AI: a former local player's own slot (idle AI
+"Local player N", helper moved from dskGameLobby to `LocalSeats::FormerLocalPlayers`) and a past network
+player's Free slot, which `GameServer::ArePlayersReady` refuses to start with. Saved AIs stay untouched.
+Tests (testFrontEndLoad.cpp): the two existing resume cases now land on dskParty and check locks/mode text and
+that host D-pad input changes nothing; new OwnSlotSave… and NetworkSave… cases. Negative controls: no lock →
+6 lock + 3 value failures; no conversion → AI check fails; no Free conversion → start never reaches Loading.
+Note: the server's SetPlayerState echo takes a few frames — assert with until(), not immediately.
+Codex gpt-6.1-sol diff review: no findings. Ordinary maps stay on dskGameLobby until F7c (toggle + rules).
+Own Debug max2: full Test_splitscreen (Running 791 test cases) and Test_UI (Running 174 test cases) pass. Not yet released.
+
 ## 2026-10-12 — Sol F8a online entry and direct join
 
 Home's Play online tile now opens a full-screen choice page. Join Game opens a

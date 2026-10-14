@@ -65,6 +65,13 @@ public:
     /// then the remaining free ones in ascending order. Less than two seats means there are none.
     void Build(const GameLobby& lobby, IGameLobbyController& controller, PadRouter& router, unsigned localPlayerId,
                bool together);
+    /// The slots a splitscreen savegame was played with by further local players.
+    ///
+    /// The save stores no seat list, but every such slot was written by
+    /// GameClient::ApplyAdditionalLocalPlayers: an idle AI named "Local player N". Both are checked,
+    /// because a campaign script or the host can make a slot an idle AI too, and that slot must not
+    /// come back as a human player. The untranslated name covers a save made in another language.
+    static std::vector<uint8_t> FormerLocalPlayers(const GameLobby& lobby, unsigned mainPlayerId);
     void Clear() { seats_.clear(); }
 
     bool empty() const { return seats_.empty(); }
