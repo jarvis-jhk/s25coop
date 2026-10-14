@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.19
 
 - "Play online" on the start screen now opens full-screen pages: join a game by address (with an
   on-screen keyboard for controllers), or pick a game in your local network from a list that updates
