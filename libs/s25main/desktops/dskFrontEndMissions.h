@@ -6,6 +6,7 @@
 
 #include "dskFrontEndPage.h"
 #include "frontend/CampaignCatalog.h"
+#include "gameTypes/ServerType.h"
 #include <boost/signals2/connection.hpp>
 #include <optional>
 
@@ -14,7 +15,7 @@ struct KeyEvent;
 class dskFrontEndMissions : public dskFrontEndPage
 {
 public:
-    explicit dskFrontEndMissions(boost::filesystem::path folder);
+    explicit dskFrontEndMissions(boost::filesystem::path folder, ServerType type = ServerType::Local);
     boost::filesystem::path GetSelectedPath() const;
     bool Msg_KeyDown(const KeyEvent& ke) override;
     enum ControlIds
@@ -35,6 +36,7 @@ protected:
     void Msg_TableChooseItem(unsigned id, unsigned selection) override;
 
 private:
+    ServerType type_;
     void Refresh();
     void UpdateDetails();
     void StartSelected();

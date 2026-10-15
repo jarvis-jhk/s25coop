@@ -6,13 +6,17 @@
 #include "MenuPadFixture.h"
 #include "PadFixture.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlEdit.h"
 #include "controls/ctrlMultiline.h"
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "desktops/dskCampaignSelection.h"
 #include "desktops/dskFrontEndCampaigns.h"
+#include "desktops/dskFrontEndHost.h"
 #include "desktops/dskFrontEndMissions.h"
+#include "desktops/dskFrontEndOnline.h"
+#include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskParty.h"
 #include "desktops/dskSinglePlayer.h"
@@ -694,6 +698,64 @@ BOOST_FIXTURE_TEST_CASE(ExceptionAfterCampaignStartStopsTheGameAndRestoresSettin
     // A fresh real start also checks that exceptional cleanup released the server and its lobby state.
     checked([&] { host(2, 0); });
     BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+}
+
+BOOST_FIXTURE_TEST_CASE(NetworkCampaignUsesTheSelectedMissionAndAllowsHostTribeCoPlayers, StartFixture)
+{
+    checked([&] {
+        const auto folder = campaign();
+        dskHome::ForgetLastChoice();
+        WINDOWMANAGER.Switch(dskHome::Create());
+        frame();
+        pickUp(pad);
+        focus(dskHome::ID_Online);
+        press(pad, PadButton::A);
+        frame();
+        focus(dskFrontEndOnline::ID_Host);
+        press(pad, PadButton::A);
+        frame();
+        focus(dskFrontEndHost::ID_Campaigns);
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<Grid>());
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<Missions>());
+        press(pad, PadButton::DpadDown);
+        BOOST_TEST(desktopAs<Missions>()->GetSelectedPath() == folder / "Mission2.SWD");
+        press(pad, PadButton::A);
+        frame();
+        auto* form = desktopAs<dskFrontEndHost>();
+        BOOST_TEST_REQUIRE(form);
+        // A campaign replaced while its hosting form is open cannot silently start another mission.
+        campaign("Test", "", true);
+        click(*form->GetCtrl<Window>(dskFrontEndHost::ID_Start));
+        BOOST_TEST(form->GetCtrl<ctrlText>(dskFrontEndHost::ID_Status)->GetText()
+                   == "Campaign changed. Refresh before choosing a mission.");
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+        campaign();
+        Socket reservation;
+        BOOST_TEST_REQUIRE(reservation.Listen(0, false, false));
+        sockaddr_in address{};
+        socklen_t length = sizeof(address);
+        BOOST_TEST_REQUIRE(getsockname(reservation.GetSocket(), reinterpret_cast<sockaddr*>(&address), &length) == 0);
+        const auto port = std::to_string(ntohs(address.sin_port));
+        reservation.Close();
+        auto* edit = form->GetCtrl<ctrlEdit>(dskFrontEndHost::ID_Port);
+        click(*edit);
+        key(KeyType::End);
+        const auto count = edit->GetText().size();
+        for(unsigned i = 0; i < count; ++i)
+            key(KeyType::Backspace);
+        for(const char c : port)
+            WINDOWMANAGER.Msg_KeyDown(KeyEvent(static_cast<char32_t>(c)));
+        click(*form->GetCtrl<Window>(dskFrontEndHost::ID_Start));
+        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskGameLobby>() != nullptr; }));
+        BOOST_TEST(GAMECLIENT.IsHostingCampaign());
+        BOOST_TEST(GAMECLIENT.GetLuaFilePath().filename() == "Mission2.lua");
+        BOOST_TEST(GAMECLIENT.GetMapPath().filename() == "Mission2.SWD");
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.AreCoopMembersAllowed(); }));
+    });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

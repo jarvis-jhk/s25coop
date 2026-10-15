@@ -4,6 +4,7 @@
 
 #include "dskFrontEndConnect.h"
 #include "Loader.h"
+#include "RttrLobbyClient.hpp"
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
@@ -14,6 +15,7 @@
 #include "network/CoopMemberInfo.h"
 #include "network/GameClient.h"
 #include "ogl/glFont.h"
+#include "liblobby/LobbyClient.h"
 #include "s25util/StringConversion.h"
 #include "s25util/colors.h"
 #include <array>
@@ -135,7 +137,10 @@ void dskFrontEndConnect::OnChoose(const unsigned id)
     connecting_ = true;
     GetCtrl<ctrlButton>(ID_Connect)->SetEnabled(false);
     SetStatus(_("Connecting with Host..."), COLOR_YELLOW);
-    auto& connecting = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(state_->serverType, nullptr));
+    std::unique_ptr<ILobbyClient> lobbyClient;
+    if(state_->serverType == ServerType::Lobby)
+        lobbyClient = std::make_unique<RttrLobbyClient>(LOBBYCLIENT);
+    auto& connecting = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(state_->serverType, std::move(lobbyClient)));
     onErrorConnection_ = connecting.onError.connect([this](ClientError error) {
         connecting_ = false;
         this->GetCtrl<ctrlButton>(ID_Connect)->SetEnabled();

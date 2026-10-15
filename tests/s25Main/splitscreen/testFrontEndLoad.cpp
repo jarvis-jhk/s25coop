@@ -9,10 +9,12 @@
 #include "PadFixture.h"
 #include "Savegame.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlEdit.h"
 #include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "desktops/PlayerView.h"
+#include "desktops/dskFrontEndHost.h"
 #include "desktops/dskFrontEndLoad.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
@@ -736,6 +738,51 @@ BOOST_FIXTURE_TEST_CASE(ExceptionalCleanupReachesTheConnectingProbeAndRestoresTh
     BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
     BOOST_TEST(SETTINGS.server.localPort == savedPort);
     BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(NetworkSaveSelectionUsesTheMaskedHostFormAndRealSavedLobby, ResumeFixture)
+{
+    checked([&] {
+        saveSolo();
+        joinParty(1);
+        WINDOWMANAGER.Switch(dskFrontEndPage::Create(
+          [] { return std::make_unique<dskFrontEndLoad>(boost::filesystem::path{}, ServerType::Direct); }));
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLoad>());
+        press(pad, PadButton::A);
+        frame();
+        auto* form = desktopAs<dskFrontEndHost>();
+        BOOST_TEST_REQUIRE(form);
+        const auto backup = savedGame.string() + ".backup";
+        boost::filesystem::rename(savedGame, backup);
+        auto* start = form->GetCtrl<Window>(dskFrontEndHost::ID_Start);
+        auto clickStart = [&] {
+            MouseCoords mouse(start->GetDrawPos() + Position(start->GetSize() / 2u));
+            WINDOWMANAGER.Msg_MouseMove(mouse);
+            mouse.ldown = true;
+            WINDOWMANAGER.Msg_LeftDown(mouse);
+            mouse.ldown = false;
+            WINDOWMANAGER.Msg_LeftUp(mouse);
+            frame();
+        };
+        clickStart();
+        BOOST_TEST(form->GetCtrl<ctrlText>(dskFrontEndHost::ID_Status)->GetText()
+                   == "The specified file couldn't be loaded!");
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+        boost::filesystem::rename(backup, savedGame);
+        // Reuse the port the fixture has already hosted successfully; saveSolo stopped its server.
+        clickStart();
+        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskGameLobby>() != nullptr; }));
+        BOOST_TEST(GAMECLIENT.IsHost());
+        BOOST_TEST(GAMECLIENT.GetGameLobby()->isSavegame());
+        for(unsigned i = 1; i < savedPlayers.size(); ++i)
+        {
+            const auto& player = GAMECLIENT.GetGameLobby()->getPlayer(i);
+            BOOST_TEST((player.ps == savedPlayers[i].ps));
+            BOOST_TEST((player.nation == savedPlayers[i].nation));
+            BOOST_TEST(player.color == savedPlayers[i].color);
+        }
+    });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

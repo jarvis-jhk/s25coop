@@ -6,9 +6,9 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "desktops/dskFrontEndConnect.h"
+#include "desktops/dskFrontEndHost.h"
+#include "desktops/dskFrontEndInternet.h"
 #include "desktops/dskFrontEndLan.h"
-#include "ingameWindows/iwDirectIPCreate.h"
-#include "ingameWindows/iwLobbyConnect.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "mygettext/mygettext.h"
 
@@ -36,7 +36,7 @@ void dskFrontEndOnline::OnChoose(const unsigned id)
                 return std::make_unique<dskFrontEndLan>(state);
             });
             break;
-        case ID_Internet: WINDOWMANAGER.Show(std::make_unique<iwLobbyConnect>(), true); break;
+        case ID_Internet: Open([] { return std::make_unique<dskFrontEndInternet>(); }); break;
         case ID_Host:
             if(SETTINGS.proxy.type != ProxyType::None)
                 WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
@@ -44,7 +44,7 @@ void dskFrontEndOnline::OnChoose(const unsigned id)
                   _("You can't create a game while a proxy server is active\nDisable the use of a proxy server first!"),
                   this, MsgboxButton::Ok, MsgboxIcon::ExclamationGreen, 1));
             else
-                WINDOWMANAGER.ReplaceWindow(std::make_unique<iwDirectIPCreate>(ServerType::Direct));
+                Open([] { return std::make_unique<dskFrontEndHost>(ServerType::Direct); });
             break;
         default: break;
     }

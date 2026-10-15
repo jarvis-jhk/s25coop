@@ -6,20 +6,26 @@
 #include "LocalGameFixture.h"
 #include "MenuPadFixture.h"
 #include "RTTR_Version.h"
+#include "RttrConfig.h"
 #include "controls/ctrlButton.h"
 #include "controls/ctrlCheck.h"
+#include "controls/ctrlComboBox.h"
 #include "controls/ctrlEdit.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "controls/ctrlTextDeepening.h"
 #include "desktops/dskFrontEndConnect.h"
+#include "desktops/dskFrontEndHost.h"
+#include "desktops/dskFrontEndInternet.h"
 #include "desktops/dskFrontEndLan.h"
+#include "desktops/dskFrontEndMaps.h"
 #include "desktops/dskFrontEndOnline.h"
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMultiPlayer.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
+#include "files.h"
 #include "ingameWindows/iwConnecting.h"
 #include "ingameWindows/iwControllerKeyboard.h"
 #include "ingameWindows/iwDirectIPCreate.h"
@@ -33,6 +39,7 @@
 #include "s25util/MessageQueue.h"
 #include "s25util/Serializer.h"
 #include "s25util/Socket.h"
+#include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 #include <algorithm>
 #include <stdexcept>
@@ -146,8 +153,8 @@ struct OnlineFixture : rttr::test::MenuPadFixture
     }
     void type(unsigned id, const std::u32string& text)
     {
-        const auto count = page().GetCtrl<ctrlEdit>(id)->GetText().size();
-        click(*page().GetCtrl<ctrlEdit>(id));
+        const auto count = desktop()->GetCtrl<ctrlEdit>(id)->GetText().size();
+        click(*desktop()->GetCtrl<ctrlEdit>(id));
         WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::End));
         for(unsigned i = 0; i < count; ++i)
             WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Backspace));
@@ -443,7 +450,7 @@ BOOST_FIXTURE_TEST_CASE(LegacyNetworkHostAndLobbyStayReachableWithProxyGuard, On
     checked([&] {
         enter(false);
         choose(Online::ID_Host);
-        BOOST_TEST_REQUIRE(dynamic_cast<iwDirectIPCreate*>(WINDOWMANAGER.GetTopMostWindow()));
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
         back();
         BOOST_TEST_REQUIRE(desktopAs<Online>());
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
@@ -457,7 +464,7 @@ BOOST_FIXTURE_TEST_CASE(LegacyNetworkHostAndLobbyStayReachableWithProxyGuard, On
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         SETTINGS.proxy.type = ProxyType::None;
         choose(Online::ID_Internet);
-        BOOST_TEST_REQUIRE(dynamic_cast<iwLobbyConnect*>(WINDOWMANAGER.GetTopMostWindow()));
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndInternet>());
         back();
         BOOST_TEST_REQUIRE(desktopAs<Online>());
         choose(Online::ID_Lan);
@@ -703,7 +710,7 @@ BOOST_FIXTURE_TEST_CASE(LanMouseKeyboardHostProxyAndSmallWindowRecovery, OnlineF
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         SETTINGS.proxy.type = ProxyType::None;
         choose(dskFrontEndLan::ID_Host);
-        BOOST_TEST_REQUIRE(dynamic_cast<iwDirectIPCreate*>(WINDOWMANAGER.GetTopMostWindow()));
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
         back();
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         VIDEODRIVER.setUiReferenceHeight(0);
@@ -775,6 +782,84 @@ BOOST_AUTO_TEST_CASE(LanExceptionCleanupReleasesDiscoverySocketForReentry)
         fixture.enterLan();
         fixture.advertise();
         BOOST_TEST(OnlineFixture::lan().GetCtrl<ctrlTable>(dskFrontEndLan::ID_Servers)->GetNumRows() == 1u);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(NetworkMapHostUsesTheFullScreenBrowserAndValidatedMaskedForm, JoinFixture)
+{
+    checkedJoin([&] {
+        const auto folder = RTTRCONFIG.ExpandPath(s25::folders::mapsOwn);
+        boost::filesystem::create_directories(folder);
+        const auto map = folder / "Online.SWD";
+        boost::filesystem::copy_file(mapPath(), map);
+        enter(false);
+        choose(Online::ID_Host);
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
+        choose(dskFrontEndHost::ID_Maps);
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndMaps>());
+        choose(dskFrontEndMaps::ID_Category);
+        pressN(pad, PadButton::DpadDown, 3);
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndMaps>()->GetSelectedPath() == map);
+        choose(dskFrontEndMaps::ID_Continue);
+        auto* form = desktopAs<dskFrontEndHost>();
+        BOOST_TEST_REQUIRE(form);
+        type(dskFrontEndHost::ID_Name, U"");
+        choose(dskFrontEndHost::ID_Start);
+        BOOST_TEST(form->GetCtrl<ctrlText>(dskFrontEndHost::ID_Status)->GetText()
+                   == "Please enter a name for the game");
+        type(dskFrontEndHost::ID_Name, U"Sofa game");
+        type(dskFrontEndHost::ID_Port, U"0");
+        choose(dskFrontEndHost::ID_Start);
+        BOOST_TEST(form->GetCtrl<ctrlText>(dskFrontEndHost::ID_Status)->GetText()
+                   == "Invalid port. The valid port-range is 1 to 65535!");
+        type(dskFrontEndHost::ID_Password, U"secret");
+        BOOST_TEST(form->GetCtrl<ctrlEdit>(dskFrontEndHost::ID_Password)->GetCtrl<ctrlTextDeepening>(0)->GetText()
+                   == "******");
+        SETTINGS.proxy.type = ProxyType::Socks4;
+        choose(dskFrontEndHost::ID_Start);
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+        SETTINGS.proxy.type = ProxyType::None;
+        // A file removed while the hosting form is open must stay recoverable here.
+        boost::filesystem::remove(map);
+        type(dskFrontEndHost::ID_Port, U"2105");
+        choose(dskFrontEndHost::ID_Start);
+        BOOST_TEST(form->GetCtrl<ctrlText>(dskFrontEndHost::ID_Status)->GetText() == "Hosting of game not possible");
+        BOOST_TEST(form->GetCtrl<ctrlButton>(dskFrontEndHost::ID_Start)->GetEnabled());
+        boost::filesystem::copy_file(mapPath(), map);
+        Socket reservation;
+        BOOST_TEST_REQUIRE(reservation.Listen(0, false, false));
+        sockaddr_in address{};
+        socklen_t length = sizeof(address);
+        BOOST_TEST_REQUIRE(getsockname(reservation.GetSocket(), reinterpret_cast<sockaddr*>(&address), &length) == 0);
+        const auto portText = std::to_string(ntohs(address.sin_port));
+        reservation.Close();
+        type(dskFrontEndHost::ID_Port, std::u32string(portText.begin(), portText.end()));
+        choose(dskFrontEndHost::ID_Start);
+        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        BOOST_TEST(GAMECLIENT.IsHost());
+        BOOST_TEST(!GAMECLIENT.IsHostingCampaign());
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Config));
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(LanHostSelectionBackAndPasswordCancellationDoNotStartAGame, OnlineFixture)
+{
+    checked([&] {
+        enterLan();
+        choose(dskFrontEndLan::ID_Host);
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
+        choose(dskFrontEndHost::ID_Campaigns);
+        back();
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
+        BOOST_TEST(focusedId(0) == dskFrontEndHost::ID_Campaigns);
+        choose(dskFrontEndHost::ID_Saves);
+        back();
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
+        back();
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLan>());
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
     });
 }
 

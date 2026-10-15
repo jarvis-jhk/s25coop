@@ -6,6 +6,7 @@
 
 #include "dskFrontEndPage.h"
 #include "frontend/CampaignCatalog.h"
+#include "gameTypes/ServerType.h"
 #include "libsiedler2/Archiv.h"
 #include <array>
 #include <memory>
@@ -14,7 +15,8 @@
 class dskFrontEndCampaigns : public dskFrontEndPage
 {
 public:
-    explicit dskFrontEndCampaigns(std::shared_ptr<boost::filesystem::path> selection);
+    explicit dskFrontEndCampaigns(std::shared_ptr<boost::filesystem::path> selection,
+                                  ServerType type = ServerType::Local);
     const frontend::CampaignCatalog& GetCatalog() const { return catalog_; }
     unsigned GetFirstCampaign() const { return first_; }
     const glArchivItem_Bitmap* GetArtwork(unsigned tile) const;
@@ -34,6 +36,7 @@ protected:
     void Draw_() override;
 
 private:
+    ServerType type_;
     void Refresh();
     void FillPage();
     frontend::CampaignCatalog catalog_;

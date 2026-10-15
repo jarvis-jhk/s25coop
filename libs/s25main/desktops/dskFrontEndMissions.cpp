@@ -11,6 +11,7 @@
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "desktops/dskFrontEndHost.h"
 #include "driver/KeyEvent.h"
 #include "frontend/MapCatalog.h"
 #include "helpers/format.hpp"
@@ -24,8 +25,8 @@
 #include "libsiedler2/prototypen.h"
 #include <stdexcept>
 
-dskFrontEndMissions::dskFrontEndMissions(boost::filesystem::path folder)
-    : dskFrontEndPage(_("Choose mission")), folder_(std::move(folder))
+dskFrontEndMissions::dskFrontEndMissions(boost::filesystem::path folder, const ServerType type)
+    : dskFrontEndPage(_("Choose mission")), type_(type), folder_(std::move(folder))
 {
     auto* table =
       AddTable(ID_Missions, DrawPoint(0, 0), Extent(300, 200), TextureColor::Green2, NormalFont,
@@ -216,6 +217,14 @@ void dskFrontEndMissions::StartSelected()
             return;
         if(!previewReady_)
             throw std::runtime_error(_("The specified file couldn't be loaded!"));
+        if(type_ != ServerType::Local)
+        {
+            Open([type = type_, map = GetSelectedPath(), lua = campaign.getLuaFilePath(*selection),
+                  name = campaign.name, start = dskFrontEndHost::CampaignStart{folder_, campaign.uid, *selection}] {
+                return std::make_unique<dskFrontEndHost>(type, MapDescription(map, MapType::OldMap, lua), name, start);
+            });
+            return;
+        }
         const CreateServerInfo csi(ServerType::Local, SETTINGS.server.localPort, campaign.name);
         if(!GAMECLIENT.HostGame(csi, {GetSelectedPath(), MapType::OldMap, campaign.getLuaFilePath(*selection)}))
             throw std::runtime_error(_("Hosting of game not possible"));

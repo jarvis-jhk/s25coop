@@ -11,8 +11,8 @@
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "desktops/dskFrontEndConnect.h"
+#include "desktops/dskFrontEndHost.h"
 #include "helpers/format.hpp"
-#include "ingameWindows/iwDirectIPCreate.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "mygettext/mygettext.h"
 #include "gameData/LanDiscoveryCfg.h"
@@ -170,7 +170,7 @@ void dskFrontEndLan::OnChoose(const unsigned id)
               _("You can't create a game while a proxy server is active\nDisable the use of a proxy server first!"),
               this, MsgboxButton::Ok, MsgboxIcon::ExclamationGreen, 1));
         else
-            WINDOWMANAGER.ReplaceWindow(std::make_unique<iwDirectIPCreate>(ServerType::LAN));
+            Open([] { return std::make_unique<dskFrontEndHost>(ServerType::LAN); });
     }
 }
 

@@ -1,5 +1,25 @@
 # Session notes
 
+## 2026-10-15 — Sol F8c Internet lobby and network hosting (local gates passed; CI pending)
+
+`sol/frontend-online-menus` adds full-screen Internet login/server list/chat and a network
+host path through Campaigns/Maps/Load, with a final masked creation form. Campaign identity/
+unlocks and saves are revalidated at Start; campaign co-players are enabled. Classic stays
+reachable. The existing connecting/network lobby presentation, F7d remote cards and local
+seating on an online host remain open; combined Online menus is not done.
+
+Read-only gpt-6.1-sol review found saved-hash retry provenance and changed-save handling;
+both are repaired. Own GCC12 Debug/max2 builds pass; all122 FrontEnd* tests/6269 assertions and full
+Test_UI174/124020 pass. The new Internet suite5/332 exercises actual loopback login,
+rejection/retry after disabling saved passwords, chat and live server-list updates.
+Network map/campaign/save starts use real client/server sockets; changed campaign and
+deleted map/save recovery are covered. Only existing original-resource fixtures are
+bypassed. No physical Deck, public-service or router/NAT acceptance is claimed.
+Clang-Tidy23 on both new pages, format10, static validation/include guards, all PO
+msgfmt checks and the actual agent TypeScript compiler pass. No suppressions/exclusions.
+Fresh all17 checks and BOTH complete CI workflows remain the tested-handoff gate.
+No new schedule; existing central anonymous fault relay is retained. Details: [OnlineInternet](doc/coop/OnlineInternet.md).
+
 Older entries (2026-09-26 – 2026-10-02) are in `NOTES-archive.md` — grep it for durable how-tos:
 local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test` and `ctest -R Coop`,
 S2 data in /app/agent/data/siedler/S2 (`-DRTTR_COOP_S2_DIR`), fault-report path, coop-net tests,

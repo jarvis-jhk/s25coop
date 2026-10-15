@@ -10,6 +10,7 @@
 #include "controls/ctrlButton.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "desktops/dskFrontEndHost.h"
 #include "driver/KeyEvent.h"
 #include "files.h"
 #include "frontend/SavePreview.h"
@@ -30,8 +31,8 @@ std::string saveDate(const s25util::time64_t time)
 }
 } // namespace
 
-dskFrontEndLoad::dskFrontEndLoad(const boost::filesystem::path& preferred)
-    : dskFrontEndPage(_("Load game")), resumeOnce_(preferred)
+dskFrontEndLoad::dskFrontEndLoad(const boost::filesystem::path& preferred, const ServerType type)
+    : dskFrontEndPage(_("Load game")), type_(type), resumeOnce_(preferred)
 {
     AddTable(ID_Saves, DrawPoint(0, 0), Extent(300, 200), TextureColor::Green2, NormalFont,
              {{_("Filename"), 55, ctrlTable::SortType::String}, {_("Time"), 45, ctrlTable::SortType::Date}, {}});
@@ -223,6 +224,14 @@ void dskFrontEndLoad::LoadSelected()
     // Metadata may have disappeared or changed while the page was open. Failure stays on this page;
     // no map-picker switch, and a second A in this input batch cannot start another connection.
     const bool readable = frontend::ReadSaveEntry(selected).has_value();
+    if(readable && type_ != ServerType::Local)
+    {
+        Open([type = type_, selected] {
+            return std::make_unique<dskFrontEndHost>(type, MapDescription(selected, MapType::Savegame),
+                                                     selected.stem().string());
+        });
+        return;
+    }
     const CreateServerInfo csi(ServerType::Local, SETTINGS.server.localPort, selected.stem().string());
     if(readable && GAMECLIENT.HostGame(csi, {selected, MapType::Savegame}))
     {

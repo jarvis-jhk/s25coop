@@ -1353,6 +1353,10 @@ msgstr ""
 msgid "Create Game"
 msgstr "Játék létrehozása"
 
+#: ../libs/s25main/desktops/dskFrontEndInternet.cpp
+msgid "Create an account at https://forum.siedler25.org."
+msgstr ""
+
 #: libs/s25main/desktops/dskCredits.cpp:47
 #: libs/s25main/desktops/dskMainMenu.cpp:47
 msgid "Credits"
@@ -1546,6 +1550,10 @@ msgid "Disallow change"
 msgstr "Változtatás tiltása"
 
 msgid "Discard"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskFrontEndInternet.cpp
+msgid "Disconnect"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwAction.cpp:307
@@ -5476,6 +5484,10 @@ msgstr "S2 alapértelmezések használata"
 #: libs/s25main/desktops/dskOptions.cpp:253
 msgid "Use UPnP"
 msgstr "UPnP használata"
+
+#: ../libs/s25main/desktops/dskFrontEndInternet.cpp
+msgid "Username and password are required."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwLobbyConnect.cpp:58
 msgid "Username:"

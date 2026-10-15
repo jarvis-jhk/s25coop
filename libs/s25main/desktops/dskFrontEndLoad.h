@@ -7,6 +7,7 @@
 #include "dskFrontEndPage.h"
 #include "frontend/SaveCatalog.h"
 #include "ogl/glArchivItem_Bitmap_Direct.h"
+#include "gameTypes/ServerType.h"
 #include <boost/filesystem/path.hpp>
 
 /// Metadata save browser; hosting/loading remains in GameClient and the existing lobby.
@@ -14,7 +15,7 @@ class dskFrontEndLoad final : public dskFrontEndPage
 {
 public:
     /// A Home Continue target is selected by identity, never by a row position.
-    explicit dskFrontEndLoad(const boost::filesystem::path& preferred = {});
+    explicit dskFrontEndLoad(const boost::filesystem::path& preferred = {}, ServerType type = ServerType::Local);
 
     enum ControlIds
     {
@@ -47,6 +48,7 @@ protected:
     void Draw_() override;
 
 private:
+    ServerType type_;
     void Refresh(const boost::filesystem::path& preferred);
     void UpdateDetails();
     void LoadSelected();

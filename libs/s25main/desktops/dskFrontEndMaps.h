@@ -7,6 +7,7 @@
 #include "dskFrontEndPage.h"
 #include "frontend/MapCatalog.h"
 #include "frontend/ScenarioCatalog.h"
+#include "gameTypes/ServerType.h"
 
 /// Maps and explicitly registered single-mission campaigns; the existing mission page owns scenario starts.
 class dskFrontEndMaps final : public dskFrontEndPage
@@ -19,7 +20,8 @@ public:
         boost::filesystem::path map;
         boost::filesystem::path scenario;
     };
-    explicit dskFrontEndMaps(std::shared_ptr<BrowseState> state = std::make_shared<BrowseState>());
+    explicit dskFrontEndMaps(std::shared_ptr<BrowseState> state = std::make_shared<BrowseState>(),
+                             ServerType type = ServerType::Local);
     static constexpr unsigned scenarioCategory = 10;
     enum ControlIds
     {
@@ -54,6 +56,7 @@ protected:
     void OnChoose(unsigned ctrl_id) override;
 
 private:
+    ServerType type_;
     void Refresh(const boost::filesystem::path& preferred);
     void UpdateStatus();
     void UpdateDetails();
