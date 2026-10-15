@@ -31,6 +31,7 @@
 #include <chrono>
 #include <csignal>
 #include <thread>
+#include <utility>
 
 namespace {
 using Page = dskFrontEndInternet;
@@ -96,7 +97,7 @@ struct InternetFixture : rttr::test::MenuPadFixture, LobbyMessageInterface
         // Replace only the shipped lobby endpoint resource; the product Login and protocol stay real.
         LOADER.GetTextN("client", 0);
         auto& archive = LOADER.GetArchive("client");
-        oldClient = std::move(archive);
+        std::swap(oldClient, archive);
         archive.alloc(2);
         auto host = std::make_unique<libsiedler2::ArchivItem_Text>();
         host->setText("127.0.0.1");
