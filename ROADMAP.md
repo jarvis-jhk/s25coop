@@ -289,8 +289,10 @@ starting the game and playing it are still upstream's mouse screens with control
     - ◐ F8c Internet lobby + network hosting (`sol/frontend-online-menus`, 2026-10-15): full-screen
       login/server list/chat, content-first Campaigns/Maps/Load hosting and a masked creation form.
       Registration, mission availability and save metadata are revalidated before hosting; local
-      validation passes (122 FrontEnd* cases, full UI174); PR/CI handoff pending. [OnlineInternet](doc/coop/OnlineInternet.md).
-      Remaining: connecting presentation, F7d online cards and local seating on network hosts.
+      validation passes (123 FrontEnd* cases, full UI174); PR59/CI handoff pending. [OnlineInternet](doc/coop/OnlineInternet.md).
+    - ◐ F8d connecting presentation (PR59): live full-screen handshake/map-transfer progress on the
+      original form; B/Escape/header Back/Abort cancel and retain private inputs. Local input/lifecycle
+      tests pass; fresh exact-head CI pending. F7d online cards/local network seats remain separate.
   - ◐ F9 options: grouped full-screen display/Deck, audio, controls and language pages implemented on
     `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
     Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption

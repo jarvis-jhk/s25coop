@@ -4,11 +4,11 @@
 
 #include "dskFrontEndHost.h"
 #include "Loader.h"
-#include "RttrLobbyClient.hpp"
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
 #include "controls/ctrlCheck.h"
+#include "controls/ctrlConnectionProgress.h"
 #include "controls/ctrlEdit.h"
 #include "controls/ctrlText.h"
 #include "desktops/dskFrontEndCampaigns.h"
@@ -16,7 +16,7 @@
 #include "desktops/dskFrontEndMaps.h"
 #include "frontend/CampaignCatalog.h"
 #include "frontend/SaveCatalog.h"
-#include "ingameWindows/iwConnecting.h"
+#include "input/MenuPadInput.h"
 #include "network/CreateServerInfo.h"
 #include "network/GameClient.h"
 #include "network/GameServer.h"
@@ -62,6 +62,12 @@ dskFrontEndHost::dskFrontEndHost(const ServerType type, MapDescription map, cons
       ->setChecked(SETTINGS.server.ipv6);
     AddTextButton(ID_Start, DrawPoint(0, 0), Extent(1, 1), TextureColor::Green2, _("Create Game"), NormalFont);
     AddText(ID_Status, DrawPoint(0, 0), "", COLOR_RED, FontStyle{}, NormalFont);
+    AddCtrl(std::make_unique<ctrlConnectionProgress>(this, ID_Connection, [this](ClientError error) {
+        this->GetCtrl<ctrlButton>(ID_Start)->SetEnabled();
+        SetStatus(ClientErrorToStr(error));
+        Layout();
+        WINDOWMANAGER.GetPadInput().ClearFocus();
+    }));
     for(const unsigned id : {ID_Name, ID_Port, ID_Password})
         GetCtrl<ctrlEdit>(id)->SetNotify();
     Layout();
@@ -69,6 +75,9 @@ dskFrontEndHost::dskFrontEndHost(const ServerType type, MapDescription map, cons
 
 Window* dskFrontEndHost::GetPadEntryCtrl(const unsigned slot)
 {
+    if(auto* connection = GetCtrl<ctrlConnectionProgress>(ID_Connection); connection && connection->IsConnecting())
+        return connection->GetCtrl<Window>(ctrlConnectionProgress::ID_Abort);
+
     return map_ ? GetCtrl<Window>(ID_Name) : dskFrontEndPage::GetPadEntryCtrl(slot);
 }
 
@@ -80,6 +89,16 @@ void dskFrontEndHost::SetStatus(const std::string& text)
 void dskFrontEndHost::OnLayout()
 {
     if(!map_)
+        return;
+    auto* connection = GetCtrl<ctrlConnectionProgress>(ID_Connection);
+    const bool connecting = connection->IsConnecting();
+    connection->SetPos(GetFrame().content.getOrigin());
+    connection->Resize(GetFrame().content.getSize());
+    for(unsigned id = ID_Name; id <= ID_Status; ++id)
+        GetCtrl<Window>(id)->SetVisible(!connecting);
+    for(unsigned id = ID_Name; id <= ID_Password; ++id)
+        GetCtrl<Window>(ID_LabelStart + id)->SetVisible(!connecting);
+    if(connecting)
         return;
     const auto& area = GetFrame().content;
     layoutUnavailable_ = area.getSize().x < 480 || area.getSize().y < 250;
@@ -131,7 +150,7 @@ void dskFrontEndHost::Msg_EditEnter(const unsigned id)
 
 void dskFrontEndHost::OnChoose(const unsigned id)
 {
-    if(layoutUnavailable_ || connecting_)
+    if(layoutUnavailable_ || (map_ && GetCtrl<ctrlConnectionProgress>(ID_Connection)->IsConnecting()))
         return;
     if(id == ID_Start && map_)
     {
@@ -229,16 +248,20 @@ void dskFrontEndHost::Start()
     GAMECLIENT.SetHostingCampaign(campaign_.has_value());
     if(campaign_)
         GAMESERVER.SetAllowCoopMembers(true);
-    connecting_ = true;
     GetCtrl<ctrlButton>(ID_Start)->SetEnabled(false);
-    SetStatus(_("Connecting with Host..."));
-    std::unique_ptr<ILobbyClient> lobbyClient;
-    if(type_ == ServerType::Lobby)
-        lobbyClient = std::make_unique<RttrLobbyClient>(LOBBYCLIENT);
-    auto& connecting = WINDOWMANAGER.Show(std::make_unique<iwConnecting>(type_, std::move(lobbyClient)));
-    onErrorConnection_ = connecting.onError.connect([this](ClientError error) {
-        connecting_ = false;
-        this->GetCtrl<ctrlButton>(ID_Start)->SetEnabled();
-        SetStatus(ClientErrorToStr(error));
-    });
+    GetCtrl<ctrlConnectionProgress>(ID_Connection)->Start(type_);
+    for(unsigned id = ID_Name; id <= ID_Password; ++id)
+        GetCtrl<ctrlEdit>(id)->SetFocus(false);
+    Layout();
+    WINDOWMANAGER.GetPadInput().ClearFocus();
+}
+
+bool dskFrontEndHost::GoBack()
+{
+    if(auto* connection = GetCtrl<ctrlConnectionProgress>(ID_Connection); connection && connection->IsConnecting())
+    {
+        connection->Abort();
+        return true;
+    }
+    return dskFrontEndPage::GoBack();
 }

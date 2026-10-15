@@ -135,7 +135,7 @@ void dskFrontEndInternet::OnLayout()
     if(layoutUnavailable_)
         return;
     auto place = [this](unsigned id, const Rect& rect) {
-        auto* control = GetCtrl<Window>(id);
+        auto* control = this->GetCtrl<Window>(id);
         control->SetPos(rect.getOrigin());
         control->Resize(rect.getSize());
     };

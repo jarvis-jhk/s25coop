@@ -32,10 +32,10 @@ it reappears or the player explicitly chooses another endpoint.
 
 The frame resizes for 800×480, 800×600, Deck render units and 1280×800. Too-small
 content hides interactive controls and gives the existing scale/window warning.
-LAN creation retains the classic create dialog and proxy guard. Internet login,
-F4–F6 network hosting, full-screen connecting and F7d network player cards are
-separate remaining F8/F7 slices. F8a plus F8b does not finish the combined
-"Online menus" item. The central public ntfy fault relay and CI webhook remain
+LAN creation now uses the full-screen content-first host route and keeps the proxy
+guard. [Internet and hosting](OnlineInternet.md) describes the F8 follow-up login,
+F4–F6 hosting and shared full-screen connecting presentation. F7d network player cards
+remain a separate roadmap item. The central public ntfy fault relay and CI webhook remain
 the fault path; no private queue URL belongs in this public repository.
 
 Acceptance uses actual UDP advertisements through the bounded LanDiscovery adapter, physical

@@ -10,7 +10,9 @@
 #include "controls/ctrlButton.h"
 #include "controls/ctrlCheck.h"
 #include "controls/ctrlComboBox.h"
+#include "controls/ctrlConnectionProgress.h"
 #include "controls/ctrlEdit.h"
+#include "controls/ctrlPercent.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "controls/ctrlTextDeepening.h"
@@ -26,7 +28,6 @@
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
 #include "files.h"
-#include "ingameWindows/iwConnecting.h"
 #include "ingameWindows/iwControllerKeyboard.h"
 #include "ingameWindows/iwDirectIPCreate.h"
 #include "ingameWindows/iwLobbyConnect.h"
@@ -509,9 +510,9 @@ BOOST_FIXTURE_TEST_CASE(RealPasswordHandshakeRetriesThenJoinsTheOnlineLobby, Joi
         server();
         fill(U"wrong");
         choose(Page::ID_Connect);
-        BOOST_TEST_REQUIRE(dynamic_cast<iwConnecting*>(WINDOWMANAGER.GetTopMostWindow()));
+        BOOST_TEST_REQUIRE(page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting());
         BOOST_TEST(!page().GetCtrl<ctrlButton>(Page::ID_Connect)->GetEnabled());
-        await([] { return WINDOWMANAGER.GetTopMostWindow() == nullptr; });
+        await([] { return !page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting(); });
         BOOST_TEST(page().GetCtrl<ctrlText>(Page::ID_Status)->GetText()
                    == ClientErrorToStr(ClientError::WrongPassword));
         BOOST_TEST(page().GetCtrl<ctrlButton>(Page::ID_Connect)->GetEnabled());
@@ -531,12 +532,9 @@ BOOST_FIXTURE_TEST_CASE(RealIPv6HandshakeAndAbortLeaveTheJoinTrailUsable, JoinFi
         server(true);
         fill(U"secret", true);
         choose(Page::ID_Connect);
-        BOOST_TEST_REQUIRE(dynamic_cast<iwConnecting*>(WINDOWMANAGER.GetTopMostWindow()));
+        BOOST_TEST_REQUIRE(page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting());
         back();
-        BOOST_TEST_REQUIRE(dynamic_cast<iwConnecting*>(WINDOWMANAGER.GetTopMostWindow()));
-        // The legacy handshake has custom close behavior: activate its Abort button.
-        press(pad, PadButton::A);
-        frame();
+        BOOST_TEST(!page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting());
         BOOST_TEST_REQUIRE(desktopAs<Page>());
         BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
         BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
@@ -591,7 +589,7 @@ BOOST_AUTO_TEST_CASE(ExceptionCleanupRestoresSettingsWithAKeyboardOrHandshakeOpe
             fixture.server();
             fixture.fill();
             fixture.choose(Page::ID_Connect);
-            BOOST_TEST_REQUIRE(dynamic_cast<iwConnecting*>(WINDOWMANAGER.GetTopMostWindow()));
+            BOOST_TEST_REQUIRE(fixture.page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting());
             reached = true;
             onlineCleanupProbe();
         }),
@@ -752,7 +750,7 @@ BOOST_FIXTURE_TEST_CASE(LanPasswordRetryAndHostTribeUseTheRealLanHandshake, Join
         BOOST_TEST_REQUIRE(desktopAs<Page>());
         type(Page::ID_Password, U"wrong");
         choose(Page::ID_Connect);
-        await([] { return WINDOWMANAGER.GetTopMostWindow() == nullptr; });
+        await([] { return !page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting(); });
         BOOST_TEST(page().GetCtrl<ctrlText>(Page::ID_Status)->GetText()
                    == ClientErrorToStr(ClientError::WrongPassword));
         type(Page::ID_Password, U"secret");
@@ -860,6 +858,80 @@ BOOST_FIXTURE_TEST_CASE(LanHostSelectionBackAndPasswordCancellationDoNotStartAGa
         back();
         BOOST_TEST_REQUIRE(desktopAs<dskFrontEndLan>());
         BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(ConnectionUsesFullPageStatusResizeAndAllAbortPathsWithoutLosingPrivateInputs, JoinFixture)
+{
+    checkedJoin([&] {
+        Socket silent;
+        BOOST_TEST_REQUIRE(silent.Listen(0, false, false));
+        sockaddr_in address{};
+        socklen_t length = sizeof(address);
+        BOOST_TEST_REQUIRE(getsockname(silent.GetSocket(), reinterpret_cast<sockaddr*>(&address), &length) == 0);
+        port = ntohs(address.sin_port);
+        fill();
+        for(unsigned input = 0; input < 6; ++input)
+        {
+            choose(Page::ID_Connect);
+            auto* connection = page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection);
+            BOOST_TEST_REQUIRE(connection->IsConnecting());
+            BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+            BOOST_TEST((WINDOWMANAGER.GetCursor() == Cursor::Moon));
+            BOOST_TEST(!page().GetCtrl<Window>(Page::ID_Password)->IsVisible());
+            // Presentation callbacks exercise transfer percentages; the other cases run the real wire handshake.
+            ClientInterface& updates = *connection;
+            updates.CI_NextConnectState(ConnectState::ReceiveMap);
+            updates.CI_MapPartReceived(3, 4);
+            BOOST_TEST(connection->GetCtrl<ctrlPercent>(ctrlConnectionProgress::ID_Progress)->getPercentage() == 75u);
+            updates.CI_MapPartReceived(UINT32_MAX, 1);
+            updates.CI_MapPartReceived(1, 0);
+            BOOST_TEST(connection->GetCtrl<ctrlPercent>(ctrlConnectionProgress::ID_Progress)->getPercentage() == 100u);
+            for(const VideoMode size :
+                {VideoMode(800, 480), VideoMode(800, 600), VideoMode(1024, 640), VideoMode(1280, 800)})
+            {
+                BOOST_TEST_REQUIRE(VIDEODRIVER.ResizeScreen(size, DisplayMode::Windowed));
+                frame();
+                BOOST_TEST((connection->GetBoundaryRect() == page().GetFrame().content));
+                for(unsigned id = ctrlConnectionProgress::ID_Status; id <= ctrlConnectionProgress::ID_Abort; ++id)
+                {
+                    const auto rect = connection->GetCtrl<Window>(id)->GetBoundaryRect();
+                    BOOST_TEST(rect.left >= 0);
+                    BOOST_TEST(rect.right <= static_cast<int>(connection->GetSize().x));
+                    BOOST_TEST(rect.top >= 0);
+                    BOOST_TEST(rect.bottom <= static_cast<int>(connection->GetSize().y));
+                }
+            }
+            Socket abandoned = silent.Accept();
+            BOOST_TEST_REQUIRE(abandoned.isValid());
+            if(input == 5)
+            {
+                WINDOWMANAGER.Switch(std::make_unique<Desktop>(nullptr));
+                frame();
+                BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+                BOOST_TEST((WINDOWMANAGER.GetCursor() == Cursor::Hand));
+                continue;
+            }
+            if(input == 0)
+                back();
+            else if(input == 1)
+            {
+                WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Escape));
+                frame();
+            } else if(input == 2)
+                click(*page().GetCtrl<Window>(Page::ID_btBack));
+            else if(input == 3)
+                press(pad, PadButton::A);
+            else
+                click(*connection->GetCtrl<Window>(ctrlConnectionProgress::ID_Abort));
+            BOOST_TEST_REQUIRE(desktopAs<Page>());
+            BOOST_TEST(!connection->IsConnecting());
+            BOOST_TEST((WINDOWMANAGER.GetCursor() == Cursor::Hand));
+            BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
+            BOOST_TEST(page().GetCtrl<ctrlEdit>(Page::ID_Password)->GetText() == "secret");
+            BOOST_TEST(page().GetCtrl<ctrlEdit>(Page::ID_Password)->IsVisible());
+            BOOST_TEST(page().GetCtrl<ctrlButton>(Page::ID_Connect)->GetEnabled());
+        }
     });
 }
 

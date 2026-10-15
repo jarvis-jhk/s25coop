@@ -16,17 +16,16 @@ password. Passwords stay masked and are never saved in settings or page factorie
 
 B, Escape and the visible Back button rebuild Online and then Home with the
 chosen tile focused. Failed connections retain the form for correction/retry.
-A successful direct handshake uses the existing connecting window and online
-lobby; Abort stops that attempt and leaves the form usable. Ordinary invalid
+The live handshake replaces the form with full-screen status/map-transfer progress;
+Abort stops that attempt and restores the same form. Success opens the existing online
+lobby. Ordinary invalid
 ports, wrong passwords and unavailable hosts are displayed locally, without
 fault reports. The existing central crash/report path remains unchanged.
 
-This bounded F8 slice replaces the default online entry and direct-join form.
-The LAN browser, Internet login, host creation and online lobby still use their
-existing implementations, including proxy restrictions. LAN Back goes through
-the classic multiplayer selector before returning Home. Full-screen LAN/server
-browsing, network host selection through F4–F6, connecting presentation and F7d
-online cards remain subsequent slices. Classic menus retain their old routes.
+The full-screen LAN browser, Internet login/server list/chat and content-first network
+hosting are implemented by the follow-up pages. [Internet and hosting](OnlineInternet.md)
+also describes their shared connection-progress control. F7d online player cards remain
+a separate roadmap item. Classic menus retain their old routes.
 
 Required gate: physical pad/mouse/keyboard and resize tests, actual IPv4/IPv6
 password handshakes, co-player join to a host tribe, cancellation and retry,

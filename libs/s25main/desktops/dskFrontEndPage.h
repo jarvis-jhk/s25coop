@@ -53,7 +53,7 @@ public:
     /// Open the next page on top of this one; B there comes back here.
     Desktop* Open(const Factory& next);
     /// Back to the previous page. false = there is none and OnBackAtRoot did not handle it either.
-    bool GoBack();
+    virtual bool GoBack();
     /// Is there a previous page?
     bool CanGoBack() const;
     /// Does B do anything here? A previous page, or a root page that handles it (OnBackAtRoot).

@@ -1,24 +1,32 @@
 # Session notes
 
-## 2026-10-15 — Sol F8c Internet lobby and network hosting (local gates passed; CI pending)
+## 2026-10-15 — Sol F8c Internet lobby, hosting and connection progress (local gates passed; PR59 CI pending)
 
 `sol/frontend-online-menus` adds full-screen Internet login/server list/chat and a network
 host path through Campaigns/Maps/Load, with a final masked creation form. Campaign identity/
 unlocks and saves are revalidated at Start; campaign co-players are enabled. Classic stays
-reachable. The existing connecting/network lobby presentation, F7d remote cards and local
-seating on an online host remain open; combined Online menus is not done.
+reachable. The final step replaces network handshakes with full-screen status/map progress and
+Abort on the original form; Classic keeps its connecting window. F7d remote cards and
+local seating on an online host are separate roadmap items.
 
 Read-only gpt-6.1-sol review found saved-hash retry provenance and changed-save handling;
-both are repaired. Own GCC12 Debug/max2 builds pass; all122 FrontEnd* tests/6269 assertions and full
-Test_UI174/124020 pass. The new Internet suite5/332 exercises actual loopback login,
+both are repaired. Own GCC12 Debug/max2 builds pass; all123 FrontEnd* tests/6769 assertions and full
+Test_UI174/127328 pass. The online suite18/1290 covers all five abort inputs, resize,
+private-field retention, progress callback bounds and active-handshake destruction. The new Internet suite5/332 exercises actual loopback login,
 rejection/retry after disabling saved passwords, chat and live server-list updates.
 Network map/campaign/save starts use real client/server sockets; changed campaign and
 deleted map/save recovery are covered. Only existing original-resource fixtures are
 bypassed. No physical Deck, public-service or router/NAT acceptance is claimed.
-Clang-Tidy23 on both new pages, format10, static validation/include guards, all PO
-msgfmt checks and the actual agent TypeScript compiler pass. No suppressions/exclusions.
+Format10, static validation/include guards, all PO msgfmt checks and actual agent tsc
+pass. Clang23 records newer style diagnostics and transitive singleton-destructor warnings;
+the latter reproduce in unchanged dskParty. No suppressions/exclusions are added; Clang18 CI
+remains the authority. Earlier "Clang23 pass" wording was premature (its output was still running).
 Fresh all17 checks and BOTH complete CI workflows remain the tested-handoff gate.
-No new schedule; existing central anonymous fault relay is retained. Details: [OnlineInternet](doc/coop/OnlineInternet.md).
+The first-step head eeabbed26 failed native Windows compilation at an unqualified
+GetCtrl inside the Internet layout lambda (C2668); explicitly this->GetCtrl fixes it.
+Old runs were canceled as obsolete, without retrying the failed source. Final local progress
+validation passes; PR59 stays draft until fresh exact-head all17/BOTH CI succeeds. No new schedule; existing central
+anonymous fault relay is retained. Details: [OnlineInternet](doc/coop/OnlineInternet.md).
 
 Older entries (2026-09-26 – 2026-10-02) are in `NOTES-archive.md` — grep it for durable how-tos:
 local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test` and `ctest -R Coop`,

@@ -39,8 +39,21 @@ exceptions or failed handshakes keep a retryable form; partially started hosts a
 stopped. Existing installer/runtime-exit and CI fault reporting are retained, without
 adding a private endpoint to the public tree.
 
-This is the F8c Internet/hosting part of Online menus. The connecting window and network
-party/lobby still use their existing presentation; the full-screen connection stages
-and F7d remote cards/readiness/chat remain next. Local-party seating in an online host
-is not added. Mock-driver input and loopback sockets do not establish physical Deck,
-public Internet service or router/NAT acceptance.
+## Connection progress
+
+Joining or hosting keeps the full-screen page and replaces its form with connection
+status, map-transfer progress and Abort. `ctrlConnectionProgress` observes the existing
+GameClient handshake, showing its real verification/password/map/player/settings stages.
+The percentage is shown only during map transfer; a zero total never divides by zero.
+Successful completion hands the unchanged lobby and Internet adapter to the existing
+party/lobby route. The Classic connecting window is unchanged.
+
+B, Escape, header Back and Abort return to the same private form. Errors likewise retain
+host/port/password or hosting settings for correction; these values are not copied into
+page factories. Destroying an active progress control stops the connection and restores
+the cursor. The observer detaches without overwriting the next lobby's interface.
+
+These F8 pages do not replace the network party/lobby presentation. F7d remote player
+cards/readiness/chat and local-party seating on online hosts are separate roadmap work.
+Mock-driver input and loopback sockets do not establish physical Deck, public Internet
+service or router/NAT acceptance.
