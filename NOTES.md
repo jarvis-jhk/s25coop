@@ -19,14 +19,22 @@ deleted map/save recovery are covered. Only existing original-resource fixtures 
 bypassed. No physical Deck, public-service or router/NAT acceptance is claimed.
 Format10, static validation/include guards, all PO msgfmt checks and actual agent tsc
 pass. Clang23 records newer style diagnostics and transitive singleton-destructor warnings;
-the latter reproduce in unchanged dskParty. No suppressions/exclusions are added; Clang18 CI
+the latter reproduce in unchanged dskParty. No lint/coverage suppressions or test exclusions are added; Clang18 CI
 remains the authority. Earlier "Clang23 pass" wording was premature (its output was still running).
 Fresh all17 checks and BOTH complete CI workflows remain the tested-handoff gate.
 The first-step head eeabbed26 failed native Windows compilation at an unqualified
 GetCtrl inside the Internet layout lambda (C2668); explicitly this->GetCtrl fixes it.
-Old runs were canceled as obsolete, without retrying the failed source. Final local progress
-validation passes; PR59 stays draft until fresh exact-head all17/BOTH CI succeeds. No new schedule; existing central
-anonymous fault relay is retained. Details: [OnlineInternet](doc/coop/OnlineInternet.md).
+Old runs were canceled as obsolete, without retrying the failed source. bdbf640c2 then
+passed Linux clang21 sanitizer and formatting, but macOS Test_splitscreen stopped on
+SIGPIPE. The game entry point installs a no-op SIGPIPE handler; the new Internet fixture
+had not reproduced that runtime environment. A POSIX-only RAII guard now installs SIG_IGN
+for this fixture and restores the complete previous sigaction, including constructor
+unwinding. Send/EPIPE results remain checked. No product change, skip or retry of the
+failed source. Local Debug rebuild and Internet/Online23/1628 pass starting explicitly
+with SIGPIPE=SIG_DFL; agent tsc/format/diff pass. Read-only Sol review: no findings.
+Previous full FrontEnd123/UI174 evidence is unchanged product code; fresh macOS and all17/
+BOTH CI on the repaired head remain the handoff gate. No new schedule; central fault
+relay retained. Details: [OnlineInternet](doc/coop/OnlineInternet.md).
 
 Older entries (2026-09-26 – 2026-10-02) are in `NOTES-archive.md` — grep it for durable how-tos:
 local build env and `build/dev` (2026-09-27), headless harness `ai-battle --test` and `ctest -R Coop`,

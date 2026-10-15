@@ -29,11 +29,30 @@
 #include "s25util/md5.hpp"
 #include <boost/test/unit_test.hpp>
 #include <chrono>
+#include <csignal>
 #include <thread>
 
 namespace {
 using Page = dskFrontEndInternet;
 constexpr PadDeviceId pad = 244;
+
+#ifndef _WIN32
+struct LobbySignals
+{
+    struct sigaction previous
+    {};
+    LobbySignals()
+    {
+        // Match the game's no-op SIGPIPE handler: a disconnected send must return EPIPE, not kill the test.
+        struct sigaction ignore
+        {};
+        ignore.sa_handler = SIG_IGN;
+        sigemptyset(&ignore.sa_mask);
+        BOOST_TEST_REQUIRE(sigaction(SIGPIPE, &ignore, &previous) == 0);
+    }
+    ~LobbySignals() { BOOST_TEST(sigaction(SIGPIPE, &previous, nullptr) == 0); }
+};
+#endif
 
 struct InternetFixture : rttr::test::MenuPadFixture, LobbyMessageInterface
 {
@@ -53,6 +72,9 @@ struct InternetFixture : rttr::test::MenuPadFixture, LobbyMessageInterface
     unsigned loginCount = 0;
     bool reject = false;
     std::string loginUser, loginHash, chat;
+#ifndef _WIN32
+    LobbySignals signals;
+#endif
 
     InternetFixture()
     {
