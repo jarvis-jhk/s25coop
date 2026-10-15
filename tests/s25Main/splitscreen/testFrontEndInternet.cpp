@@ -208,11 +208,9 @@ struct InternetFixture : rttr::test::MenuPadFixture, LobbyMessageInterface
     }
     void type(unsigned id, const std::u32string& value)
     {
-        const auto count = page().GetCtrl<ctrlEdit>(id)->GetText().size();
+        // Every field this fixture types into starts empty; typing only appends.
+        BOOST_TEST_REQUIRE(page().GetCtrl<ctrlEdit>(id)->GetText().empty());
         click(*page().GetCtrl<ctrlEdit>(id));
-        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::End));
-        for(unsigned i = 0; i < count; ++i)
-            WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Backspace));
         for(const auto c : value)
             WINDOWMANAGER.Msg_KeyDown(KeyEvent(c));
     }
