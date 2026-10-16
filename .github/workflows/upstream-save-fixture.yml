@@ -1,0 +1,70 @@
+# Copyright (C) 2026 s25coop contributors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# Makes tests/testData/saves/upstream-*.sav: a savegame written by UNMODIFIED upstream Return to the Roots,
+# so s25coop can prove it still loads saves made before the fork. Only tools/upstream-save is added to the
+# upstream checkout (a test driver and its CMake file); the game code that writes the save is upstream's.
+name: Upstream save fixture
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: Upstream s25client commit
+        default: 94af63d624bff515b79792d44c1fd735a5e81228
+      save_gf:
+        description: Game frame to save at
+        default: '3000'
+
+jobs:
+  make-save:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: s25coop
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: Return-To-The-Roots/s25client
+          ref: ${{inputs.upstream_ref}}
+          path: upstream
+          submodules: true
+      - name: Install system packages
+        run: |
+          sudo apt-get -o Acquire::Retries=5 update
+          sudo apt-get -o Acquire::Retries=5 -y -q --no-install-recommends install gettext libsdl2-dev \
+            libsdl2-mixer-dev libcurl4-openssl-dev libbz2-dev libminiupnpc-dev liblua5.2-dev libboost-all-dev
+      - name: Add the driver to the upstream tests
+        run: |
+          cd upstream
+          test "$(git rev-parse HEAD)" = "${{inputs.upstream_ref}}"
+          git status --porcelain --ignore-submodules=none | tee ../upstream-status.txt
+          test ! -s ../upstream-status.txt
+          cp -r ../s25coop/tools/upstream-save tests/s25Main/upstreamSave
+          echo 'add_subdirectory(upstreamSave)' >> tests/s25Main/CMakeLists.txt
+      - name: Build
+        run: |
+          cmake -S upstream -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build --target Test_upstreamSaveFixture --parallel 4
+      - name: Write the save
+        run: |
+          mkdir out
+          cd build
+          UPSTREAM_SAVE_OUT=$PWD/../out/upstream-${{inputs.upstream_ref}}.sav UPSTREAM_SAVE_GF=${{inputs.save_gf}} \
+            ctest -R upstreamSaveFixture -V | tee ../out/driver.log
+          cd ../out
+          {
+            echo "upstream: Return-To-The-Roots/s25client ${{inputs.upstream_ref}}"
+            echo "driver: jarvis-jhk/s25coop ${GITHUB_SHA} tools/upstream-save"
+            echo "run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "compiler: $(c++ --version | head -n1)"
+            sha256sum *.sav
+          } > provenance.txt
+          cat provenance.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upstream-save
+          path: out/
