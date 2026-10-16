@@ -1,5 +1,21 @@
 # Session notes
 
+## 2026-10-16 — Pre-coop saves (roadmap siedler-pre-coop-saves done)
+
+Quota filler (t_mvasqz7bzidbb). No open issues. A save written by UNMODIFIED upstream now guards loading old saves:
+`.github/workflows/upstream-save-fixture.yml` (dispatch only) checks out upstream 94af63d6 (our merge base), adds only
+`tools/upstream-save` (a Boost test driver) and replays upstream's own `200kGFs.rpl` (Big Slaughter v2, human "Alex" +
+7 hard AIs) with checksum checks to GF 3000, then saves with upstream's Savegame. Run 38887309810, sha256 bc488b66…,
+format 4.1 (no s25coop start-goods field). Fixture + provenance + README in tests/testData/saves.
+Tests: FrontEndLoadTests/UpstreamSaveResumesWithTwoJoinedPlayersAndKeepsItsAiTribes and
+ContinueResumesUpstreamSaveWithFourPlayers (party page, shared views, AIs kept, 12 GFs no async) and
+CoopNet_UpstreamSaveResume (online co-player's woodcutter lands on p0, 600 GFs in sync, 7 AIs unchanged) pass locally
+(Debug). Negative control: GetPlayerInfoVersion forced to 2 → the upstream save no longer loads (restored).
+Local quirks: run Test_splitscreen with USER=coop TMPDIR=build/tmpups (copy_file across /tmp fails otherwise).
+Gotchas for the workflow: the build needs build/share/s25rttr/RTTR (symlink to data/RTTR); BOOST_TEST on a
+unique_ptr does not compile (cast to bool). gh is not installed here; workflows are dispatched with curl + the git
+credential. Open: optional AI takeover (M2 item 2), Deck. No player-visible change, so no release.
+
 ## 2026-10-16 — F7d online party page (roadmap siedler-online-party-cards done); 0.1.20 released
 
 Quota filler (t_mvaqgtlh9xw4k). No open issues. 47f6e2c7d was green, so 0.1.20 was tagged by hand (b27d280e1,

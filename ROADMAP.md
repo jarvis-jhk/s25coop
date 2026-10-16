@@ -14,7 +14,7 @@ starting the game and playing it are still upstream's mouse screens with control
    Sol F5b map browser (PR #51), F4 campaigns (PR #52), F10 loading screen (PR #53), F5c scenarios (PR #54),
    PR55 translations and F6b tactical save previews (PR #56) are integrated (2026-10-12).
    F8a–d online menus (PR57/58/59: join, LAN, Internet, network hosting, connection progress) integrated 2026-10-16.
-   Next F6b leftover: provenance-backed pre-coop save fixture.
+   F6b pre-coop save fixture done (2026-10-16): a save written by unmodified upstream loads with 2/4 local seats and online.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
 3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
@@ -139,8 +139,10 @@ starting the game and playing it are still upstream's mouse screens with control
   and a locked tribe survive both loads. Inventories, HQ positions and all building/site counts compare across
   both save boundaries; saving the online game and rejoining the same group is covered. Intentional member
   desync after either load must remove it with an explicit reason while the host continues. Public-map CTests
-  run without original S2 files; genuine pre-coop upstream-world provenance, optional AI takeover and GUI/Deck
-  acceptance remain open. Fresh exact-head CI is required before tested handoff.
+  run without original S2 files. ☑ (1) with a genuine pre-coop save (2026-10-16): `tests/testData/saves/upstream-94af63d6-gf3000.sav`
+  was written by unmodified upstream (workflow `upstream-save-fixture.yml`, provenance next to it); it loads through the
+  new front end with 2 and 4 joined players and online with a co-player, 7 hard AIs kept, in sync
+  (`FrontEndLoadTests/*Upstream*`, `CoopNet_UpstreamSaveResume`). Optional AI takeover (2) and Deck acceptance remain open.
 
 ## M3 — Splitscreen, controller and Steam Deck UI
 
@@ -261,7 +263,7 @@ starting the game and playing it are still upstream's mouse screens with control
     Local Debug new5/112108, physical20/1428, full UI170/122739 and splitscreen754/503566 pass.
     Incoming PR55 preserves all10 own source/test hashes; language1/54092 and affected159/33365 pass.
     Fresh all17/BOTH CI remains the gate before tested handoff.
-    F6b remains open: a provenance-backed pre-coop upstream save fixture and optional AI takeover.
+    F6b pre-coop upstream save fixture done (2026-10-16, see M2); optional AI takeover remains open.
     Current-solo online co-player roundtrips are covered by PR50 and rerun for previews (3 CTests).
     F7's full-screen party is primary-owned.
     Current solo worlds re-encoded with 4.0 player headers, 2/4 joined local views and preserved AI/locked tribes

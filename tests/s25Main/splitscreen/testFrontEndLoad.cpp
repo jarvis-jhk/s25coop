@@ -30,6 +30,7 @@
 #include "ingameWindows/iwSave.h"
 #include "ogl/glFont.h"
 #include "gameTypes/CompressedData.h"
+#include "test/testConfig.h"
 #include "libendian/ConvertEndianess.h"
 #include "rttr/test/ConfigOverride.hpp"
 #include "rttr/test/TmpFolder.hpp"
@@ -41,6 +42,7 @@
 
 namespace {
 constexpr PadDeviceId pad = 81;
+constexpr const char* upstreamSaveName = "upstream-94af63d6-gf3000.sav";
 
 [[noreturn]] void cleanupProbe()
 {
@@ -277,6 +279,27 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         BOOST_TEST_REQUIRE(reread.sgd.GetLength() == save.sgd.GetLength());
         BOOST_TEST(std::equal(reread.sgd.GetData(), reread.sgd.GetData() + reread.sgd.GetLength(), save.sgd.GetData()));
     }
+    /// A save written by unmodified upstream RttR (tests/testData/saves/README.md): one human tribe, seven hard AIs.
+    void useUpstreamSave()
+    {
+        boost::filesystem::create_directories(saves);
+        savedGame = saves / "upstream.sav";
+        boost::filesystem::copy_file(rttr::test::rttrBaseDir / "tests" / "testData" / "saves" / upstreamSaveName,
+                                     savedGame);
+        Savegame save;
+        BOOST_TEST_REQUIRE(save.Load(savedGame, SaveGameDataToLoad::HeaderAndSettings));
+        // Upstream's 4.1 player header: no s25coop start goods field
+        BOOST_TEST_REQUIRE(save.GetMajorVersion() == 4u);
+        BOOST_TEST_REQUIRE(save.GetMinorVersion() == 1u);
+        savedGF = save.start_gf;
+        BOOST_TEST_REQUIRE(savedGF > 0u);
+        for(unsigned i = 0; i < save.GetNumPlayers(); ++i)
+            savedPlayers.push_back(save.GetPlayer(i));
+        BOOST_TEST_REQUIRE(savedPlayers.size() == 8u);
+        BOOST_TEST_REQUIRE(savedPlayers[0].isHuman());
+        for(unsigned i = 1; i < savedPlayers.size(); ++i)
+            BOOST_TEST_REQUIRE((savedPlayers[i].ps == PlayerState::AI));
+    }
     void joinParty(unsigned count)
     {
         dskHome::ForgetLastChoice();
@@ -300,9 +323,12 @@ struct ResumeFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         press(pad, PadButton::A);
         frame();
     }
-    void openAndLoad(unsigned count, bool continueTile, Slot1 slot1 = Slot1::Saved)
+    void openAndLoad(unsigned count, bool continueTile, Slot1 slot1 = Slot1::Saved, bool upstream = false)
     {
-        saveSolo(slot1);
+        if(upstream)
+            useUpstreamSave();
+        else
+            saveSolo(slot1);
         joinParty(count);
         Socket occupied;
         // Reserve both address families: Socket::Listen enables SO_REUSEADDR, which on Windows
@@ -614,6 +640,16 @@ BOOST_FIXTURE_TEST_CASE(SoloWorldWithLegacyPlayerHeaderResumesWithTwoJoinedPlaye
 BOOST_FIXTURE_TEST_CASE(ContinueResumesSoloWorldWithLegacyPlayerHeaderAndFourPlayers, ResumeFixture)
 {
     checked([&] { openAndLoad(4, true); });
+}
+
+BOOST_FIXTURE_TEST_CASE(UpstreamSaveResumesWithTwoJoinedPlayersAndKeepsItsAiTribes, ResumeFixture)
+{
+    checked([&] { openAndLoad(2, false, Slot1::Saved, true); });
+}
+
+BOOST_FIXTURE_TEST_CASE(ContinueResumesUpstreamSaveWithFourPlayers, ResumeFixture)
+{
+    checked([&] { openAndLoad(4, true, Slot1::Saved, true); });
 }
 
 BOOST_FIXTURE_TEST_CASE(OwnSlotSaveGivesTheFormerLocalTribeARealAiOnThePartyPage, ResumeFixture)

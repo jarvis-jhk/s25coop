@@ -1,0 +1,5 @@
+upstream: Return-To-The-Roots/s25client 94af63d624bff515b79792d44c1fd735a5e81228
+driver: jarvis-jhk/s25coop cc1531d15d1ce0fe016edc41b6dbd5f1f549757d tools/upstream-save
+run: https://github.com/jarvis-jhk/s25coop/actions/runs/38887309810
+compiler: c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+bc488b6658ec7d096d2394ecbab6c36f10b253a12627fadae5cf48f3d5608062  upstream-94af63d624bff515b79792d44c1fd735a5e81228.sav

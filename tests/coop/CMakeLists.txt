@@ -198,6 +198,14 @@ if(NOT WIN32)
         set_tests_properties(${name} PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE)
     endforeach()
 
+    # A save written by unmodified upstream RttR (tests/testData/saves) resumes online with a co-player in sync.
+    add_test(NAME CoopNet_UpstreamSaveResume
+             COMMAND ${CMAKE_COMMAND} -DCOOP_NET=$<TARGET_FILE:coop-net> -DPORT=13740
+                     -DSAVE=${PROJECT_SOURCE_DIR}/tests/testData/saves/upstream-94af63d6-gf3000.sav -DFROM_GF=3000
+                     -DRUN_GF=600 -DWORK=${CMAKE_CURRENT_BINARY_DIR}/CoopNet_UpstreamSaveResume
+                     -P ${CMAKE_CURRENT_SOURCE_DIR}/checkUpstreamSaveNet.cmake)
+    set_tests_properties(CoopNet_UpstreamSaveResume PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE)
+
     # Members in the lobby (M2 step 3): switching from a slot, refusal, kick by the host
     function(add_coop_lobby_test name port mode)
         add_test(NAME ${name}
