@@ -17,7 +17,7 @@ Test_LanguageFiles pass. Negative control: removing the camera guard and the dis
 Translations: 7 new msgids in rttr.pot, German done, others English (msgmerge also re-sorted the F7d entries).
 Note: the new Options pages' own strings (Display, Controls, "Smart cursor", ...) were never in rttr.pot.
 Not seen: real screen, real pads, Deck. Release: the old continuation 9bf22a81 (would have refused because
-master has code after 9b0cb74b5) was replaced by 00a614ed (13:01 UTC): releases 0.1.21 with F7d + the panel once CI on 74542563b is green, marks the roadmap item done, announces.
+master has code after 9b0cb74b5) was replaced by 00a614ed, and that (CI on 74542563b got cancelled by later pushes) by 081a195c (13:01 UTC): releases 0.1.21 once CI on master e2056c912 is green, marks the roadmap item done, announces.
 Next on this item: Help page, more pages (slices 4–8) only if Jan's feedback asks for them.
 
 ## 2026-10-16 — Pre-coop saves (roadmap siedler-pre-coop-saves done)
