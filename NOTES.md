@@ -1,5 +1,12 @@
 # Session notes
 
+## 2026-10-16 — 0.1.21 released (covers unannounced 0.1.20)
+
+Continuation t_mvb6cqwa0brst (18:29 UTC): Unit tests + Static analysis green on 1b760b29e (same code as dc4d224fd).
+CHANGELOG Unreleased → 0.1.21 (43446db3b), tag v0.1.21, release workflow 38947763314 green; downloaded all three assets
+(HTTP 200: desktop 625 B, Linux tar.gz 44.9 MB, Windows zip 34.6 MB). Roadmap siedler-controller-side-panel done,
+Jan told once with the link. Next version > 0.1.21. Continuation chain ends here.
+
 ## 2026-10-16 — Warpzone hands over the game files (WARPZONE_DATA_S2_GOLD)
 
 Report API request t_mvb0nevd442cui from the warpzone lane (launcher 0.1.2, jarvis-jhk/warpzone#8 passes the found
