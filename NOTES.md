@@ -22,6 +22,7 @@ Gotcha: a lobby CI_* callback can reach the LOCAL party page too (CI_CoopMembers
 every online-only update must check online_. Not seen: real screens (no Xvfb run), real second PC, Deck.
 Working rule from Jan (2026-10-16): heavy builds/test suites/RE go to the laptop (re lane) or CI; here only
 incremental -j2 builds and a focused test.
+Release: one-shot continuation 9bf22a81 (11:07 UTC) verifies v0.1.20 assets, tags 0.1.21 once 9b0cb74b5 CI is green, announces.
 Next: F7e (network campaigns/saves + co-players on the party page).
 
 ## 2026-10-16 — F7c: ordinary maps on the party page, rules drawer (roadmap siedler-rules-drawer done)
