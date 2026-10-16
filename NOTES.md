@@ -1,5 +1,18 @@
 # Session notes
 
+## 2026-10-16 — World continent map on the new mission page (roadmap siedler-mission-presentation done)
+
+Quota filler t_mvbl5an91et6em. No open issues/PRs. dskFrontEndMissions now builds upstream's ctrlMapSelection
+(ID_ContinentMap) for a campaign with selectionMap (World: SETUP990/WORLD.LBM/WORLDMSK.LBM) in place of the
+minimap, 3/5 of the right column. Click/pad step on a continent → table selection; table → marker (none on a
+locked mission); progress (dark/flag) set when Refresh rebuilds the map; artwork failure → old list+minimap.
+Refresh now ends in Layout() (the rebuilt map otherwise stayed 1x1 at 0,0 — the new test caught that).
+Test: FrontEndCampaignsTests (15 cases, 849 assertions) incl. new ContinentMapPicksMissionsByClickAndPad...
+Codex is off; self-review only (dropped a per-selection setMissionsStatus: full-mask rewrite each change and
+the texture may not refresh). Not seen: real WORLD.LBM on screen, Deck. CHANGELOG Unreleased has the entry.
+NEXT: release 0.1.22 once Unit tests + Static analysis are green on this NOTES commit (same code as 8490192e3).
+Still open in M1: MISS205's extra chapter-7 unlock (needs MISS206 shown winnable), World unlock rule (REA).
+
 ## 2026-10-16 — M6 (S3/S4 rules as add-ons) removed from ROADMAP
 
 Jan (t_mvbjhkoqy8dbb, 22:28 UTC): "remove S3/S4 add-ons from roadmap". The whole M6 section is gone; M7 (HD remake)
