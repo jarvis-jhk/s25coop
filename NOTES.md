@@ -37,6 +37,8 @@ if-chain had two identical None branches, ~PanelFixture exception-escape). Fixed
 into the conditions, NOLINTNEXTLINE like the other fixtures); Test_splitscreen built -j2, ControllerPanelShell,
 ControllerPanelModel, FrontEndPartyTests pass (locally needs USER=jarvis HOME=build/testhome TMPDIR=build/tmp21:
 without them "Could not get username" and cross-device copy_file errors). Continuation now 81481476 (14:49 UTC).
+81481476 (14:50 UTC): newest code commit is dc4d224fd (Warpzone S2 files); Unit tests green, Static analysis
+still in Clang-Tidy (takes ~80 min). Continuation now 879ea664 (15:35 UTC).
 Next on this item: Help page, more pages (slices 4–8) only if Jan's feedback asks for them.
 
 ## 2026-10-16 — Pre-coop saves (roadmap siedler-pre-coop-saves done)
