@@ -1960,4 +1960,5 @@ failed job logs. The combined Online menus item remains started.
   longer updates when .warpzone-managed is next to it or the install (tested with a fake curl: 1 → 0 GitHub calls).
   Descriptor checked against the release layout: assets/exec match v0.1.20 (tarball and zip both have s25coop/ at
   the top); fixed `present` to a GFX file (DATA alone is a half copy). Open: on Windows the launcher's copy_to target
-  is not where s25client looks (W5). PR to jarvis-jhk/warpzone, see below.
+  is not where s25client looks (W5). Descriptor PR: jarvis-jhk/warpzone#3 (for the warpzone lane to merge).
+  CI for the test fix 3afe158 not yet seen green; check the next Unit tests run on master.
