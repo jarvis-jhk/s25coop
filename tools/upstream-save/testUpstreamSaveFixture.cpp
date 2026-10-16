@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(WriteUpstreamSave)
     BOOST_TEST_REQUIRE(replay.LoadHeader(rttr::test::rttrBaseDir / "tests" / "testData" / "200kGFs.rpl"));
     MapInfo mapInfo;
     BOOST_TEST_REQUIRE(replay.LoadGameData(mapInfo));
-    BOOST_TEST_REQUIRE(mapInfo.savegame != nullptr);
+    BOOST_TEST_REQUIRE(static_cast<bool>(mapInfo.savegame));
     std::vector<PlayerInfo> players;
     for(unsigned i = 0; i < replay.GetNumPlayers(); i++)
         players.emplace_back(replay.GetPlayer(i));
