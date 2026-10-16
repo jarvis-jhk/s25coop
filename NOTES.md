@@ -1956,3 +1956,8 @@ failed job logs. The combined Online menus item remains started.
   instead of 7; pattern without ";". (2) macOS JoinedPlayerGetsThePartyPage...: the server's late echo of
   "ready" re-set it after the second press; the test now awaits "not ready". Test-only, product code unchanged;
   dbg ctest + FrontEndOnlineTests 3x pass.
+- 2026-10-16: Warpzone handoff (laptop warpzone lane). Roadmap priority 7 (W1–W5) after F7e. install.sh `run` no
+  longer updates when .warpzone-managed is next to it or the install (tested with a fake curl: 1 → 0 GitHub calls).
+  Descriptor checked against the release layout: assets/exec match v0.1.20 (tarball and zip both have s25coop/ at
+  the top); fixed `present` to a GFX file (DATA alone is a half copy). Open: on Windows the launcher's copy_to target
+  is not where s25client looks (W5). PR to jarvis-jhk/warpzone, see below.

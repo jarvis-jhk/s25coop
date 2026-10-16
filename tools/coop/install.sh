@@ -171,9 +171,18 @@ add_steam_artwork() {
     python3 "$GAME/add-to-steam.py" --artwork-only "$STEAM_NAME" "$SELF" >/dev/null 2>>"$BASE/add-to-steam.log" &
 }
 
+# An install made by the Warpzone launcher has .warpzone-managed in its version folder; the launcher updates it, so
+# this script must not.
+warpzone_managed() {
+    local here
+    here=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+    [ -e "$here/.warpzone-managed" ] || [ -e "$here/../.warpzone-managed" ] || [ -e "$GAME/.warpzone-managed" ] ||
+        [ -e "$GAME/../.warpzone-managed" ]
+}
+
 run_game() {
     local rel tag url
-    rel=$(latest_release)
+    warpzone_managed || rel=$(latest_release)
     tag=${rel%% *}; url=${rel#* }
     if [ -n "$tag" ] && [ -n "$url" ] && [ "$url" != "$tag" ] && [ "${tag#v}" != "$(installed_version)" ]; then
         say "⏳ Updating s25coop $(installed_version) → ${tag#v}"

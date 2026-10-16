@@ -24,6 +24,19 @@ starting the game and playing it are still upstream's mouse screens with control
    GitHub release exists.
 6. ✅ Addon translation refresh (PR55, integrated 2026-10-12): 24 upstream addon msgids registered and translated
    into German; other languages keep English for them. Released in v0.1.17 (2026-10-12, 3 assets verified).
+7. Warpzone (Jan, 2026-10-16; github.com/jarvis-jhk/warpzone, docs/integration.md, descriptor games/s25coop.toml):
+   the shared online layer of all JARVIS games. After F7e, before the controller panel. Jan's decisions: keep RTTR's
+   upstream lobby AND add Warpzone rooms, merged in the front end's Internet browser (rooms from both, labelled by
+   source); warpzone.virtualtabletop.io is the ONE Jan domain allowed in this repo; no chat or free-text player content
+   over Warpzone; our updater stays silent in launcher-managed installs (☑ install.sh, 2026-10-16). Steps:
+   ☐ W1 link the pinned static libwarpzone (Linux/Windows) behind a CMake option, wz_create/poll on the client loop ·
+   ☐ W2 tier 1: `--warpzone-join <room>` starts straight into the room's game (the room carries the RTTR server's
+   address or a relayed peer channel; RTTR traffic is TCP, so tier 0's UDP tunnel does not apply) · ☐ W3 tier 2: host
+   a Warpzone room from the online party page, list Warpzone rooms beside the lobby's in the Internet browser, codes
+   and invite links, host approval; game traffic over Warpzone's hole-punched/relayed channel (no port forwarding) ·
+   ☐ W4 F5/F6 catalogs install maps/scenarios/campaigns from the mod archive · ☐ W5 Windows: the game also finds the
+   original files at %USERPROFILE%\.local\share\s25coop\S2 (where the launcher copies them; today only next to the exe),
+   or a first-start importer the descriptor calls via import_args. Raise `tier` in the descriptor with each step.
 
 ## M0 — A version you can install and keep updated (first!)
 
