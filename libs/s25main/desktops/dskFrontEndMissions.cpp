@@ -7,6 +7,7 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlMapSelection.h"
 #include "controls/ctrlMultiline.h"
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
@@ -23,6 +24,7 @@
 #include "libsiedler2/ArchivItem_Map.h"
 #include "libsiedler2/ErrorCodes.h"
 #include "libsiedler2/prototypen.h"
+#include <limits>
 #include <stdexcept>
 
 dskFrontEndMissions::dskFrontEndMissions(boost::filesystem::path folder, const ServerType type)
@@ -59,6 +61,7 @@ void dskFrontEndMissions::Refresh()
     table->DeleteAllItems();
     campaign_.reset();
     failure_.clear();
+    DeleteCtrl(ID_ContinentMap);
     auto* description = GetCtrl<ctrlMultiline>(ID_Description);
     description->Clear();
     try
@@ -81,6 +84,7 @@ void dskFrontEndMissions::Refresh()
             if(!firstPlayable && status[i].playable)
                 firstPlayable = i;
         }
+        AddContinentMap();
         table->SetSelection(chosen ? chosen : (firstPlayable ? firstPlayable : std::optional<unsigned>(0)));
     } catch(const std::runtime_error& error)
     {
@@ -88,11 +92,42 @@ void dskFrontEndMissions::Refresh()
         table->DeleteAllItems();
         failure_ = helpers::format(_("Campaign unavailable: %1%"), error.what());
     }
-    UpdateDetails();
+    // A recreated continent map (or one that is gone now) needs its place on the page.
+    Layout();
+}
+
+void dskFrontEndMissions::AddContinentMap()
+{
+    const auto& campaign = campaign_->description;
+    if(!campaign.selectionMapData)
+        return;
+    try
+    {
+        auto* map = AddMapSelection(ID_ContinentMap, DrawPoint(0, 0), Extent(1, 1), *campaign.selectionMapData);
+        map->setMissionsStatus(SETTINGS.campaigns.getMissionsStatus(campaign));
+    } catch(const std::runtime_error&)
+    {
+        // The map is presentation only: missing or mismatched artwork keeps the list and the minimap.
+        DeleteCtrl(ID_ContinentMap);
+    }
+}
+
+void dskFrontEndMissions::SyncContinentMap()
+{
+    auto* map = GetCtrl<ctrlMapSelection>(ID_ContinentMap);
+    if(!map)
+        return;
+    // Progress (dark/flagged continents) is set when Refresh builds the map; this only moves the marker.
+    const auto selection = GetCtrl<ctrlTable>(ID_Missions)->GetSelection();
+    // setSelection keeps the old marker for a locked mission; a locked choice shows no marker at all.
+    map->setSelection(std::numeric_limits<size_t>::max());
+    if(selection)
+        map->setSelection(*selection);
 }
 
 void dskFrontEndMissions::UpdateDetails()
 {
+    SyncContinentMap();
     previewReady_ = false;
     GetCtrl<ctrlButton>(ID_Start)->SetEnabled(false);
     GetCtrl<ctrlPreviewMinimap>(ID_Preview)->SetMap(nullptr);
@@ -132,8 +167,11 @@ void dskFrontEndMissions::OnLayout()
         return;
     const auto area = GetFrame().content;
     layoutUnavailable_ = area.getSize().x < 480 || area.getSize().y < 260;
+    auto* continents = GetCtrl<Window>(ID_ContinentMap);
     for(unsigned id = ID_Missions; id <= ID_Info; ++id)
-        GetCtrl<Window>(id)->SetVisible(!layoutUnavailable_);
+        GetCtrl<Window>(id)->SetVisible(!layoutUnavailable_ && !(id == ID_Preview && continents));
+    if(continents)
+        continents->SetVisible(!layoutUnavailable_);
     auto* state = GetCtrl<ctrlText>(ID_State);
     state->setMaxWidth(area.getSize().x);
     if(layoutUnavailable_)
@@ -153,9 +191,16 @@ void dskFrontEndMissions::OnLayout()
           DrawPoint(area.left + static_cast<int>((id - ID_Start) * (leftWidth + 12) / 2), area.bottom - 36));
         GetCtrl<Window>(id)->Resize(Extent((leftWidth - 12) / 2, 36));
     }
-    const unsigned previewHeight = std::min(180u, (area.getSize().y - 72) / 2);
-    GetCtrl<Window>(ID_Preview)->SetPos(DrawPoint(right, area.top));
-    GetCtrl<Window>(ID_Preview)->Resize(Extent(rightWidth, previewHeight));
+    // The original continent map is the page's picture, so it gets the room the minimap would have and more.
+    const unsigned previewHeight =
+      continents ? (area.getSize().y - 72) * 3 / 5 : std::min(180u, (area.getSize().y - 72) / 2);
+    for(auto* picture : {GetCtrl<Window>(ID_Preview), continents})
+    {
+        if(!picture)
+            continue;
+        picture->SetPos(DrawPoint(right, area.top));
+        picture->Resize(Extent(rightWidth, previewHeight));
+    }
     GetCtrl<ctrlText>(ID_Info)->SetPos(DrawPoint(right, area.top + static_cast<int>(previewHeight + 8)));
     GetCtrl<ctrlText>(ID_Info)->setMaxWidth(rightWidth);
     state->SetPos(DrawPoint(right, area.top + static_cast<int>(previewHeight + 32)));
@@ -171,6 +216,15 @@ void dskFrontEndMissions::OnChoose(const unsigned id)
         StartSelected();
     else if(id == ID_Refresh)
         Refresh();
+    else if(id == ID_ContinentMap)
+    {
+        // A click or pad step on a continent picks its mission; the list stays the single source of the choice.
+        if(const auto picked = GetCtrl<ctrlMapSelection>(ID_ContinentMap)->getSelection())
+        {
+            GetCtrl<ctrlTable>(ID_Missions)->SetSelection(*picked);
+            UpdateDetails();
+        }
+    }
 }
 
 void dskFrontEndMissions::Msg_TableSelectItem(unsigned, const std::optional<unsigned>&)

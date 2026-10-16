@@ -3,6 +3,12 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- The World campaign shows its original world map again when you pick a mission: continents you cannot play
+  yet are dark, conquered ones carry a flag. Click a continent, or move between them with the D-pad, to choose
+  its mission; the list beside it follows.
+
 ## 0.1.21
 
 - New for controller players: a side panel. Switch on Options → Controls → "Controller side panel"; then

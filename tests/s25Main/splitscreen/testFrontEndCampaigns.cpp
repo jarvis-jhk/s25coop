@@ -7,6 +7,7 @@
 #include "PadFixture.h"
 #include "controls/ctrlButton.h"
 #include "controls/ctrlEdit.h"
+#include "controls/ctrlMapSelection.h"
 #include "controls/ctrlMultiline.h"
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
@@ -37,8 +38,10 @@
 #include "rttr/test/ConfigOverride.hpp"
 #include "rttr/test/TmpFolder.hpp"
 #include "s25util/Socket.h"
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <boost/test/unit_test.hpp>
+#include <iterator>
 #include <memory>
 
 namespace {
@@ -454,6 +457,82 @@ BOOST_FIXTURE_TEST_CASE(ContinentArtworkIsOptionalAndTheMissionListKeepsUnlocks,
         frame();
         BOOST_TEST_REQUIRE(desktopAs<Missions>());
         BOOST_TEST(desktopAs<Missions>()->GetCtrl<ctrlButton>(Missions::ID_Start)->GetEnabled());
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(ContinentMapPicksMissionsByClickAndPadAndKeepsLockedContinentsOut, CampaignFixture)
+{
+    checked([&] {
+        const auto folder = campaign("Continents", "", false, true);
+        // Own file stems: the loader caches selection-map images by stem, and other cases use preview.bmp.
+        std::string lua;
+        {
+            boost::nowide::ifstream in(folder / "campaign.lua");
+            lua.assign(std::istreambuf_iterator<char>(in), {});
+        }
+        boost::algorithm::replace_all(lua, "missionMapMask={'preview.bmp'", "missionMapMask={'continentmask.bmp'");
+        boost::algorithm::replace_all(lua, "'preview.bmp'", "'continents.bmp'");
+        boost::nowide::ofstream(folder / "campaign.lua") << lua;
+        image(folder / "continents.bmp", 0xff808080);
+        // Three continents side by side in the mask, in the order of missionSelectionInfos.
+        libsiedler2::PixelBufferBGRA pixels(8, 4);
+        for(unsigned y = 0; y < 4; ++y)
+            for(unsigned x = 0; x < 8; ++x)
+                pixels.set(x, y, libsiedler2::ColorBGRA(x < 3 ? 0xff00ff00 : (x < 6 ? 0xff0000ff : 0xffff0000)));
+        auto mask = std::make_unique<libsiedler2::ArchivItem_Bitmap_Raw>();
+        BOOST_TEST_REQUIRE(mask->create(pixels) == 0);
+        libsiedler2::Archiv archive;
+        archive.push(std::move(mask));
+        BOOST_TEST_REQUIRE(libsiedler2::Write(folder / "continentmask.bmp", archive) == 0);
+
+        missions();
+        auto* page = desktopAs<Missions>();
+        auto* map = page->GetCtrl<ctrlMapSelection>(Missions::ID_ContinentMap);
+        BOOST_TEST_REQUIRE(map);
+        BOOST_TEST(map->IsVisible());
+        BOOST_TEST(!page->GetCtrl<Window>(Missions::ID_Preview)->IsVisible());
+        BOOST_TEST((map->getSelection() == 0u));
+
+        const auto continent = [&](unsigned column) {
+            const auto size = map->GetSize();
+            const float scale = std::min(size.x / 8.f, size.y / 4.f);
+            const DrawPoint origin =
+              map->GetDrawPos()
+              + DrawPoint((size - Extent(static_cast<unsigned>(8 * scale), static_cast<unsigned>(4 * scale))) / 2u);
+            return origin + DrawPoint(static_cast<int>((column + 0.5f) * scale), static_cast<int>(2 * scale));
+        };
+        clickAt(continent(4));
+        BOOST_TEST(page->GetSelectedPath().filename() == "Mission2.SWD");
+        BOOST_TEST((map->getSelection() == 1u));
+        BOOST_TEST(page->GetCtrl<ctrlButton>(Missions::ID_Start)->GetEnabled());
+        // The third continent is still locked: clicking it changes nothing.
+        clickAt(continent(7));
+        BOOST_TEST(page->GetSelectedPath().filename() == "Mission2.SWD");
+
+        // The pad walks the playable continents and the list follows.
+        focus(Missions::ID_ContinentMap);
+        press(pad, PadButton::DpadLeft);
+        BOOST_TEST((map->getSelection() == 0u));
+        BOOST_TEST(page->GetSelectedPath().filename() == "Mission1.SWD");
+
+        // Choosing a locked mission in the list takes the marker off the map.
+        focus(Missions::ID_Missions);
+        pressN(pad, PadButton::DpadDown, 2);
+        BOOST_TEST(page->GetSelectedPath().filename() == "Mission3.SWD");
+        BOOST_TEST(!map->getSelection());
+
+        // Unlocking it on refresh lights the continent up and the click now picks it.
+        SETTINGS.campaigns.setChapterCompleted("f4-Continents", 1);
+        SETTINGS.campaigns.enableChapter("f4-Continents", 2);
+        click(*page->GetCtrl<Window>(Missions::ID_Refresh));
+        map = page->GetCtrl<ctrlMapSelection>(Missions::ID_ContinentMap);
+        BOOST_TEST_REQUIRE(map);
+        BOOST_TEST((map->getSelection() == 2u));
+        clickAt(continent(0));
+        BOOST_TEST(page->GetSelectedPath().filename() == "Mission1.SWD");
+        clickAt(continent(7));
+        BOOST_TEST(page->GetSelectedPath().filename() == "Mission3.SWD");
+        BOOST_TEST(page->GetCtrl<ctrlButton>(Missions::ID_Start)->GetEnabled());
     });
 }
 

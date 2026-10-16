@@ -26,7 +26,9 @@ public:
         ID_Description,
         ID_Preview,
         ID_Info,
-        ID_State
+        ID_State,
+        /// The campaign's own selection map (World: the original continent map); absent without one.
+        ID_ContinentMap
     };
 
 protected:
@@ -40,6 +42,9 @@ private:
     void Refresh();
     void UpdateDetails();
     void StartSelected();
+    void AddContinentMap();
+    /// Puts the map marker on the table's mission (none on a locked one).
+    void SyncContinentMap();
     std::optional<frontend::CampaignEntry> campaign_;
     boost::filesystem::path folder_;
     std::string failure_;
