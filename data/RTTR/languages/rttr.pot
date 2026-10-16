@@ -6205,3 +6205,15 @@ msgstr ""
 #: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:21
 msgid "Very large search range (4x)"
 msgstr ""
+
+#: ../libs/s25main/desktops/dskFrontEndInternet.cpp
+msgid "Disconnect"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskFrontEndInternet.cpp
+msgid "Username and password are required."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskFrontEndInternet.cpp
+msgid "Create an account at https://forum.siedler25.org."
+msgstr ""

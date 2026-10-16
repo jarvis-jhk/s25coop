@@ -3,6 +3,14 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- "Play online" → Internet now opens a full-screen page: log in, see the list of open games and chat.
+- Hosting an online game (direct, local network or Internet) now starts from the same full-screen campaign,
+  map and save pages as a local game; a campaign hosted online lets friends join your tribe as co-players.
+- While connecting, the game shows a full-screen progress page (also while the map is sent); B or Abort
+  cancels it and returns to the form with everything you typed still there.
+
 ## 0.1.19
 
 - "Play online" on the start screen now opens full-screen pages: join a game by address (with an

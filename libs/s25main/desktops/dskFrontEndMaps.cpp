@@ -13,6 +13,7 @@
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "desktops/dskFrontEndHost.h"
 #include "driver/KeyEvent.h"
 #include "dskFrontEndMissions.h"
 #include "files.h"
@@ -40,8 +41,8 @@ const std::array<const char*, 9> folders = {{s25::folders::mapsOld, s25::folders
                                              s25::folders::mapsPlayed}};
 } // namespace
 
-dskFrontEndMaps::dskFrontEndMaps(std::shared_ptr<BrowseState> state)
-    : dskFrontEndPage(_("Maps & scenarios")), state_(std::move(state))
+dskFrontEndMaps::dskFrontEndMaps(std::shared_ptr<BrowseState> state, const ServerType type)
+    : dskFrontEndPage(_("Maps & scenarios")), type_(type), state_(std::move(state))
 {
     auto* category = AddComboBox(ID_Category, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, NormalFont, 150);
     for(const auto* label : {_("All maps"), _("Old maps"), _("New maps"), _("Own maps"), _("Continents"), _("Campaign"),
@@ -359,7 +360,7 @@ void dskFrontEndMaps::StartSelected()
             if(fresh.description.uid != old.uid || fresh.description.getMapFilePath(0) != GetSelectedPath()
                || fresh.description.getLuaFilePath(0) != old.getLuaFilePath(0))
                 throw std::runtime_error(_("Scenario changed. Refresh before choosing a mission."));
-            Open([folder] { return std::make_unique<dskFrontEndMissions>(folder); });
+            Open([folder, type = type_] { return std::make_unique<dskFrontEndMissions>(folder, type); });
         } catch(const std::runtime_error& error)
         {
             WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), error.what(), nullptr, MsgboxButton::Ok,
@@ -368,6 +369,13 @@ void dskFrontEndMaps::StartSelected()
         return;
     }
     UpdateDetails();
+    if(previewReady_ && type_ != ServerType::Local)
+    {
+        Open([type = type_, map = GetSelectedPath()] {
+            return std::make_unique<dskFrontEndHost>(type, MapDescription(map, MapType::OldMap), _("Unlimited Play"));
+        });
+        return;
+    }
     const CreateServerInfo csi(ServerType::Local, SETTINGS.server.localPort, _("Unlimited Play"));
     if(previewReady_ && GAMECLIENT.HostGame(csi, {GetSelectedPath(), MapType::OldMap}))
         WINDOWMANAGER.Show(std::make_unique<iwConnecting>(csi.type, nullptr));

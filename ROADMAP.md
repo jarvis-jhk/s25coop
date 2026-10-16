@@ -13,6 +13,7 @@ starting the game and playing it are still upstream's mouse screens with control
    Opus F7b party page done (campaigns/scenarios/saves) → F7c ordinary maps + rules drawer → F7d online cards.
    Sol F5b map browser (PR #51), F4 campaigns (PR #52), F10 loading screen (PR #53), F5c scenarios (PR #54),
    PR55 translations and F6b tactical save previews (PR #56) are integrated (2026-10-12).
+   F8a–d online menus (PR57/58/59: join, LAN, Internet, network hosting, connection progress) integrated 2026-10-16.
    Next F6b leftover: provenance-backed pre-coop save fixture.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
@@ -281,12 +282,18 @@ starting the game and playing it are still upstream's mouse screens with control
     - ☐ F7c ordinary maps on the party page: the "one tribe together"/own-tribes toggle and the rules
       (map/victory/fog/start goods, addon categories 3a–3c) as a drawer page.
     - ☐ F7d online in the same page: network players as read-only cards, ready state, chat line, join code/IP.
-  - ◐ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
+  - ☑ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
     - ☑ F8a online entry + direct join: Home → Play online is a full-screen page (Join/LAN/Internet/Create);
       Join Game is a full-screen address/port/password form with IPv6 and host-tribe co-play (PR57, 2026-10-12).
     - ☑ F8b LAN browser: Home → Play online → LAN is a full-screen, bounded UDP discovery list with
       Refresh/Join/Create, stable endpoint selection and the masked password/co-player form (PR58, 2026-10-13).
-      Remaining: Internet/server login, F4–F6 network hosting, connecting presentation, F7d cards.
+    - ☑ F8c Internet lobby + network hosting (PR59, integrated 2026-10-16): full-screen
+      login/server list/chat, content-first Campaigns/Maps/Load hosting and a masked creation form.
+      Registration, mission availability and save metadata are revalidated before hosting; local
+      validation passes (123 FrontEnd* cases, full UI174). [OnlineInternet](doc/coop/OnlineInternet.md).
+    - ☑ F8d connecting presentation (PR59, integrated 2026-10-16): live full-screen handshake/map-transfer progress on the
+      original form; B/Escape/header Back/Abort cancel and retain private inputs. Local input/lifecycle
+      tests pass. F7d online cards/local network seats remain separate.
   - ◐ F9 options: grouped full-screen display/Deck, audio, controls and language pages implemented on
     `sol/frontend-options`; Home uses the page trail, advanced/classic settings stay reachable. Physical
     Debug suites12/513 + affected41/1006 + UI146/22161 pass; exact-head CI pending (Sol, 2026-10-09). Help-footer toggle/keyboard caller adoption

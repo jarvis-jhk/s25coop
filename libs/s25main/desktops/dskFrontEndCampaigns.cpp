@@ -7,6 +7,7 @@
 #include "RttrConfig.h"
 #include "controls/ctrlButton.h"
 #include "controls/ctrlText.h"
+#include "desktops/dskFrontEndHost.h"
 #include "driver/KeyEvent.h"
 #include "dskFrontEndMissions.h"
 #include "files.h"
@@ -16,8 +17,8 @@
 #include "libsiedler2/libsiedler2.h"
 #include <algorithm>
 
-dskFrontEndCampaigns::dskFrontEndCampaigns(std::shared_ptr<boost::filesystem::path> selection)
-    : dskFrontEndPage(_("Campaigns")), selection_(std::move(selection))
+dskFrontEndCampaigns::dskFrontEndCampaigns(std::shared_ptr<boost::filesystem::path> selection, const ServerType type)
+    : dskFrontEndPage(_("Campaigns")), type_(type), selection_(std::move(selection))
 {
     for(unsigned i = 0; i < artwork_.size(); ++i)
         AddItem(ID_FirstCampaign + i, "");
@@ -128,7 +129,7 @@ void dskFrontEndCampaigns::OnChoose(const unsigned id)
     {
         const auto folder = catalog_.entries[first_ + id - ID_FirstCampaign].folder;
         *selection_ = folder;
-        Open([folder] { return std::make_unique<dskFrontEndMissions>(folder); });
+        Open([folder, type = type_] { return std::make_unique<dskFrontEndMissions>(folder, type); });
     } else if(id == ID_Previous && first_ >= 6)
     {
         first_ -= 6;
