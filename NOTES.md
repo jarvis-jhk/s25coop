@@ -18,6 +18,11 @@ Translations: 7 new msgids in rttr.pot, German done, others English (msgmerge al
 Note: the new Options pages' own strings (Display, Controls, "Smart cursor", ...) were never in rttr.pot.
 Not seen: real screen, real pads, Deck. Release: the old continuation 9bf22a81 (would have refused because
 master has code after 9b0cb74b5) was replaced by 00a614ed, and that (CI on 74542563b got cancelled by later pushes) by 081a195c (13:01 UTC): releases 0.1.21 once CI on master e2056c912 is green, marks the roadmap item done, announces.
+081a195c found Static analysis on 758efba92 failed (Clang-Tidy: PanelStep can be const, dskParty addons
+if-chain had two identical None branches, ~PanelFixture exception-escape). Fixed (PanelStep const, host_ folded
+into the conditions, NOLINTNEXTLINE like the other fixtures); Test_splitscreen built -j2, ControllerPanelShell,
+ControllerPanelModel, FrontEndPartyTests pass (locally needs USER=jarvis HOME=build/testhome TMPDIR=build/tmp21:
+without them "Could not get username" and cross-device copy_file errors). Continuation now 81481476 (14:49 UTC).
 Next on this item: Help page, more pages (slices 4–8) only if Jan's feedback asks for them.
 
 ## 2026-10-16 — Pre-coop saves (roadmap siedler-pre-coop-saves done)

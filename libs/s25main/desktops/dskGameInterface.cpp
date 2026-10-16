@@ -4573,7 +4573,7 @@ bool dskGameInterface::PanelOnPadButton(PlayerView& view, const PadButton button
     return true;
 }
 
-void dskGameInterface::PanelStep(PlayerView& view, const int rows)
+void dskGameInterface::PanelStep(PlayerView& view, const int rows) const
 {
     ControllerPanelNavigation& nav = view.GetPanel();
     const panel::Tab tab = nav.GetTab();

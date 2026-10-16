@@ -42,6 +42,7 @@ struct PanelFixture : PadViewFixture<2>
             BOOST_TEST_REQUIRE(view(i).HasPadCursor());
         }
     }
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~PanelFixture()
     {
         while(auto* window = WINDOWMANAGER.GetTopMostWindow())

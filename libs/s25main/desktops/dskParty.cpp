@@ -933,11 +933,9 @@ void dskParty::StepRule(const Rule rule, const bool forward)
             if(WINDOWMANAGER.FindNonModalWindow(CGI_ADDONS, SHARED_WINDOW_OWNER))
                 return;
             std::unique_ptr<iwAddons> window;
-            if(!host_)
-                window = std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::None);
-            else if(!lua_ || lua_->IsChangeAllowed("addonsAll"))
+            if(host_ && (!lua_ || lua_->IsChangeAllowed("addonsAll")))
                 window = std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::All);
-            else if(lua_->IsChangeAllowed("addonsSome"))
+            else if(host_ && lua_->IsChangeAllowed("addonsSome"))
                 window =
                   std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::WhitelistOnly, lua_->GetAllowedAddons());
             else

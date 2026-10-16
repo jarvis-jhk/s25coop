@@ -255,7 +255,7 @@ public:
     std::vector<panel::Row> PanelRows(const PlayerView& view) const;
     /// true = the edge belongs to the panel. Every button is consumed while it is open.
     bool PanelOnPadButton(PlayerView& view, PadButton button, bool down);
-    void PanelStep(PlayerView& view, int rows);
+    void PanelStep(PlayerView& view, int rows) const;
     void PanelActivate(PlayerView& view);
     /// A modal window came up in front of this seat: the panel closes and the modal gets the input.
     bool PanelClosedByModal(PlayerView& view);
