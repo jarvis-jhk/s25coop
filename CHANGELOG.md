@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.20
 
 - "Play online" → Internet now opens a full-screen page: log in, see the list of open games and chat.
 - Hosting an online game (direct, local network or Internet) now starts from the same full-screen campaign,
