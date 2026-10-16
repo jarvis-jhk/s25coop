@@ -19,6 +19,9 @@ public:
 
     /// Checks the env var for path override and returns result path
     static boost::filesystem::path getEnvOverride(const std::string& id, const boost::filesystem::path& defaultPath);
+    /// The original game files: RTTR_GAME_DIR, else defaultPath if it holds DATA and GFX, else the folder the
+    /// Warpzone launcher found (WARPZONE_DATA_S2_GOLD) if it does, else defaultPath
+    static boost::filesystem::path getGameDir(const boost::filesystem::path& defaultPath);
     /// Return the prefix path for the installation
     static boost::filesystem::path GetPrefixPath();
     /// Return the path from which RTTR was compiled

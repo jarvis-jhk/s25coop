@@ -1,5 +1,19 @@
 # Session notes
 
+## 2026-10-16 — Warpzone hands over the game files (WARPZONE_DATA_S2_GOLD)
+
+Report API request t_mvb0nevd442cui from the warpzone lane (launcher 0.1.2, jarvis-jhk/warpzone#8 passes the found
+`[[data]]` source as WARPZONE_DATA_S2_GOLD on every start). s25coop.sh: when no S2 folder is set up yet, it imports
+that path once into ~/.local/share/s25coop/S2 with `s2-extract.py extract` (folder, disc, GOG installer), falling
+back to using a found folder in place. RttrConfig::getGameDir: without RTTR_GAME_DIR and without DATA+GFX at the
+default (Windows: next to the exe), a found folder holding DATA+GFX is used (closes half of W5; an installer file
+on Windows is still not unpacked). Tests: Test_rttrConfig WarpzoneGameDir (negative control: ignoring the variable
+fails 2 assertions); s25coop.sh with a stub s25client: found install copied, second start without source, no
+extractor → used in place, no variable → old Downloads path/error, the real GOG installer 1.5.1 → DATA/GFX/VIDEO
+in 7 s. Review (Opus subagent, read-only): async tee could cut the fault-report log (now written to the file directly); changelog said Windows unpacks installers (it does not, reworded); env-var leak on a failed test assert left as in EnvOverride. Descriptor (pushed to PR jarvis-jhk/warpzone#3): files also match the GOG installer, copy_to removed (it
+would copy an installer file into S2/), present also checks {install}/s25coop/GFX (Windows), no fingerprints on
+purpose (any DATA+GFX copy works; editions differ).
+
 ## 2026-10-16 — Controller side panel, first usable version (roadmap siedler-controller-side-panel)
 
 Quota filler (t_mvaucvsg1m2bh2). No open issues. Opt-in: Options → Controls → "Controller side panel"

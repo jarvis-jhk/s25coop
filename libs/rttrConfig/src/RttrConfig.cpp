@@ -133,12 +133,39 @@ bool RttrConfig::Init()
     pathMappings["BIN"] = getEnvOverride("BIN", RTTR_BINDIR);
     pathMappings["EXTRA_BIN"] = getEnvOverride("EXTRA_BIN", RTTR_EXTRA_BINDIR);
     pathMappings["DATA"] = getEnvOverride("DATA", RTTR_DATADIR);
-    pathMappings["GAME"] = getEnvOverride("GAME", RTTR_GAMEDIR);
+    pathMappings["GAME"] = getGameDir(RTTR_GAMEDIR);
     pathMappings["LIB"] = getEnvOverride("LIB", RTTR_LIBDIR);
     pathMappings["DRIVER"] = getEnvOverride("DRIVER", RTTR_DRIVERDIR);
     pathMappings["RTTR"] = getEnvOverride("RTTR", RTTR_DATADIR "/RTTR");
     pathMappings["USERDATA"] = getEnvOverride("USERDATA", RTTR_USERDATADIR);
     return true;
+}
+
+namespace {
+bool hasS2Files(const bfs::path& dir)
+{
+    boost::system::error_code ec;
+    return bfs::is_directory(dir / "DATA", ec) && bfs::is_directory(dir / "GFX", ec);
+}
+} // namespace
+
+bfs::path RttrConfig::getGameDir(const bfs::path& defaultPath)
+{
+    if(System::envVarExists("RTTR_GAME_DIR"))
+        return getEnvOverride("GAME", defaultPath);
+    // The Warpzone launcher hands over the original files it found (an installed copy holding DATA and GFX).
+    // On Linux s25coop.sh imports them into RTTR_GAME_DIR; on Windows the game starts directly, so use them here.
+    if(!hasS2Files(defaultPath))
+    {
+        const bfs::path found = System::getPathFromEnvVar("WARPZONE_DATA_S2_GOLD");
+        if(!found.empty() && hasS2Files(found))
+        {
+            LOG.write("Note: using the Settlers II files the Warpzone launcher found in %1%\n", LogTarget::Stdout)
+              % found;
+            return found;
+        }
+    }
+    return defaultPath;
 }
 
 bfs::path RttrConfig::getEnvOverride(const std::string& id, const bfs::path& defaultPath)

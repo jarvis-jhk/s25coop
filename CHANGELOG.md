@@ -15,6 +15,8 @@ and the game will show the new sections after an update.
   with the controller or a click and press Ready; the host's Start waits until everybody is ready, can remove
   a player who holds the game up, and can allow co-players. Open tribes nobody took are closed at the start
   or get the computer players chosen under Rules.
+- Started from the Warpzone launcher, the game takes the Settlers II files the launcher found on its own:
+  on Linux and the Steam Deck an installed copy, a CD or the GOG installer, on Windows an installed copy.
 
 ## 0.1.20
 

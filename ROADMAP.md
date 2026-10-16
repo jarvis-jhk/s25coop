@@ -34,7 +34,7 @@ starting the game and playing it are still upstream's mouse screens with control
    address or a relayed peer channel; RTTR traffic is TCP, so tier 0's UDP tunnel does not apply) · ☐ W3 tier 2: host
    a Warpzone room from the online party page, list Warpzone rooms beside the lobby's in the Internet browser, codes
    and invite links, host approval; game traffic over Warpzone's hole-punched/relayed channel (no port forwarding) ·
-   ☐ W4 F5/F6 catalogs install maps/scenarios/campaigns from the mod archive · ☐ W5 Windows: the game also finds the
+   ☐ W4 F5/F6 catalogs install maps/scenarios/campaigns from the mod archive · ◐ W5 (2026-10-16: a folder the launcher found is used via WARPZONE_DATA_S2_GOLD) Windows: the game also finds the
    original files at %USERPROFILE%\.local\share\s25coop\S2 (where the launcher copies them; today only next to the exe),
    or a first-start importer the descriptor calls via import_args. Raise `tier` in the descriptor with each step.
 

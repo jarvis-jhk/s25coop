@@ -75,6 +75,41 @@ BOOST_FIXTURE_TEST_CASE(EnvOverride, rttr::test::BaseFixture)
     BOOST_TEST_REQUIRE(System::removeEnvVar("RTTR_GAME_DIR"));
 }
 
+BOOST_FIXTURE_TEST_CASE(WarpzoneGameDir, rttr::test::BaseFixture)
+{
+    rttr::test::LogAccessor logAcc;
+    const fs::path base = fs::current_path() / "testWarpzoneGameDir";
+    const fs::path found = base / "found", empty = base / "empty", installed = base / "installed";
+    fs::remove_all(base);
+    for(const fs::path& dir : {found, installed})
+    {
+        fs::create_directories(dir / "DATA");
+        fs::create_directories(dir / "GFX");
+    }
+    fs::create_directories(empty / "DATA"); // DATA alone is not a usable copy
+    BOOST_TEST_REQUIRE(System::removeEnvVar("RTTR_GAME_DIR"));
+
+    // Not launched by Warpzone: the default as before
+    BOOST_TEST_REQUIRE(System::removeEnvVar("WARPZONE_DATA_S2_GOLD"));
+    BOOST_TEST(RttrConfig::getGameDir(empty) == empty);
+
+    BOOST_TEST_REQUIRE(System::setEnvVar("WARPZONE_DATA_S2_GOLD", found.string()));
+    BOOST_TEST(RttrConfig::getGameDir(empty) == found);
+    RTTR_REQUIRE_LOG_CONTAINS("Warpzone launcher found", false);
+    // Files already in place win, and so does an explicit RTTR_GAME_DIR
+    BOOST_TEST(RttrConfig::getGameDir(installed) == installed);
+    BOOST_TEST_REQUIRE(System::setEnvVar("RTTR_GAME_DIR", empty.string()));
+    BOOST_TEST(RttrConfig::getGameDir(installed) == empty);
+    logAcc.clearLog();
+    BOOST_TEST_REQUIRE(System::removeEnvVar("RTTR_GAME_DIR"));
+    // Something the game cannot use (e.g. an installer file) leaves the default alone
+    BOOST_TEST_REQUIRE(System::setEnvVar("WARPZONE_DATA_S2_GOLD", (empty / "DATA").string()));
+    BOOST_TEST(RttrConfig::getGameDir(empty) == empty);
+
+    BOOST_TEST_REQUIRE(System::removeEnvVar("WARPZONE_DATA_S2_GOLD"));
+    fs::remove_all(base);
+}
+
 BOOST_AUTO_TEST_CASE(YearIsValid)
 {
     const std::string year = rttr::version::GetYear();

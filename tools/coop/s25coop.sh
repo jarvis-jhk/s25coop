@@ -1,7 +1,8 @@
 #!/bin/bash
 # s25coop launcher. Runs the bundled game from wherever this folder was unpacked.
 # The original Settlers II Gold files (DATA + GFX folders) are looked for, in this order:
-#   $S25COOP_S2_DIR, ~/.local/share/s25coop/S2, share/s25rttr/S2 next to this script.
+#   $S25COOP_S2_DIR, ~/.local/share/s25coop/S2, share/s25rttr/S2 next to this script; then imported into
+#   ~/.local/share/s25coop/S2 from $WARPZONE_DATA_S2_GOLD (the Warpzone launcher) or the Downloads folder.
 # Keeping them outside the install folder means an update never touches them.
 DIR=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
 BASE="${XDG_DATA_HOME:-$HOME/.local/share}/s25coop"
@@ -35,6 +36,21 @@ find_s2() {
     done
     return 1
 }
+# Started by the Warpzone launcher, which found the original files (an installed copy, a disc or the GOG
+# installer) and names them in WARPZONE_DATA_S2_GOLD: import them without asking, on first start only.
+wz="${WARPZONE_DATA_S2_GOLD:-}"
+if [ -n "$wz" ] && [ -e "$wz" ] && ! find_s2; then
+    echo "Importing the Settlers II files the Warpzone launcher found: $wz" >&2
+    mkdir -p "$BASE"
+    if [ -f "$DIR/s2-extract.py" ] && command -v python3 >/dev/null; then
+        python3 "$DIR/s2-extract.py" extract "$BASE/S2" "$wz" 2>"$BASE/s2-extract.log"
+        rc=$?
+        cat "$BASE/s2-extract.log" >&2
+        [ $rc -eq 1 ] && report "importing Settlers II from Warpzone failed" "$(tail -n 30 "$BASE/s2-extract.log")"
+    fi
+    # Could not copy them (no python3, disk full): use the found folder as it is.
+    find_s2 || S25COOP_S2_DIR="$wz" find_s2
+fi
 # Not set up yet (started from the tarball, without install.sh): take the files from a Settlers II
 # download in the Downloads folder, like the installer does.
 if ! find_s2 && [ -f "$DIR/s2-extract.py" ] && command -v python3 >/dev/null; then
