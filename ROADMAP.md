@@ -384,26 +384,6 @@ anything is bundled.
   only when the map has a single human side does everyone share one tribe.
 - ☐ Long-term goal: every campaign and scenario ever released for S2 or RttR playable here.
 
-## M6 — Settlers III and IV rules as add-ons (Jan, 2026-09-30)
-
-Everything Settlers III and IV add to normal multiplayer play, as RttR add-ons with S2 graphics, so that a
-preset eventually plays like S3 or S4. Only after M3; every add-on is a step of its own, playable and tested
-(headless runner + AI) before the next one starts.
-
-- ☐ 0 Inventory: every S3 and S4 gameplay feature (economy chains, specialists, military, magic/mana, trade,
-  ships, win conditions), each marked "RttR has it / an add-on comes close / new", split into add-on-sized
-  slices. Written to doc/, not researched twice.
-- ☐ 1 Presets in the add-on window, one click, editable afterwards: **Classic** (S2 as shipped), **Comfort**
-  (S2 plus the quality-of-life add-ons), **Age of Gods** (S3 rules), **Dark Tribe** (S4 rules). A preset is data,
-  so a new add-on only has to be added to it.
-- ☐ 2 Artwork pipeline for new buildings, figures and wares: AI-generated sprites that match S2's palette,
-  perspective, player-colour masks and animation frames, packed as an asset override. Prompts and scripts in the
-  repo so any piece can be regenerated.
-- ☐ 3 S3 slices, one add-on each (first candidates from step 0: priests and mana with a few spells, the
-  market/trade by donkey, S3's soldier strength levels). The AI must play each one, or the add-on is off for AIs.
-- ☐ 4 S4 slices the same way (candidates: the Dark Tribe as an AI opponent, gardeners reclaiming dark land,
-  eyecatchers).
-
 ## M7 — HD graphics remake (Jan, 2026-09-30)
 
 All game graphics recreated by AI image generation in an HD-remake style. The original graphics always stay

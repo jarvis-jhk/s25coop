@@ -1,5 +1,10 @@
 # Session notes
 
+## 2026-10-16 — M6 (S3/S4 rules as add-ons) removed from ROADMAP
+
+Jan (t_mvbjhkoqy8dbb, 22:28 UTC): "remove S3/S4 add-ons from roadmap". The whole M6 section is gone; M7 (HD remake)
+keeps its number so older notes still match. Do not start S3/S4 rule work.
+
 ## 2026-10-16 — 0.1.21 released (covers unannounced 0.1.20)
 
 Continuation t_mvb6cqwa0brst (18:29 UTC): Unit tests + Static analysis green on 1b760b29e (same code as dc4d224fd).
