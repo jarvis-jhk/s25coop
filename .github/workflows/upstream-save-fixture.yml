@@ -49,6 +49,9 @@ jobs:
         run: |
           cmake -S upstream -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build --target Test_upstreamSaveFixture --parallel 4
+          # The data folder an ordinary build or install would provide (game data scripts only)
+          mkdir -p build/share/s25rttr
+          ln -s "$PWD/upstream/data/RTTR" build/share/s25rttr/RTTR
       - name: Write the save
         run: |
           mkdir out
