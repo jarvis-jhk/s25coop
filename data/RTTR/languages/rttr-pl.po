@@ -642,6 +642,10 @@ msgstr "Zbrojownia"
 msgid "Artificial Intelligence (AI)"
 msgstr "Sztuczna inteligencja"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "As set by the map"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:155
 msgid "As the teams are locked, you cannot make treaties of any kind."
 msgstr "Jako, że drużyny są zablokowane, nie możesz tworzyć żadnych traktatów."
@@ -687,6 +691,10 @@ msgstr ""
 
 #: libs/s25main/network/GameClient.cpp:1912
 msgid "At most %1% local players are supported, %2% were requested"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:292
+msgid "At most %1% players can play on one screen."
 msgstr ""
 
 #: libs/s25main/gameData/BuildingConsts.cpp:117
@@ -1211,6 +1219,22 @@ msgstr "Wykonano zamówioną ilość narzędzi."
 msgid "Computer %u"
 msgstr "Komputer %u"
 
+#: ../libs/s25main/desktops/dskParty.cpp:112
+msgid "Computer (easy)"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:114
+msgid "Computer (hard)"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:113
+msgid "Computer (medium)"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:198
+msgid "Computer players:"
+msgstr ""
+
 #: libs/s25main/addons/AddonMineResourceBehavior.h:43
 msgid "Configures how coal mines consume and exhaust coal deposits."
 msgstr ""
@@ -1375,9 +1399,17 @@ msgstr "Tygiel"
 msgid "Current GF: %u / GF length: %u ms / NWF length: %u gf (%u ms) /  Ping: %u ms"
 msgstr "Aktualne GF: %u / Długość GF: %u ms / Długość NWF: %u gf (%u ms) /  Ping: %u ms"
 
+#: ../libs/s25main/controls/ctrlLobbyPlayerCard.cpp:37
+msgid "Cursor"
+msgstr ""
+
 #: libs/s25main/addons/AddonCustomBuildSequence.h:18
 msgid "Custom build sequence"
 msgstr "Ręczna kolejność budowy"
+
+#: ../libs/s25main/controls/ctrlLobbyPlayerCard.cpp:68
+msgid "D-pad: edit; B: back"
+msgstr ""
 
 #: libs/s25main/addons/AddonInexhaustibleFish.h:18
 msgid "Deactivates reduction of fish population."
@@ -1596,6 +1628,10 @@ msgstr "Nie poddawaj się"
 #: libs/s25main/desktops/dskCredits.cpp:243
 msgid "Donators"
 msgstr "Darczyńcy"
+
+#: ../libs/s25main/desktops/dskParty.cpp:208
+msgid "Done"
+msgstr ""
 
 #: libs/s25main/gameData/JobConsts.cpp:33
 msgid "Donkey breeder"
@@ -1853,6 +1889,22 @@ msgstr ""
 msgid "Everyone"
 msgstr "Wszyscy"
 
+#: ../libs/s25main/desktops/dskParty.cpp:560
+msgid "Everyone plays a tribe of their own."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:558
+msgid "Everyone plays one tribe together."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:556
+msgid "Everyone plays the campaign's tribe together."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:554
+msgid "Everyone plays the saved tribe together."
+msgstr ""
+
 #: libs/s25main/input/PlayerBrief.cpp:151
 msgid "Everything fits here, up to a farm, a fortress or a catapult."
 msgstr ""
@@ -2051,6 +2103,10 @@ msgstr "Rybak"
 #: libs/s25main/gameData/BuildingConsts.cpp:28
 msgid "Fishery"
 msgstr "Dom rybaka"
+
+#: ../libs/s25main/desktops/dskParty.cpp:327
+msgid "Fixed by map script"
+msgstr ""
 
 msgid "Flag"
 msgstr ""
@@ -2429,6 +2485,10 @@ msgid "Hi, I'm an artifical player and I'm not very good yet!"
 msgstr "Cześć, jestem sztuczną inteligencją! Wciąż jeszcze niedopracowaną, jeśli mogę dodać."
 
 msgid "Hides every symbol and every text of this seat, so you can just look at your land. The camera and the zoom keep working. B brings everything back."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:334
+msgid "Host chooses seat mode"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwLobbyServerInfo.cpp:37
@@ -3294,6 +3354,10 @@ msgstr "Więcej obrońców"
 msgid "More often"
 msgstr "Częściej"
 
+#: ../libs/s25main/desktops/dskParty.cpp:185
+msgid "More players: press A on a free seat."
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwMilitary.cpp:39
 msgid "More recruits"
 msgstr "Więcej rekrutów"
@@ -3518,6 +3582,10 @@ msgstr "Pakt o nieagresji"
 msgid "None"
 msgstr "Brak"
 
+#: ../libs/s25main/desktops/dskParty.cpp:115
+msgid "None (closed)"
+msgstr ""
+
 #: libs/s25main/addons/AddonNumScoutsExploration.h:25
 #: libs/s25main/addons/AddonShipSpeed.h:21
 #: libs/s25main/desktops/dskGameLobby.cpp:246
@@ -3533,6 +3601,11 @@ msgstr "Niegotowy"
 #: libs/s25main/drivers/DriverWrapper.cpp:101
 msgid "Not a RTTR driver library!"
 msgstr "To nie jest biblioteka sterowników RTTR!"
+
+#: ../libs/s25main/desktops/dskParty.cpp:292
+#: ../libs/s25main/desktops/dskParty.cpp:516
+msgid "Not enough seats"
+msgstr ""
 
 #: libs/s25main/desktops/dskGameInterface.cpp:1201
 #, c-format
@@ -3657,6 +3730,14 @@ msgstr "Wł."
 msgid "One back"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp:332
+msgid "One tribe required"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:589
+msgid "One tribe together"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameInterface.cpp:178
 msgid "Only %1% local views are supported, ignoring the additional local player(s) starting at slot %2%\n"
 msgstr ""
@@ -3752,9 +3833,17 @@ msgstr ""
 msgid "Overwrite Preset"
 msgstr ""
 
+#: ../libs/s25main/controls/ctrlLobbyPlayerCard.cpp:46
+msgid "Own"
+msgstr ""
+
 #: libs/s25main/desktops/dskSelectMap.cpp:106
 msgid "Own maps"
 msgstr "Własne mapy"
+
+#: ../libs/s25main/desktops/dskParty.cpp:589
+msgid "Own tribes"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMapDebug.cpp:195
 msgid "Owner"
@@ -3763,6 +3852,10 @@ msgstr "Właściciel"
 #: libs/s25main/gameData/JobConsts.cpp:50
 msgid "Pack donkey"
 msgstr "Osioł"
+
+#: ../libs/s25main/desktops/dskParty.cpp:134
+msgid "Party"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwDirectIPConnect.cpp:53
 msgid "Password (if needed):"
@@ -3861,6 +3954,14 @@ msgstr "Gracz"
 msgid "Player %1%"
 msgstr "Gracz %1%"
 
+#: ../libs/s25main/desktops/dskParty.cpp:355
+msgid "Player %1%: host"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:357
+msgid "Player %1%: press A to join"
+msgstr ""
+
 #: libs/s25main/world/MapLoader.cpp:412
 #, c-format
 msgid "Player %u does not have a valid start position!"
@@ -3957,6 +4058,10 @@ msgstr ""
 
 #: libs/s25main/input/PlayerBrief.cpp:158
 msgid "Press A for the build menu."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:314
+msgid "Press A to join"
 msgstr ""
 
 #: libs/s25main/input/PlayerBrief.cpp:174
@@ -4325,6 +4430,10 @@ msgstr "RttR napotkało na błąd. Czy zechcesz przesłać twórcom dane do debu
 msgid "RttR now supports sending debug data. Would you like to help us improving this game by sending debug data?"
 msgstr "RttR posiada możliwość wysyłania informacji diagnostycznych. Czy chciałbyś nam pomóc w ulepszaniu gry poprzez przesyłanie ich do nas?"
 
+#: ../libs/s25main/desktops/dskParty.cpp:195
+msgid "Rules"
+msgstr ""
+
 #: libs/s25main/addons/AddonMineResourceBehavior.h:18
 msgid "S4-like exhaustion"
 msgstr ""
@@ -4380,6 +4489,10 @@ msgstr "Zapisz grę!"
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:118
 msgid "Save playlist"
 msgstr "Zapisz playlistę"
+
+#: ../libs/s25main/desktops/dskParty.cpp:316
+msgid "Saved game"
+msgstr ""
 
 #: libs/s25main/Replay.cpp:230 libs/s25main/Replay.cpp:288
 msgid "Savegame error: "
@@ -4456,6 +4569,10 @@ msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:588
 msgid "Seat %1%: slot %2%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:320
+msgid "Seat unavailable"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwBaseWarehouse.cpp:72
@@ -4570,6 +4687,10 @@ msgstr "Szaka"
 #: libs/s25main/desktops/dskGameLobby.cpp:220
 msgid "Shared team view"
 msgstr "Współdzielony widok"
+
+#: ../libs/s25main/desktops/dskParty.cpp:318
+msgid "Shared tribe: host chooses"
+msgstr ""
 
 #: libs/s25main/gameData/GoodConsts.cpp:30
 msgid "Shield"
@@ -5058,6 +5179,10 @@ msgstr "Z dostarczonej z młyna mąki oraz świeżej wody wypiekany jest pyszny 
 msgid "The game clients are out of sync. Would you like to send debug information to RttR to help us avoiding this in the future? Thank you very much!"
 msgstr "Klienty straciły synchronizację. Czy chciałbyś przesłać nam informacje diagnostyczne i pomóc nam uniknąć tego problemu w przyszłości? Z góry dziękujemy!"
 
+#: ../libs/s25main/desktops/dskParty.cpp:1006
+msgid "The game could not be started."
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:255
 msgid "The grain is ground in the windmill. The flour from the windmill is later used at the bakery to bake bread."
 msgstr "Zboże mielone jest młynie, skąd - pod postacią mąki - trafia do piekarń."
@@ -5251,6 +5376,10 @@ msgstr "Tutaj możesz dokonać zmian we wszystkich sprawach wojskowych. Górna w
 msgid "This land belongs to another player."
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp:516
+msgid "This map has no tribe of their own for every player. Play one tribe together."
+msgstr ""
+
 #: libs/s25main/buildings/nobUsual.cpp:535
 msgid "This mine is exhausted"
 msgstr "Kopalnia została wyeksploatowana"
@@ -5296,6 +5425,10 @@ msgstr "Aby się zarejestrować, musisz stworzyć konto na forum pod adresem htt
 msgid "Todo"
 msgstr "Zadania"
 
+#: ../libs/s25main/controls/ctrlLobbyPlayerCard.cpp:46
+msgid "Together"
+msgstr ""
+
 #: libs/s25main/gameData/GoodConsts.cpp:10
 msgid "Tongs"
 msgstr "Szczypce"
@@ -5327,6 +5460,10 @@ msgstr "Góra"
 #: libs/s25main/desktops/dskGameLobby.cpp:254
 msgid "Total domination"
 msgstr "Totalna dominacja"
+
+#: ../libs/s25main/desktops/dskParty.cpp:65
+msgid "Tournament"
+msgstr ""
 
 #: libs/s25main/desktops/dskGameInterface.cpp:409
 msgid "Tournament finished"
@@ -5377,6 +5514,14 @@ msgstr "Drzewa:"
 #: libs/s25main/desktops/dskGameLoader.cpp:89
 msgid "Tribal chiefs assembled around the table..."
 msgstr "Wokół stołu zebrali się wodzowie plemion..."
+
+#: ../libs/s25main/controls/ctrlLobbyPlayerCard.cpp:46
+msgid "Tribe"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp:197
+msgid "Tribes:"
+msgstr ""
 
 #: libs/s25main/gameData/PortraitConsts.h:26
 msgid "Tsunami"

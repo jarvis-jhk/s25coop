@@ -1,5 +1,30 @@
 # Session notes
 
+## 2026-10-16 — F7c: ordinary maps on the party page, rules drawer (roadmap siedler-rules-drawer done)
+
+Same session. `dskParty::IsFor` is now every self-hosted local start from the new menus. Ordinary maps seat each
+joined controller on its own tribe; a party bigger than the free tribes plays one tribe together without asking.
+Host switches mode on its card's Tribes row or in the rules (stand all, rebuild, re-seat the same controllers;
+a switch that would leave someone out is refused). "Rules" opens an in-page drawer (goals, goods, exploration,
+speed, computer players, lock teams, team view, random start, addon window). Design detail in
+doc/coop/FrontEnd.md (Party). Two things worth knowing:
+- The server singleton keeps goal/speed/exploration etc. between games of one process (LoadSettings only resets
+  addons). Tests that change rules must set them back, or later suites fail (seen: economy question blocks
+  starts, visibility tests break). The host keeps its own `rules_` and adopts the server echo only when no send
+  is outstanding (`pendingRules_`); without that a stale echo undid a newer edit (negative control fails).
+- Computer players are applied at Start, only if the host touched the rule (else map/Lua levels stay); slots it
+  closed are reopened when the server refuses the start.
+Review: no Codex (switched off); an Opus subagent reviewed read-only: 5 minor findings, all fixed (Lua levels,
+reopen after refused start, stand-up race at Start, StandAll before auto-together, focus on disabled Tribes row)
+plus CI_ReadyChanged → Lua onPlayerReady for AIs like the classic lobby. Tests: FrontEndPartyTests +5 cases,
+FrontEndMaps start now lands on the party page; negative controls (no pendingRules_ guard, no auto-together)
+fail. Own Debug max2: full Test_splitscreen, Test_UI, Test_LanguageFiles pass; clang-tidy 18 and format10
+clean on changed files. 36 new strings in rttr.pot, German for all. Seen under Xvfb 1280×800 (party page with
+"Tribe: Own", drawer): data/siedler/partytest/s4.png, s5.png. Not seen: real pads/Deck.
+Noticed: two orphaned Xvfb (:91/:92) of data/opents-run since 2026-10-01 at ~60% CPU each — reported to the
+opents lane (t_mvad81ug2oa77), not touched.
+Next: F7d online party cards (siedler-online-party-cards).
+
 ## 2026-10-16 — PR59 online menus integrated (F8c/F8d); roadmap item siedler-online-menus done
 
 Work session (bfa0b45f) + Sol tick t_mva1lr2x4qv5v, both on Opus (Codex is switched off since 2026-10-15, so
@@ -11,8 +36,7 @@ campaign/save before HostGame. Merged --no-ff into master; own Debug max2 on the
 first failed one check: NetworkMapHost… compared the status with the English literal, but in the full local run an
 earlier test leaves en_GB loaded ("…for the game."). The five literal status checks in testFrontEndOnline.cpp now
 compare with _(); online+Internet suites and the full Test_splitscreen pass after that. CHANGELOG Unreleased has the player lines; release 0.1.20 once master CI is green.
-Release: one-shot continuation bc4af1c4 (05:00 UTC) tags 0.1.20 once 0a4dd08c1 CI is green.
-Next: F7c ordinary maps + rules drawer (siedler-rules-drawer), then F7d online party cards.
+Release 0.1.20 (PR59 + F7c): see the F7c entry above.
 
 ## 2026-10-15 — Sol F8c Internet lobby, hosting and connection progress (local gates passed; PR59 CI pending)
 

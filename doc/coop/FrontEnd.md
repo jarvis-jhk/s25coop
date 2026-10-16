@@ -100,8 +100,22 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   accept colour/nation/team changes on a save), the party shares the host's tribe, and the slots nobody here
   can take get a Default AI - a further local player's own slot (idle AI "Local player N",
   `LocalSeats::FormerLocalPlayers`) and a past network player's free slot, which the server refuses to start
-  with. Saved AIs stay as they are. Ordinary maps (own tribes, rules: F7c) and online games keep dskGameLobby.
-  Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`, saves in `testFrontEndLoad.cpp`.
+  with. Saved AIs stay as they are.
+  Ordinary maps (F7c, 2026-10-16) open it too (`IsFor` = every self-hosted local start from the new menus). Each
+  joined controller gets a tribe of its own (LocalSeats own-slot mode, the guest edits its own card); if the
+  party is bigger than the map's free tribes it plays one tribe together without asking. The host switches the
+  mode on its card's Tribes row or in the rules: everybody stands up in the old mode and the same controllers sit
+  down again in the new one; a switch to own tribes that would leave a player out is refused with a message.
+  "Rules" (left of Start) opens a drawer in the page: Tribes, goals, goods at start, exploration, speed, computer
+  players, lock teams, shared team view, random start locations, and the classic addon window. D-pad up/down
+  walks the rows, left/right or A/click changes the value; B, Escape, the header's Back and Done close it. The
+  host keeps its own copy of the rules and sends it whole; the server's echo is adopted only once every send has
+  come back, so an older echo cannot undo a newer edit. Computer players (easy/medium/hard/none) are applied at
+  Start to the ordinary AI slots nobody sits on, so a free tribe stays joinable until then. Start asks the
+  classic lobby's economy/peaceful questions. Lua permissions as in the lobby (`general`, `playerState`,
+  `addonsAll`/`addonsSome`, own*/ai* card rows). Online games keep dskGameLobby until F7d.
+  Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`, saves in `testFrontEndLoad.cpp`, maps in
+  `testFrontEndMaps.cpp`.
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"
   (the old main menu has "New menus" to come back). F12 must not retire the old menu before they have a place.
 - Tests: `tests/s25Main/UI/testFrontEndLayout.cpp`, `tests/s25Main/splitscreen/testFrontEndPage.cpp`

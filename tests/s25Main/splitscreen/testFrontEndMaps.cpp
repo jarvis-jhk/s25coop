@@ -6,15 +6,14 @@
 #include "MenuPadFixture.h"
 #include "PadFixture.h"
 #include "controls/ctrlButton.h"
-#include "controls/ctrlCheck.h"
 #include "controls/ctrlComboBox.h"
 #include "controls/ctrlList.h"
 #include "controls/ctrlPreviewMinimap.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
 #include "desktops/dskFrontEndMaps.h"
-#include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
+#include "desktops/dskParty.h"
 #include "desktops/dskSelectMap.h"
 #include "desktops/dskSinglePlayer.h"
 #include "desktops/dskTitle.h"
@@ -276,10 +275,9 @@ struct StartFixture : rttr::test::LocalGameFixture, MapsFixture
                 click(*page().GetCtrl<Window>(Page::ID_Continue));
                 BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == sameWindow);
             }
-            ready = until([] {
-                        return desktopAs<dskGameLobby>() || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow());
-                    })
-                    && desktopAs<dskGameLobby>();
+            ready =
+              until([] { return desktopAs<dskParty>() || dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()); })
+              && desktopAs<dskParty>();
             if(!ready)
             {
                 occupied.Close();
@@ -293,14 +291,14 @@ struct StartFixture : rttr::test::LocalGameFixture, MapsFixture
         BOOST_TEST_REQUIRE(ready);
         BOOST_TEST(!GAMECLIENT.GetGameLobby()->isSavegame());
         const bool together = count > GAMECLIENT.GetGameLobby()->getNumPlayers();
+        // The party page seats every controller on a tribe of its own; four on this three-tribe map play one
+        // tribe together without asking.
+        BOOST_TEST(desktopAs<dskParty>()->HasRules());
+        BOOST_TEST(desktopAs<dskParty>()->GetSeats().IsTogether() == together);
+        BOOST_TEST(desktopAs<dskParty>()->GetSeats().NumTaken() == count);
+        BOOST_TEST(dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow()) == nullptr);
         if(together)
         {
-            // Four controllers can use this three-tribe map; the lobby owns the explicit shared-mode choice.
-            closeError();
-            constexpr unsigned togetherId = 48 + 2 * MAX_PLAYERS + MAX_VIEWPORTS + 7;
-            auto* toggle = desktop()->GetCtrl<ctrlCheck>(togetherId);
-            BOOST_TEST_REQUIRE(toggle);
-            click(*toggle);
             BOOST_TEST_REQUIRE(until([count] { return GAMECLIENT.GetSharedLocalViews() == count - 1; }));
             BOOST_TEST(GAMECLIENT.GetAdditionalLocalPlayers().empty());
         } else

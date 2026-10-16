@@ -2,13 +2,18 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "Game.h"
 #include "GameLobby.h"
+#include "GlobalGameSettings.h"
 #include "JoinPlayerInfo.h"
 #include "LocalGameFixture.h"
 #include "MenuPadFixture.h"
 #include "PadFixture.h"
 #include "controls/ctrlLobbyPlayerCard.h"
+#include "controls/ctrlText.h"
+#include "controls/ctrlTextButton.h"
 #include "desktops/dskFrontEndCampaigns.h"
+#include "desktops/dskFrontEndMaps.h"
 #include "desktops/dskFrontEndMissions.h"
 #include "desktops/dskGameLoader.h"
 #include "desktops/dskHome.h"
@@ -17,6 +22,7 @@
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
 #include "frontend/MenuRoutes.h"
+#include "ingameWindows/iwAddons.h"
 #include "ingameWindows/iwConnecting.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "postSystem/PostBox.h"
@@ -173,6 +179,78 @@ struct PartyFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
         }
         BOOST_TEST_REQUIRE(ready);
         BOOST_TEST_REQUIRE(until([count] { return GAMECLIENT.GetSharedLocalViews() == count - 1; }));
+    }
+    /// `count` controllers join on the title page, then the first starts an ordinary three-tribe map through
+    /// Maps & scenarios.
+    void openMap(unsigned count)
+    {
+        const auto maps = RTTRCONFIG.ExpandPath(s25::folders::mapsOwn);
+        boost::filesystem::create_directories(maps);
+        boost::filesystem::copy_file(rttr::test::rttrBaseDir / "tests" / "testData" / "maps" / "LuaFunctions.SWD",
+                                     maps / "Three.SWD");
+        WINDOWMANAGER.Switch(dskTitle::Create());
+        frame();
+        for(unsigned i = 0; i < count; ++i)
+        {
+            connect(pad + i);
+            press(pad + i, PadButton::A);
+        }
+        BOOST_TEST_REQUIRE(padInput().GetParty().Members().size() == count);
+        press(pad, PadButton::A);
+        BOOST_TEST_REQUIRE(desktopAs<dskHome>());
+        bool ready = false;
+        for(unsigned attempt = 0; attempt < 10 && !ready; ++attempt)
+        {
+            SETTINGS.server.localPort = static_cast<uint16_t>(rttr::test::randomValue(1024, 49151));
+            focus(0, pad, dskHome::ID_Maps);
+            press(pad, PadButton::A);
+            auto* maps = desktopAs<dskFrontEndMaps>();
+            BOOST_TEST_REQUIRE(maps);
+            BOOST_TEST_REQUIRE(maps->GetSelectedPath().filename() == "Three.SWD");
+            click(*maps->GetCtrl<Window>(dskFrontEndMaps::ID_Continue));
+            ready = until([] { return desktopAs<dskParty>() || question(); }) && desktopAs<dskParty>();
+            if(!ready)
+            {
+                GAMECLIENT.Stop();
+                GAMESERVER.Stop();
+                GAMECLIENT.SetInterface(&ci());
+                WINDOWMANAGER.Switch(dskHome::Create());
+                frame();
+            }
+        }
+        BOOST_TEST_REQUIRE(ready);
+        BOOST_TEST_REQUIRE(GAMECLIENT.GetGameLobby()->getNumPlayers() == 3u);
+    }
+    /// The seats on own tribes are confirmed by the server: each guest's slot is its idle placeholder AI.
+    static bool ownTribesConfirmed(unsigned guests)
+    {
+        const auto& ids = GAMECLIENT.GetAdditionalLocalPlayers();
+        return ids.size() == guests && std::all_of(ids.begin(), ids.end(), [](const uint8_t id) {
+                   const auto& player = GAMECLIENT.GetGameLobby()->getPlayer(id);
+                   return player.ps == PlayerState::AI && player.aiInfo.type == AI::Type::Dummy;
+               });
+    }
+    static const GlobalGameSettings& rules() { return party().GetRules(); }
+    unsigned ruleFocus() const
+    {
+        const unsigned id = focusedId(0);
+        BOOST_TEST_REQUIRE(id >= dskParty::ID_Rule);
+        BOOST_TEST_REQUIRE(id <= dskParty::ID_RuleLast);
+        return id - dskParty::ID_Rule;
+    }
+    /// Walk the drawer with the D-pad to `rule`.
+    void focusRule(dskParty::Rule rule)
+    {
+        const auto target = static_cast<unsigned>(rule);
+        for(unsigned i = 0; i < 12 && ruleFocus() != target; ++i)
+            press(pad, ruleFocus() < target ? PadButton::DpadDown : PadButton::DpadUp);
+        BOOST_TEST_REQUIRE(ruleFocus() == target);
+    }
+    void openRules()
+    {
+        focus(0, pad, dskParty::ID_Rules);
+        press(pad, PadButton::A);
+        BOOST_TEST_REQUIRE(party().IsRulesOpen());
     }
     /// The real start: loading and the game, with only the original-resource loading bypassed.
     void startedWith(unsigned views)
@@ -385,17 +463,285 @@ BOOST_FIXTURE_TEST_CASE(LeavingAsksFirstAndReturnsHome, PartyFixture)
     });
 }
 
-BOOST_FIXTURE_TEST_CASE(PartyPageIsOnlyForFrontEndCampaigns, PartyFixture)
+BOOST_FIXTURE_TEST_CASE(PartyPageIsForEveryLocalHostOfTheNewMenus, PartyFixture)
 {
     checked([&] {
         open(1);
         BOOST_TEST(dskParty::IsFor(ServerType::Local));
+        BOOST_TEST(!dskParty::IsFor(ServerType::LAN));
+        // A campaign has no rules to choose: the mission script owns them.
+        BOOST_TEST(!party().HasRules());
+        BOOST_TEST(party().GetCtrl<Window>(dskParty::ID_Rules) == nullptr);
         frontend::SetMenuStyle(frontend::MenuStyle::Classic);
         BOOST_TEST(!dskParty::IsFor(ServerType::Local));
         frontend::SetMenuStyle(frontend::MenuStyle::FrontEnd);
+        // Ordinary maps (F7c) open it too.
         GAMECLIENT.SetHostingCampaign(false);
-        BOOST_TEST(!dskParty::IsFor(ServerType::Local));
+        BOOST_TEST(dskParty::IsFor(ServerType::Local));
         GAMECLIENT.SetHostingCampaign(true);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(OrdinaryMapSeatsEveryoneOnOwnTribesAndTheHostSwitchesToOneTribe, PartyFixture)
+{
+    checked([&] {
+        openMap(2);
+        auto& page = party();
+        BOOST_TEST(page.HasRules());
+        BOOST_TEST(!page.GetSeats().IsTogether());
+        BOOST_TEST_REQUIRE(page.GetSeats().size() == 3u);
+        BOOST_TEST(page.GetSeats().NumTaken() == 2u);
+        BOOST_TEST(page.GetCtrl<ctrlText>(dskParty::ID_Mode)->GetText() == "Everyone plays a tribe of their own.");
+        BOOST_TEST_REQUIRE(until([] { return ownTribesConfirmed(1); }));
+        const unsigned guestTribe = GAMECLIENT.GetAdditionalLocalPlayers().front();
+        BOOST_TEST(guestTribe == page.GetSeats()[1].playerId);
+        BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 0u);
+        frame();
+        // The guest chooses its own tribe's colour; the host's stays.
+        const auto* lobby = GAMECLIENT.GetGameLobby().get();
+        const unsigned hostColor = lobby->getPlayer(GAMECLIENT.GetPlayerId()).color;
+        const unsigned guestColor = lobby->getPlayer(guestTribe).color;
+        BOOST_TEST(card(1).GetModel().GetLockReason().empty());
+        press(pad + 1, PadButton::DpadRight);
+        BOOST_TEST_REQUIRE(until([&] { return lobby->getPlayer(guestTribe).color != guestColor; }));
+        BOOST_TEST(lobby->getPlayer(GAMECLIENT.GetPlayerId()).color == hostColor);
+        // Only the host chooses the seat mode.
+        pressN(pad + 1, PadButton::DpadDown, 3);
+        BOOST_TEST(card(1).GetModel().GetLockReason() == "Host chooses seat mode");
+        press(pad + 1, PadButton::DpadRight);
+        BOOST_TEST(!page.GetSeats().IsTogether());
+
+        // The host's card: Tribes row, D-pad right = one tribe together. The guest keeps its seat.
+        focus(0, pad, dskParty::ID_Seat);
+        pressN(pad, PadButton::DpadDown, 3);
+        BOOST_TEST_REQUIRE((card(0).GetModel().GetRow() == LobbyPlayerCardModel::Row::SharedTribe));
+        BOOST_TEST(card(0).GetModel().GetLockReason().empty());
+        press(pad, PadButton::DpadRight);
+        BOOST_TEST_REQUIRE(desktopAs<dskParty>() == &page);
+        BOOST_TEST(page.GetSeats().IsTogether());
+        BOOST_TEST(page.GetSeats().size() == 4u);
+        BOOST_TEST(page.GetSeats().NumTaken() == 2u);
+        BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 1u);
+        BOOST_TEST(GAMECLIENT.GetAdditionalLocalPlayers().empty());
+        BOOST_TEST(router().GetSlot(pad + 1) == 1u);
+        BOOST_TEST(page.GetCtrl<ctrlText>(dskParty::ID_Mode)->GetText() == "Everyone plays one tribe together.");
+        BOOST_TEST((card(0).GetModel().GetRow() == LobbyPlayerCardModel::Row::SharedTribe));
+        // The guest's former slot is a computer player again, as before it sat down.
+        BOOST_TEST_REQUIRE(until([&] {
+            const auto& player = lobby->getPlayer(guestTribe);
+            return player.ps == PlayerState::AI && player.aiInfo.type == AI::Type::Default;
+        }));
+        // And back: own tribes again, the guest on a tribe of its own.
+        press(pad, PadButton::DpadLeft);
+        BOOST_TEST(!page.GetSeats().IsTogether());
+        BOOST_TEST(page.GetSeats().NumTaken() == 2u);
+        BOOST_TEST_REQUIRE(until([] { return ownTribesConfirmed(1); }));
+        BOOST_TEST(GAMECLIENT.GetSharedLocalViews() == 0u);
+
+        GAMECLIENT.SetInterface(&ci());
+        press(pad, PadButton::Start);
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
+        BOOST_TEST_REQUIRE(ci().game);
+        const auto view = std::make_unique<rttr::test::TestableGameInterface>(ci().game, GAMECLIENT.GetNWFInfo(),
+                                                                              GAMECLIENT.GetPlayerId(), false);
+        GAMECLIENT.GameLoaded();
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetState() == ClientState::Game; }));
+        GAMECLIENT.OnGameStart();
+        BOOST_TEST_REQUIRE(view->GetNumViews() == 2u);
+        BOOST_TEST(view->GetPlayerView(0).GetPlayerId() == GAMECLIENT.GetPlayerId());
+        BOOST_TEST(view->GetPlayerView(1).GetPlayerId() == GAMECLIENT.GetAdditionalLocalPlayers().front());
+        BOOST_TEST(ci().numErrors == 0u);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(MorePlayersThanTribesPlayOneTribeTogether, PartyFixture)
+{
+    checked([&] {
+        openMap(4);
+        auto& page = party();
+        BOOST_TEST(page.GetSeats().IsTogether());
+        BOOST_TEST(page.GetSeats().NumTaken() == 4u);
+        BOOST_TEST(question() == nullptr);
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetSharedLocalViews() == 3u; }));
+        // Own tribes would leave a player out, so the switch is refused with a reason.
+        openRules();
+        BOOST_TEST(ruleFocus() == static_cast<unsigned>(dskParty::Rule::Tribes));
+        press(pad, PadButton::DpadRight);
+        BOOST_TEST_REQUIRE(question());
+        BOOST_TEST(page.GetSeats().IsTogether());
+        BOOST_TEST(page.GetSeats().NumTaken() == 4u);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(RulesDrawerSetsTheGameRulesWithPadAndMouse, PartyFixture)
+{
+    checked([&] {
+        openMap(1);
+        auto& page = party();
+        BOOST_TEST(!page.IsRulesOpen());
+        BOOST_TEST(page.GetCtrl<Window>(dskParty::ID_Rule)->IsVisible() == false);
+        openRules();
+        BOOST_TEST(ruleFocus() == static_cast<unsigned>(dskParty::Rule::Tribes));
+        BOOST_TEST(!page.GetCtrl<Window>(dskParty::ID_Seat)->IsVisible());
+        BOOST_TEST(!page.GetCtrl<Window>(dskParty::ID_Start)->IsVisible());
+        BOOST_TEST(page.GetCtrl<Window>(dskParty::ID_RulesDone)->IsVisible());
+        const auto value = [&](dskParty::Rule rule) {
+            return page.GetCtrl<ctrlTextButton>(dskParty::ID_Rule + static_cast<unsigned>(rule))->GetText();
+        };
+
+        // D-pad down walks the rules, left/right change the value under the focus.
+        const GlobalGameSettings defaults = rules();
+        focusRule(dskParty::Rule::Goals);
+        press(pad, PadButton::DpadRight);
+        BOOST_TEST((rules().objective != defaults.objective));
+        press(pad, PadButton::DpadLeft);
+        BOOST_TEST((rules().objective == defaults.objective));
+        focusRule(dskParty::Rule::Exploration);
+        press(pad, PadButton::DpadRight);
+        BOOST_TEST((rules().exploration != defaults.exploration));
+        // A mouse click steps forward too.
+        click(*page.GetCtrl<Window>(dskParty::ID_Rule + static_cast<unsigned>(dskParty::Rule::Speed)));
+        BOOST_TEST((rules().speed != defaults.speed));
+        click(*page.GetCtrl<Window>(dskParty::ID_Rule + static_cast<unsigned>(dskParty::Rule::LockTeams)));
+        BOOST_TEST(rules().lockedTeams != defaults.lockedTeams);
+        BOOST_TEST(value(dskParty::Rule::LockTeams) == (defaults.lockedTeams ? "Off" : "On"));
+        // Three changes in three frames: the server's echoes of the older ones do not undo the newer, and the
+        // lobby's copy (only ever written by the server) ends up with all of them.
+        const GlobalGameSettings changed = rules();
+        BOOST_TEST_REQUIRE(until([&] {
+            const auto& server = GAMECLIENT.GetGameLobby()->getSettings();
+            return server.lockedTeams == changed.lockedTeams && server.speed == changed.speed
+                   && server.exploration == changed.exploration;
+        }));
+        BOOST_TEST(rules().lockedTeams == changed.lockedTeams);
+        // Back to the defaults, so the next game of this process (the server keeps them) starts as usual.
+        focusRule(dskParty::Rule::Exploration);
+        press(pad, PadButton::DpadLeft);
+        click(*page.GetCtrl<Window>(dskParty::ID_Rule + static_cast<unsigned>(dskParty::Rule::LockTeams)));
+        focusRule(dskParty::Rule::Speed);
+        press(pad, PadButton::DpadLeft);
+        BOOST_TEST_REQUIRE(until([&] {
+            const auto& server = GAMECLIENT.GetGameLobby()->getSettings();
+            return server.lockedTeams == defaults.lockedTeams && server.speed == defaults.speed
+                   && server.exploration == defaults.exploration && server.objective == defaults.objective;
+        }));
+        // Computer players for the tribes nobody sits on: none.
+        focusRule(dskParty::Rule::Opponents);
+        press(pad, PadButton::DpadLeft);
+        BOOST_TEST((page.GetOpponents() == dskParty::Opponents::None));
+        // Game options opens the addon window; closing it keeps the drawer.
+        click(*page.GetCtrl<Window>(dskParty::ID_Rule + static_cast<unsigned>(dskParty::Rule::Options)));
+        auto* addons = dynamic_cast<iwAddons*>(WINDOWMANAGER.GetTopMostWindow());
+        BOOST_TEST_REQUIRE(addons);
+        addons->Close();
+        frame();
+        BOOST_TEST(page.IsRulesOpen());
+        // B closes the drawer; the controller lands on Rules again and the cards are back.
+        press(pad, PadButton::B);
+        BOOST_TEST(!page.IsRulesOpen());
+        BOOST_TEST(question() == nullptr);
+        BOOST_TEST(focusedId(0) == dskParty::ID_Rules);
+        BOOST_TEST(page.GetCtrl<Window>(dskParty::ID_Seat)->IsVisible());
+        // Escape in the drawer closes it instead of asking to leave.
+        openRules();
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Escape));
+        frame();
+        BOOST_TEST(!page.IsRulesOpen());
+        BOOST_TEST(question() == nullptr);
+        // So do the header's Back button and Done.
+        openRules();
+        click(*page.GetCtrl<Window>(dskFrontEndPage::ID_btBack));
+        BOOST_TEST(!page.IsRulesOpen());
+        BOOST_TEST(question() == nullptr);
+        openRules();
+        click(*page.GetCtrl<Window>(dskParty::ID_RulesDone));
+        BOOST_TEST(!page.IsRulesOpen());
+        BOOST_TEST_REQUIRE(desktopAs<dskParty>() == &page);
+
+        // The game starts with the free tribes closed.
+        GAMECLIENT.SetInterface(&ci());
+        press(pad, PadButton::Start);
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
+        BOOST_TEST_REQUIRE(ci().game);
+        BOOST_TEST((ci().game->ggs_.speed == GameSpeed::Normal));
+        const auto& world = ci().game->world_;
+        BOOST_TEST_REQUIRE(world.GetNumPlayers() == 3u);
+        for(unsigned id = 0; id < world.GetNumPlayers(); ++id)
+        {
+            if(id != GAMECLIENT.GetPlayerId())
+                BOOST_TEST((world.GetPlayer(id).ps == PlayerState::Locked));
+        }
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(ComputerOpponentsGetTheChosenLevelAtStart, PartyFixture)
+{
+    checked([&] {
+        openMap(2);
+        auto& page = party();
+        BOOST_TEST_REQUIRE(until([] { return ownTribesConfirmed(1); }));
+        openRules();
+        focusRule(dskParty::Rule::Opponents);
+        pressN(pad, PadButton::DpadRight, 2);
+        BOOST_TEST((page.GetOpponents() == dskParty::Opponents::Hard));
+        press(pad, PadButton::B);
+        GAMECLIENT.SetInterface(&ci());
+        press(pad, PadButton::Start);
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
+        BOOST_TEST_REQUIRE(ci().game);
+        const auto& world = ci().game->world_;
+        const unsigned guest = GAMECLIENT.GetAdditionalLocalPlayers().front();
+        BOOST_TEST_REQUIRE(world.GetNumPlayers() == 3u);
+        for(unsigned id = 0; id < world.GetNumPlayers(); ++id)
+        {
+            const auto& player = world.GetPlayer(id);
+            if(id == GAMECLIENT.GetPlayerId())
+                continue;
+            // The guest's seat keeps its placeholder; the free tribe is a hard computer player.
+            if(id == guest)
+                BOOST_TEST((player.aiInfo.type == AI::Type::Dummy));
+            else
+                BOOST_TEST((player.ps == PlayerState::AI && player.aiInfo.type == AI::Type::Default
+                            && player.aiInfo.level == AI::Level::Hard));
+        }
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(EconomyModeAsksAboutPeacefulModeBeforeStarting, PartyFixture)
+{
+    checked([&] {
+        openMap(1);
+        auto& page = party();
+        openRules();
+        focusRule(dskParty::Rule::Goals);
+        while(rules().objective != GameObjective::EconomyMode)
+            press(pad, PadButton::DpadRight);
+        press(pad, PadButton::B);
+        press(pad, PadButton::Start);
+        auto* box = question();
+        BOOST_TEST_REQUIRE(box);
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Config));
+        // Yes adjusts the rules for a peaceful game and lets the host review them.
+        click(*box->GetCtrl<Window>(2));
+        BOOST_TEST(question() == nullptr);
+        BOOST_TEST(rules().isEnabled(AddonId::PEACEFULMODE));
+        for(unsigned i = 0; i < 40; ++i)
+            frame();
+        BOOST_TEST((GAMECLIENT.GetState() == ClientState::Config));
+        BOOST_TEST_REQUIRE(desktopAs<dskParty>() == &page);
+        // With the goal back to none there is nothing to ask: Start starts. (The goal goes back anyway: the server
+        // keeps it for the next game of this process.)
+        openRules();
+        focusRule(dskParty::Rule::Goals);
+        press(pad, PadButton::DpadRight);
+        BOOST_TEST((rules().objective == GameObjective::None));
+        press(pad, PadButton::B);
+        BOOST_TEST_REQUIRE(
+          until([] { return GAMECLIENT.GetGameLobby()->getSettings().objective == GameObjective::None; }));
+        GAMECLIENT.SetInterface(&ci());
+        press(pad, PadButton::Start);
+        BOOST_TEST(question() == nullptr);
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
     });
 }
 

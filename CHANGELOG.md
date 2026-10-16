@@ -10,6 +10,11 @@ and the game will show the new sections after an update.
   map and save pages as a local game; a campaign hosted online lets friends join your tribe as co-players.
 - While connecting, the game shows a full-screen progress page (also while the map is sent); B or Abort
   cancels it and returns to the form with everything you typed still there.
+- Ordinary maps started from the new menus now open the full-screen party page too: every player who joined
+  gets a tribe of their own, or you all play one tribe together (switch it on the host's card or under Rules).
+  If more players joined than the map has tribes, you play one tribe together automatically.
+- "Rules" on the party page sets goals, starting goods, exploration, speed, the computer players (easy, medium,
+  hard or none), team options and the add-ons, with the controller or the mouse.
 
 ## 0.1.19
 

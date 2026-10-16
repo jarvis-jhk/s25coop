@@ -5,17 +5,21 @@
 #include "dskParty.h"
 #include "GameLobby.h"
 #include "GameLobbyController.h"
+#include "GlobalGameSettings.h"
 #include "JoinPlayerInfo.h"
 #include "Loader.h"
 #include "WindowManager.h"
+#include "controls/ctrlButton.h"
 #include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlText.h"
 #include "controls/ctrlTextButton.h"
 #include "desktops/dskGameLoader.h"
 #include "driver/KeyEvent.h"
 #include "frontend/MenuRoutes.h"
+#include "helpers/MaxEnumValue.h"
 #include "helpers/containerUtils.h"
 #include "helpers/format.hpp"
+#include "ingameWindows/iwAddons.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "input/LocalViewColor.h"
 #include "input/MenuPadInput.h"
@@ -24,7 +28,9 @@
 #include "network/ClientError.h"
 #include "network/GameClient.h"
 #include "ogl/FontStyle.h"
+#include "gameTypes/GameSettingTypes.h"
 #include "gameTypes/ServerType.h"
+#include "gameData/const_gui_ids.h"
 #include "s25util/Log.h"
 #include <algorithm>
 #include <array>
@@ -37,19 +43,97 @@ enum
     ID_mbLeave = 1,
     ID_mbError,
     ID_mbInfo,
+    ID_mbEconomy,
+    ID_mbPeaceful,
 };
+
+/// One step through the values of an enum, wrapping at both ends.
+template<class T>
+T stepEnum(const T value, const bool forward, const unsigned count)
+{
+    const auto index = static_cast<unsigned>(value);
+    return static_cast<T>(forward ? (index + 1) % count : (index + count - 1) % count);
+}
+
+std::string goalName(const GameObjective goal)
+{
+    switch(goal)
+    {
+        case GameObjective::None: return _("None");
+        case GameObjective::Conquer3_4: return _("Conquer 3/4 of map");
+        case GameObjective::TotalDomination: return _("Total domination");
+        case GameObjective::EconomyMode: return _("Economy mode");
+        default: return _("Tournament"); // only offered in an online lobby game
+    }
+}
+
+std::string goodsName(const StartWares wares)
+{
+    switch(wares)
+    {
+        case StartWares::VLow: return _("Very Low");
+        case StartWares::Low: return _("Low");
+        case StartWares::Normal: return _("Normal");
+        case StartWares::ALot: return _("A lot");
+        case StartWares::Minimal: return _("Minimal");
+        case StartWares::MinimalPlus: return _("Minimal+");
+    }
+    return "";
+}
+
+std::string explorationName(const Exploration exploration)
+{
+    switch(exploration)
+    {
+        case Exploration::Disabled: return _("Off (all visible)");
+        case Exploration::Classic: return _("Classic (Settlers 2)");
+        case Exploration::FogOfWar: return _("Fog of War");
+        case Exploration::FogOfWarExplored: return _("FoW - all explored");
+    }
+    return "";
+}
+
+std::string speedName(const GameSpeed speed)
+{
+    switch(speed)
+    {
+        case GameSpeed::VerySlow: return _("Very slow");
+        case GameSpeed::Slow: return _("Slow");
+        case GameSpeed::Normal: return _("Normal");
+        case GameSpeed::Fast: return _("Fast");
+        case GameSpeed::VeryFast: return _("Very fast");
+    }
+    return "";
+}
+
+std::string opponentsName(const dskParty::Opponents opponents)
+{
+    switch(opponents)
+    {
+        case dskParty::Opponents::Easy: return _("Computer (easy)");
+        case dskParty::Opponents::Medium: return _("Computer (medium)");
+        case dskParty::Opponents::Hard: return _("Computer (hard)");
+        case dskParty::Opponents::None: return _("None (closed)");
+    }
+    return "";
+}
+
+const char* onOff(const bool on)
+{
+    return on ? _("On") : _("Off");
+}
 } // namespace
 
 bool dskParty::IsFor(const ServerType serverType)
 {
     const auto lobby = GAMECLIENT.GetGameLobby();
     return serverType == ServerType::Local && frontend::GetMenuStyle() == frontend::MenuStyle::FrontEnd && lobby
-           && lobby->isHost() && (lobby->isSavegame() || GAMECLIENT.IsHostingCampaign())
-           && !GAMECLIENT.IsAIBattleModeOn();
+           && lobby->isHost() && !GAMECLIENT.IsAIBattleModeOn();
 }
 
 dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId)
-    : dskFrontEndPage(_("Party")), gameLobby_(std::move(gameLobby)), localPlayerId_(playerId)
+    : dskFrontEndPage(_("Party")), gameLobby_(std::move(gameLobby)), localPlayerId_(playerId),
+      ordinary_(!gameLobby_->isSavegame() && !GAMECLIENT.IsHostingCampaign())
 {
     lobbyController_ = std::make_unique<GameLobbyController>(gameLobby_, GAMECLIENT.GetMainPlayer());
     // The mission script sets up the slots exactly as in the classic lobby: init now, "ready" on activation.
@@ -96,15 +180,36 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
         }
     }
 
+    rules_ = gameLobby_->getSettings();
     AddText(ID_Map, DrawPoint(0, 0), GAMECLIENT.GetMapTitle(), COLOR_YELLOW, FontStyle::CENTER, LargeFont);
-    AddText(ID_Mode, DrawPoint(0, 0),
-            gameLobby_->isSavegame() ? _("Everyone plays the saved tribe together.") :
-                                       _("Everyone plays the campaign's tribe together."),
-            COLOR_YELLOW, FontStyle::CENTER, NormalFont);
+    AddText(ID_Mode, DrawPoint(0, 0), "", COLOR_YELLOW, FontStyle::CENTER, NormalFont);
     AddText(ID_Hint, DrawPoint(0, 0), _("More players: press A on a free seat."), COLOR_YELLOW, FontStyle::CENTER,
             NormalFont);
+    // Own tribes where the map has room for more than the host; the joined party may still need one tribe
+    // together (SeatJoinedParty).
+    together_ = !CanOwnTribes();
     CreateSeats();
+    UpdateModeText();
     AddTextButton(ID_Start, DrawPoint(0, 0), Extent(1, 1), TextureColor::Green2, _("Start game"), LargeFont);
+    if(ordinary_)
+    {
+        AddTextButton(ID_Rules, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, _("Rules"), LargeFont);
+        constexpr std::array<const char*, 10> labels = {
+          gettext_noop("Tribes:"),      gettext_noop("Goals:"),           gettext_noop("Goods at start:"),
+          gettext_noop("Exploration:"), gettext_noop("Speed:"),           gettext_noop("Computer players:"),
+          gettext_noop("Lock teams:"),  gettext_noop("Shared team view"), gettext_noop("Random start locations"),
+          gettext_noop("Addons:")};
+        for(unsigned i = 0; i < labels.size(); ++i)
+        {
+            AddText(ID_RuleLabel + i, DrawPoint(0, 0), _(labels[i]), COLOR_YELLOW, FontStyle::VCENTER, NormalFont)
+              ->SetVisible(false);
+            AddTextButton(ID_Rule + i, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, "", NormalFont)
+              ->SetVisible(false);
+        }
+        AddTextButton(ID_RulesDone, DrawPoint(0, 0), Extent(1, 1), TextureColor::Green2, _("Done"), NormalFont)
+          ->SetVisible(false);
+        UpdateRules();
+    }
     SetEntryFocus(ID_Start);
     Layout();
     GAMECLIENT.SetInterface(this);
@@ -115,13 +220,21 @@ dskParty::~dskParty()
     GAMECLIENT.RemoveInterface(this);
 }
 
+bool dskParty::CanOwnTribes() const
+{
+    return ordinary_ && gameLobby_->getNumPlayers() >= 2;
+}
+
 void dskParty::CreateSeats()
 {
-    seats_.Build(*gameLobby_, *lobbyController_, WINDOWMANAGER.GetPadInput().GetRouter(), localPlayerId_, true);
+    for(unsigned id = ID_Seat; id <= ID_SeatLast; ++id)
+        DeleteCtrl(id);
+    seats_.Build(*gameLobby_, *lobbyController_, WINDOWMANAGER.GetPadInput().GetRouter(), localPlayerId_, together_);
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
         AddCtrl(std::make_unique<ctrlLobbyPlayerCard>(this, ID_Seat + i, DrawPoint(0, 0), Extent(1, 1), NormalFont,
-                                                      LobbyPlayerCardModel(i, CardSnapshot(i))));
+                                                      LobbyPlayerCardModel(i, CardSnapshot(i))))
+          ->SetVisible(!rulesOpen_);
     }
     UpdateCards();
 }
@@ -160,6 +273,16 @@ void dskParty::SeatJoinedParty()
     }
     if(members.empty())
         return;
+    // More joined players than the map has tribes for: they play one tribe together instead of leaving some out.
+    if(!together_ && seats_.PartyNeedsMoreSeats(members) && members.size() > 1u)
+    {
+        seats_.StandAll(); // a --local-players seat gets its slot's computer player back
+        together_ = true;
+        CreateSeats();
+        UpdateModeText();
+        UpdateRules();
+        Layout();
+    }
     if(seats_.empty())
     {
         router.AssignSlot(members.front(), 0);
@@ -181,7 +304,7 @@ void dskParty::SeatJoinedParty()
 LobbyPlayerCardModel::Snapshot dskParty::CardSnapshot(const unsigned seat) const
 {
     const auto& player = gameLobby_->getPlayer(seats_[seat].playerId);
-    LobbyPlayerCardModel::Snapshot snapshot{{player.color, player.nation, player.team, true}, {}, {}};
+    LobbyPlayerCardModel::Snapshot snapshot{{player.color, player.nation, player.team, together_}, {}, {}};
     for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
     {
         const auto& other = gameLobby_->getPlayer(id);
@@ -193,22 +316,30 @@ LobbyPlayerCardModel::Snapshot dskParty::CardSnapshot(const unsigned seat) const
         reason = _("Press A to join");
     else if(gameLobby_->isSavegame())
         reason = _("Saved game");
-    else if(seat != 0)
+    else if(together_ && seat != 0)
         reason = _("Shared tribe: host chooses");
+    else if(seat != 0 && (player.ps != PlayerState::AI || player.aiInfo.type != AI::Type::Dummy))
+        reason = _("Seat unavailable"); // own tribe: until the server confirms the seat's slot
     constexpr std::array ownKeys = {"ownColor", "ownNation", "ownTeam"};
+    constexpr std::array aiKeys = {"aiColor", "aiNation", "aiTeam"};
     for(unsigned row = 0; row < ownKeys.size(); ++row)
     {
         snapshot.lockReasons[row] = reason;
-        if(reason.empty() && lua_ && !lua_->IsChangeAllowed(ownKeys[row], true))
+        if(reason.empty() && lua_ && !lua_->IsChangeAllowed(seat == 0 ? ownKeys[row] : aiKeys[row], true))
             snapshot.lockReasons[row] = _("Fixed by map script");
     }
-    snapshot.lockReasons[static_cast<unsigned>(LobbyPlayerCardModel::Row::SharedTribe)] = _("One tribe required");
+    // Changing the seat mode stands everybody up, so only the host chooses it for the group.
+    auto& modeLock = snapshot.lockReasons[static_cast<unsigned>(LobbyPlayerCardModel::Row::SharedTribe)];
+    if(!CanOwnTribes())
+        modeLock = _("One tribe required");
+    else if(seat != 0)
+        modeLock = _("Host chooses seat mode");
     return snapshot;
 }
 
 void dskParty::UpdateCards()
 {
-    const bool sharedCursors = seats_.NumTaken() > 1;
+    const bool sharedCursors = together_ && seats_.NumTaken() > 1;
     unsigned viewIndex = 0;
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
@@ -245,6 +376,33 @@ void dskParty::OnLayout()
     const unsigned startWidth = std::min(320u, area.getSize().x);
     start->Resize(Extent(startWidth, 40));
     start->SetPos(DrawPoint(centerX - static_cast<int>(startWidth / 2), area.bottom - 44));
+    if(ordinary_)
+    {
+        // Rules sits left of Start; Start keeps the centre, where B, A and the mouse expect it.
+        const unsigned rulesWidth = std::min(200u, area.getSize().x / 4);
+        auto* rules = GetCtrl<Window>(ID_Rules);
+        rules->Resize(Extent(rulesWidth, 40));
+        rules->SetPos(DrawPoint(start->GetPos().x - static_cast<int>(rulesWidth) - 16, area.bottom - 44));
+        // The drawer: one row per rule below the texts, label left and value right, Done last.
+        const unsigned numRules = ID_RuleLast - ID_Rule + 1;
+        const Rect drawer(DrawPoint(area.left, area.top + 56),
+                          Extent(area.getSize().x, std::max(0, static_cast<int>(area.getSize().y) - 56)));
+        const auto rows = frontend::LayoutList(drawer, numRules + 1, 40, 760);
+        for(unsigned i = 0; i < numRules; ++i)
+        {
+            const auto& row = rows[i];
+            const unsigned half = row.getSize().x / 2;
+            auto* label = GetCtrl<ctrlText>(ID_RuleLabel + i);
+            label->SetPos(DrawPoint(row.left, row.top + static_cast<int>(row.getSize().y / 2)));
+            label->setMaxWidth(half);
+            auto* value = GetCtrl<Window>(ID_Rule + i);
+            value->SetPos(DrawPoint(row.left + static_cast<int>(half), row.top));
+            value->Resize(Extent(row.getSize().x - half, row.getSize().y));
+        }
+        auto* done = GetCtrl<Window>(ID_RulesDone);
+        done->SetPos(rows.back().getOrigin());
+        done->Resize(rows.back().getSize());
+    }
     if(seats_.empty())
         return;
     // Cards fill the room between the texts and the Start row: four across when wide, else two by two.
@@ -333,8 +491,205 @@ void dskParty::ApplyCardValue(const unsigned seat, const bool forward)
         case LobbyPlayerCardModel::Row::Color: lobbyController_->SetColor(playerId, proposal->color); break;
         case LobbyPlayerCardModel::Row::Nation: lobbyController_->SetNation(playerId, proposal->nation); break;
         case LobbyPlayerCardModel::Row::Team: lobbyController_->SetTeam(playerId, proposal->team); break;
-        case LobbyPlayerCardModel::Row::SharedTribe: break; // locked: one tribe
+        case LobbyPlayerCardModel::Row::SharedTribe:
+            SetTogether(proposal->sharedTribe);
+            // The host's controller stays on the mode row of its rebuilt card.
+            if(auto* hostCard = GetCtrl<ctrlLobbyPlayerCard>(ID_Seat))
+                hostCard->GetModel().SelectRow(LobbyPlayerCardModel::Row::SharedTribe);
+            break;
     }
+}
+
+bool dskParty::FitsOwnTribes() const
+{
+    frontend::LocalSeats own;
+    own.Build(*gameLobby_, *lobbyController_, WINDOWMANAGER.GetPadInput().GetRouter(), localPlayerId_, false);
+    // Only the number of taken seats matters to the check, not which controllers they are.
+    return !own.empty() && !own.PartyNeedsMoreSeats(std::vector<PadDeviceId>(seats_.NumTaken(), InvalidPadDevice));
+}
+
+void dskParty::SetTogether(const bool together)
+{
+    if(together == together_ || countdown_ || !CanOwnTribes())
+        return;
+    if(!together && !FitsOwnTribes())
+    {
+        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+          _("Not enough seats"), _("This map has no tribe of their own for every player. Play one tribe together."),
+          this, MsgboxButton::Ok, MsgboxIcon::ExclamationRed, ID_mbInfo));
+        return;
+    }
+    std::vector<PadDeviceId> guests;
+    for(unsigned i = 1; i < seats_.size(); ++i)
+    {
+        if(seats_[i].taken && seats_[i].device != InvalidPadDevice)
+            guests.push_back(seats_[i].device);
+    }
+    // Standing up in the old mode gives the slots back what was there before anybody sat down.
+    seats_.StandAll();
+    GAMECLIENT.SetSharedLocalViews(0);
+    together_ = together;
+    CreateSeats();
+    auto& router = WINDOWMANAGER.GetPadInput().GetRouter();
+    router.SetNumSlots(GetNumPadSlots());
+    for(const PadDeviceId device : guests)
+    {
+        for(unsigned i = 1; i < seats_.size(); ++i)
+        {
+            if(!seats_[i].taken && seats_.IsJoinable(i))
+            {
+                seats_.Press(i, device, std::max(1u, router.GetSlot(device)));
+                break;
+            }
+        }
+    }
+    UpdateCards();
+    UpdateModeText();
+    UpdateRules();
+    Layout();
+}
+
+void dskParty::UpdateModeText()
+{
+    std::string text;
+    if(gameLobby_->isSavegame())
+        text = _("Everyone plays the saved tribe together.");
+    else if(!ordinary_)
+        text = _("Everyone plays the campaign's tribe together.");
+    else if(together_)
+        text = _("Everyone plays one tribe together.");
+    else
+        text = _("Everyone plays a tribe of their own.");
+    GetCtrl<ctrlText>(ID_Mode)->SetText(text);
+}
+
+bool dskParty::IsRuleAllowed(const Rule rule) const
+{
+    if(countdown_)
+        return false;
+    switch(rule)
+    {
+        case Rule::Tribes: return CanOwnTribes();
+        case Rule::Speed: return true;
+        case Rule::Opponents: return !lua_ || lua_->IsChangeAllowed("playerState");
+        case Rule::Options: return true; // read-only when the script allows no addon, see StepRule
+        default: return !lua_ || lua_->IsChangeAllowed("general");
+    }
+}
+
+void dskParty::UpdateRules()
+{
+    if(!ordinary_)
+        return;
+    const GlobalGameSettings& ggs = rules_;
+    const auto set = [this](const Rule rule, const std::string& text) {
+        auto* button = GetCtrl<ctrlTextButton>(ID_Rule + static_cast<unsigned>(rule));
+        if(button->GetText() != text)
+            button->SetText(text);
+        button->SetEnabled(IsRuleAllowed(rule));
+    };
+    set(Rule::Tribes, together_ ? _("One tribe together") : _("Own tribes"));
+    set(Rule::Goals, goalName(ggs.objective));
+    set(Rule::Goods, goodsName(ggs.startWares));
+    set(Rule::Exploration, explorationName(ggs.exploration));
+    set(Rule::Speed, speedName(ggs.speed));
+    const auto current = opponentsChosen_ ? std::optional<Opponents>(opponents_) : CurrentOpponents();
+    set(Rule::Opponents, current ? opponentsName(*current) : _("As set by the map"));
+    set(Rule::LockTeams, onOff(ggs.lockedTeams));
+    set(Rule::TeamView, onOff(ggs.teamView));
+    set(Rule::RandomStart, onOff(ggs.randomStartPosition));
+    const bool addonsAllowed = !lua_ || lua_->IsChangeAllowed("addonsAll") || lua_->IsChangeAllowed("addonsSome");
+    set(Rule::Options, addonsAllowed ? _("Change Settings...") : _("View Settings..."));
+}
+
+void dskParty::StepRule(const Rule rule, const bool forward)
+{
+    if(!IsRuleAllowed(rule))
+        return;
+    GlobalGameSettings& ggs = rules_;
+    switch(rule)
+    {
+        case Rule::Tribes: SetTogether(!together_); return;
+        case Rule::Opponents:
+            if(!opponentsChosen_)
+                opponents_ = CurrentOpponents().value_or(Opponents::Easy);
+            opponentsChosen_ = true;
+            opponents_ = stepEnum(opponents_, forward, 4);
+            UpdateRules();
+            return;
+        case Rule::Options:
+        {
+            if(WINDOWMANAGER.FindNonModalWindow(CGI_ADDONS, SHARED_WINDOW_OWNER))
+                return;
+            std::unique_ptr<iwAddons> window;
+            if(!lua_ || lua_->IsChangeAllowed("addonsAll"))
+                window = std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::All);
+            else if(lua_->IsChangeAllowed("addonsSome"))
+                window =
+                  std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::WhitelistOnly, lua_->GetAllowedAddons());
+            else
+                window = std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::None);
+            WINDOWMANAGER.Show(std::move(window));
+            return;
+        }
+        case Rule::Goals:
+            // The tournament goals belong to the online lobby; locally the four ordinary ones cycle.
+            ggs.objective = static_cast<GameObjective>(
+              stepEnum(static_cast<unsigned>(std::min(ggs.objective, GameObjective::EconomyMode)), forward, 4));
+            break;
+        case Rule::Goods:
+            ggs.startWares = stepEnum(ggs.startWares, forward, helpers::NumEnumValues_v<StartWares>);
+            break;
+        case Rule::Exploration:
+            ggs.exploration = stepEnum(ggs.exploration, forward, helpers::NumEnumValues_v<Exploration>);
+            break;
+        case Rule::Speed: ggs.speed = stepEnum(ggs.speed, forward, helpers::NumEnumValues_v<GameSpeed>); break;
+        case Rule::LockTeams: ggs.lockedTeams = !ggs.lockedTeams; break;
+        case Rule::TeamView: ggs.teamView = !ggs.teamView; break;
+        case Rule::RandomStart: ggs.randomStartPosition = !ggs.randomStartPosition; break;
+    }
+    SendRules();
+}
+
+void dskParty::SendRules()
+{
+    ++pendingRules_;
+    lobbyController_->ChangeGlobalGameSettings(rules_);
+    UpdateRules();
+}
+
+void dskParty::OpenRules(const bool open)
+{
+    if(!ordinary_ || open == rulesOpen_)
+        return;
+    rulesOpen_ = open;
+    for(unsigned i = 0; i < seats_.size(); ++i)
+        GetCtrl<Window>(ID_Seat + i)->SetVisible(!open);
+    for(const unsigned id : {ID_Start, ID_Rules, ID_Hint})
+        GetCtrl<Window>(id)->SetVisible(!open);
+    for(unsigned i = 0; i <= ID_RuleLast - ID_Rule; ++i)
+    {
+        GetCtrl<Window>(ID_RuleLabel + i)->SetVisible(open);
+        GetCtrl<Window>(ID_Rule + i)->SetVisible(open);
+    }
+    GetCtrl<Window>(ID_RulesDone)->SetVisible(open);
+    UpdateRules();
+    Layout();
+    // The host's controller lands on the first rule, and back on Rules when the drawer closes.
+    auto& focus = WINDOWMANAGER.GetPadInput().GetFocus(0);
+    if(focus.IsActive())
+        focus.FocusCtrl(open ? FirstRule() : GetCtrl<Window>(ID_Rules));
+}
+
+Window* dskParty::FirstRule()
+{
+    // Tribes is disabled on a one-tribe map; focus must not stay on the hidden Rules button.
+    for(unsigned id = ID_Rule; id <= ID_RuleLast; ++id)
+    {
+        if(GetCtrl<ctrlButton>(id)->GetEnabled())
+            return GetCtrl<Window>(id);
+    }
+    return GetCtrl<Window>(ID_RulesDone);
 }
 
 void dskParty::OnSeatPressed(const unsigned seat, const unsigned slot)
@@ -351,6 +706,27 @@ bool dskParty::Msg_PadCommand(const unsigned slot, const PadButton button)
     // A previous button of this batch may have opened a question; it owns the input now.
     if(WINDOWMANAGER.GetTopMostWindow() || WINDOWMANAGER.IsSwitchPending())
         return true;
+    if(rulesOpen_)
+    {
+        // The drawer is the host's; guests wait on their (hidden) cards meanwhile.
+        if(slot != 0)
+            return true;
+        if(button == PadButton::B || button == PadButton::Start)
+        {
+            OpenRules(false);
+            return true;
+        }
+        const auto* focused = WINDOWMANAGER.GetPadInput().GetFocus(0).GetFocused();
+        const unsigned id = focused ? focused->GetID() : 0u;
+        if((button == PadButton::DpadLeft || button == PadButton::DpadRight) && id >= ID_Rule && id <= ID_RuleLast)
+        {
+            const auto rule = static_cast<Rule>(id - ID_Rule);
+            if(rule != Rule::Options)
+                StepRule(rule, button == PadButton::DpadRight);
+            return true;
+        }
+        return false; // up/down/A: the page's ordinary focus and buttons
+    }
     if(button == PadButton::Start)
     {
         // Starting acts for everybody, so it belongs to the host seat's controller like leaving does.
@@ -381,7 +757,10 @@ bool dskParty::Msg_KeyDown(const KeyEvent& ke)
 {
     if(ke.kt == KeyType::Escape)
     {
-        AskToLeave();
+        if(rulesOpen_)
+            OpenRules(false);
+        else
+            AskToLeave();
         return true;
     }
     return false;
@@ -389,6 +768,8 @@ bool dskParty::Msg_KeyDown(const KeyEvent& ke)
 
 Window* dskParty::GetPadEntryCtrl(const unsigned slot)
 {
+    if(rulesOpen_ && slot == 0)
+        return FirstRule();
     if(slot == 0 || seats_.empty())
         return dskFrontEndPage::GetPadEntryCtrl(slot);
     const auto& router = WINDOWMANAGER.GetPadInput().GetRouter();
@@ -410,6 +791,12 @@ void dskParty::OnChoose(const unsigned ctrl_id)
 {
     if(ctrl_id == ID_Start)
         Start();
+    else if(ctrl_id == ID_Rules)
+        OpenRules(true);
+    else if(ctrl_id == ID_RulesDone)
+        OpenRules(false);
+    else if(ctrl_id >= ID_Rule && ctrl_id <= ID_RuleLast)
+        StepRule(static_cast<Rule>(ctrl_id - ID_Rule), true); // A or a click: the next value
     else if(ctrl_id >= ID_Seat && ctrl_id <= ID_SeatLast)
     {
         // A mouse click carries no controller and is dropped by LocalSeats::Press: a seat without a controller
@@ -423,6 +810,9 @@ void dskParty::OnChoose(const unsigned ctrl_id)
 void dskParty::Start()
 {
     if(countdown_)
+        return;
+    OpenRules(false);
+    if(ordinary_ && !CheckOptions())
         return;
     seats_.Sync();
     if(!seats_.PrepareForStart())
@@ -440,8 +830,119 @@ void dskParty::Start()
     }
     if(lua_)
         lua_->EventPlayerReady(localPlayerId_);
+    if(ordinary_)
+        ApplyOpponents();
     countdown_ = true;
+    UpdateRules();
     lobbyController_->StartCountdown(5);
+}
+
+static_assert(static_cast<unsigned>(AI::Level::Easy) == static_cast<unsigned>(dskParty::Opponents::Easy)
+              && static_cast<unsigned>(AI::Level::Hard) == static_cast<unsigned>(dskParty::Opponents::Hard));
+
+std::vector<unsigned> dskParty::OpponentSlots() const
+{
+    std::vector<unsigned> ids;
+    for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
+    {
+        if(id == localPlayerId_)
+            continue;
+        const auto seat = std::find_if(seats_.Get().begin(), seats_.Get().end(),
+                                       [id](const frontend::LocalSeats::Seat& s) { return s.playerId == id; });
+        if(seat != seats_.Get().end() && seat->taken)
+            continue;
+        const auto& player = gameLobby_->getPlayer(id);
+        const bool computer = player.ps == PlayerState::AI && player.aiInfo.type == AI::Type::Default;
+        // A seat stood up a moment ago still shows its placeholder until the server echoes the restore, which
+        // it handles before anything sent after it.
+        const bool restoring = seat != seats_.Get().end() && player.ps == PlayerState::AI
+                               && player.aiInfo.type == AI::Type::Dummy && seat->savedPs == PlayerState::AI
+                               && seat->savedAi.type == AI::Type::Default;
+        if(computer || restoring)
+            ids.push_back(id);
+    }
+    return ids;
+}
+
+std::optional<dskParty::Opponents> dskParty::CurrentOpponents() const
+{
+    std::optional<Opponents> current;
+    for(const unsigned id : OpponentSlots())
+    {
+        const auto& player = gameLobby_->getPlayer(id);
+        const auto level = player.aiInfo.type == AI::Type::Dummy ? AI::Level::Easy : player.aiInfo.level;
+        const auto opponents = static_cast<Opponents>(static_cast<unsigned>(level));
+        if(current && *current != opponents)
+            return std::nullopt; // the map script set different levels
+        current = opponents;
+    }
+    return current.value_or(Opponents::None);
+}
+
+void dskParty::ApplyOpponents()
+{
+    // Untouched, the computer players stay as the map (or its script) set them up.
+    if(!opponentsChosen_ || !IsRuleAllowed(Rule::Opponents))
+        return;
+    for(const unsigned id : OpponentSlots())
+    {
+        const auto& player = gameLobby_->getPlayer(id);
+        if(opponents_ == Opponents::None)
+        {
+            // Reopened if the server refuses the start (CI_CancelCountdown), or the seat could not be joined again.
+            closedByOpponents_.emplace_back(
+              id, player.aiInfo.type == AI::Type::Dummy ? AI::Info(AI::Type::Default, AI::Level::Easy) : player.aiInfo);
+            lobbyController_->CloseSlot(id);
+        } else
+        {
+            const auto level = static_cast<AI::Level>(static_cast<unsigned>(opponents_));
+            if(player.aiInfo.type != AI::Type::Default || player.aiInfo.level != level)
+                lobbyController_->SetPlayerState(id, PlayerState::AI, AI::Info(AI::Type::Default, level));
+        }
+    }
+}
+
+bool dskParty::CheckOptions()
+{
+    if(forceOptions_)
+        return true;
+    const GlobalGameSettings& ggs = rules_;
+    if(ggs.objective == GameObjective::EconomyMode && !ggs.isEnabled(AddonId::PEACEFULMODE))
+    {
+        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+          _("Economy mode"),
+          _("You chose the economy mode. In economy mode the player or team that collects the most of certain goods "
+            "wins (check the Economic progress window in game).\n\n"
+            "Some players like to play this objective in peaceful mode. Would you like to adjust settings for a "
+            "peaceful game?\n"
+            "Choosing Yes will activate peaceful mode, ban catapults and disable buildings receiving coins by default. "
+            "After clicking Yes you will be able to review the changes and then start the game by clicking the Start "
+            "game button again.\n"
+            "Choosing No will start the game without any changes."),
+          this, MsgboxButton::YesNoCancel, MsgboxIcon::QuestionGreen, ID_mbEconomy));
+        return false;
+    }
+    if(ggs.isEnabled(AddonId::PEACEFULMODE)
+       && (ggs.objective == GameObjective::Conquer3_4 || ggs.objective == GameObjective::TotalDomination))
+    {
+        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+          _("Peaceful mode"),
+          _("You chose a war based victory condition but peaceful mode is still active. Would you like to deactivate "
+            "peaceful mode before you start? Choosing No will start the game, Yes will let you review the changes."),
+          this, MsgboxButton::YesNoCancel, MsgboxIcon::QuestionRed, ID_mbPeaceful));
+        return false;
+    }
+    return true;
+}
+
+bool dskParty::GoBack()
+{
+    if(rulesOpen_)
+    {
+        OpenRules(false);
+        return true;
+    }
+    return dskFrontEndPage::GoBack();
 }
 
 bool dskParty::OnBackAtRoot()
@@ -475,6 +976,41 @@ void dskParty::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResult mbr
 {
     if((msgbox_id == ID_mbLeave && mbr == MsgboxResult::Yes) || msgbox_id == ID_mbError)
         Leave();
+    else if(msgbox_id == CGI_ADDONS && mbr == MsgboxResult::Yes)
+    {
+        // iwAddons wrote the host's rules in place; send them like every other rule.
+        SendRules();
+    } else if(msgbox_id == ID_mbEconomy || msgbox_id == ID_mbPeaceful)
+    {
+        auto& ggs = rules_;
+        if(mbr == MsgboxResult::Yes)
+        {
+            // Yes = adjust and review, exactly as in the classic lobby; Start again starts.
+            if(msgbox_id == ID_mbEconomy)
+            {
+                ggs.setSelection(AddonId::PEACEFULMODE, true);
+                ggs.setSelection(AddonId::NO_COINS_DEFAULT, true);
+                ggs.setSelection(AddonId::NO_ARMOR_DEFAULT, true);
+                ggs.setSelection(AddonId::LIMIT_CATAPULTS, 2);
+            } else
+                ggs.setSelection(AddonId::PEACEFULMODE, false);
+            SendRules();
+        } else if(mbr == MsgboxResult::No)
+        {
+            forceOptions_ = true;
+            Start();
+            forceOptions_ = false;
+        }
+    }
+}
+
+void dskParty::CI_GGSChanged(const GlobalGameSettings& /*ggs*/)
+{
+    if(pendingRules_ > 0)
+        --pendingRules_;
+    if(pendingRules_ == 0)
+        rules_ = gameLobby_->getSettings();
+    UpdateRules();
 }
 
 void dskParty::CI_Error(const ClientError ce)
@@ -491,6 +1027,14 @@ void dskParty::CI_GameLoading(std::shared_ptr<Game> game)
 void dskParty::CI_PlayerDataChanged(unsigned /*playerId*/)
 {
     UpdateCards();
+    UpdateRules();
+}
+
+void dskParty::CI_ReadyChanged(const unsigned playerId, const bool ready)
+{
+    // As in the classic lobby: the script hears of the other players' readiness; the host's is sent on Start.
+    if(ready && lua_ && playerId != localPlayerId_)
+        lua_->EventPlayerReady(playerId);
 }
 
 void dskParty::CI_NewPlayer(const unsigned playerId)
@@ -521,6 +1065,11 @@ void dskParty::CI_PlayersSwapped(const unsigned player1, const unsigned player2)
 void dskParty::CI_CancelCountdown(const bool error)
 {
     countdown_ = false;
+    // The start was refused: the tribes closed for it become computer players again, so their seats stay joinable.
+    for(const auto& [id, ai] : closedByOpponents_)
+        lobbyController_->SetPlayerState(id, PlayerState::AI, ai);
+    closedByOpponents_.clear();
+    UpdateRules();
     if(error)
     {
         WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), _("The game could not be started."), this,

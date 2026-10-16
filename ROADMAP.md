@@ -10,7 +10,7 @@ starting the game and playing it are still upstream's mouse screens with control
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
    workers. Done: F1 framework, F2 title/join, F3 home, F7a seat logic (Opus); 4b on-screen keyboard, F9 options,
    F6a save browser, F5a map catalog, 3a/3b addon categories (Sol). Next (review 2026-10-11):
-   Opus F7b party page done (campaigns/scenarios/saves) → F7c ordinary maps + rules drawer → F7d online cards.
+   Opus F7b party page done (campaigns/scenarios/saves), F7c ordinary maps + rules drawer done → F7d online cards.
    Sol F5b map browser (PR #51), F4 campaigns (PR #52), F10 loading screen (PR #53), F5c scenarios (PR #54),
    PR55 translations and F6b tactical save previews (PR #56) are integrated (2026-10-12).
    F8a–d online menus (PR57/58/59: join, LAN, Internet, network hosting, connection progress) integrated 2026-10-16.
@@ -278,9 +278,10 @@ starting the game and playing it are still upstream's mouse screens with control
     - ☑ F7b `dskParty` page on dskFrontEndPage for self-hosted local games: one big card per seat (LocalSeats +
       LobbyPlayerCardModel), Start, B asks to leave; ClientInterface callbacks (loading, errors) like dskGameLobby.
       Campaigns and scenarios (2026-10-12) and saves loaded from the new menus (2026-10-14: locked cards, shared
-      tribe, former local/past network tribes get an AI). The old lobby stays for Classic, online and ordinary maps.
-    - ☐ F7c ordinary maps on the party page: the "one tribe together"/own-tribes toggle and the rules
-      (map/victory/fog/start goods, addon categories 3a–3c) as a drawer page.
+      tribe, former local/past network tribes get an AI). The old lobby stays for Classic and online games.
+    - ☑ F7c ordinary maps on the party page (2026-10-16): own tribes by default, one tribe together when the party
+      is bigger or the host chooses it (card row or rules); rules drawer with goals, goods, exploration, speed,
+      computer players, team options and the addon window (categories 3a–3c).
     - ☐ F7d online in the same page: network players as read-only cards, ready state, chat line, join code/IP.
   - ☑ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
     - ☑ F8a online entry + direct join: Home → Play online is a full-screen page (Join/LAN/Internet/Create);
