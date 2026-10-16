@@ -11,6 +11,7 @@ campaign/save before HostGame. Merged --no-ff into master; own Debug max2 on the
 first failed one check: NetworkMapHost… compared the status with the English literal, but in the full local run an
 earlier test leaves en_GB loaded ("…for the game."). The five literal status checks in testFrontEndOnline.cpp now
 compare with _(); online+Internet suites and the full Test_splitscreen pass after that. CHANGELOG Unreleased has the player lines; release 0.1.20 once master CI is green.
+Release: one-shot continuation bc4af1c4 (05:00 UTC) tags 0.1.20 once 0a4dd08c1 CI is green.
 Next: F7c ordinary maps + rules drawer (siedler-rules-drawer), then F7d online party cards.
 
 ## 2026-10-15 — Sol F8c Internet lobby, hosting and connection progress (local gates passed; PR59 CI pending)
