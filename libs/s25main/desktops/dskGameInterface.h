@@ -12,6 +12,7 @@
 #include "Messenger.h"
 #include "WindowManager.h"
 #include "customborderbuilder.h"
+#include "desktops/ControllerPanelPages.h"
 #include "desktops/PlayerView.h"
 #include "ingameWindows/iwAction.h"
 #include "ingameWindows/iwChat.h"
@@ -241,6 +242,25 @@ public:
     /// Wuerde Back jetzt etwas tun? Der Knopf schaltet um; er ist nur dann wirkungslos, wenn
     /// noch kein Menue offen ist UND ein eigenes modales Fenster davorliegt (PadOpenSystemMenu).
     bool CanOpenSystemMenu(PlayerView& view) const;
+    // --- Controller side panel (opt-in, SETTINGS.interface.controllerPanel) -----------------
+    /// Back opens the panel instead of the menu ring only from the world: no road preview, no
+    /// ring, no own modal window in front. The hint bar keeps saying "Back: menu" - the panel's
+    /// last tab is the menu, and every state where Back opens the panel is one where it names it.
+    bool CanOpenPanel(const PlayerView& view) const;
+    void OpenPanel(PlayerView& view);
+    void ClosePanel(PlayerView& view);
+    /// Where this view's panel is, measured on its current viewport (so a resize just reflows).
+    ControllerPanelLayout PanelLayout(const PlayerView& view) const;
+    /// The rows of the panel's current tab, read live from the player of this view.
+    std::vector<panel::Row> PanelRows(const PlayerView& view) const;
+    /// true = the edge belongs to the panel. Every button is consumed while it is open.
+    bool PanelOnPadButton(PlayerView& view, PadButton button, bool down);
+    void PanelStep(PlayerView& view, int rows);
+    void PanelActivate(PlayerView& view);
+    /// A modal window came up in front of this seat: the panel closes and the modal gets the input.
+    bool PanelClosedByModal(PlayerView& view);
+    /// Mouse scrolling and zooming over an open panel never reach the map behind it.
+    bool IsOnOpenPanel(const Position& pos) const;
     /// WUERDE EnterWindow den Fokus wirklich in dieses Fenster setzen? Reine Frage.
     /// EINE Bedingung, zwei Aufrufer: der Knopf (EnterWindow) und die Leiste (RefreshBrief).
     /// Siehe Befund N5 am Rumpf.

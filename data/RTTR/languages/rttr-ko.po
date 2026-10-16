@@ -305,6 +305,10 @@ msgstr ""
 msgid "A flag costs nothing and you can tear it down again. Roads start and end at flags, and wares are handed over there."
 msgstr ""
 
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A go there   B close   LB/RB page"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:161
 msgid "A gold mine allows you to prospect for valuable gold deposits. For this, it is necessary to ensure that the miners are provided with plenty of food."
 msgstr ""
@@ -331,6 +335,22 @@ msgstr ""
 
 #: libs/s25main/nodeObjs/noShipBuildingSite.cpp:96
 msgid "A new ship is ready"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A open   B close   LB/RB page"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the menu: map display, saving and leaving the game."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the statistics window."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens your messages and the diary."
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:232
@@ -363,6 +383,10 @@ msgstr "우물은 빵집, 맥주 양조장, 나귀 축사와 돼지 농장에 �
 
 #: libs/s25main/gameData/BuildingConsts.cpp:179
 msgid "A woodcutter provides the sawmill with logs. A forester is able to replant the depleted forest."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "A: remove this player"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwMainMenu.cpp:93
@@ -745,6 +769,10 @@ msgstr ""
 
 #: libs/s25main/gameData/GoodConsts.cpp:12
 msgid "Axe"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "B close   LB/RB page"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwMapDebug.cpp:177
@@ -1152,6 +1180,14 @@ msgstr ""
 msgid "Co-players are not allowed."
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: allowed"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: not allowed"
+msgstr ""
+
 #: libs/s25main/gameData/GoodConsts.cpp:40
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:58
 msgid "Coal"
@@ -1311,6 +1347,10 @@ msgstr ""
 
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:222
 msgid "Contract type:"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskFrontEndOptions.cpp
+msgid "Controller side panel"
 msgstr ""
 
 #: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:16
@@ -2472,6 +2512,10 @@ msgstr ""
 msgid "Host:"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Hosted by %1%"
+msgstr ""
+
 #: libs/s25main/desktops/dskCampaignMissionSelection.cpp:163
 msgid "Hosting of game not possible"
 msgstr ""
@@ -2792,6 +2836,10 @@ msgstr ""
 
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:112
 msgid "Less repeats"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Let others join a tribe and play it together with its player"
 msgstr ""
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:50
@@ -4299,8 +4347,16 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove %1% from the game?"
+msgstr ""
+
 #: libs/s25main/addons/AddonChangeGoldDeposits.h:25
 msgid "Remove gold completely"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove player"
 msgstr ""
 
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:104
@@ -6175,32 +6231,4 @@ msgstr ""
 
 #: libs/s25main/ingameWindows/iwWares.cpp:225
 msgid "with armor)"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Let others join a tribe and play it together with its player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "A: remove this player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Hosted by %1%"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Remove player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Remove %1% from the game?"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Co-players: allowed"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Co-players: not allowed"
 msgstr ""

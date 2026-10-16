@@ -50,6 +50,7 @@ public:
         ID_Scroll,
         ID_SmartCursor,
         ID_Pinning,
+        ID_ControllerPanel,
         ID_KeyboardLayout,
         ID_LanguageChoice,
         ID_LabelStart = 100

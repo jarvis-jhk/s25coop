@@ -191,9 +191,11 @@ starting the game and playing it are still upstream's mouse screens with control
     - ☑ 1 pure per-view geometry/navigation model and unit tests (no input routing):
       PR #33 integrated from exact tested head b212278737; all 17 CI checks pass.
       Rendering, physical routing and usable Stock remain slice 2 work.
-    - ☐ 2 opt-in shell plus readonly Stock; physical entry/tab/Back/Help/modal tests,
-      basic resize/disconnect/mixed-device exits and shared-view live refresh.
-    - ☐ 3 Buildings/productivity: actual counts, targets and the owner's camera.
+    - ☑ 2 opt-in shell plus readonly Stock (2026-10-16): Options → Controls → "Controller side panel";
+      Back/B/LB/RB/D-pad/stick, modal, disconnect and mouse exits, live Stock; Statistics/Post/Menu tabs
+      open their classic window. Test testControllerPanelShell. Help page not done.
+    - ☑ 3 Buildings/productivity (2026-10-16): counts (+sites), average productivity, A goes to the first
+      building of the type with this view's camera and opens its window.
     - ☐ 4 general/merchandise Statistics: history, physical ranges and replay browsing.
     - ☐ 5 Post: filters, incoming replacements, detail/diary/location and delete confirmation.
     - ☐ 6 view-only Settings: building positions, names/output and watch-only per view.

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "dskGameInterface.h"
+#include "BuildingRegister.h"
 #include "CollisionDetection.h"
 #include "EventManager.h"
 #include "Game.h"
@@ -15,6 +16,7 @@
 #include "WindowManager.h"
 #include "addons/AddonMaxWaterwayLength.h"
 #include "buildings/noBuildingSite.h"
+#include "buildings/nobBaseWarehouse.h"
 #include "buildings/nobHQ.h"
 #include "buildings/nobHarborBuilding.h"
 #include "buildings/nobMilitary.h"
@@ -908,9 +910,19 @@ void dskGameInterface::Msg_PaintAfter()
     // Der RING liegt UNTER dem Kasten und ueber der Welt: der Kasten ist seine Beschriftung
     // und muss lesbar bleiben. Beide in derselben Schleife, damit sie nicht auseinanderlaufen
     // koennen.
+    // Reflow open panels first: a resize or a vanished row must never leave the selection off screen.
+    for(auto& view : views_)
+    {
+        if(view->GetPanel().IsOpen())
+            PanelStep(*view, 0);
+    }
     forEachView([this](const PlayerView& view) {
         DrawRing(view);
-        DrawBrief(view);
+        // The panel has its own hint line; the world's brief would describe buttons it consumes.
+        if(view.GetPanel().IsOpen())
+            panel::Draw(PanelLayout(view), view.GetPanel(), PanelRows(view), SeatColor(view));
+        else
+            DrawBrief(view);
     });
 }
 
@@ -1758,6 +1770,18 @@ bool dskGameInterface::Msg_LeftDown(const MouseCoords& mc)
     const auto btOrig = CalcButtonBarOrigin(VIDEODRIVER.GetRenderSize(), imgButtonBar.GetSize()) + btOffset;
     if(IsPointInRect(mc.pos, Rect(btOrig, btSize * 4u)))
         return false;
+    // A deliberate click on a controller panel closes it and is used up: it never falls through
+    // onto the world hidden behind the panel. Mouse movement alone leaves the panel alone.
+    for(const auto& view : views_)
+    {
+        if(view->GetPanel().IsOpen() && IsPointInRect(mc.pos, PanelLayout(*view).panel))
+        {
+            ClosePanel(*view);
+            // A touch release must not turn this tap into a world click (Msg_LeftUp).
+            touchDuration = 0;
+            return true;
+        }
+    }
 
     if(!VIDEODRIVER.IsTouch())
     {
@@ -1840,6 +1864,8 @@ bool dskGameInterface::Msg_MouseMove(const MouseCoords& mc)
 
 bool dskGameInterface::Msg_RightDown(const MouseCoords& mc)
 {
+    if(IsOnOpenPanel(mc.pos))
+        return true;
     // BEFUND 2: der Zug faengt in der Ansicht an, ueber der die Maus steht.
     //
     // Hier - und nur hier - wird entschieden, wem der Zug gehoert; Msg_MouseMove liest die
@@ -2030,11 +2056,15 @@ bool dskGameInterface::Msg_KeyDown(const KeyEvent& ke)
 
 bool dskGameInterface::Msg_WheelUp(const MouseCoords& mc)
 {
+    if(IsOnOpenPanel(mc.pos))
+        return true;
     WheelZoom(mc.pos, ZOOM_WHEEL_INCREMENT);
     return true;
 }
 bool dskGameInterface::Msg_WheelDown(const MouseCoords& mc)
 {
+    if(IsOnOpenPanel(mc.pos))
+        return true;
     WheelZoom(mc.pos, -ZOOM_WHEEL_INCREMENT);
     return true;
 }
@@ -2278,6 +2308,10 @@ void dskGameInterface::OnPadAssigned(const unsigned slot, const bool assigned)
     // Ein frisch zugeordnetes Pad setzt seinen Zeiger in die Mitte SEINER Ansicht. Damit ist die
     // Ansicht ab dem ersten Frame sichtbar in Padbesitz, ohne dass der Stick bewegt wurde.
     view.SetPadCursor(assigned ? std::optional<Position>(view.GetViewCenter()) : std::nullopt);
+    // The panel belongs to the device: a new pad (or none) starts in the world. The tab is kept
+    // for when this seat opens it again.
+    view.GetPanel().Disconnect();
+    view.panelStickTravel = 0;
     // BEFUND B4: das Geraet nimmt seinen Fokus mit. Sonst bliebe der Fokus im Fenster stehen,
     // der Rahmen des verschwundenen Spielers bliebe dort angemeldet, und das naechste Geraet,
     // das diesen Slot bekommt, erbte beides - sein erster A-Druck klickte einen Knopf, statt
@@ -2307,6 +2341,17 @@ void dskGameInterface::OnPadMove(const unsigned slot, const Position& delta)
     if(view.GetRing().IsOpen())
     {
         RingOnPadMove(view, delta);
+        return;
+    }
+    // The left stick scrolls the panel's rows; the world pointer stays where it was.
+    if(view.GetPanel().IsOpen() && !PanelClosedByModal(view))
+    {
+        constexpr int travelPerRow = 48;
+        view.panelStickTravel += delta.y;
+        const int steps = view.panelStickTravel / travelPerRow;
+        view.panelStickTravel -= steps * travelPerRow;
+        if(steps)
+            PanelStep(view, steps);
         return;
     }
     // Beim ZUSCHAUEN bewegt sich der Zeiger nicht. Der Sinn des Zustandes ist, dass nichts
@@ -2354,6 +2399,9 @@ void dskGameInterface::OnPadCamera(const unsigned slot, const Position& delta)
     if(slot >= views_.size())
         return;
     PlayerView& view = *views_[slot];
+    // Browsing the panel must not pan the map hidden behind it.
+    if(view.GetPanel().IsOpen())
+        return;
     // BEWUSST OHNE Ruecksicht auf den Fokus: FocusPath verbraucht den LINKEN Stick und die
     // Knoepfe, den rechten nie. Ein Spieler, der in seinem Lagerfenster steht, darf trotzdem
     // sehen, was auf der Karte passiert - dafuer muss er das Fenster nicht verlassen.
@@ -2383,6 +2431,8 @@ void dskGameInterface::OnPadZoom(const unsigned slot, const float step)
     if(slot >= views_.size())
         return;
     PlayerView& view = *views_[slot];
+    if(view.GetPanel().IsOpen())
+        return;
     GameWorldView& gameView = view.GetView();
     float target = gameView.GetCurrentTargetZoomFactor() * (1.f + step);
     // Dieselben Grenzen wie beim Mausrad (WheelZoom) - der Padspieler bekommt keine Ansicht,
@@ -2476,6 +2526,10 @@ void dskGameInterface::OnPadButton(const unsigned slot, const PadButton button, 
     // gehoert es ihm. Ein einziger Wert, aus dem beides faellt - der handelnde Spieler kann
     // gar nicht mehr vom Fensterbesitz abweichen.
     const ViewScope ownerScope(slot);
+    // An open side panel owns every edge of its view, unless a modal window came up in front of
+    // it (then the modal is answered first, exactly as without the panel).
+    if(view.GetPanel().IsOpen() && PanelOnPadButton(view, button, down))
+        return;
     // A view-only shortcut must survive ring/modal/focus routing without activating any control.
     // Watching hides the aid, so requesting it explicitly leaves that mode and shows all spots.
     if(button == PadButton::LeftStick)
@@ -2532,6 +2586,14 @@ void dskGameInterface::OnPadButton(const unsigned slot, const PadButton button, 
     // Fenster ein ANDERES ist als das, in dem der Spieler schon steht - sonst bliebe es beim
     // alten Verhalten, und ein Y im eigenen Fenster wuerde den Fokus zurueck auf das erste
     // Control werfen.
+    // Opt-in: Back opens the side panel. The menu ring stays one tab away (Menu), so nothing the
+    // ring offered becomes unreachable.
+    if(button == PadButton::Back && SETTINGS.interface.controllerPanel && CanOpenPanel(view))
+    {
+        if(down)
+            OpenPanel(view);
+        return;
+    }
     if(button == PadButton::Back && CanOpenSystemMenu(view))
     {
         // BEFUND N1: hier stand die Bedingung `view.GetRoad().mode == RoadBuildMode::Disabled`
@@ -4429,6 +4491,192 @@ bool dskGameInterface::RingOnPadButton(PlayerView& view, const PadButton button,
         default: break;
     }
     return true;
+}
+
+bool dskGameInterface::CanOpenPanel(const PlayerView& view) const
+{
+    if(view.GetPanel().IsOpen() || view.GetRing().IsOpen() || view.IsWatchOnly())
+        return false;
+    // A road preview is unfinished work in the world; Back must not hide it behind a panel.
+    if(view.GetRoad().mode != RoadBuildMode::Disabled)
+        return false;
+    // The open menu window is closed by Back as before (CanOpenSystemMenu).
+    if(WINDOWMANAGER.FindNonModalWindow(CGI_PADMENU, view.GetIndex()))
+        return false;
+    const IngameWindow* const top = WINDOWMANAGER.GetTopMostWindow(view.GetIndex());
+    return !(top && top->IsModal());
+}
+
+void dskGameInterface::OpenPanel(PlayerView& view)
+{
+    // One owner of the input: the focus leaves whatever window it was in.
+    ReleaseFocus(view);
+    view.panelStickTravel = 0;
+    view.GetPanel().Open();
+    // The first row is selected at once, so A has a visible target.
+    PanelStep(view, 0);
+    view.ClearRejection();
+}
+
+void dskGameInterface::ClosePanel(PlayerView& view)
+{
+    while(view.GetPanel().IsOpen())
+        view.GetPanel().Back();
+    view.panelStickTravel = 0;
+}
+
+ControllerPanelLayout dskGameInterface::PanelLayout(const PlayerView& view) const
+{
+    return CalcControllerPanelLayout(Viewport{view.GetView().GetPos(), view.GetView().GetSize()});
+}
+
+std::vector<panel::Row> dskGameInterface::PanelRows(const PlayerView& view) const
+{
+    const GamePlayer& player = worldViewer.GetWorld().GetPlayer(view.GetPlayerId());
+    switch(view.GetPanel().GetTab())
+    {
+        case panel::Tab::Stock: return panel::StockRows(player);
+        case panel::Tab::Buildings: return panel::BuildingRows(player);
+        default: return {};
+    }
+}
+
+bool dskGameInterface::PanelOnPadButton(PlayerView& view, const PadButton button, const bool down)
+{
+    // An own (or ownerless) modal window in front is answered first. The panel closes rather than
+    // waiting behind it: an open panel would hide the pointer at which world buttons then act.
+    if(PanelClosedByModal(view))
+        return false;
+    if(!down)
+        return true;
+    ControllerPanelNavigation& nav = view.GetPanel();
+    switch(button)
+    {
+        case PadButton::B:
+        case PadButton::Back: ClosePanel(view); break;
+        case PadButton::LeftShoulder:
+        case PadButton::RightShoulder:
+            if(nav.CycleTab(button == PadButton::RightShoulder) == ControllerPanelNavigation::TabResult::Changed)
+            {
+                view.panelStickTravel = 0;
+                PanelStep(view, 0);
+            }
+            break;
+        case PadButton::DpadUp: PanelStep(view, -1); break;
+        case PadButton::DpadDown: PanelStep(view, +1); break;
+        case PadButton::DpadLeft: PanelStep(view, -static_cast<int>(panel::VisibleRows(PanelLayout(view)))); break;
+        case PadButton::DpadRight: PanelStep(view, static_cast<int>(panel::VisibleRows(PanelLayout(view)))); break;
+        case PadButton::A: PanelActivate(view); break;
+        // Y would jump into a window hidden behind the panel; X and the sticks have no meaning here.
+        default: break;
+    }
+    return true;
+}
+
+void dskGameInterface::PanelStep(PlayerView& view, const int rows)
+{
+    ControllerPanelNavigation& nav = view.GetPanel();
+    const panel::Tab tab = nav.GetTab();
+    if(!panel::HasOwnPage(tab))
+        return;
+    std::vector<unsigned> ids;
+    for(const panel::Row& row : PanelRows(view))
+        ids.push_back(row.id);
+    nav.UpdateRows(tab, ids, panel::VisibleRows(PanelLayout(view)));
+    const auto& page = nav.GetPage(tab);
+    if(!page.selectedId || ids.empty())
+        return;
+    const int cur = static_cast<int>(std::find(ids.begin(), ids.end(), *page.selectedId) - ids.begin());
+    const int next = std::clamp(cur + rows, 0, static_cast<int>(ids.size()) - 1);
+    nav.SelectRow(tab, ids[next]);
+}
+
+namespace {
+template<class T_Building>
+std::optional<MapPoint> FirstOfType(const std::list<T_Building*>& blds, const BuildingType type)
+{
+    for(const T_Building* bld : blds)
+    {
+        if(bld->GetBuildingType() == type)
+            return bld->GetPos();
+    }
+    return std::nullopt;
+}
+} // namespace
+
+void dskGameInterface::PanelActivate(PlayerView& view)
+{
+    const panel::Tab tab = view.GetPanel().GetTab();
+    switch(tab)
+    {
+        case panel::Tab::Stock: return;
+        case panel::Tab::Statistics:
+            ClosePanel(view);
+            // "A opens": an already open window is entered, never toggled shut.
+            if(auto* open = WINDOWMANAGER.FindNonModalWindow(CGI_STATISTICS, view.GetIndex()))
+                EnterWindow(view, open);
+            else
+                EnterWindow(view, WINDOWMANAGER.ToggleWindow(std::make_unique<iwStatistics>(view.GetViewer())));
+            return;
+        case panel::Tab::Post:
+            ClosePanel(view);
+            if(auto* open = WINDOWMANAGER.FindNonModalWindow(CGI_POSTOFFICE, view.GetIndex()))
+                EnterWindow(view, open);
+            else
+                EnterWindow(view, OpenPostOfficeFor(view));
+            return;
+        case panel::Tab::Settings:
+            ClosePanel(view);
+            PadOpenSystemMenu(view);
+            return;
+        case panel::Tab::Buildings: break;
+    }
+    // Buildings: go to the first building of the selected type, like a click in the classic
+    // window. Rows are refreshed first so the selection is the one the player sees.
+    PanelStep(view, 0);
+    const auto& page = view.GetPanel().GetPage(tab);
+    if(!page.selectedId)
+        return;
+    const auto type = static_cast<BuildingType>(*page.selectedId);
+    const BuildingRegister& reg = worldViewer.GetWorld().GetPlayer(view.GetPlayerId()).GetBuildingRegister();
+    std::optional<MapPoint> pt;
+    if(BuildingProperties::IsMilitary(type))
+        pt = FirstOfType(reg.GetMilitaryBuildings(), type);
+    else if(BuildingProperties::IsWareHouse(type))
+        pt = FirstOfType(reg.GetStorehouses(), type);
+    else
+        pt = FirstOfType(reg.GetBuildings(type), type);
+    if(!pt)
+        pt = FirstOfType(reg.GetBuildingSites(), type);
+    // An empty category is inert: its row already reads 0.
+    if(!pt)
+        return;
+    ClosePanel(view);
+    view.GetView().MoveToMapPt(*pt);
+    if(view.HasPadCursor())
+        view.SetPadCursor(view.GetViewCenter());
+    // The player chose this building from a list, so the focus goes straight into its window.
+    if(OpenObjectWindow(view, *pt))
+        EnterTopMostWindow(view);
+}
+
+bool dskGameInterface::PanelClosedByModal(PlayerView& view)
+{
+    const IngameWindow* top = WINDOWMANAGER.GetTopMostWindow(view.GetIndex());
+    if(!(top && top->IsModal()))
+        return false;
+    ClosePanel(view);
+    return true;
+}
+
+bool dskGameInterface::IsOnOpenPanel(const Position& pos) const
+{
+    for(const auto& view : views_)
+    {
+        if(view->GetPanel().IsOpen() && IsPointInRect(pos, PanelLayout(*view).panel))
+            return true;
+    }
+    return false;
 }
 
 void dskGameInterface::ToggleNamesFor(PlayerView& view)

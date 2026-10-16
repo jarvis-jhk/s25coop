@@ -313,6 +313,10 @@ msgstr ""
 msgid "A flag costs nothing and you can tear it down again. Roads start and end at flags, and wares are handed over there."
 msgstr ""
 
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A go there   B close   LB/RB page"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:161
 msgid "A gold mine allows you to prospect for valuable gold deposits. For this, it is necessary to ensure that the miners are provided with plenty of food."
 msgstr "Zlato je jedním s požadavků na úspěch ve hře. Aby horníci mohli těžit zlatou rudu je jim potřeba zajistit trvalý přísun jídla."
@@ -341,6 +345,22 @@ msgstr "Hodně"
 #: libs/s25main/nodeObjs/noShipBuildingSite.cpp:96
 msgid "A new ship is ready"
 msgstr "Nová loď je připravena"
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A open   B close   LB/RB page"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the menu: map display, saving and leaving the game."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the statistics window."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens your messages and the diary."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:232
 msgid "A preset named '%1%' already exists. Do you want to overwrite it?"
@@ -373,6 +393,10 @@ msgstr "Studna zajišťuje vodu pro pekárnu, pivovar, oslí farmu a vepřín."
 #: libs/s25main/gameData/BuildingConsts.cpp:179
 msgid "A woodcutter provides the sawmill with logs. A forester is able to replant the depleted forest."
 msgstr "Dřevorubec zajišťuje přísun klád pro pilu. Lesník naopak znovu vysazuje stromy a zajišťuje obnovu vykáceného lesa."
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "A: remove this player"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMainMenu.cpp:93
 msgid "AI"
@@ -764,6 +788,10 @@ msgstr "Automaticky umisťuje vlajky na nově vybudované cesty"
 #: libs/s25main/gameData/GoodConsts.cpp:12
 msgid "Axe"
 msgstr "Sekera"
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "B close   LB/RB page"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMapDebug.cpp:177
 msgid "BQ check disabled"
@@ -1181,6 +1209,14 @@ msgstr ""
 msgid "Co-players are not allowed."
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: allowed"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: not allowed"
+msgstr ""
+
 #: libs/s25main/gameData/GoodConsts.cpp:40
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:58
 msgid "Coal"
@@ -1342,6 +1378,10 @@ msgstr "Pokračovat ve hře"
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:222
 msgid "Contract type:"
 msgstr "Typ kontraktu:"
+
+#: ../libs/s25main/desktops/dskFrontEndOptions.cpp
+msgid "Controller side panel"
+msgstr ""
 
 #: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:16
 msgid "Controls the search radius used by stranded soldiers when looking for a way back to a warehouse."
@@ -2517,6 +2557,10 @@ msgstr ""
 msgid "Host:"
 msgstr "Hostitel:"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Hosted by %1%"
+msgstr ""
+
 #: libs/s25main/desktops/dskCampaignMissionSelection.cpp:163
 msgid "Hosting of game not possible"
 msgstr "Hostování hry není možné"
@@ -2839,6 +2883,10 @@ msgstr "Méně často"
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:112
 msgid "Less repeats"
 msgstr "Méně opakování"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Let others join a tribe and play it together with its player"
+msgstr ""
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:50
 msgid "Lifts the fog from a wide circle. It produces nothing - build it to see, not to earn."
@@ -4361,9 +4409,17 @@ msgstr "Registrace"
 msgid "Remove"
 msgstr "Odebrat"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove %1% from the game?"
+msgstr ""
+
 #: libs/s25main/addons/AddonChangeGoldDeposits.h:25
 msgid "Remove gold completely"
 msgstr "Odstranit veškeré zlato"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove player"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:104
 msgid "Remove track"
@@ -6355,31 +6411,3 @@ msgstr ""
 
 #~ msgid "unlimited"
 #~ msgstr "Neomezeně"
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Let others join a tribe and play it together with its player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "A: remove this player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Hosted by %1%"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Remove player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Remove %1% from the game?"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Co-players: allowed"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Co-players: not allowed"
-msgstr ""

@@ -99,6 +99,7 @@ dskFrontEndOptions::dskFrontEndOptions(const Section section) : dskFrontEndPage(
                       static_cast<unsigned>(SETTINGS.interface.mapScrollMode));
             AddToggle(ID_SmartCursor, _("Smart cursor"), SETTINGS.global.smartCursor);
             AddToggle(ID_Pinning, _("Window pinning"), SETTINGS.interface.enableWindowPinning);
+            AddToggle(ID_ControllerPanel, _("Controller side panel"), SETTINGS.interface.controllerPanel);
             rows_.push_back(ID_KeyboardLayout);
             AddTextButton(ID_KeyboardLayout, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, _("Keyboard layout"),
                           NormalFont);
@@ -334,6 +335,7 @@ void dskFrontEndOptions::Msg_ComboSelectItem(const unsigned id, const unsigned s
             VIDEODRIVER.SetMouseWarping(SETTINGS.global.smartCursor);
             break;
         case ID_Pinning: SETTINGS.interface.enableWindowPinning = selection != 0; break;
+        case ID_ControllerPanel: SETTINGS.interface.controllerPanel = selection != 0; break;
         case ID_LanguageChoice:
             SETTINGS.language.language = LANGUAGES.setLanguage(selection);
             // Keep this page's trail and input focus. Rebuilt ancestors pick up the new locale on Back.

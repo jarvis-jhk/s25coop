@@ -1,5 +1,25 @@
 # Session notes
 
+## 2026-10-16 — Controller side panel, first usable version (roadmap siedler-controller-side-panel)
+
+Quota filler (t_mvaucvsg1m2bh2). No open issues. Opt-in: Options → Controls → "Controller side panel"
+(`SETTINGS.interface.controllerPanel`, ini `controller_panel`). Back from the world opens a panel over the
+right side of THAT view; LB/RB tabs Buildings/Stock/Statistics/Post/Menu, D-pad/left stick select, A acts,
+B/Back close. Stock and Buildings are real pages (live counts, productivity, A on a building type goes there
+and enters its window); the other three open their classic window/ring. Code ControllerPanelPages.{h,cpp},
+Panel* in dskGameInterface, state per view in PlayerView::GetPanel(). Details doc/coop/ControllerPanel.md.
+Review: Opus subagent read-only (Codex off): 7 findings, all fixed (modal closes the panel, open windows are
+entered not toggled, building window focused, right-drag/wheel/touch over the panel, two tiny-size underflows,
+hint-bar comment). Kept: A always goes to the FIRST building of a type; rows built twice per frame.
+Tests (Debug, -j2): new ControllerPanelShell (8 cases, 2 views, physical pad events, real draw path) plus
+ControllerPanelModel, FrontEndOptions, PadKeyHint, PadBrief, PadInventory, PadBuildingAidShortcut,
+Test_LanguageFiles pass. Negative control: removing the camera guard and the disconnect reset fails 2 cases.
+Translations: 7 new msgids in rttr.pot, German done, others English (msgmerge also re-sorted the F7d entries).
+Note: the new Options pages' own strings (Display, Controls, "Smart cursor", ...) were never in rttr.pot.
+Not seen: real screen, real pads, Deck. Release: the old continuation 9bf22a81 (would have refused because
+master has code after 9b0cb74b5) was replaced by one that releases 0.1.21 with F7d + the panel once CI is green.
+Next on this item: Help page, more pages (slices 4–8) only if Jan's feedback asks for them.
+
 ## 2026-10-16 — Pre-coop saves (roadmap siedler-pre-coop-saves done)
 
 Quota filler (t_mvasqz7bzidbb). No open issues. A save written by UNMODIFIED upstream now guards loading old saves:

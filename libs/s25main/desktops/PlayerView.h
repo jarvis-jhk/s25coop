@@ -5,6 +5,7 @@
 #pragma once
 
 #include "IngameMinimap.h"
+#include "input/ControllerPanelModel.h"
 #include "input/FocusPath.h"
 #include "input/PadRing.h"
 #include "input/PlayerBrief.h"
@@ -138,6 +139,12 @@ public:
     /// Das Kreismenue DIESES Sitzplatzes. Vier Ansichten = vier unabhaengige Ringe; ein Ring
     /// weiss von den anderen nichts, genau wie der Fokus. Daran haengt die Zusicherung, dass
     /// Spieler 1 mit seiner Ringauswahl an Spieler 0 nichts aendert.
+    /// The controller side panel of THIS view: shared tribes keep their own tab and selection.
+    ControllerPanelNavigation& GetPanel() { return panel_; }
+    const ControllerPanelNavigation& GetPanel() const { return panel_; }
+    /// Left stick travel not yet turned into a panel row step.
+    int panelStickTravel = 0;
+
     padring::Ring& GetRing() { return ring_; }
     const padring::Ring& GetRing() const { return ring_; }
 
@@ -233,6 +240,7 @@ private:
     const unsigned viewIdx_;
     FocusPath focus_;
     padring::Ring ring_;
+    ControllerPanelNavigation panel_;
     bool watchOnly_ = false;
     std::optional<Position> padCursor_;
     std::optional<PadRejection> rejection_;

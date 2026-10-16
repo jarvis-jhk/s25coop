@@ -143,6 +143,8 @@ public:
         MapScrollMode mapScrollMode;
         bool enableWindowPinning;
         unsigned windowSnapDistance;
+        /// Opt-in: controller Back opens the fixed side panel instead of the system menu ring.
+        bool controllerPanel;
     } interface;
 
     struct

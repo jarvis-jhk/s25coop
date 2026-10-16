@@ -168,6 +168,7 @@ void Settings::LoadDefaults()
     interface.mapScrollMode = MAP_SCROLL_MODE_DEFAULT;
     interface.enableWindowPinning = false;
     interface.windowSnapDistance = 8;
+    interface.controllerPanel = false;
     // }
 
     // addons
@@ -373,6 +374,7 @@ void Settings::Load()
         }
         interface.enableWindowPinning = iniInterface->getValue("enable_window_pinning", false);
         interface.windowSnapDistance = iniInterface->getValue("window_snap_distance", 8);
+        interface.controllerPanel = iniInterface->getValue("controller_panel", false);
         // }
 
         // addons
@@ -558,6 +560,7 @@ void Settings::Save()
     iniInterface->setValue("map_scroll_mode", static_cast<int>(interface.mapScrollMode));
     iniInterface->setValue("enable_window_pinning", interface.enableWindowPinning);
     iniInterface->setValue("window_snap_distance", interface.windowSnapDistance);
+    iniInterface->setValue("controller_panel", interface.controllerPanel);
     // }
 
     // addons

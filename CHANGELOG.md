@@ -5,6 +5,10 @@ and the game will show the new sections after an update.
 
 ## Unreleased
 
+- New for controller players: a side panel. Switch on Options → Controls → "Controller side panel"; then
+  Back opens it on the right of your own screen part. LB/RB switch between Buildings (how many of each,
+  how productive, and A takes you to one), Stock (every ware and person), Statistics, Post office and the
+  Menu. B or Back closes it. Mouse and keyboard keep the usual windows.
 - Online games now use the full-screen party page too, for the host of an ordinary map and for everyone who
   joins one: a card for every tribe shows who joined and whether they are ready, there is a chat line, and
   the host sees how others can join (address and port). Players change their own colour, people and team

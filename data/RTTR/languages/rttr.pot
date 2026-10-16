@@ -6461,3 +6461,31 @@ msgstr ""
 #: ../libs/s25main/desktops/dskParty.cpp
 msgid "Co-players: not allowed"
 msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the statistics window."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens your messages and the diary."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the menu: map display, saving and leaving the game."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A open   B close   LB/RB page"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A go there   B close   LB/RB page"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "B close   LB/RB page"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskFrontEndOptions.cpp
+msgid "Controller side panel"
+msgstr ""

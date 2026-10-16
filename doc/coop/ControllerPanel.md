@@ -6,10 +6,42 @@ SPDX-License-Identifier: GPL-2.0-or-later
 
 # Controller side panel
 
-Status: proposed design, 2026-10-02. ROADMAP M3, Deck feedback. This branch
-contains design only. Push this document and the bounded ROADMAP slices before
-implementing any panel code. Opus owns integration; each implementation slice
-needs fresh file claims, runtime proof and its own reviewed PR.
+Status: design 2026-10-02; first usable version 2026-10-16 (opt-in). ROADMAP M3,
+Deck feedback.
+
+## What is implemented (2026-10-16)
+
+Options → Controls → "Controller side panel" (`SETTINGS.interface.controllerPanel`,
+ini `controller_panel`, default off). With it on, Back from the world opens the
+panel of THAT view; Back or B closes it, LB/RB cycle the five tabs, D-pad up/down
+(or the left stick) move the selection, left/right page by a screen.
+
+- Code: `desktops/ControllerPanelPages.{h,cpp}` (rows and drawing, pure reads of
+  the player), `dskGameInterface` `CanOpenPanel/OpenPanel/ClosePanel/PanelLayout/
+  PanelRows/PanelOnPadButton/PanelStep/PanelActivate`, navigation state per view
+  in `PlayerView::GetPanel()` (slice 1 model).
+- Stock: every ware and person of the classic stock window, live counts.
+- Buildings: built (+sites) and average productivity per type; A centres this
+  view's camera on the first building (or site) of the type, puts the pointer on
+  it and opens its window. Empty types are inert.
+- Statistics, Post, Menu: labelled legacy destinations. A opens the classic
+  statistics window / post office (focus inside) / the menu ring, which keeps
+  map display, save and leave reachable.
+- The panel is drawn OVER the right side of the view (world not resized); the
+  view's hint box is hidden while it is open. Right stick and zoom are ignored
+  while it is open, so the hidden map does not move.
+- A modal window (own or ownerless) appearing in front CLOSES the panel and gets
+  the input, so no world button acts behind a hidden pointer; Back does not open
+  the panel during a road preview, a ring or with such a modal. Right-drag and
+  the wheel over a panel do nothing; Statistics/Post enter an already open window
+  instead of toggling it shut; the building window is entered with focus. Disconnecting the
+  pad closes it (tab remembered). A left click on the panel closes it and is used
+  up; clicks elsewhere are unchanged.
+- Test: `tests/s25Main/splitscreen/testControllerPanelShell.cpp` (two views,
+  physical pad events).
+
+Not yet: per-page detail/Help pages, a tab bar with all names, statistics/post/
+settings pages of their own (slices 3–8 below), world resized beside the panel.
 
 ## Player experience
 

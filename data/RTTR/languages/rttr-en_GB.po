@@ -309,6 +309,10 @@ msgstr ""
 msgid "A flag costs nothing and you can tear it down again. Roads start and end at flags, and wares are handed over there."
 msgstr ""
 
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A go there   B close   LB/RB page"
+msgstr ""
+
 #: libs/s25main/gameData/BuildingConsts.cpp:161
 msgid "A gold mine allows you to prospect for valuable gold deposits. For this, it is necessary to ensure that the miners are provided with plenty of food."
 msgstr "A gold mine allows you to prospect for valuable gold deposits. For this, it is necessary to ensure that the miners are provided with plenty of food."
@@ -337,6 +341,22 @@ msgstr "A lot"
 #: libs/s25main/nodeObjs/noShipBuildingSite.cpp:96
 msgid "A new ship is ready"
 msgstr "A new ship is ready"
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A open   B close   LB/RB page"
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the menu: map display, saving and leaving the game."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens the statistics window."
+msgstr ""
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "A opens your messages and the diary."
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwAddonPresets.cpp:232
 msgid "A preset named '%1%' already exists. Do you want to overwrite it?"
@@ -369,6 +389,10 @@ msgstr "A well supplies water to the bakery, brewery, donkey breeder and pig far
 #: libs/s25main/gameData/BuildingConsts.cpp:179
 msgid "A woodcutter provides the sawmill with logs. A forester is able to replant the depleted forest."
 msgstr "A woodcutter provides the sawmill with logs. A forester is able to replant the depleted forest."
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "A: remove this player"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMainMenu.cpp:93
 msgid "AI"
@@ -760,6 +784,10 @@ msgstr "Automatically places flags on newly build roads"
 #: libs/s25main/gameData/GoodConsts.cpp:12
 msgid "Axe"
 msgstr "Axe"
+
+#: ../libs/s25main/desktops/ControllerPanelPages.cpp
+msgid "B close   LB/RB page"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMapDebug.cpp:177
 msgid "BQ check disabled"
@@ -1177,6 +1205,14 @@ msgstr ""
 msgid "Co-players are not allowed."
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: allowed"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: not allowed"
+msgstr ""
+
 #: libs/s25main/gameData/GoodConsts.cpp:40
 #: libs/s25main/ingameWindows/iwMerchandiseStatistics.cpp:58
 msgid "Coal"
@@ -1338,6 +1374,10 @@ msgstr "Continue game"
 #: libs/s25main/ingameWindows/iwDiplomacy.cpp:222
 msgid "Contract type:"
 msgstr "Contract type:"
+
+#: ../libs/s25main/desktops/dskFrontEndOptions.cpp
+msgid "Controller side panel"
+msgstr ""
 
 #: libs/s25main/addons/AddonStrandedSoldierReturnSearch.h:16
 msgid "Controls the search radius used by stranded soldiers when looking for a way back to a warehouse."
@@ -2515,6 +2555,10 @@ msgstr ""
 msgid "Host:"
 msgstr "Host:"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Hosted by %1%"
+msgstr ""
+
 #: libs/s25main/desktops/dskCampaignMissionSelection.cpp:163
 msgid "Hosting of game not possible"
 msgstr ""
@@ -2837,6 +2881,10 @@ msgstr "Less often"
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:112
 msgid "Less repeats"
 msgstr "Less repeats"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Let others join a tribe and play it together with its player"
+msgstr ""
 
 #: libs/s25main/gameData/BuildingBriefs.cpp:50
 msgid "Lifts the fog from a wide circle. It produces nothing - build it to see, not to earn."
@@ -4360,9 +4408,17 @@ msgstr "Register"
 msgid "Remove"
 msgstr "Remove"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove %1% from the game?"
+msgstr ""
+
 #: libs/s25main/addons/AddonChangeGoldDeposits.h:25
 msgid "Remove gold completely"
 msgstr "Remove gold completely"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove player"
+msgstr ""
 
 #: libs/s25main/ingameWindows/iwMusicPlayer.cpp:104
 msgid "Remove track"
@@ -6335,31 +6391,3 @@ msgstr ""
 
 #~ msgid "unlimited"
 #~ msgstr "Unlimited"
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Let others join a tribe and play it together with its player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "A: remove this player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Hosted by %1%"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Remove player"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Remove %1% from the game?"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Co-players: allowed"
-msgstr ""
-
-#: ../libs/s25main/desktops/dskParty.cpp
-msgid "Co-players: not allowed"
-msgstr ""
