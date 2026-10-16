@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.21
 
 - New for controller players: a side panel. Switch on Options → Controls → "Controller side panel"; then
   Back opens it on the right of your own screen part. LB/RB switch between Buildings (how many of each,
