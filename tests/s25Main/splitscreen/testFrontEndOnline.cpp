@@ -612,8 +612,9 @@ BOOST_FIXTURE_TEST_CASE(JoinedPlayerGetsThePartyPageWithOwnCardReadyChatAndCoPla
         BOOST_TEST(lobby->getPlayer(me).isReady);
         BOOST_TEST(start->GetText() == _("Not Ready"));
         press(pad, PadButton::A);
-        frame();
-        BOOST_TEST(!lobby->getPlayer(me).isReady);
+        // The server echoes both changes in order; on a slow runner the echo of "ready" can land after this second
+        // press and set it again for a moment, so wait for the echo of "not ready".
+        await([&] { return !lobby->getPlayer(me).isReady; });
         // The host's chat line shows up here.
         send(GameMessage_Chat(0xFF, ChatDestination::All, "hi there"));
         await([&] { return party.GetCtrl<ctrlChat>(dskParty::ID_Chat)->GetNumMessages() > 0u; });

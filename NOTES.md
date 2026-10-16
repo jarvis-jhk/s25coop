@@ -1951,3 +1951,8 @@ failed job logs. The combined Online menus item remains started.
   already sees the withdrawal, so the sleep/retry lines never executed. Rewritten as a `for` loop with the
   sleep in its header, so every line runs on the fast path too (no LCOV exclusion). Debug Test_splitscreen
   passes locally (LanServerTests 70/70).
+- 2026-10-16: master e8ce6fc Unit tests failed twice. (1) CoopNet_UpstreamSaveResume on the CMake 4.1 job only:
+  MATCHALL with a ";" in the pattern made empty list items that CMake 4 counts (CMP0007 OLD is gone), 14 "AIs"
+  instead of 7; pattern without ";". (2) macOS JoinedPlayerGetsThePartyPage...: the server's late echo of
+  "ready" re-set it after the second press; the test now awaits "not ready". Test-only, product code unchanged;
+  dbg ctest + FrontEndOnlineTests 3x pass.

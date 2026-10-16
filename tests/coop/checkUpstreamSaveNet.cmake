@@ -31,7 +31,8 @@ if(NOT host MATCHES "Members at start: Client@0" OR NOT memberLog MATCHES "Order
     message(FATAL_ERROR "The co-player did not join the saved human tribe and order for it: ${host}")
 endif()
 string(REGEX MATCH "Player roles: [^\n]*" roles "${host}")
-string(REGEX MATCHALL " AI [0-9]+ level [0-9]+;" ais "${roles}")
+# No ";" in the pattern: it would split each match into an extra empty list item, which CMake 4 counts (CMP0007).
+string(REGEX MATCHALL " AI [0-9]+ level [0-9]+" ais "${roles}")
 list(LENGTH ais numAis)
 if(NOT roles MATCHES "^Player roles: p0 state 1;" OR NOT numAis EQUAL 7)
     message(FATAL_ERROR "Expected the saved human tribe and seven saved AIs: ${roles}")
