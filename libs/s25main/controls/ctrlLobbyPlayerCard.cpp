@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "ctrlLobbyPlayerCard.h"
+#include "driver/MouseCoords.h"
 #include "helpers/EnumArray.h"
 #include "ogl/glFont.h"
 #include "gameData/NationConsts.h"
@@ -19,12 +20,21 @@ ctrlLobbyPlayerCard::ctrlLobbyPlayerCard(Window* parent, const unsigned id, cons
 
 bool ctrlLobbyPlayerCard::Msg_LeftDown(const MouseCoords& mc)
 {
-    return !readOnly_ && ctrlTextButton::Msg_LeftDown(mc);
+    return (!readOnly_ || activatable_) && ctrlTextButton::Msg_LeftDown(mc);
 }
 
 bool ctrlLobbyPlayerCard::Msg_LeftUp(const MouseCoords& mc)
 {
-    return !readOnly_ && ctrlTextButton::Msg_LeftUp(mc);
+    if(readOnly_ && !activatable_)
+        return false;
+    // A click on a row selects it first, so the owner's click handler changes the row the mouse pointed at.
+    if(!readOnly_ && joined_ && IsMouseOver(mc))
+    {
+        const int y = mc.pos.y - GetDrawPos().y - 22;
+        if(y >= 0 && y < 4 * 16)
+            model_.SelectRow(static_cast<LobbyPlayerCardModel::Row>(y / 16));
+    }
+    return ctrlTextButton::Msg_LeftUp(mc);
 }
 
 void ctrlLobbyPlayerCard::DrawContent() const

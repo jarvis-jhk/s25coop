@@ -113,7 +113,26 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   come back, so an older echo cannot undo a newer edit. Computer players (easy/medium/hard/none) are applied at
   Start to the ordinary AI slots nobody sits on, so a free tribe stays joinable until then. Start asks the
   classic lobby's economy/peaceful questions. Lua permissions as in the lobby (`general`, `playerState`,
-  `addonsAll`/`addonsSome`, own*/ai* card rows). Online games keep dskGameLobby until F7d.
+  `addonsAll`/`addonsSome`, own*/ai* card rows).
+  Network games (F7d1, 2026-10-16): a host of an ordinary map from the new menus (Direct, LAN, Internet) gets
+  the party page with `IsOnline()`: no local seats, one card per tribe (`ID_Net + slot`), only the host's own
+  editable (colour/nation/team through the server; D-pad on the card, down from Team leaves it), the others
+  read-only with name, ready and ping, open slots "waiting for a player". Below: a line on how to join (the
+  LAN address of the default route and the port, or the Internet lobby name) and a chat (ctrlChat, an edit
+  with the controller keyboard, Send). Start first names the network players who are not ready; then open
+  slots are closed (or get the chosen computer level) and restored if the start is refused or the host
+  presses "Cancel start" during the countdown. The host's A or click on a network player's card asks to
+  remove them (slot set Free, the server kicks), and "Co-players: allowed/not allowed" (right of Start)
+  toggles co-play; co-players are named on their leader's card. A or a click on the own card steps the
+  clicked/selected row (mouse picks the row under the pointer). Rules is disabled during the countdown.
+  Joined players (F7d2, same day) get the page too (`IsFor` for any non-host, non-co-player, non-save
+  network game): own card editable through GameClient commands (un-readies, as in the classic lobby), Start
+  is Ready/Not Ready, rules read-only (add-ons viewable), "Hosted by …"; when the host allows co-players a
+  "Play X's tribe" button joins as co-player and switches to dskGameLobby, which has the member view.
+  Still classic: network campaigns and saves we host, joining as co-player from the join form, local
+  splitscreen seats on an online game. Known: a player connecting in the instant the host presses Start can
+  land on a slot that is being closed and is kicked; the join line shows IPv4 only.
+  Tests: `testFrontEndOnline.cpp` (NetworkPartyShows…, JoinedPlayerGetsThePartyPage…).
   Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`, saves in `testFrontEndLoad.cpp`, maps in
   `testFrontEndMaps.cpp`.
 - Home (F3) does not list Play replay, Readme and Intro yet; they stay reachable through "Classic menus"

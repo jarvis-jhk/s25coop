@@ -23,6 +23,8 @@ public:
     /// Fügt eine Chatnachricht hinzu.
     void AddMessage(const std::string& time_string, const std::string& player, unsigned player_color,
                     const std::string& msg, unsigned msg_color);
+    /// Number of messages added so far (s25coop)
+    size_t GetNumMessages() const { return raw_chat_lines.size(); }
     /// Setzt Farbe der Zeitangaben.
     void SetTimeColor(unsigned color) { time_color = color; }
 

@@ -3,6 +3,15 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Online games now use the full-screen party page too, for the host of an ordinary map and for everyone who
+  joins one: a card for every tribe shows who joined and whether they are ready, there is a chat line, and
+  the host sees how others can join (address and port). Players change their own colour, people and team
+  with the controller or a click and press Ready; the host's Start waits until everybody is ready, can remove
+  a player who holds the game up, and can allow co-players. Open tribes nobody took are closed at the start
+  or get the computer players chosen under Rules.
+
 ## 0.1.20
 
 - "Play online" → Internet now opens a full-screen page: log in, see the list of open games and chat.

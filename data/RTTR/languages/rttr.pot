@@ -6365,3 +6365,99 @@ msgstr ""
 #: ../libs/s25main/desktops/dskParty.cpp
 msgid "As set by the map"
 msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Chosen by that player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Host chooses"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Online: a tribe for each player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Open: waiting for a player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Computer: %1%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "%1% (you)"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "%1%: %2%, %3% ms"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "ready"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "not ready"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others join through the Internet lobby: \"%1%\""
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others join with this computer's address, port %1%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others find this game under LAN, or join with %1%, port %2%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others join with %1%, port %2% (from the internet: your public address)"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Every player has a tribe of their own."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Not ready"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Waiting for these players to be ready: %1%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Starting in %1%..."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Let others join a tribe and play it together with its player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "A: remove this player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Hosted by %1%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove %1% from the game?"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: allowed"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: not allowed"
+msgstr ""

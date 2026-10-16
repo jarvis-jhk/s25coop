@@ -20,7 +20,9 @@ public:
     void SetCursorColor(std::optional<unsigned> color) { cursorColor_ = color; }
     std::optional<unsigned> GetCursorColor() const { return cursorColor_; }
     bool IsReadOnly() const { return readOnly_; }
-    bool CanActivate() const override { return !readOnly_ && ctrlTextButton::CanActivate(); }
+    /// A read-only card that can still be chosen (A or a click), e.g. for the host to remove that player.
+    void SetActivatable(bool activatable) { activatable_ = activatable; }
+    bool CanActivate() const override { return (!readOnly_ || activatable_) && ctrlTextButton::CanActivate(); }
     bool Msg_LeftDown(const MouseCoords& mc) override;
     bool Msg_LeftUp(const MouseCoords& mc) override;
     // Cards use explicit D-pad row input. Analog travel must not escape into another owner's controls.
@@ -33,5 +35,6 @@ private:
     LobbyPlayerCardModel model_;
     bool joined_ = false;
     bool readOnly_;
+    bool activatable_ = false;
     std::optional<unsigned> cursorColor_;
 };

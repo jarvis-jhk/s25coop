@@ -86,7 +86,8 @@ void iwConnecting::CI_NextConnectState(const ConnectState cs)
         case ConnectState::Finished:
             // s25coop: a campaign started from the new menus gets the full-screen party page (F7b)
             if(dskParty::IsFor(serverType_))
-                WINDOWMANAGER.Switch(std::make_unique<dskParty>(GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId()));
+                WINDOWMANAGER.Switch(std::make_unique<dskParty>(GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(),
+                                                                serverType_, std::move(lobbyClient_)));
             else
                 WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(serverType_, GAMECLIENT.GetGameLobby(),
                                                                     GAMECLIENT.GetPlayerId(), std::move(lobbyClient_)));

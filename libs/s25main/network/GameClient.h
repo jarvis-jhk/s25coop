@@ -85,6 +85,8 @@ public:
     /// Manually set the host status. Normally done in connect call
     void SetIsHost(bool isHost) { clientconfig.isHost = isHost; }
     std::string GetGameName() const { return clientconfig.gameName; }
+    /// s25coop: the port of the server we are connected to (the hosted game's port for the host)
+    unsigned short GetServerPort() const { return clientconfig.port; }
 
     unsigned GetPlayerId() const override { return mainPlayer.playerId; }
 

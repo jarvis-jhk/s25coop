@@ -10,10 +10,14 @@
 #include "Loader.h"
 #include "WindowManager.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlChat.h"
+#include "controls/ctrlEdit.h"
 #include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlText.h"
 #include "controls/ctrlTextButton.h"
+#include "coop/CoopLobby.h"
 #include "desktops/dskGameLoader.h"
+#include "desktops/dskGameLobby.h"
 #include "driver/KeyEvent.h"
 #include "frontend/MenuRoutes.h"
 #include "helpers/MaxEnumValue.h"
@@ -32,10 +36,16 @@
 #include "gameTypes/ServerType.h"
 #include "gameData/const_gui_ids.h"
 #include "s25util/Log.h"
+#include "s25util/MyTime.h"
+#include "s25util/Socket.h"
 #include <algorithm>
 #include <array>
 #include <mygettext/mygettext.h>
 #include <optional>
+#ifndef _WIN32
+#    include <arpa/inet.h>
+#    include <unistd.h>
+#endif
 
 namespace {
 enum
@@ -45,6 +55,7 @@ enum
     ID_mbInfo,
     ID_mbEconomy,
     ID_mbPeaceful,
+    ID_mbRemove,
 };
 
 /// One step through the values of an enum, wrapping at both ends.
@@ -122,17 +133,51 @@ const char* onOff(const bool on)
 {
     return on ? _("On") : _("Off");
 }
+
+/// The IPv4 address other computers on this network reach this one at: the one of the interface the default
+/// route leaves through. Connecting a UDP socket only picks the route, no packet is sent. Empty when offline.
+std::string localNetworkAddress()
+{
+    const SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if(sock == INVALID_SOCKET)
+        return "";
+    sockaddr_in target{};
+    target.sin_family = AF_INET;
+    target.sin_port = htons(9);
+    inet_pton(AF_INET, "192.0.2.1", &target.sin_addr); // TEST-NET-1: routed like the internet, never answered
+    std::string result;
+    sockaddr_in own{};
+    socklen_t length = sizeof(own);
+    if(connect(sock, reinterpret_cast<const sockaddr*>(&target), sizeof(target)) == 0
+       && getsockname(sock, reinterpret_cast<sockaddr*>(&own), &length) == 0 && own.sin_addr.s_addr != 0)
+    {
+        std::array<char, INET_ADDRSTRLEN> text{};
+        if(inet_ntop(AF_INET, &own.sin_addr, text.data(), text.size()))
+            result = text.data();
+    }
+    closesocket(sock);
+    return result;
+}
 } // namespace
 
 bool dskParty::IsFor(const ServerType serverType)
 {
     const auto lobby = GAMECLIENT.GetGameLobby();
-    return serverType == ServerType::Local && frontend::GetMenuStyle() == frontend::MenuStyle::FrontEnd && lobby
-           && lobby->isHost() && !GAMECLIENT.IsAIBattleModeOn();
+    if(frontend::GetMenuStyle() != frontend::MenuStyle::FrontEnd || !lobby || GAMECLIENT.IsAIBattleModeOn())
+        return false;
+    if(serverType == ServerType::Local)
+        return lobby->isHost();
+    // Network games (F7d): a host's ordinary map, any joined player. A network campaign or save we host, and a
+    // co-player who plays somebody else's tribe, still need the classic lobby's co-player row.
+    if(lobby->isSavegame() || GAMECLIENT.IsCoopMember())
+        return false;
+    return !lobby->isHost() || !GAMECLIENT.IsHostingCampaign();
 }
 
-dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId)
-    : dskFrontEndPage(_("Party")), gameLobby_(std::move(gameLobby)), localPlayerId_(playerId),
+dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId, const ServerType serverType,
+                   std::unique_ptr<ILobbyClient> lobbyClient)
+    : dskFrontEndPage(_("Party")), gameLobby_(std::move(gameLobby)), localPlayerId_(playerId), serverType_(serverType),
+      lobbyClient_(std::move(lobbyClient)), online_(serverType != ServerType::Local), host_(gameLobby_->isHost()),
       ordinary_(!gameLobby_->isSavegame() && !GAMECLIENT.IsHostingCampaign())
 {
     lobbyController_ = std::make_unique<GameLobbyController>(gameLobby_, GAMECLIENT.GetMainPlayer());
@@ -145,7 +190,7 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
             error = _("Lua script was found but failed to load. Map might not work as expected!");
         else if(!lua_->CheckScriptVersion())
             error = _("Lua script uses a different version and cannot be used. Map might not work as expected!");
-        else if(!lua_->EventSettingsInit(true, gameLobby_->isSavegame()))
+        else if(!lua_->EventSettingsInit(!online_, gameLobby_->isSavegame()))
         {
             LOG.write(_("Lua was disabled by the script itself\n"));
             lua_.reset();
@@ -156,7 +201,7 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
                                                                      MsgboxIcon::ExclamationRed, ID_mbInfo));
             lua_.reset();
         }
-        if(!lua_)
+        if(!lua_ && host_)
             lobbyController_->RemoveLuaScript();
     }
     if(gameLobby_->isSavegame())
@@ -171,7 +216,7 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
             if(gameLobby_->getPlayer(i).ps == PlayerState::Free || helpers::contains(formerLocal, i))
                 lobbyController_->SetPlayerState(i, PlayerState::AI, AI::Info(AI::Type::Default, AI::Level::Easy));
         }
-    } else
+    } else if(!online_) // a network game keeps its open slots for the players who join
     {
         for(unsigned i = 0; i < gameLobby_->getNumPlayers(); ++i)
         {
@@ -184,13 +229,18 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
     AddText(ID_Map, DrawPoint(0, 0), GAMECLIENT.GetMapTitle(), COLOR_YELLOW, FontStyle::CENTER, LargeFont);
     AddText(ID_Mode, DrawPoint(0, 0), "", COLOR_YELLOW, FontStyle::CENTER, NormalFont);
     AddText(ID_Hint, DrawPoint(0, 0), _("More players: press A on a free seat."), COLOR_YELLOW, FontStyle::CENTER,
-            NormalFont);
+            NormalFont)
+      ->SetVisible(!online_);
     // Own tribes where the map has room for more than the host; the joined party may still need one tribe
-    // together (SeatJoinedParty).
-    together_ = !CanOwnTribes();
-    CreateSeats();
+    // together (SeatJoinedParty). Online every player has a tribe of their own, and there are no local seats.
+    together_ = !online_ && !CanOwnTribes();
+    if(online_)
+        CreateNetCards();
+    else
+        CreateSeats();
     UpdateModeText();
-    AddTextButton(ID_Start, DrawPoint(0, 0), Extent(1, 1), TextureColor::Green2, _("Start game"), LargeFont);
+    AddTextButton(ID_Start, DrawPoint(0, 0), Extent(1, 1), TextureColor::Green2, host_ ? _("Start game") : _("Ready"),
+                  LargeFont);
     if(ordinary_)
     {
         AddTextButton(ID_Rules, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, _("Rules"), LargeFont);
@@ -210,6 +260,22 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
           ->SetVisible(false);
         UpdateRules();
     }
+    if(online_)
+    {
+        AddText(ID_Address, DrawPoint(0, 0), JoinText(), COLOR_WHITE, FontStyle::CENTER, NormalFont);
+        AddChatCtrl(ID_Chat, DrawPoint(0, 0), Extent(100, 60), TextureColor::Grey, NormalFont);
+        AddEdit(ID_ChatEdit, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, NormalFont, 200)
+          ->SetControllerKeyboardEnabled();
+        AddTextButton(ID_ChatSend, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, _("Send"), NormalFont);
+        AddTextButton(ID_Coop, DrawPoint(0, 0), Extent(1, 1), TextureColor::Grey, "", NormalFont,
+                      host_ ? _("Let others join a tribe and play it together with its player") :
+                              _("Give up your own slot and play the chosen player's tribe together with them"))
+          ->SetVisible(false);
+        // The Internet lobby lists the game only while its session knows we are in it.
+        if(serverType_ == ServerType::Lobby && lobbyClient_ && lobbyClient_->IsLoggedIn())
+            lobbyClient_->SendServerJoinRequest();
+        UpdateCoop();
+    }
     SetEntryFocus(ID_Start);
     Layout();
     GAMECLIENT.SetInterface(this);
@@ -222,7 +288,7 @@ dskParty::~dskParty()
 
 bool dskParty::CanOwnTribes() const
 {
-    return ordinary_ && gameLobby_->getNumPlayers() >= 2;
+    return ordinary_ && !online_ && gameLobby_->getNumPlayers() >= 2;
 }
 
 void dskParty::CreateSeats()
@@ -245,7 +311,7 @@ void dskParty::SetActive(const bool activate)
     if(!activate || activated_)
         return;
     activated_ = true;
-    if(lua_)
+    if(lua_ && host_)
     {
         try
         {
@@ -274,7 +340,8 @@ void dskParty::SeatJoinedParty()
     if(members.empty())
         return;
     // More joined players than the map has tribes for: they play one tribe together instead of leaving some out.
-    if(!together_ && seats_.PartyNeedsMoreSeats(members) && members.size() > 1u)
+    // Online there are no local seats yet (one controller per computer); the first member is the host.
+    if(!online_ && !together_ && seats_.PartyNeedsMoreSeats(members) && members.size() > 1u)
     {
         seats_.StandAll(); // a --local-players seat gets its slot's computer player back
         together_ = true;
@@ -364,6 +431,171 @@ void dskParty::UpdateCards()
     }
 }
 
+void dskParty::CreateNetCards()
+{
+    for(unsigned i = 0; i < gameLobby_->getNumPlayers() && i < MAX_PLAYERS; ++i)
+    {
+        AddCtrl(std::make_unique<ctrlLobbyPlayerCard>(this, ID_Net + i, DrawPoint(0, 0), Extent(1, 1), NormalFont,
+                                                      LobbyPlayerCardModel(i, NetCardSnapshot(i)),
+                                                      i != localPlayerId_));
+    }
+    UpdateNetCards();
+}
+
+LobbyPlayerCardModel::Snapshot dskParty::NetCardSnapshot(const unsigned playerId) const
+{
+    const auto& player = gameLobby_->getPlayer(playerId);
+    LobbyPlayerCardModel::Snapshot snapshot{{player.color, player.nation, player.team, false}, {}, {}};
+    for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
+    {
+        const auto& other = gameLobby_->getPlayer(id);
+        if(id != playerId && other.isUsed())
+            snapshot.takenColors.push_back(other.color);
+    }
+    std::string reason;
+    if(playerId != localPlayerId_)
+    {
+        if(player.ps != PlayerState::Occupied)
+            reason = _("Host chooses");
+        else
+            reason = host_ ? _("A: remove this player") : _("Chosen by that player");
+    }
+    constexpr std::array ownKeys = {"ownColor", "ownNation", "ownTeam"};
+    for(unsigned row = 0; row < ownKeys.size(); ++row)
+    {
+        snapshot.lockReasons[row] = reason;
+        if(reason.empty() && lua_ && !lua_->IsChangeAllowed(ownKeys[row], true))
+            snapshot.lockReasons[row] = _("Fixed by map script");
+    }
+    snapshot.lockReasons[static_cast<unsigned>(LobbyPlayerCardModel::Row::SharedTribe)] =
+      _("Online: a tribe for each player");
+    return snapshot;
+}
+
+std::string dskParty::NetCardText(const unsigned playerId) const
+{
+    const auto& player = gameLobby_->getPlayer(playerId);
+    switch(player.ps)
+    {
+        case PlayerState::Free: return _("Open: waiting for a player");
+        case PlayerState::Locked: return _("Closed");
+        case PlayerState::AI: return helpers::format(_("Computer: %1%"), player.name);
+        case PlayerState::Occupied: break;
+    }
+    // Co-players share the tribe of the player they joined; they are named on that card.
+    std::string coPlayers;
+    for(const CoopMemberInfo& member : GAMECLIENT.GetCoopMembers())
+    {
+        if(member.leader == playerId)
+            coPlayers += " + " + member.name;
+    }
+    if(playerId == localPlayerId_)
+        return helpers::format(_("%1% (you)"), player.name) + coPlayers;
+    // Network players: whether they are ready is what the host waits for; the ping says how well they are connected.
+    return helpers::format(_("%1%: %2%, %3% ms"), player.name, player.isReady ? _("ready") : _("not ready"),
+                           player.ping)
+           + coPlayers;
+}
+
+void dskParty::UpdateNetCards()
+{
+    if(!online_)
+        return;
+    for(unsigned i = 0; i < gameLobby_->getNumPlayers() && i < MAX_PLAYERS; ++i)
+    {
+        auto* card = GetCtrl<ctrlLobbyPlayerCard>(ID_Net + i);
+        card->GetModel().UpdateSnapshot(NetCardSnapshot(i));
+        card->SetJoined(gameLobby_->getPlayer(i).isUsed());
+        card->SetActivatable(host_ && i != localPlayerId_ && gameLobby_->getPlayer(i).ps == PlayerState::Occupied);
+        const std::string text = NetCardText(i);
+        if(card->GetText() != text)
+            card->SetText(text);
+    }
+}
+
+std::string dskParty::JoinText() const
+{
+    if(!host_)
+    {
+        for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
+        {
+            if(gameLobby_->getPlayer(id).isHost)
+                return helpers::format(_("Hosted by %1%"), gameLobby_->getPlayer(id).name);
+        }
+        return "";
+    }
+    const unsigned port = GAMECLIENT.GetServerPort();
+    const std::string address = localNetworkAddress();
+    if(serverType_ == ServerType::Lobby)
+        return helpers::format(_("Others join through the Internet lobby: \"%1%\""), GAMECLIENT.GetGameName());
+    if(address.empty())
+        return helpers::format(_("Others join with this computer's address, port %1%"), port);
+    if(serverType_ == ServerType::LAN)
+        return helpers::format(_("Others find this game under LAN, or join with %1%, port %2%"), address, port);
+    // Over the internet they need the router's public address and a forwarded port; at home this one works.
+    return helpers::format(_("Others join with %1%, port %2% (from the internet: your public address)"), address, port);
+}
+
+std::string dskParty::NotReady() const
+{
+    std::string names;
+    for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
+    {
+        const auto& player = gameLobby_->getPlayer(id);
+        if(id != localPlayerId_ && player.ps == PlayerState::Occupied && !player.isReady)
+            names += (names.empty() ? "" : ", ") + player.name;
+    }
+    return names;
+}
+
+bool dskParty::HandleNetCardInput(const PadButton button)
+{
+    auto* card = GetCtrl<ctrlLobbyPlayerCard>(ID_Net + localPlayerId_);
+    auto& focus = WINDOWMANAGER.GetPadInput().GetFocus(0);
+    if(!card || focus.GetFocused() != card)
+        return false;
+    auto& model = card->GetModel();
+    switch(button)
+    {
+        case PadButton::DpadUp:
+            if(model.GetRow() == LobbyPlayerCardModel::Row::Color)
+                return false;
+            model.MoveRow(false);
+            return true;
+        case PadButton::DpadDown:
+            // The mode row is fixed online; down from the team leaves the card.
+            if(model.GetRow() == LobbyPlayerCardModel::Row::Team)
+                return false;
+            model.MoveRow(true);
+            return true;
+        case PadButton::DpadLeft:
+        case PadButton::DpadRight:
+        {
+            if(countdown_)
+                return true;
+            model.UpdateSnapshot(NetCardSnapshot(localPlayerId_));
+            if(const auto proposal = model.ProposeValue(button == PadButton::DpadRight))
+                ApplyValue(model, localPlayerId_, *proposal);
+            return true;
+        }
+        default: return false;
+    }
+}
+
+void dskParty::SendChat()
+{
+    auto* edit = GetCtrl<ctrlEdit>(ID_ChatEdit);
+    if(!edit->GetText().empty())
+        GAMECLIENT.Command_Chat(edit->GetText(), ChatDestination::All);
+    edit->SetText("");
+}
+
+void dskParty::Msg_EditEnter(const unsigned ctrl_id)
+{
+    if(ctrl_id == ID_ChatEdit)
+        SendChat();
+}
+
 void dskParty::OnLayout()
 {
     const auto area = GetFrame().content;
@@ -372,6 +604,8 @@ void dskParty::OnLayout()
     GetCtrl<ctrlText>(ID_Map)->SetPos(DrawPoint(centerX, area.top));
     GetCtrl<ctrlText>(ID_Mode)->SetPos(DrawPoint(centerX, area.top + 30));
     GetCtrl<ctrlText>(ID_Hint)->SetPos(DrawPoint(centerX, area.bottom - 70));
+    // Online the cards start below the join line, and the chat takes the room above the Start row.
+    const int cardsTop = area.top + (online_ ? 74 : 56);
     auto* start = GetCtrl<Window>(ID_Start);
     const unsigned startWidth = std::min(320u, area.getSize().x);
     start->Resize(Extent(startWidth, 40));
@@ -385,8 +619,8 @@ void dskParty::OnLayout()
         rules->SetPos(DrawPoint(start->GetPos().x - static_cast<int>(rulesWidth) - 16, area.bottom - 44));
         // The drawer: one row per rule below the texts, label left and value right, Done last.
         const unsigned numRules = ID_RuleLast - ID_Rule + 1;
-        const Rect drawer(DrawPoint(area.left, area.top + 56),
-                          Extent(area.getSize().x, std::max(0, static_cast<int>(area.getSize().y) - 56)));
+        const Rect drawer(DrawPoint(area.left, cardsTop),
+                          Extent(area.getSize().x, std::max(0, area.bottom - cardsTop)));
         const auto rows = frontend::LayoutList(drawer, numRules + 1, 40, 760);
         for(unsigned i = 0; i < numRules; ++i)
         {
@@ -403,11 +637,49 @@ void dskParty::OnLayout()
         done->SetPos(rows.back().getOrigin());
         done->Resize(rows.back().getSize());
     }
+    if(online_)
+    {
+        GetCtrl<ctrlText>(ID_Address)->SetPos(DrawPoint(centerX, area.top + 50));
+        GetCtrl<ctrlText>(ID_Address)->setMaxWidth(area.getSize().x);
+        const int sendWidth = 100;
+        const int editTop = area.bottom - 44 - 8 - 28;
+        const int chatHeight = std::clamp(static_cast<int>(area.getSize().y) / 4, 60, 160);
+        const int chatTop = editTop - 4 - chatHeight;
+        auto* chat = GetCtrl<Window>(ID_Chat);
+        chat->SetPos(DrawPoint(area.left, chatTop));
+        chat->Resize(Extent(area.getSize().x, chatHeight));
+        auto* edit = GetCtrl<Window>(ID_ChatEdit);
+        edit->SetPos(DrawPoint(area.left, editTop));
+        edit->Resize(Extent(std::max(1, width - sendWidth - 8), 28));
+        if(auto* coop = GetCtrl<Window>(ID_Coop))
+        {
+            // Right of Start, mirroring Rules on its left.
+            const unsigned coopWidth = std::min(260u, area.getSize().x / 4);
+            coop->Resize(Extent(coopWidth, 40));
+            coop->SetPos(
+              DrawPoint(centerX + static_cast<int>(std::min(320u, area.getSize().x) / 2) + 16, area.bottom - 44));
+        }
+        auto* send = GetCtrl<Window>(ID_ChatSend);
+        send->SetPos(DrawPoint(area.right - sendWidth, editTop));
+        send->Resize(Extent(sendWidth, 28));
+        // A card needs about 110 pixels for its rows; eight tribes go four across.
+        const unsigned numCards = std::min(gameLobby_->getNumPlayers(), MAX_PLAYERS);
+        const Rect cardArea(DrawPoint(area.left, cardsTop),
+                            Extent(area.getSize().x, std::max(0, chatTop - 8 - cardsTop)));
+        const auto grid = frontend::LayoutTiles(cardArea, numCards, Extent(5, 2), Extent(300, 120));
+        for(unsigned i = 0; i < numCards; ++i)
+        {
+            auto* card = GetCtrl<Window>(ID_Net + i);
+            card->SetPos(grid.tiles[i].getOrigin());
+            card->Resize(grid.tiles[i].getSize());
+        }
+        return;
+    }
     if(seats_.empty())
         return;
     // Cards fill the room between the texts and the Start row: four across when wide, else two by two.
-    const Rect cardArea(DrawPoint(area.left, area.top + 56),
-                        Extent(area.getSize().x, std::max(0, static_cast<int>(area.getSize().y) - 56 - 80)));
+    const Rect cardArea(DrawPoint(area.left, cardsTop),
+                        Extent(area.getSize().x, std::max(0, area.bottom - 80 - cardsTop)));
     const auto grid = frontend::LayoutTiles(cardArea, seats_.size(), Extent(3, 2), Extent(300, 200));
     for(unsigned i = 0; i < seats_.size(); ++i)
     {
@@ -485,14 +757,44 @@ void dskParty::ApplyCardValue(const unsigned seat, const bool forward)
     const auto proposal = model.ProposeValue(forward);
     if(!proposal)
         return;
-    const unsigned playerId = seats_[seat].playerId;
+    ApplyValue(model, seats_[seat].playerId, *proposal);
+}
+
+void dskParty::ApplyValue(const LobbyPlayerCardModel& model, const unsigned playerId,
+                          const LobbyPlayerCardModel::Values& value)
+{
+    if(!host_)
+    {
+        // A joined player changes only their own tribe, through the server; as in the classic lobby the change is
+        // shown at once and makes them not ready, so they confirm the game they will play.
+        auto& player = gameLobby_->getPlayer(playerId);
+        switch(model.GetRow())
+        {
+            case LobbyPlayerCardModel::Row::Color:
+                player.color = value.color;
+                GAMECLIENT.Command_SetColor(value.color);
+                break;
+            case LobbyPlayerCardModel::Row::Nation:
+                player.nation = value.nation;
+                GAMECLIENT.Command_SetNation(value.nation);
+                break;
+            case LobbyPlayerCardModel::Row::Team:
+                player.team = value.team;
+                GAMECLIENT.Command_SetTeam(value.team);
+                break;
+            case LobbyPlayerCardModel::Row::SharedTribe: return;
+        }
+        SetReady(false);
+        UpdateNetCards();
+        return;
+    }
     switch(model.GetRow())
     {
-        case LobbyPlayerCardModel::Row::Color: lobbyController_->SetColor(playerId, proposal->color); break;
-        case LobbyPlayerCardModel::Row::Nation: lobbyController_->SetNation(playerId, proposal->nation); break;
-        case LobbyPlayerCardModel::Row::Team: lobbyController_->SetTeam(playerId, proposal->team); break;
+        case LobbyPlayerCardModel::Row::Color: lobbyController_->SetColor(playerId, value.color); break;
+        case LobbyPlayerCardModel::Row::Nation: lobbyController_->SetNation(playerId, value.nation); break;
+        case LobbyPlayerCardModel::Row::Team: lobbyController_->SetTeam(playerId, value.team); break;
         case LobbyPlayerCardModel::Row::SharedTribe:
-            SetTogether(proposal->sharedTribe);
+            SetTogether(value.sharedTribe);
             // The host's controller stays on the mode row of its rebuilt card.
             if(auto* hostCard = GetCtrl<ctrlLobbyPlayerCard>(ID_Seat))
                 hostCard->GetModel().SelectRow(LobbyPlayerCardModel::Row::SharedTribe);
@@ -552,7 +854,9 @@ void dskParty::SetTogether(const bool together)
 void dskParty::UpdateModeText()
 {
     std::string text;
-    if(gameLobby_->isSavegame())
+    if(online_)
+        text = _("Every player has a tribe of their own.");
+    else if(gameLobby_->isSavegame())
         text = _("Everyone plays the saved tribe together.");
     else if(!ordinary_)
         text = _("Everyone plays the campaign's tribe together.");
@@ -565,6 +869,8 @@ void dskParty::UpdateModeText()
 
 bool dskParty::IsRuleAllowed(const Rule rule) const
 {
+    if(!host_)
+        return rule == Rule::Options; // a joined player may look at the add-ons, nothing else
     if(countdown_)
         return false;
     switch(rule)
@@ -600,8 +906,11 @@ void dskParty::UpdateRules()
     set(Rule::LockTeams, onOff(ggs.lockedTeams));
     set(Rule::TeamView, onOff(ggs.teamView));
     set(Rule::RandomStart, onOff(ggs.randomStartPosition));
-    const bool addonsAllowed = !lua_ || lua_->IsChangeAllowed("addonsAll") || lua_->IsChangeAllowed("addonsSome");
+    const bool addonsAllowed =
+      host_ && (!lua_ || lua_->IsChangeAllowed("addonsAll") || lua_->IsChangeAllowed("addonsSome"));
     set(Rule::Options, addonsAllowed ? _("Change Settings...") : _("View Settings..."));
+    // During the countdown the drawer would hide "Cancel start" and the chat.
+    GetCtrl<ctrlButton>(ID_Rules)->SetEnabled(!countdown_);
 }
 
 void dskParty::StepRule(const Rule rule, const bool forward)
@@ -624,7 +933,9 @@ void dskParty::StepRule(const Rule rule, const bool forward)
             if(WINDOWMANAGER.FindNonModalWindow(CGI_ADDONS, SHARED_WINDOW_OWNER))
                 return;
             std::unique_ptr<iwAddons> window;
-            if(!lua_ || lua_->IsChangeAllowed("addonsAll"))
+            if(!host_)
+                window = std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::None);
+            else if(!lua_ || lua_->IsChangeAllowed("addonsAll"))
                 window = std::make_unique<iwAddons>(ggs, this, AddonChangeAllowed::All);
             else if(lua_->IsChangeAllowed("addonsSome"))
                 window =
@@ -667,8 +978,17 @@ void dskParty::OpenRules(const bool open)
     rulesOpen_ = open;
     for(unsigned i = 0; i < seats_.size(); ++i)
         GetCtrl<Window>(ID_Seat + i)->SetVisible(!open);
-    for(const unsigned id : {ID_Start, ID_Rules, ID_Hint})
+    for(const unsigned id : {ID_Start, ID_Rules})
         GetCtrl<Window>(id)->SetVisible(!open);
+    GetCtrl<Window>(ID_Hint)->SetVisible(!open && !online_);
+    if(online_)
+    {
+        for(unsigned id = ID_Net; id <= ID_ChatSend; ++id)
+        {
+            if(auto* control = GetCtrl<Window>(id))
+                control->SetVisible(!open);
+        }
+    }
     for(unsigned i = 0; i <= ID_RuleLast - ID_Rule; ++i)
     {
         GetCtrl<Window>(ID_RuleLabel + i)->SetVisible(open);
@@ -676,6 +996,7 @@ void dskParty::OpenRules(const bool open)
     }
     GetCtrl<Window>(ID_RulesDone)->SetVisible(open);
     UpdateRules();
+    UpdateCoop();
     Layout();
     // The host's controller lands on the first rule, and back on Rules when the drawer closes.
     auto& focus = WINDOWMANAGER.GetPadInput().GetFocus(0);
@@ -750,6 +1071,8 @@ bool dskParty::Msg_PadCommand(const unsigned slot, const PadButton button)
         AskToLeave();
         return true;
     }
+    if(online_)
+        return slot == 0 && HandleNetCardInput(button);
     if(seats_.empty())
         return false;
     return HandleCardInput(slot, button);
@@ -797,7 +1120,41 @@ void dskParty::OnChoose(const unsigned ctrl_id)
         OpenRules(true);
     else if(ctrl_id == ID_RulesDone)
         OpenRules(false);
-    else if(ctrl_id >= ID_Rule && ctrl_id <= ID_RuleLast)
+    else if(ctrl_id == ID_ChatSend)
+        SendChat();
+    else if(ctrl_id == ID_Coop && host_)
+    {
+        if(!countdown_)
+            lobbyController_->SetCoopMembersAllowed(!GAMECLIENT.AreCoopMembersAllowed());
+    } else if(ctrl_id >= ID_Net && ctrl_id <= ID_NetLast && online_)
+    {
+        const unsigned playerId = ctrl_id - ID_Net;
+        if(playerId == localPlayerId_)
+        {
+            // A or a click on the own card: the next value of its selected row (the D-pad steps both ways).
+            if(countdown_)
+                return;
+            auto& model = GetCtrl<ctrlLobbyPlayerCard>(ctrl_id)->GetModel();
+            model.UpdateSnapshot(NetCardSnapshot(playerId));
+            if(const auto proposal = model.ProposeValue(true))
+                ApplyValue(model, playerId, *proposal);
+        } else if(host_ && !countdown_ && gameLobby_->getPlayer(playerId).ps == PlayerState::Occupied)
+        {
+            // Somebody who never gets ready would otherwise hold up the game for everyone.
+            removeTarget_ = playerId;
+            WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+              _("Remove player"), helpers::format(_("Remove %1% from the game?"), gameLobby_->getPlayer(playerId).name),
+              this, MsgboxButton::YesNo, MsgboxIcon::QuestionRed, ID_mbRemove));
+        }
+    } else if(ctrl_id == ID_Coop)
+    {
+        const auto leaders = coop::lobby::leaderCandidates(*gameLobby_, localPlayerId_);
+        if(!leaders.empty() && GAMECLIENT.AreCoopMembersAllowed() && !GAMECLIENT.IsCoopSwitchPending())
+        {
+            GAMECLIENT.JoinCoopMember(static_cast<uint8_t>(leaders.front()));
+            UpdateCoop(); // disabled until the server answered
+        }
+    } else if(ctrl_id >= ID_Rule && ctrl_id <= ID_RuleLast)
         StepRule(static_cast<Rule>(ctrl_id - ID_Rule), true); // A or a click: the next value
     else if(ctrl_id >= ID_Seat && ctrl_id <= ID_SeatLast)
     {
@@ -809,11 +1166,93 @@ void dskParty::OnChoose(const unsigned ctrl_id)
     }
 }
 
+void dskParty::SetReady(const bool ready)
+{
+    if(host_)
+        return;
+    auto& player = gameLobby_->getPlayer(localPlayerId_);
+    if(player.isReady != ready)
+    {
+        player.isReady = ready;
+        GAMECLIENT.Command_SetReady(ready);
+    }
+    auto* button = GetCtrl<ctrlTextButton>(ID_Start);
+    const std::string text = ready ? _("Not Ready") : _("Ready");
+    if(button->GetText() != text)
+        button->SetText(text);
+    UpdateNetCards();
+}
+
+void dskParty::UpdateCoop()
+{
+    auto* button = GetCtrl<ctrlTextButton>(ID_Coop);
+    if(!button)
+        return;
+    if(host_)
+    {
+        // The host decides whether others may join a tribe as co-players (several people, one tribe).
+        button->SetVisible(!rulesOpen_);
+        button->SetEnabled(!countdown_);
+        const std::string text =
+          GAMECLIENT.AreCoopMembersAllowed() ? _("Co-players: allowed") : _("Co-players: not allowed");
+        if(button->GetText() != text)
+            button->SetText(text);
+        return;
+    }
+    // Like the classic lobby's co-player row: with the host's permission, play a player's tribe together with them.
+    const auto leaders = coop::lobby::leaderCandidates(*gameLobby_, localPlayerId_);
+    const bool show = GAMECLIENT.AreCoopMembersAllowed() && !leaders.empty() && !rulesOpen_;
+    button->SetVisible(show);
+    button->SetEnabled(show && !GAMECLIENT.IsCoopSwitchPending());
+    if(show)
+    {
+        const std::string text = helpers::format(_("Play %1%'s tribe"), gameLobby_->getPlayer(leaders.front()).name);
+        if(button->GetText() != text)
+            button->SetText(text);
+    }
+}
+
+void dskParty::CI_CoopMembersChanged()
+{
+    // A co-player acts for the player they joined; the classic lobby has the view for that (their own row is
+    // gone, the leader's readiness counts). The game is the same, only the page changes.
+    if(GAMECLIENT.IsCoopMember())
+    {
+        WINDOWMANAGER.Switch(
+          std::make_unique<dskGameLobby>(serverType_, gameLobby_, GAMECLIENT.GetPlayerId(), std::move(lobbyClient_)));
+        return;
+    }
+    if(online_)
+        UpdateNetCards();
+    UpdateCoop();
+}
+
 void dskParty::Start()
 {
-    if(countdown_)
+    if(!host_)
+    {
+        SetReady(!gameLobby_->getPlayer(localPlayerId_).isReady);
         return;
+    }
+    if(countdown_)
+    {
+        // Online the countdown runs for seconds and someone may still be missing: the host can stop it.
+        if(online_)
+            lobbyController_->CancelCountdown();
+        return;
+    }
     OpenRules(false);
+    if(online_)
+    {
+        const std::string waiting = NotReady();
+        if(!waiting.empty())
+        {
+            WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+              _("Not ready"), helpers::format(_("Waiting for these players to be ready: %1%"), waiting), this,
+              MsgboxButton::Ok, MsgboxIcon::ExclamationRed, ID_mbInfo));
+            return;
+        }
+    }
     if(ordinary_ && !CheckOptions())
         return;
     seats_.Sync();
@@ -836,6 +1275,11 @@ void dskParty::Start()
         ApplyOpponents();
     countdown_ = true;
     UpdateRules();
+    if(online_)
+    {
+        GetCtrl<ctrlTextButton>(ID_Start)->SetText(_("Cancel start"));
+        UpdateCoop();
+    }
     lobbyController_->StartCountdown(5);
 }
 
@@ -854,6 +1298,12 @@ std::vector<unsigned> dskParty::OpponentSlots() const
         if(seat != seats_.Get().end() && seat->taken)
             continue;
         const auto& player = gameLobby_->getPlayer(id);
+        // Online an open slot nobody joined is the host's to fill or close at Start, like a computer player.
+        if(online_ && player.ps == PlayerState::Free)
+        {
+            ids.push_back(id);
+            continue;
+        }
         const bool computer = player.ps == PlayerState::AI && player.aiInfo.type == AI::Type::Default;
         // A seat stood up a moment ago still shows its placeholder until the server echoes the restore, which
         // it handles before anything sent after it.
@@ -873,7 +1323,8 @@ std::optional<dskParty::Opponents> dskParty::CurrentOpponents() const
     {
         const auto& player = gameLobby_->getPlayer(id);
         const auto level = player.aiInfo.type == AI::Type::Dummy ? AI::Level::Easy : player.aiInfo.level;
-        const auto opponents = static_cast<Opponents>(static_cast<unsigned>(level));
+        const auto opponents =
+          player.ps == PlayerState::Free ? Opponents::None : static_cast<Opponents>(static_cast<unsigned>(level));
         if(current && *current != opponents)
             return std::nullopt; // the map script set different levels
         current = opponents;
@@ -883,18 +1334,31 @@ std::optional<dskParty::Opponents> dskParty::CurrentOpponents() const
 
 void dskParty::ApplyOpponents()
 {
-    // Untouched, the computer players stay as the map (or its script) set them up.
-    if(!opponentsChosen_ || !IsRuleAllowed(Rule::Opponents))
+    // Untouched, the computer players stay as the map (or its script) set them up; open network slots are closed,
+    // since the server starts no game with one.
+    const bool chosen = opponentsChosen_ && IsRuleAllowed(Rule::Opponents);
+    if(!chosen && !online_)
         return;
     for(const unsigned id : OpponentSlots())
     {
         const auto& player = gameLobby_->getPlayer(id);
-        if(opponents_ == Opponents::None)
+        const bool open = player.ps == PlayerState::Free;
+        if(!chosen && !open)
+            continue;
+        if(!chosen || opponents_ == Opponents::None)
         {
             // Reopened if the server refuses the start (CI_CancelCountdown), or the seat could not be joined again.
-            closedByOpponents_.emplace_back(
-              id, player.aiInfo.type == AI::Type::Dummy ? AI::Info(AI::Type::Default, AI::Level::Easy) : player.aiInfo);
+            closedByOpponents_.push_back({id, open ? PlayerState::Free : PlayerState::AI,
+                                          player.aiInfo.type == AI::Type::Dummy || open ?
+                                            AI::Info(AI::Type::Default, AI::Level::Easy) :
+                                            player.aiInfo});
             lobbyController_->CloseSlot(id);
+        } else if(open)
+        {
+            closedByOpponents_.push_back({id, PlayerState::Free, AI::Info(AI::Type::Default, AI::Level::Easy)});
+            lobbyController_->SetPlayerState(
+              id, PlayerState::AI,
+              AI::Info(AI::Type::Default, static_cast<AI::Level>(static_cast<unsigned>(opponents_))));
         } else
         {
             const auto level = static_cast<AI::Level>(static_cast<unsigned>(opponents_));
@@ -978,7 +1442,13 @@ void dskParty::Msg_MsgBoxResult(const unsigned msgbox_id, const MsgboxResult mbr
 {
     if((msgbox_id == ID_mbLeave && mbr == MsgboxResult::Yes) || msgbox_id == ID_mbError)
         Leave();
-    else if(msgbox_id == CGI_ADDONS && mbr == MsgboxResult::Yes)
+    else if(msgbox_id == ID_mbRemove && mbr == MsgboxResult::Yes)
+    {
+        // The slot may have changed while the question was open; only remove who was asked about.
+        if(removeTarget_ < gameLobby_->getNumPlayers() && !countdown_
+           && gameLobby_->getPlayer(removeTarget_).ps == PlayerState::Occupied)
+            lobbyController_->SetPlayerState(removeTarget_, PlayerState::Free, AI::Info()); // the server kicks
+    } else if(msgbox_id == CGI_ADDONS && mbr == MsgboxResult::Yes)
     {
         // iwAddons wrote the host's rules in place; send them like every other rule.
         SendRules();
@@ -1013,6 +1483,8 @@ void dskParty::CI_GGSChanged(const GlobalGameSettings& /*ggs*/)
     if(pendingRules_ == 0)
         rules_ = gameLobby_->getSettings();
     UpdateRules();
+    // The rules changed: a joined player confirms again, as in the classic lobby.
+    SetReady(false);
 }
 
 void dskParty::CI_Error(const ClientError ce)
@@ -1029,29 +1501,46 @@ void dskParty::CI_GameLoading(std::shared_ptr<Game> game)
 void dskParty::CI_PlayerDataChanged(unsigned /*playerId*/)
 {
     UpdateCards();
+    if(online_)
+        UpdateNetCards();
     UpdateRules();
 }
 
 void dskParty::CI_ReadyChanged(const unsigned playerId, const bool ready)
 {
     // As in the classic lobby: the script hears of the other players' readiness; the host's is sent on Start.
-    if(ready && lua_ && playerId != localPlayerId_)
+    if(ready && lua_ && host_ && playerId != localPlayerId_)
         lua_->EventPlayerReady(playerId);
+    if(online_)
+    {
+        UpdateNetCards();
+        UpdateCoop();
+    }
 }
 
 void dskParty::CI_NewPlayer(const unsigned playerId)
 {
     // The constructor's AI slots come back as joins too; the mission script hears of them as in the lobby.
-    if(lua_)
+    if(lua_ && host_)
         lua_->EventPlayerJoined(playerId);
     UpdateCards();
+    if(online_)
+    {
+        UpdateNetCards();
+        UpdateCoop();
+    }
 }
 
 void dskParty::CI_PlayerLeft(const unsigned playerId)
 {
-    if(lua_)
+    if(lua_ && host_)
         lua_->EventPlayerLeft(playerId);
     UpdateCards();
+    if(online_)
+    {
+        UpdateNetCards();
+        UpdateCoop();
+    }
 }
 
 void dskParty::CI_PlayersSwapped(const unsigned player1, const unsigned player2)
@@ -1062,19 +1551,67 @@ void dskParty::CI_PlayersSwapped(const unsigned player1, const unsigned player2)
         localPlayerId_ = player1;
     seats_.OnPlayersSwapped(player1, player2);
     UpdateCards();
+    if(online_)
+    {
+        // Only our own card is editable, and it moved with us.
+        for(unsigned i = 0; i < gameLobby_->getNumPlayers() && i < MAX_PLAYERS; ++i)
+            DeleteCtrl(ID_Net + i);
+        CreateNetCards();
+        Layout();
+    }
 }
 
 void dskParty::CI_CancelCountdown(const bool error)
 {
     countdown_ = false;
     // The start was refused: the tribes closed for it become computer players again, so their seats stay joinable.
-    for(const auto& [id, ai] : closedByOpponents_)
-        lobbyController_->SetPlayerState(id, PlayerState::AI, ai);
+    for(const auto& restore : closedByOpponents_)
+        lobbyController_->SetPlayerState(restore.id, restore.ps, restore.ai);
     closedByOpponents_.clear();
     UpdateRules();
+    if(online_)
+    {
+        if(host_)
+            GetCtrl<ctrlTextButton>(ID_Start)->SetText(_("Start game"));
+        UpdateCoop();
+        GetCtrl<ctrlChat>(ID_Chat)->AddMessage("", "", 0, _("Start aborted"), 0xFFFFCC00);
+    }
     if(error)
     {
-        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(_("Error"), _("The game could not be started."), this,
-                                                      MsgboxButton::Ok, MsgboxIcon::ExclamationRed, ID_mbInfo));
+        WINDOWMANAGER.Show(std::make_unique<iwMsgbox>(
+          _("Error"),
+          online_ ? _("Game can only be started as soon as everybody has a unique color,everyone is "
+                      "ready and all free slots are closed.") :
+                    _("The game could not be started."),
+          this, MsgboxButton::Ok, MsgboxIcon::ExclamationRed, ID_mbInfo));
+    }
+}
+
+void dskParty::CI_Chat(const unsigned playerId, const ChatDestination /*cd*/, const std::string& msg)
+{
+    if(!online_ || playerId >= gameLobby_->getNumPlayers())
+        return;
+    const auto& player = gameLobby_->getPlayer(playerId);
+    GetCtrl<ctrlChat>(ID_Chat)->AddMessage(s25util::Time::FormatTime("(%H:%i:%s)"), player.name, player.color, msg,
+                                           COLOR_YELLOW);
+}
+
+void dskParty::CI_Countdown(const unsigned remainingTimeInSec)
+{
+    if(!online_)
+        return;
+    GetCtrl<ctrlChat>(ID_Chat)->AddMessage("", "", 0,
+                                           remainingTimeInSec > 0 ?
+                                             helpers::format(_("Starting in %1%..."), remainingTimeInSec) :
+                                             std::string(_("Starting game, please wait")),
+                                           0xFFFFBB00);
+}
+
+void dskParty::CI_PingChanged(unsigned /*playerId*/, unsigned short /*ping*/)
+{
+    if(online_)
+    {
+        UpdateNetCards();
+        UpdateCoop();
     }
 }

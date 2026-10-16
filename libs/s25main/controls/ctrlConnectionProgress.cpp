@@ -118,7 +118,8 @@ void ctrlConnectionProgress::CI_NextConnectState(const ConnectState state)
             WINDOWMANAGER.SetCursor();
             GAMECLIENT.RemoveInterface(this);
             if(dskParty::IsFor(type_))
-                WINDOWMANAGER.Switch(std::make_unique<dskParty>(GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId()));
+                WINDOWMANAGER.Switch(std::make_unique<dskParty>(GAMECLIENT.GetGameLobby(), GAMECLIENT.GetPlayerId(),
+                                                                type_, std::move(lobbyClient_)));
             else
                 WINDOWMANAGER.Switch(std::make_unique<dskGameLobby>(type_, GAMECLIENT.GetGameLobby(),
                                                                     GAMECLIENT.GetPlayerId(), std::move(lobbyClient_)));

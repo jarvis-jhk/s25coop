@@ -81,6 +81,10 @@ msgstr " pedras"
 msgid "%1% (with %2%)"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "%1% (you)"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameInterface.cpp:1410
 msgid "%1% are the winners!"
 msgstr "%1% são os vencedores!"
@@ -100,6 +104,10 @@ msgstr "%1% min"
 #: libs/s25main/ingameWindows/iwMapGenerator.cpp:44
 msgid "%1% players"
 msgstr "%1% jogadores"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "%1%: %2%, %3% ms"
+msgstr ""
 
 #: libs/s25main/addons/AddonDurableGeologistSigns.h:23
 #: libs/s25main/addons/AddonDurableGeologistSigns.h:24
@@ -1119,6 +1127,10 @@ msgstr ""
 msgid "Choose mission"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Chosen by that player"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameLobby.cpp:237
 msgid "Classic (Settlers 2)"
 msgstr "Clássico (Settlers 2)"
@@ -1226,6 +1238,10 @@ msgstr ""
 
 #: ../libs/s25main/desktops/dskParty.cpp:198
 msgid "Computer players:"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Computer: %1%"
 msgstr ""
 
 #: libs/s25main/addons/AddonMineResourceBehavior.h:43
@@ -1871,6 +1887,10 @@ msgstr "Erro na contagem de eventos. Eventos lidos: %1%. Eventos esperados: %2%.
 msgid "Every GF"
 msgstr "Cada GF"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Every player has a tribe of their own."
+msgstr ""
+
 #: libs/s25main/desktops/dskTitle.cpp
 msgid "Every player: press A to join"
 msgstr ""
@@ -2477,6 +2497,10 @@ msgid "Hi, I'm an artifical player and I'm not very good yet!"
 msgstr "Olá, eu sou um jogador artificial e nao sou muito bom ainda!"
 
 msgid "Hides every symbol and every text of this seat, so you can just look at your land. The camera and the zoom keep working. B brings everything back."
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Host chooses"
 msgstr ""
 
 #: ../libs/s25main/desktops/dskParty.cpp:334
@@ -3599,6 +3623,10 @@ msgstr "Não é um driver da biblioteca do RTTR!"
 msgid "Not enough seats"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Not ready"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameInterface.cpp:1201
 #, c-format
 msgid "Note: Game settings changed by the server%s"
@@ -3730,6 +3758,10 @@ msgstr ""
 msgid "One tribe together"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Online: a tribe for each player"
+msgstr ""
+
 #: libs/s25main/desktops/dskGameInterface.cpp:178
 msgid "Only %1% local views are supported, ignoring the additional local player(s) starting at slot %2%\n"
 msgstr ""
@@ -3769,6 +3801,10 @@ msgstr "Aberto"
 msgid "Open it"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Open: waiting for a player"
+msgstr ""
+
 #: libs/s25main/drivers/VideoDriverWrapper.cpp:373
 msgid "OpenGL %1% %2%.%3% is not supported. Try updating your GPU drivers or hardware!"
 msgstr "OpenGL %1% %2%.%3% não é suportado. Tente atualizar os drivers da sua GPU ou a placa de vídeo!"
@@ -3798,6 +3834,22 @@ msgstr "Ordem de construçao"
 #: libs/s25main/ingameWindows/iwAddons.cpp:70
 msgid "Other"
 msgstr "Outros"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others find this game under LAN, or join with %1%, port %2%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others join through the Internet lobby: \"%1%\""
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others join with %1%, port %2% (from the internet: your public address)"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Others join with this computer's address, port %1%"
+msgstr ""
 
 #: libs/s25main/desktops/dskGameLobby.cpp:257
 msgid "Others may join a player instead of taking their own slot and play that tribe together"
@@ -4907,6 +4959,10 @@ msgstr "Começar jogo"
 msgid "Starting game, please wait"
 msgstr "Começando o jogo, por favor espere"
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Starting in %1%..."
+msgstr ""
+
 #: libs/s25main/Loader.cpp:267
 msgid "Starting sound conversion: "
 msgstr "Iniciando conversão de som: "
@@ -5735,6 +5791,10 @@ msgstr "Esperando por Resposta..."
 msgid "Waiting for server info..."
 msgstr "Esperando informações do servidor..."
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Waiting for these players to be ready: %1%"
+msgstr ""
+
 #: libs/s25main/ingameWindows/iwTrade.cpp:66
 msgid "Ware you like to trade"
 msgstr "Oque você gostaria de trocar"
@@ -6148,6 +6208,14 @@ msgstr "Indo ao GF %i, agora no GF %i, tempo para últimos 5.000 GF: %.3f s, tem
 msgid "medium"
 msgstr ""
 
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "not ready"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "ready"
+msgstr ""
+
 msgid "send out a scout"
 msgstr ""
 
@@ -6225,3 +6293,31 @@ msgstr ""
 
 #~ msgid "unlimited"
 #~ msgstr "Ilimitado"
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Let others join a tribe and play it together with its player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "A: remove this player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Hosted by %1%"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove player"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Remove %1% from the game?"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: allowed"
+msgstr ""
+
+#: ../libs/s25main/desktops/dskParty.cpp
+msgid "Co-players: not allowed"
+msgstr ""

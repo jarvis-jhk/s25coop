@@ -5,11 +5,15 @@
 #pragma once
 
 #include "GlobalGameSettings.h"
+#include "ILobbyClient.hpp"
 #include "dskFrontEndPage.h"
 #include "frontend/LocalSeats.h"
 #include "input/LobbyPlayerCardModel.h"
 #include "network/ClientInterface.h"
 #include "gameTypes/AIInfo.h"
+#include "gameTypes/PlayerState.h"
+#include "gameTypes/ServerType.h"
+#include "gameData/MaxPlayers.h"
 #include <memory>
 #include <optional>
 #include <utility>
@@ -18,7 +22,6 @@
 class GameLobby;
 class GameLobbyController;
 class LuaInterfaceSettings;
-enum class ServerType : uint16_t;
 
 /// The full-screen party page (doc/coop/FrontEnd.md, slice F7b): who plays, on which seat, then Start.
 ///
@@ -27,15 +30,20 @@ enum class ServerType : uint16_t;
 /// have no rules to choose (the mission script or the save owns them) and every seat plays the host's tribe; a
 /// save's tribes keep their colour, nation and team. An ordinary map (F7c) seats every player on a tribe of
 /// their own, or all on one ("Tribes" on the host's card and in the rules), and has a rules drawer: goals,
-/// goods, exploration, speed, computer opponents, team options and the game options window. Online games keep
-/// dskGameLobby until F7d.
+/// goods, exploration, speed, computer opponents, team options and the game options window. A network game
+/// on an ordinary map hosted from the new menus (F7d) opens it too: one card per tribe, the network players'
+/// read-only with their name and whether they are ready, the host's own editable; a chat line and how to join.
+/// A player who joins such a game from the new menus sees the same page (F7d2): their own card, Ready instead of
+/// Start, the rules read-only. Network campaigns and saves hosted here, and joining as a co-player, keep
+/// dskGameLobby.
 class dskParty final : public dskFrontEndPage, public ClientInterface
 {
 public:
     /// Should iwConnecting open this page instead of dskGameLobby for the game it just connected to?
     static bool IsFor(ServerType serverType);
 
-    dskParty(std::shared_ptr<GameLobby> gameLobby, unsigned playerId);
+    dskParty(std::shared_ptr<GameLobby> gameLobby, unsigned playerId, ServerType serverType = ServerType::Local,
+             std::unique_ptr<ILobbyClient> lobbyClient = nullptr);
     ~dskParty() override;
 
     enum ControlIds
@@ -53,6 +61,15 @@ public:
         ID_Rule,
         ID_RuleLast = ID_Rule + 9,
         ID_RulesDone,
+        /// Network game (F7d): one card per tribe of the map, how to join, and the chat.
+        ID_Net,
+        ID_NetLast = ID_Net + MAX_PLAYERS - 1,
+        ID_Address,
+        ID_Chat,
+        ID_ChatEdit,
+        ID_ChatSend,
+        /// Host: allow co-players. A joined player: play another player's tribe together with them.
+        ID_Coop,
     };
     /// The rows of the rules drawer; ID_Rule + Rule is its value button.
     enum class Rule : unsigned
@@ -82,7 +99,7 @@ public:
     bool Msg_PadCommand(unsigned slot, PadButton button) override;
     bool Msg_KeyDown(const KeyEvent& ke) override;
     Window* GetPadEntryCtrl(unsigned slot) override;
-    bool HandlesPadControlCommands() const override { return !seats_.empty(); }
+    bool HandlesPadControlCommands() const override { return !seats_.empty() || online_; }
     /// A guest's controller must not answer the host's questions (leave, errors).
     bool AllowsPadWindowInput(unsigned slot) const override { return seats_.empty() || slot == 0; }
     bool HasBackAction() const override { return true; }
@@ -92,6 +109,8 @@ public:
     void Msg_MsgBoxResult(unsigned msgbox_id, MsgboxResult mbr) override;
 
     const frontend::LocalSeats& GetSeats() const { return seats_; }
+    /// A network game: tribe cards and chat instead of local seats.
+    bool IsOnline() const { return online_; }
     /// An ordinary map: own tribes possible, rules drawer shown.
     bool HasRules() const { return ordinary_; }
     bool IsRulesOpen() const { return rulesOpen_; }
@@ -114,6 +133,27 @@ private:
     void CI_CancelCountdown(bool error) override;
     void CI_GGSChanged(const GlobalGameSettings& ggs) override;
     void CI_ReadyChanged(unsigned playerId, bool ready) override;
+    void CI_PingChanged(unsigned playerId, unsigned short ping) override;
+    void CI_Chat(unsigned playerId, ChatDestination cd, const std::string& msg) override;
+    void CI_Countdown(unsigned remainingTimeInSec) override;
+    void CI_CoopMembersChanged() override;
+    void Msg_EditEnter(unsigned ctrl_id) override;
+
+    /// Network game: one card per tribe; only our own can be edited.
+    void CreateNetCards();
+    void UpdateNetCards();
+    LobbyPlayerCardModel::Snapshot NetCardSnapshot(unsigned playerId) const;
+    std::string NetCardText(unsigned playerId) const;
+    /// D-pad on our own tribe card. false = not on it, the page's focus moves.
+    bool HandleNetCardInput(PadButton button);
+    /// "Join with 192.168.1.5, port 3665" and the like, for the players at other computers.
+    std::string JoinText() const;
+    /// The network players who are not ready yet, by name; empty = everybody is.
+    std::string NotReady() const;
+    void SendChat();
+    /// A joined player: Ready / Not ready.
+    void SetReady(bool ready);
+    void UpdateCoop();
 
     void CreateSeats();
     /// An ordinary map with room for more than one tribe.
@@ -147,6 +187,8 @@ private:
     LobbyPlayerCardModel::Snapshot CardSnapshot(unsigned seat) const;
     bool HandleCardInput(unsigned slot, PadButton button);
     void ApplyCardValue(unsigned seat, bool forward);
+    /// Apply a proposed card value to a tribe: the row the model is on.
+    void ApplyValue(const LobbyPlayerCardModel& model, unsigned playerId, const LobbyPlayerCardModel::Values& value);
     void OnSeatPressed(unsigned seat, unsigned slot);
     void Start();
     void AskToLeave();
@@ -154,6 +196,12 @@ private:
 
     std::shared_ptr<GameLobby> gameLobby_;
     unsigned localPlayerId_;
+    ServerType serverType_;
+    /// Internet lobby games: keeps the lobby session, which lists the game, alive while the page is open.
+    std::unique_ptr<ILobbyClient> lobbyClient_;
+    bool online_;
+    /// We host the game (always so for a local one). A joined player only edits their own card and gets ready.
+    bool host_;
     std::unique_ptr<GameLobbyController> lobbyController_;
     std::unique_ptr<LuaInterfaceSettings> lua_;
     /// "Together" for a campaign (one human tribe) and a loaded save (shared by the party); an ordinary map with
@@ -166,8 +214,15 @@ private:
     Opponents opponents_ = Opponents::Easy;
     /// The host changed the computer players; until then they stay as the map or its script set them.
     bool opponentsChosen_ = false;
-    /// Slots closed for the start, with what they were; reopened if the server refuses it.
-    std::vector<std::pair<unsigned, AI::Info>> closedByOpponents_;
+    /// Slots changed for the start, with what they were (a closed computer player, an open network slot);
+    /// given back if the server refuses it.
+    struct Restore
+    {
+        unsigned id;
+        PlayerState ps;
+        AI::Info ai;
+    };
+    std::vector<Restore> closedByOpponents_;
     /// The host's rules are edited here and sent whole. The server echoes each send; an echo of an older send
     /// would otherwise overwrite a newer edit in the lobby's copy, and the next step would send that stale
     /// value back. So the lobby's copy is adopted only when no send is outstanding (Lua's own changes then).
@@ -175,6 +230,8 @@ private:
     unsigned pendingRules_ = 0;
     /// The economy/peaceful question was answered with "No": start as it is.
     bool forceOptions_ = false;
+    /// The network player the host was asked about removing.
+    unsigned removeTarget_ = 0;
     bool activated_ = false;
     bool countdown_ = false;
 };

@@ -1,5 +1,29 @@
 # Session notes
 
+## 2026-10-16 — F7d online party page (roadmap siedler-online-party-cards done); 0.1.20 released
+
+Quota filler (t_mvaqgtlh9xw4k). No open issues. 47f6e2c7d was green, so 0.1.20 was tagged by hand (b27d280e1,
+tag v0.1.20) instead of waiting for continuation c3af4bdf, which is removed. Release workflow was still queued
+at the end of this note; check that its assets exist before announcing.
+F7d: `dskParty` now also serves network games from the new menus (`IsOnline()`): the host of an ordinary map
+(Direct/LAN/Internet) and every joined player who is not a co-player. One card per tribe (`ID_Net + slot`), the
+own one editable (host via GameLobbyController, a joined player via GameClient commands, which un-ready him),
+others read-only with name/ready/ping/co-players; join line (IPv4 of the default route + port, lobby name, or
+"Hosted by"), chat, Start = start/cancel for the host (refuses with the not-ready names, closes or fills open
+slots, restores them on cancel), Ready/Not Ready for a joined player. Host can remove a player (A/click on the
+card, Yes) and toggle co-players; a joined player can become co-player, which switches to dskGameLobby.
+Mouse: a click on a card row steps that row. Details doc/coop/FrontEnd.md (Party). New: GameClient::GetServerPort,
+ctrlChat::GetNumMessages, ctrlLobbyPlayerCard::SetActivatable.
+Review: Opus subagent read-only (Codex is off): 9 findings; fixed removal, co-player toggle, mouse edit, Rules
+during countdown, refused-start text; accepted/noted: join race at Start, IPv4-only line, no lobby listener.
+Tests (Debug, -j2, focused per the new VPS rule): FrontEndOnline (incl. 2 new real-socket cases), FrontEndParty,
+FrontEndInternet, FrontEndMaps/Load/Campaigns pass; Test_LanguageFiles pass; msgfmt -c clean. Full suites: CI.
+Gotcha: a lobby CI_* callback can reach the LOCAL party page too (CI_CoopMembersChanged arrives in local games);
+every online-only update must check online_. Not seen: real screens (no Xvfb run), real second PC, Deck.
+Working rule from Jan (2026-10-16): heavy builds/test suites/RE go to the laptop (re lane) or CI; here only
+incremental -j2 builds and a focused test.
+Next: F7e (network campaigns/saves + co-players on the party page).
+
 ## 2026-10-16 — F7c: ordinary maps on the party page, rules drawer (roadmap siedler-rules-drawer done)
 
 Same session. `dskParty::IsFor` is now every self-hosted local start from the new menus. Ordinary maps seat each

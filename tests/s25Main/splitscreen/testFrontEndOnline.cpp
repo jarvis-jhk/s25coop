@@ -2,19 +2,24 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "GameLobby.h"
+#include "JoinPlayerInfo.h"
 #include "Loader.h"
 #include "LocalGameFixture.h"
 #include "MenuPadFixture.h"
 #include "RTTR_Version.h"
 #include "RttrConfig.h"
 #include "controls/ctrlButton.h"
+#include "controls/ctrlChat.h"
 #include "controls/ctrlCheck.h"
 #include "controls/ctrlComboBox.h"
 #include "controls/ctrlConnectionProgress.h"
 #include "controls/ctrlEdit.h"
+#include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlPercent.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "controls/ctrlTextButton.h"
 #include "controls/ctrlTextDeepening.h"
 #include "desktops/dskFrontEndConnect.h"
 #include "desktops/dskFrontEndHost.h"
@@ -25,6 +30,7 @@
 #include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMultiPlayer.h"
+#include "desktops/dskParty.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
 #include "files.h"
@@ -33,6 +39,7 @@
 #include "ingameWindows/iwLobbyConnect.h"
 #include "ingameWindows/iwMsgbox.h"
 #include "mygettext/mygettext.h"
+#include "network/GameMessage_Chat.h"
 #include "network/GameMessages.h"
 #include "gameTypes/CompressedData.h"
 #include "gameData/LanDiscoveryCfg.h"
@@ -221,6 +228,7 @@ struct JoinFixture : rttr::test::LocalGameFixture, OnlineFixture
     bool hostVersion = false;
     bool hostPassword = false;
     bool membersAllowed = false;
+    std::vector<std::string> chats;
 
     void frame() override
     {
@@ -266,6 +274,8 @@ struct JoinFixture : rttr::test::LocalGameFixture, OnlineFixture
                 hostPassword = password->password == "true";
             else if(const auto* members = dynamic_cast<const GameMessage_Coop_Members*>(msg.get()))
                 membersAllowed = members->allowed;
+            else if(const auto* chat = dynamic_cast<const GameMessage_Chat*>(msg.get()))
+                chats.push_back(chat->text);
         }
     }
     void send(const GameMessage& message) { BOOST_TEST_REQUIRE(MessageQueue::sendMessage(host, message)); }
@@ -519,7 +529,8 @@ BOOST_FIXTURE_TEST_CASE(RealPasswordHandshakeRetriesThenJoinsTheOnlineLobby, Joi
         BOOST_TEST(page().GetCtrl<ctrlButton>(Page::ID_Connect)->GetEnabled());
         type(Page::ID_Password, U"secret");
         choose(Page::ID_Connect);
-        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        // F7d2: a player who joins from the new menus gets the full-screen party page.
+        await([] { return desktopAs<dskParty>() != nullptr; });
         BOOST_TEST((GAMECLIENT.GetState() == ClientState::Config));
         BOOST_TEST(!GAMECLIENT.IsHost());
         BOOST_TEST(!GAMECLIENT.IsCoopMember());
@@ -541,7 +552,7 @@ BOOST_FIXTURE_TEST_CASE(RealIPv6HandshakeAndAbortLeaveTheJoinTrailUsable, JoinFi
         BOOST_TEST((GAMECLIENT.GetState() == ClientState::Stopped));
         BOOST_TEST(page().GetCtrl<ctrlButton>(Page::ID_Connect)->GetEnabled());
         choose(Page::ID_Connect);
-        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        await([] { return desktopAs<dskParty>() != nullptr; });
         BOOST_TEST(SETTINGS.server.lastIP == "localhost");
         BOOST_TEST(SETTINGS.server.ipv6);
         BOOST_TEST(!GAMECLIENT.IsCoopMember());
@@ -562,6 +573,61 @@ BOOST_FIXTURE_TEST_CASE(RealHostTribeMembershipUsesTheSelectedJoinPolicy, JoinFi
         BOOST_TEST_REQUIRE(hostSlot.has_value());
         BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
         BOOST_TEST(GAMECLIENT.GetCoopMembers().size() == 1u);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(JoinedPlayerGetsThePartyPageWithOwnCardReadyChatAndCoPlay, JoinFixture)
+{
+    checkedJoin([&] {
+        server();
+        joinHost(); // a real host on the other end, which allows co-players
+        fill();
+        choose(Page::ID_Connect);
+        await([] { return desktopAs<dskParty>() != nullptr; });
+        auto& party = *desktopAs<dskParty>();
+        BOOST_TEST_REQUIRE(party.IsOnline());
+        BOOST_TEST(!GAMECLIENT.IsHost());
+        const auto lobby = GAMECLIENT.GetGameLobby();
+        const unsigned me = GAMECLIENT.GetPlayerId();
+        BOOST_TEST_REQUIRE(hostSlot.has_value());
+        await([&] { return lobby->getPlayer(*hostSlot).name == "Fixture host"; });
+        // Who hosts, and the cards: ours editable, the host's read-only.
+        BOOST_TEST(party.GetCtrl<ctrlText>(dskParty::ID_Address)->GetText().find("Fixture host") != std::string::npos);
+        BOOST_TEST(!party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + me)->IsReadOnly());
+        BOOST_TEST(party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + *hostSlot)->IsReadOnly());
+        // The rules are the host's: a joined player can only look at them.
+        BOOST_TEST(
+          !party.GetCtrl<ctrlButton>(dskParty::ID_Rule + static_cast<unsigned>(dskParty::Rule::Goals))->GetEnabled());
+        // Our own colour goes through the server.
+        focus(dskParty::ID_Net + me);
+        const unsigned colorBefore = lobby->getPlayer(me).color;
+        press(pad, PadButton::DpadRight);
+        await([&] { return lobby->getPlayer(me).color != colorBefore; });
+        // Ready instead of Start; pressing it again takes it back.
+        auto* start = party.GetCtrl<ctrlTextButton>(dskParty::ID_Start);
+        BOOST_TEST(start->GetText() == _("Ready"));
+        focus(dskParty::ID_Start);
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST(lobby->getPlayer(me).isReady);
+        BOOST_TEST(start->GetText() == _("Not Ready"));
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST(!lobby->getPlayer(me).isReady);
+        // The host's chat line shows up here.
+        send(GameMessage_Chat(0xFF, ChatDestination::All, "hi there"));
+        await([&] { return party.GetCtrl<ctrlChat>(dskParty::ID_Chat)->GetNumMessages() > 0u; });
+        // The host allows co-players: we may play its tribe together with it, which the classic lobby shows.
+        await([&] {
+            receiveHost();
+            return party.GetCtrl<Window>(dskParty::ID_Coop)->IsVisible();
+        });
+        BOOST_TEST(party.GetCtrl<ctrlTextButton>(dskParty::ID_Coop)->GetText().find("Fixture host")
+                   != std::string::npos);
+        focus(dskParty::ID_Coop);
+        press(pad, PadButton::A);
+        await([] { return GAMECLIENT.IsCoopMember() && desktopAs<dskGameLobby>() != nullptr; });
+        BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
     });
 }
 
@@ -836,10 +902,176 @@ BOOST_FIXTURE_TEST_CASE(NetworkMapHostUsesTheFullScreenBrowserAndValidatedMasked
         reservation.Close();
         type(dskFrontEndHost::ID_Port, std::u32string(portText.begin(), portText.end()));
         choose(dskFrontEndHost::ID_Start);
-        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        // F7d: a network game of an ordinary map gets the full-screen party page, not the classic lobby.
+        await([] { return desktopAs<dskParty>() != nullptr; });
+        BOOST_TEST(desktopAs<dskParty>()->IsOnline());
         BOOST_TEST(GAMECLIENT.IsHost());
         BOOST_TEST(!GAMECLIENT.IsHostingCampaign());
         BOOST_TEST((GAMECLIENT.GetState() == ClientState::Config));
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(NetworkPartyShowsRemoteCardsReadyChatAndHowToJoin, JoinFixture)
+{
+    checkedJoin([&] {
+        const auto folder = RTTRCONFIG.ExpandPath(s25::folders::mapsOwn);
+        boost::filesystem::create_directories(folder);
+        boost::filesystem::copy_file(mapPath(), folder / "Online.SWD");
+        enter(false);
+        choose(Online::ID_Host);
+        choose(dskFrontEndHost::ID_Maps);
+        choose(dskFrontEndMaps::ID_Category);
+        pressN(pad, PadButton::DpadDown, 3);
+        press(pad, PadButton::A);
+        frame();
+        choose(dskFrontEndMaps::ID_Continue);
+        BOOST_TEST_REQUIRE(desktopAs<dskFrontEndHost>());
+        type(dskFrontEndHost::ID_Name, U"Sofa game");
+        type(dskFrontEndHost::ID_Password, U"secret");
+        Socket reservation;
+        BOOST_TEST_REQUIRE(reservation.Listen(0, false, false));
+        sockaddr_in address{};
+        socklen_t length = sizeof(address);
+        BOOST_TEST_REQUIRE(getsockname(reservation.GetSocket(), reinterpret_cast<sockaddr*>(&address), &length) == 0);
+        port = ntohs(address.sin_port);
+        reservation.Close();
+        const auto portText = std::to_string(port);
+        type(dskFrontEndHost::ID_Port, std::u32string(portText.begin(), portText.end()));
+        choose(dskFrontEndHost::ID_Start);
+        await([] { return desktopAs<dskParty>() != nullptr; });
+        auto& party = *desktopAs<dskParty>();
+        BOOST_TEST_REQUIRE(party.IsOnline());
+        const auto lobby = GAMECLIENT.GetGameLobby();
+        const unsigned me = GAMECLIENT.GetPlayerId();
+        // How the others get in: the port is always named.
+        const std::string joinText = party.GetCtrl<ctrlText>(dskParty::ID_Address)->GetText();
+        BOOST_TEST(joinText.find(portText) != std::string::npos);
+        // One card per tribe; the open ones wait for players and are not computer players (local F7c would be).
+        BOOST_TEST_REQUIRE(lobby->getNumPlayers() >= 2u);
+        unsigned remoteSlot = 0;
+        for(unsigned id = 0; id < lobby->getNumPlayers(); ++id)
+        {
+            const auto* card = party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + id);
+            BOOST_TEST_REQUIRE(card);
+            BOOST_TEST(card->IsReadOnly() == (id != me));
+            if(id != me)
+            {
+                BOOST_TEST((lobby->getPlayer(id).ps == PlayerState::Free));
+                BOOST_TEST(card->GetText() == _("Open: waiting for a player"));
+                if(!remoteSlot)
+                    remoteSlot = id;
+            }
+        }
+        // The host's own card edits its colour through the server.
+        BOOST_TEST(focusedId(0) == dskParty::ID_Start);
+        focus(dskParty::ID_Net + me);
+        const unsigned colorBefore = lobby->getPlayer(me).color;
+        press(pad, PadButton::DpadRight);
+        frame();
+        await([&] { return lobby->getPlayer(me).color != colorBefore; });
+
+        // A remote player joins through the real server.
+        BOOST_TEST_REQUIRE(host.Connect("127.0.0.1", port, false));
+        await([&] {
+            receiveHost();
+            return hostSlot.has_value();
+        });
+        send(GameMessage_Server_Type(ServerType::Direct, rttr::version::GetRevision()));
+        await([&] {
+            receiveHost();
+            return hostVersion;
+        });
+        send(GameMessage_Server_Password("secret"));
+        await([&] {
+            receiveHost();
+            return hostPassword;
+        });
+        send(GameMessage_Player_Name(0xFF, "Remote"));
+        CompressedData data;
+        unsigned checksum = 0;
+        BOOST_TEST_REQUIRE(data.CompressFromFile(mapPath(), &checksum));
+        send(GameMessage_Map_Checksum(checksum, 0));
+        const unsigned remote = *hostSlot;
+        await([&] { return lobby->getPlayer(remote).ps == PlayerState::Occupied; });
+        await([&] { return lobby->getPlayer(remote).name == "Remote"; });
+        const auto* remoteCard = party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + remote);
+        BOOST_TEST(remoteCard->IsReadOnly());
+        BOOST_TEST(remoteCard->IsJoined());
+        BOOST_TEST(remoteCard->GetText().find("Remote") == 0u);
+        BOOST_TEST(remoteCard->GetText().find(_("not ready")) != std::string::npos);
+
+        // Start waits for everybody to be ready, and says for whom.
+        focus(dskParty::ID_Start);
+        press(pad, PadButton::A);
+        frame();
+        auto* box = dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow());
+        BOOST_TEST_REQUIRE(box);
+        BOOST_TEST(box->GetTitle() == _("Not ready"));
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+
+        // Chat both ways: the remote's line shows up, the host's line reaches the remote.
+        send(GameMessage_Chat(0xFF, ChatDestination::All, "hello from afar"));
+        await([&] { return party.GetCtrl<ctrlChat>(dskParty::ID_Chat)->GetNumMessages() > 0u; });
+        type(dskParty::ID_ChatEdit, U"welcome");
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Return));
+        await([&] {
+            receiveHost();
+            return std::find(chats.begin(), chats.end(), "welcome") != chats.end();
+        });
+        BOOST_TEST(party.GetCtrl<ctrlEdit>(dskParty::ID_ChatEdit)->GetText().empty());
+
+        // Ready: the card says so and Start counts down; open slots are closed for the start.
+        send(GameMessage_Player_Ready(0xFF, true));
+        await([&] { return lobby->getPlayer(remote).isReady; });
+        BOOST_TEST(remoteCard->GetText().find(_("not ready")) == std::string::npos);
+        const auto linesBefore = party.GetCtrl<ctrlChat>(dskParty::ID_Chat)->GetNumMessages();
+        focus(dskParty::ID_Start);
+        press(pad, PadButton::A);
+        frame();
+        BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        await([&] { return party.GetCtrl<ctrlChat>(dskParty::ID_Chat)->GetNumMessages() > linesBefore; });
+        for(unsigned id = 0; id < lobby->getNumPlayers(); ++id)
+        {
+            if(id != me && id != remote)
+                await([&] { return lobby->getPlayer(id).ps == PlayerState::Locked; });
+        }
+        // The host may still stop it; the open slots open again for players who are on their way.
+        BOOST_TEST(party.GetCtrl<ctrlTextButton>(dskParty::ID_Start)->GetText() == _("Cancel start"));
+        press(pad, PadButton::A);
+        frame();
+        for(unsigned id = 0; id < lobby->getNumPlayers(); ++id)
+        {
+            if(id != me && id != remote)
+                await([&] { return lobby->getPlayer(id).ps == PlayerState::Free; });
+        }
+        await([&] { return party.GetCtrl<ctrlTextButton>(dskParty::ID_Start)->GetText() == _("Start game"); });
+        // Mouse: a click on a row of the own card changes that row.
+        auto* ownCard = party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + me);
+        const auto nationBefore = lobby->getPlayer(me).nation;
+        MouseCoords nationRow(ownCard->GetDrawPos() + DrawPoint(20, 22 + 16 + 8));
+        WINDOWMANAGER.Msg_MouseMove(nationRow);
+        nationRow.ldown = true;
+        WINDOWMANAGER.Msg_LeftDown(nationRow);
+        nationRow.ldown = false;
+        WINDOWMANAGER.Msg_LeftUp(nationRow);
+        await([&] { return lobby->getPlayer(me).nation != nationBefore; });
+        // The host lets co-players in.
+        BOOST_TEST(!GAMECLIENT.AreCoopMembersAllowed());
+        click(*party.GetCtrl<Window>(dskParty::ID_Coop));
+        await([] { return GAMECLIENT.AreCoopMembersAllowed(); });
+        BOOST_TEST(party.GetCtrl<ctrlTextButton>(dskParty::ID_Coop)->GetText() == _("Co-players: allowed"));
+        // A player who holds the game up can be removed: A on their card, then Yes.
+        focus(dskParty::ID_Net + remote);
+        press(pad, PadButton::A);
+        frame();
+        auto* removeBox = dynamic_cast<iwMsgbox*>(WINDOWMANAGER.GetTopMostWindow());
+        BOOST_TEST_REQUIRE(removeBox);
+        BOOST_TEST(removeBox->GetTitle() == _("Remove player"));
+        click(*removeBox->GetCtrl<Window>(2)); // Yes (iwMsgbox ID_BT_0)
+        await([&] { return lobby->getPlayer(remote).ps == PlayerState::Free; });
+        (void)remoteSlot;
     });
 }
 
