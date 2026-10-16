@@ -175,7 +175,7 @@ struct PartyFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
                 GAMECLIENT.SetInterface(&ci());
                 WINDOWMANAGER.Switch(dskHome::Create());
                 frame();
-            }
+            } // LCOV_EXCL_STOP
         }
         BOOST_TEST_REQUIRE(ready);
         BOOST_TEST_REQUIRE(until([count] { return GAMECLIENT.GetSharedLocalViews() == count - 1; }));
@@ -210,13 +210,13 @@ struct PartyFixture : rttr::test::LocalGameFixture, rttr::test::MenuPadFixture
             click(*maps->GetCtrl<Window>(dskFrontEndMaps::ID_Continue));
             ready = until([] { return desktopAs<dskParty>() || question(); }) && desktopAs<dskParty>();
             if(!ready)
-            {
+            { // LCOV_EXCL_START only taken when the random port was busy
                 GAMECLIENT.Stop();
                 GAMESERVER.Stop();
                 GAMECLIENT.SetInterface(&ci());
                 WINDOWMANAGER.Switch(dskHome::Create());
                 frame();
-            }
+            } // LCOV_EXCL_STOP
         }
         BOOST_TEST_REQUIRE(ready);
         BOOST_TEST_REQUIRE(GAMECLIENT.GetGameLobby()->getNumPlayers() == 3u);

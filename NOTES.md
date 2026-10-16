@@ -37,6 +37,7 @@ first failed one check: NetworkMapHost… compared the status with the English l
 earlier test leaves en_GB loaded ("…for the game."). The five literal status checks in testFrontEndOnline.cpp now
 compare with _(); online+Internet suites and the full Test_splitscreen pass after that. CHANGELOG Unreleased has the player lines; release 0.1.20 once master CI is green.
 Release 0.1.20 (PR59 + F7c): one-shot continuation (04:30 UTC) tags it once c5b4df4a3 CI is green.
+c5b4df4a3 CI was red (2026-10-16): MSVC ambiguous GetCtrl in the dskParty::UpdateRules lambda (now via a Window& reference) and gcc-10 coverage on the port-retry branch of testFrontEndParty (LCOV_EXCL). Fixed on master; continuation c3af4bdf checks the new head.
 
 ## 2026-10-15 — Sol F8c Internet lobby, hosting and connection progress (local gates passed; PR59 CI pending)
 

@@ -582,8 +582,10 @@ void dskParty::UpdateRules()
     if(!ordinary_)
         return;
     const GlobalGameSettings& ggs = rules_;
-    const auto set = [this](const Rule rule, const std::string& text) {
-        auto* button = GetCtrl<ctrlTextButton>(ID_Rule + static_cast<unsigned>(rule));
+    // MSVC cannot pick the const/non-const GetCtrl overload through a captured this, so go through a reference
+    Window& self = *this;
+    const auto set = [this, &self](const Rule rule, const std::string& text) {
+        auto* button = self.GetCtrl<ctrlTextButton>(ID_Rule + static_cast<unsigned>(rule));
         if(button->GetText() != text)
             button->SetText(text);
         button->SetEnabled(IsRuleAllowed(rule));
