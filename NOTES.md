@@ -38,7 +38,8 @@ into the conditions, NOLINTNEXTLINE like the other fixtures); Test_splitscreen b
 ControllerPanelModel, FrontEndPartyTests pass (locally needs USER=jarvis HOME=build/testhome TMPDIR=build/tmp21:
 without them "Could not get username" and cross-device copy_file errors). Continuation now 81481476 (14:49 UTC).
 81481476 (14:50 UTC): newest code commit is dc4d224fd (Warpzone S2 files); Unit tests green, Static analysis
-still in Clang-Tidy (takes ~80 min). Continuation now 879ea664 (15:35 UTC).
+still in Clang-Tidy (takes ~80 min). Pushing the NOTES commit 1b760b29e CANCELLED that run (workflow concurrency):
+never push docs while waiting on CI. Continuation now dbd4c2aa (16:21 UTC), judging CI on 1b760b29e (same code).
 Next on this item: Help page, more pages (slices 4–8) only if Jan's feedback asks for them.
 
 ## 2026-10-16 — Pre-coop saves (roadmap siedler-pre-coop-saves done)
