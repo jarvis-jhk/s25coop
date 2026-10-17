@@ -1,5 +1,11 @@
 # Session notes
 
+## 2026-10-17 — CI fix: -Wnoexcept in testPadGlyphs
+
+Unit tests on 3fc8fc6 failed on all GCC 10–16 jobs: -Wnoexcept (Werror) on the counting lambda passed to
+DrawKeyRuns in testPadGlyphs.cpp. Lambda is noexcept now (clang-format 10 layout); PadGlyphs suite passes locally.
+Rule again: lambdas handed to draw callbacks in tests need `noexcept` for GCC's -Wnoexcept.
+
 ## 2026-10-17 — Pixel-art Xbox button glyphs (roadmap siedler-xbox-button-glyphs)
 
 Quota filler t_mvbm7vms1vkr2k. No open issues/PRs. Generator moved into the repo (tools/coop/padglyphs.py, smaller

@@ -81,7 +81,8 @@ BOOST_FIXTURE_TEST_CASE(InputsBecomeImagesAndADpadGroupBecomesOne, GlyphFixture)
 
     // The images are drawn, no badge rectangle is emitted for them.
     unsigned rects = 0;
-    brief::DrawKeyRuns(DrawPoint(0, 0), lines[0].runs, *NormalFont, [&rects](const Rect&, unsigned) { ++rects; });
+    brief::DrawKeyRuns(DrawPoint(0, 0), lines[0].runs, *NormalFont,
+                       [&rects](const Rect&, unsigned) noexcept { ++rects; });
     BOOST_TEST(rects == 0u);
 }
 
