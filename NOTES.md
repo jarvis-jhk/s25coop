@@ -5,6 +5,8 @@
 Unit tests on 3fc8fc6 failed on all GCC 10–16 jobs: -Wnoexcept (Werror) on the counting lambda passed to
 DrawKeyRuns in testPadGlyphs.cpp. Lambda is noexcept now (clang-format 10 layout); PadGlyphs suite passes locally.
 Rule again: lambdas handed to draw callbacks in tests need `noexcept` for GCC's -Wnoexcept.
+Follow-up (6467d05 run 38988173326): only gcc-10 coverage job failed — that lambda is never called by design
+(no badges), so checkTestCoverage flagged line 85; marked LCOV_EXCL_LINE in cdcf16a+1.
 
 ## 2026-10-17 — Pixel-art Xbox button glyphs (roadmap siedler-xbox-button-glyphs)
 
