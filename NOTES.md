@@ -1,5 +1,10 @@
 # Session notes
 
+## 2026-10-17 — 0.1.22 released (World map + Xbox button glyphs)
+
+Unit tests + Static analysis green on 903bba395; CHANGELOG Unreleased → 0.1.22 (a02c69f24), tag v0.1.22.
+Roadmap siedler-xbox-button-glyphs done, Jan told once with the link. Next version > 0.1.22. Continuation chain ends here.
+
 ## 2026-10-17 — CI fix: -Wnoexcept in testPadGlyphs
 
 Unit tests on 3fc8fc6 failed on all GCC 10–16 jobs: -Wnoexcept (Werror) on the counting lambda passed to
