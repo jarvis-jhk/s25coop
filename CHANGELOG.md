@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.22
 
 - The World campaign shows its original world map again when you pick a mission: continents you cannot play
   yet are dark, conquered ones carry a flag. Click a continent, or move between them with the D-pad, to choose
