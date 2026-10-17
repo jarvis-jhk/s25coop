@@ -1,5 +1,12 @@
 # Session notes
 
+## 2026-10-17 — Warpzone fault reporting requested (t_mvc434xxbhmtv, from the warpzone lane)
+
+Warpzone wants crashes/caught faults reported through its feedback API (wz_report / wz_report_problem, tier 0 POST
+/api/v1/feedback). Not doable yet: newest libwarpzone release is v0.1.2 and the endpoint answers 404 on production.
+Recorded as ROADMAP item 7 step W6 (blocked). Launcher-started crashes are already reported by Warpzone itself.
+The ntfy → GitHub fault path stays as is. Next: when warpzone v0.1.3 is out and the endpoint is live, do W6 (after W1).
+
 ## 2026-10-17 — 0.1.22 released (World map + Xbox button glyphs)
 
 Unit tests + Static analysis green on 903bba395; CHANGELOG Unreleased → 0.1.22 (a02c69f24), tag v0.1.22.

@@ -37,6 +37,12 @@ starting the game and playing it are still upstream's mouse screens with control
    ☐ W4 F5/F6 catalogs install maps/scenarios/campaigns from the mod archive · ◐ W5 (2026-10-16: a folder the launcher found is used via WARPZONE_DATA_S2_GOLD) Windows: the game also finds the
    original files at %USERPROFILE%\.local\share\s25coop\S2 (where the launcher copies them; today only next to the exe),
    or a first-start importer the descriptor calls via import_args. Raise `tier` in the descriptor with each step.
+   ☐ W6 (warpzone lane t_mvc434xxbhmtv, 2026-10-17) fault reports through Warpzone, game id "s25coop" → lane siedler:
+   caught faults (failed load, corrupt save, network/background errors) via wz_report(wz,"bug",<stable title>,<detail>);
+   the crash handler writes title+backtrace to a file, the next start sends it with wz_report_problem(NULL,"s25coop",
+   <version>,"crash",…) and deletes it; tier 0 fallback = POST JSON to $WARPZONE_SERVER/api/v1/feedback. Stable titles,
+   no personal data. Keep the existing ntfy path until the Warpzone one is proven. BLOCKED: libwarpzone 0.1.3 not
+   released and /api/v1/feedback answers 404 (checked 2026-10-17) — start once both exist (needs W1 for wz_report).
 
 ## M0 — A version you can install and keep updated (first!)
 
