@@ -8,6 +8,9 @@ and the game will show the new sections after an update.
 - The World campaign shows its original world map again when you pick a mission: continents you cannot play
   yet are dark, conquered ones carry a flag. Click a continent, or move between them with the D-pad, to choose
   its mission; the list beside it follows.
+- Controller hints now show real Xbox-style buttons in the game's pixel look instead of coloured text boxes:
+  A/B/X/Y, LB/RB, LT/RT, View, Menu, the sticks and the D-pad (with just the arms you can press lit), both in
+  the bar under your screen part and at the bottom of the menus.
 
 ## 0.1.21
 

@@ -338,13 +338,16 @@ starting the game and playing it are still upstream's mouse screens with control
     Sol keyboard4b: reusable opt-in modal, owner-device routing, staged text, mixed input and lifetime
     regressions; integrated 2026-10-09. F7/F9 adoption and hardware acceptance are separate. See [ControllerKeyboard](doc/coop/ControllerKeyboard.md).
 
-- ☐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
+- ◐ Xbox button glyphs as pixel art (Jan, 2026-10-06: "proper Xbox controller button images but fitting the kinda
   pixelated esthetic of the game"; NOT now, after F1). Replace the code-drawn badges of the in-game brief and the new
   footer with images: A/B/X/Y (dark button, coloured letter), LB/RB, LT/RT, View, Menu, Guide, D-pad (all/single/
   up-down/left-right, one glyph for a grouped D-pad hint), left/right stick motion and L3/R3. Drawn from code by a
   generator script into an asset folder of 8-bit palette BMPs (palette index 0 transparent), so the artwork is
   reviewable and needs no licence; text badges stay the fallback when the asset is missing. A first prototype of the
   generator exists (see NOTES.md 2026-10-06). Check against the real font height and on the Deck screen.
+  2026-10-17: tools/coop/padglyphs.py → data/RTTR/assets/base/pad_glyphs (30 BMPs, ≤13 px, D-pad one image per lit
+  set); brief bar and front-end footer draw them via brief::DrawKeyRuns, badges stay the fallback (Test_splitscreen
+  PadGlyphs). Open: Jan's look on a real screen/Deck.
 - ☐ Toggleable help footer (Jan, 2026-10-06; NOT now, after F1): the description lines and the button help of the
   in-game brief, and the footer of the new menus, can be switched full → buttons only → off. Per view in a shared
   game (the system ring gets a "Help" entry), default in Options (F9), remembered in the settings.

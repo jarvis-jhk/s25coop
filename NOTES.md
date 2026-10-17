@@ -1,5 +1,19 @@
 # Session notes
 
+## 2026-10-17 — Pixel-art Xbox button glyphs (roadmap siedler-xbox-button-glyphs)
+
+Quota filler t_mvbm7vms1vkr2k. No open issues/PRs. Generator moved into the repo (tools/coop/padglyphs.py, smaller
+than the 2026-10-06 prototype: ≤13 px; D-pad as 15 images, one per lit set) → data/RTTR/assets/base/pad_glyphs
+(NNN.name.bmp, 8-bit, index 0 = TRANSPARENT_COLOR). Loader loads "pad_glyphs" after the start resources, non-fatal.
+KeyGlyph: brief::PadGlyph order, PadGlyphIndex/DpadBit, KeyRun::glyph, LayoutKeyGlyphs takes a GlyphLookup
+(default LOADER; tests never load it so old badge tests are unchanged), D-pad directions of a group share one image;
+DrawKeyRuns draws the image centred on the text line. Missing image → old badge. Test: Test_splitscreen PadGlyphs
+(3 cases: all 30 load/transparent/≤13 px; A, D-pad up+down as one image, B, RT; missing image keeps badges) plus
+PadKeyHint/PadCamera/PadBrief = 102 cases pass. Negative control: D-pad mask offset +1 fails 1 assertion (restored).
+Gotcha: libsiedler2::Load() cannot load a folder - use LoadFolder(ReadFolderInfo(dir)). Codex off; self-review only.
+Not seen: real font height vs 13 px glyph (centred, at most 1 px overhang), Deck. NEXT: release 0.1.22 (World map +
+glyphs) when Unit tests + Static analysis are green on this commit; then mark the roadmap item done.
+
 ## 2026-10-16 — World continent map on the new mission page (roadmap siedler-mission-presentation done)
 
 Quota filler t_mvbl5an91et6em. No open issues/PRs. dskFrontEndMissions now builds upstream's ctrlMapSelection

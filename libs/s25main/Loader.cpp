@@ -273,7 +273,12 @@ bool Loader::LoadFilesAtStart()
     if(!LoadSounds())
         return false;
 
-    return LoadResources({"io_new", "client", "languages", "logo", "menu", "rttr"});
+    if(!LoadResources({"io_new", "client", "languages", "logo", "menu", "rttr"}))
+        return false;
+    // s25coop: pixel-art controller buttons. Optional - without them the hints keep their text badges.
+    if(!Load(ResourceId("pad_glyphs"), GetPaletteN("pal5")))
+        logger_.write("Controller button images not found, using text labels\n");
+    return true;
 }
 
 bool Loader::LoadSounds()

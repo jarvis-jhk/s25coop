@@ -13,8 +13,16 @@ The right-stick camera badge and LT zoom-out / RT zoom-in badges follow the exis
 legacy input routing in the world, roads, rings, focused windows and Just watch.
 A zoom direction disappears at its target-zoom limit and returns after zooming away;
 the limit uses the commanded target, not the still-interpolating visual zoom.
-Labels remain readable without relying on colour. These are code-drawn shapes with no
-external artwork or additional licence dependency.
+Labels remain readable without relying on colour.
+
+Since the pixel-art slice the inputs are drawn as Xbox-style button images in the game's
+look (`data/RTTR/assets/base/pad_glyphs`, 8-bit palette BMPs, index 0 transparent). They
+are drawn from code by `tools/coop/padglyphs.py` - run it after changing the artwork; the
+file order is `brief::PadGlyph` in `input/KeyGlyph.h`. The D-pad has one image per set of
+lit arms, so all D-pad directions of one action share a single image. No image is taller
+than 13 px. The folder is optional: if it is missing, or an image is, that input keeps the
+code-drawn badge described above, so nothing depends on external artwork or a licence.
+Both the in-game bar and the front-end footer draw through `brief::DrawKeyRuns`.
 
 The bar measures badge padding with the actual UI font, keeps inputs with their action
 where they fit, and wraps between actions. A group too wide for the view falls back to
