@@ -169,7 +169,7 @@ void dskFrontEndMissions::OnLayout()
     layoutUnavailable_ = area.getSize().x < 480 || area.getSize().y < 260;
     auto* continents = GetCtrl<Window>(ID_ContinentMap);
     for(unsigned id = ID_Missions; id <= ID_Info; ++id)
-        GetCtrl<Window>(id)->SetVisible(!layoutUnavailable_ && !(id == ID_Preview && continents));
+        GetCtrl<Window>(id)->SetVisible(!layoutUnavailable_ && (id != ID_Preview || !continents));
     if(continents)
         continents->SetVisible(!layoutUnavailable_);
     auto* state = GetCtrl<ctrlText>(ID_State);
