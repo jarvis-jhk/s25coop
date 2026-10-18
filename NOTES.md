@@ -1,5 +1,25 @@
 # Session notes
 
+## Wochenreview 2026-10-18
+Direction: on track, but the order drifted. Week 4: 90 commits on master, Sol PRs #51–#59 integrated (F5b maps, F4
+campaigns, F10 loading, F5c scenarios, translations, F6b save previews, F8a–d online menus), F7b–F7d party page,
+pre-coop saves, controller side panel, World continent map, Xbox glyphs, Warpzone game-file handover; eight releases
+0.1.15–0.1.22, each with 3 assets. Master fe9d30d04 Unit tests + Static analysis green; Fault reports workflow green
+every ~2 h, no fault-report issues, no open issues/PRs. Fork sweep next 10-22. No code off-goal.
+Found and fixed:
+- **F7e and Warpzone were not in the combined game roadmap.** Since 2026-10-16 the JARVIS-wide opus-filler (7eb27f1a,
+  replaced 847b8113) only picks combined-roadmap items, so it took the glyphs/side panel/World map that ROADMAP ranks
+  AFTER F7e and Warpzone. Added siedler-network-campaigns (F7e) and siedler-warpzone-rooms (W1–W3, W6 stays with it
+  once libwarpzone 0.1.3 exists) with doneWhen goals, ahead of the help footer. ROADMAP priorities 3/4 marked done.
+- **siedler-deck-auto-layout was "started" since 2026-10-12 with no worker, no claim, no task** — both workers skip a
+  started item, so it was stuck. Reset to open with a doneWhen (1280×800 layout test per new screen, released).
+- CLAUDE.md schedule list still named 847b8113; now 7eb27f1a + Sol tick 3a4972b5, and notes that while Codex is off
+  (Jan, 2026-10-15) the review is a read-only Opus subagent. Memory s25coop updated likewise.
+Quota: Claude week 68 % used 26 h into the week (pace 15 %) — not Siedler (idle since 10-17 08:00), the gate is
+correctly skipping. Disk: 88 % (25 GB free, was 7.5 GB), Siedler build/ 5.1 G — fine.
+Schedules otherwise right: work Mon/Wed/Fri, sweep 8th/22nd, this review Sun. Nothing for Jan: no decision only he
+can make. Still unverified on real hardware: everything since 0.1.10 on the Deck — waits for his test.
+
 ## 2026-10-17 — Warpzone fault reporting requested (t_mvc434xxbhmtv, from the warpzone lane)
 
 Warpzone wants crashes/caught faults reported through its feedback API (wz_report / wz_report_problem, tier 0 POST

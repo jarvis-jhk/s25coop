@@ -17,9 +17,10 @@ starting the game and playing it are still upstream's mouse screens with control
    F6b pre-coop save fixture done (2026-10-16): a save written by unmodified upstream loads with 2/4 local seats and online.
    Big, finished slices instead of many tiny ones; each still lands tested and with green CI.
 2. Load earlier single-player saves with several players (Jan, 2026-10-06) — part of F6, see M3.
-3. Pixel-art Xbox button glyphs and a toggleable help footer (Jan, 2026-10-06) — on the roadmap (M3), NOT now;
-   they ride on F1's shared footer.
-4. Controller panel (in-game side panel) and M1 mission presentation after the front end's F1–F7.
+3. ✅ Pixel-art Xbox button glyphs (0.1.22). The toggleable help footer comes after F7e and Warpzone W1–W3.
+4. ✅ Controller side panel (0.1.21) and World continent map (0.1.22) — done ahead of F7e (review 2026-10-18:
+   F7e and Warpzone were missing from the combined roadmap; added there as siedler-network-campaigns and
+   siedler-warpzone-rooms, ahead of the help footer).
 5. Release whenever player-visible changes are on master and its CI is green — tag, push, then CHECK the
    GitHub release exists.
 6. ✅ Addon translation refresh (PR55, integrated 2026-10-12): 24 upstream addon msgids registered and translated

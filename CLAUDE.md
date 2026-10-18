@@ -27,7 +27,8 @@ to the original as possible. First target: the official campaign already in RttR
   over and finishing other people's work is explicitly allowed.
 
 ## How changes get in (Jan, 2026-09-26)
-- Code is written on Opus 5.5. Every non-trivial change is then reviewed read-only by Codex, model
+- Code is written on Opus 5.5. (While Codex is switched off — Jan, 2026-10-15 — the review is a read-only Opus
+  subagent instead.) Every non-trivial change is then reviewed read-only by Codex, model
   exactly `gpt-6.1-sol` (Jan, 2026-09-30). Its sandbox cannot start in this container, so pipe the diff in:
   `git diff <range> | codex exec -m gpt-6.1-sol "Review this diff (on stdin) ..."`. Address or consciously reject each point.
   Never launch an EDITING Codex process in this checkout or in siedler-sol.
@@ -102,7 +103,10 @@ Commit coherent changes, push to origin. Never force-push published history.
 
 ## Recurring sessions (JARVIS schedule, dm:+4917677900449)
 - bfa0b45f — work session, Mon/Wed/Fri 02:00 UTC: next roadmap item.
-- 847b8113 — quota filler, every 3 h at :30: runs a work session only if quota-gate says "run".
+- 7eb27f1a — JARVIS-wide Opus quota filler (model-free action `opus-filler`, hourly at :30, replaced 847b8113 on
+  2026-10-16): when quota-gate says "run", queues the top open item of the combined game roadmap per free lane.
+  So the combined roadmap (`roadmap.ts list --game siedler`) must hold every ROADMAP priority, in order.
+- 3a4972b5 — Sol tick (action siedler-sol, every 10 min); runs on Opus while Codex is switched off.
 - 1f3aab11 — fork sweep, 8th and 22nd 03:00 UTC.
 - 42d01edc — weekly top-level review, Sun 04:00 UTC (Jan, 2026-09-26): no coding; check that
   schedules, running work and code still lead to the goal, fix what is ours, log it in NOTES.md.
