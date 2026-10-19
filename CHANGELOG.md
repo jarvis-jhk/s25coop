@@ -3,6 +3,14 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
+## Unreleased
+
+- Campaigns and saved games played online now use the full-screen party page too. Whoever joins plays the
+  host's tribe together with them - also without ticking "play together", when the game has no free tribe
+  left. Co-players see every tribe, who they play with and the chat; the host's Start gives every tribe
+  nobody took a computer player. A saved game keeps its saved tribes, and the ones past players had stay open
+  for whoever joins.
+
 ## 0.1.22
 
 - The World campaign shows its original world map again when you pick a mission: continents you cannot play

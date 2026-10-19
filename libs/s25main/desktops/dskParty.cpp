@@ -17,7 +17,6 @@
 #include "controls/ctrlTextButton.h"
 #include "coop/CoopLobby.h"
 #include "desktops/dskGameLoader.h"
-#include "desktops/dskGameLobby.h"
 #include "driver/KeyEvent.h"
 #include "frontend/MenuRoutes.h"
 #include "helpers/MaxEnumValue.h"
@@ -167,11 +166,8 @@ bool dskParty::IsFor(const ServerType serverType)
         return false;
     if(serverType == ServerType::Local)
         return lobby->isHost();
-    // Network games (F7d): a host's ordinary map, any joined player. A network campaign or save we host, and a
-    // co-player who plays somebody else's tribe, still need the classic lobby's co-player row.
-    if(lobby->isSavegame() || GAMECLIENT.IsCoopMember())
-        return false;
-    return !lobby->isHost() || !GAMECLIENT.IsHostingCampaign();
+    // Network games (F7d, F7e): every host and every joined player, co-players of somebody else's tribe included.
+    return true;
 }
 
 dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId, const ServerType serverType,
@@ -204,16 +200,17 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
         if(!lua_ && host_)
             lobbyController_->RemoveLuaScript();
     }
-    if(gameLobby_->isSavegame())
+    if(gameLobby_->isSavegame() && host_)
     {
         // The saved tribes stay as they were, but every one of them needs somebody to play it: the party shares
         // the host's tribe and nobody can take another seat here. A tribe a further local player played in its
         // own slot (an idle AI since saving) and one a network player left (a free slot, which the server would
         // refuse to start with) get a real AI, so they keep playing instead of standing still.
         const auto formerLocal = frontend::LocalSeats::FormerLocalPlayers(*gameLobby_, localPlayerId_);
+        // Online a past human's tribe stays open for whoever joins; one nobody took gets its AI at Start.
         for(unsigned i = 0; i < gameLobby_->getNumPlayers(); ++i)
         {
-            if(gameLobby_->getPlayer(i).ps == PlayerState::Free || helpers::contains(formerLocal, i))
+            if((!online_ && gameLobby_->getPlayer(i).ps == PlayerState::Free) || helpers::contains(formerLocal, i))
                 lobbyController_->SetPlayerState(i, PlayerState::AI, AI::Info(AI::Type::Default, AI::Level::Easy));
         }
     } else if(!online_) // a network game keeps its open slots for the players who join
@@ -277,6 +274,8 @@ dskParty::dskParty(std::shared_ptr<GameLobby> gameLobby, const unsigned playerId
         UpdateCoop();
     }
     SetEntryFocus(ID_Start);
+    if(GAMECLIENT.IsCoopMember())
+        BecomeCoPlayer();
     Layout();
     GAMECLIENT.SetInterface(this);
 }
@@ -437,7 +436,7 @@ void dskParty::CreateNetCards()
     {
         AddCtrl(std::make_unique<ctrlLobbyPlayerCard>(this, ID_Net + i, DrawPoint(0, 0), Extent(1, 1), NormalFont,
                                                       LobbyPlayerCardModel(i, NetCardSnapshot(i)),
-                                                      i != localPlayerId_));
+                                                      i != localPlayerId_ || GAMECLIENT.IsCoopMember()));
     }
     UpdateNetCards();
 }
@@ -459,7 +458,10 @@ LobbyPlayerCardModel::Snapshot dskParty::NetCardSnapshot(const unsigned playerId
             reason = _("Host chooses");
         else
             reason = host_ ? _("A: remove this player") : _("Chosen by that player");
-    }
+    } else if(GAMECLIENT.IsCoopMember())
+        reason = _("Chosen by that player"); // a co-player plays the tribe its player set up
+    else if(gameLobby_->isSavegame())
+        reason = _("Saved game"); // the server would accept a change the saved world does not have
     constexpr std::array ownKeys = {"ownColor", "ownNation", "ownTeam"};
     for(unsigned row = 0; row < ownKeys.size(); ++row)
     {
@@ -468,7 +470,7 @@ LobbyPlayerCardModel::Snapshot dskParty::NetCardSnapshot(const unsigned playerId
             snapshot.lockReasons[row] = _("Fixed by map script");
     }
     snapshot.lockReasons[static_cast<unsigned>(LobbyPlayerCardModel::Row::SharedTribe)] =
-      _("Online: a tribe for each player");
+      ordinary_ ? _("Online: a tribe for each player") : _("One tribe required");
     return snapshot;
 }
 
@@ -489,7 +491,7 @@ std::string dskParty::NetCardText(const unsigned playerId) const
         if(member.leader == playerId)
             coPlayers += " + " + member.name;
     }
-    if(playerId == localPlayerId_)
+    if(playerId == localPlayerId_ && !GAMECLIENT.IsCoopMember())
         return helpers::format(_("%1% (you)"), player.name) + coPlayers;
     // Network players: whether they are ready is what the host waits for; the ping says how well they are connected.
     return helpers::format(_("%1%: %2%, %3% ms"), player.name, player.isReady ? _("ready") : _("not ready"),
@@ -552,7 +554,7 @@ bool dskParty::HandleNetCardInput(const PadButton button)
 {
     auto* card = GetCtrl<ctrlLobbyPlayerCard>(ID_Net + localPlayerId_);
     auto& focus = WINDOWMANAGER.GetPadInput().GetFocus(0);
-    if(!card || focus.GetFocused() != card)
+    if(!card || focus.GetFocused() != card || GAMECLIENT.IsCoopMember())
         return false;
     auto& model = card->GetModel();
     switch(button)
@@ -854,7 +856,11 @@ void dskParty::SetTogether(const bool together)
 void dskParty::UpdateModeText()
 {
     std::string text;
-    if(online_)
+    if(online_ && GAMECLIENT.IsCoopMember())
+        text = helpers::format(_("You play together with %1%"), gameLobby_->getPlayer(localPlayerId_).name);
+    else if(online_ && !ordinary_ && !gameLobby_->isSavegame())
+        text = _("Everyone plays the campaign's tribe together.");
+    else if(online_)
         text = _("Every player has a tribe of their own.");
     else if(gameLobby_->isSavegame())
         text = _("Everyone plays the saved tribe together.");
@@ -976,8 +982,8 @@ void dskParty::OpenRules(const bool open)
     rulesOpen_ = open;
     for(unsigned i = 0; i < seats_.size(); ++i)
         GetCtrl<Window>(ID_Seat + i)->SetVisible(!open);
-    for(const unsigned id : {ID_Start, ID_Rules})
-        GetCtrl<Window>(id)->SetVisible(!open);
+    GetCtrl<Window>(ID_Start)->SetVisible(!open && !coPlayer_); // a co-player has no Start or Ready
+    GetCtrl<Window>(ID_Rules)->SetVisible(!open);
     GetCtrl<Window>(ID_Hint)->SetVisible(!open && !online_);
     if(online_)
     {
@@ -1127,7 +1133,7 @@ void dskParty::OnChoose(const unsigned ctrl_id)
     } else if(ctrl_id >= ID_Net && ctrl_id <= ID_NetLast && online_)
     {
         const unsigned playerId = ctrl_id - ID_Net;
-        if(playerId == localPlayerId_)
+        if(playerId == localPlayerId_ && !GAMECLIENT.IsCoopMember())
         {
             // A or a click on the own card: the next value of its selected row (the D-pad steps both ways).
             if(countdown_)
@@ -1166,7 +1172,8 @@ void dskParty::OnChoose(const unsigned ctrl_id)
 
 void dskParty::SetReady(const bool ready)
 {
-    if(host_)
+    // A co-player has no readiness of its own: its player's counts.
+    if(host_ || GAMECLIENT.IsCoopMember())
         return;
     auto& player = gameLobby_->getPlayer(localPlayerId_);
     if(player.isReady != ready)
@@ -1199,7 +1206,8 @@ void dskParty::UpdateCoop()
     }
     // Like the classic lobby's co-player row: with the host's permission, play a player's tribe together with them.
     const auto leaders = coop::lobby::leaderCandidates(*gameLobby_, localPlayerId_);
-    const bool show = GAMECLIENT.AreCoopMembersAllowed() && !leaders.empty() && !rulesOpen_;
+    const bool show =
+      GAMECLIENT.AreCoopMembersAllowed() && !GAMECLIENT.IsCoopMember() && !leaders.empty() && !rulesOpen_;
     button->SetVisible(show);
     button->SetEnabled(show && !GAMECLIENT.IsCoopSwitchPending());
     if(show)
@@ -1212,12 +1220,11 @@ void dskParty::UpdateCoop()
 
 void dskParty::CI_CoopMembersChanged()
 {
-    // A co-player acts for the player they joined; the classic lobby has the view for that (their own row is
-    // gone, the leader's readiness counts). The game is the same, only the page changes.
-    if(GAMECLIENT.IsCoopMember())
+    // Our switch to co-play was accepted: from now on we act for the player we joined.
+    if(online_ && GAMECLIENT.IsCoopMember() && !coPlayer_)
     {
-        WINDOWMANAGER.Switch(
-          std::make_unique<dskGameLobby>(serverType_, gameLobby_, GAMECLIENT.GetPlayerId(), std::move(lobbyClient_)));
+        BecomeCoPlayer();
+        Layout();
         return;
     }
     if(online_)
@@ -1225,8 +1232,34 @@ void dskParty::CI_CoopMembersChanged()
     UpdateCoop();
 }
 
+void dskParty::BecomeCoPlayer()
+{
+    // A co-player plays its player's tribe (doc/coop/SharedPlayerSlot.md): no card of its own, no readiness, no
+    // Start; the leader's card names it, and the chat and Leave stay.
+    OpenRules(false); // the new cards belong under a closed drawer
+    coPlayer_ = true;
+    localPlayerId_ = GAMECLIENT.GetPlayerId();
+    for(unsigned i = 0; i < MAX_PLAYERS; ++i)
+        DeleteCtrl(ID_Net + i);
+    CreateNetCards();
+    GetCtrl<Window>(ID_Start)->SetVisible(false);
+    SetEntryFocus(ID_ChatEdit);
+    // Already on screen (the switch was accepted here): the controller must not stay on a hidden or deleted control.
+    auto& focus = WINDOWMANAGER.GetPadInput().GetFocus(0);
+    if(focus.GetRoot() == this)
+    {
+        const auto* focused = focus.GetFocused();
+        if(!focused || !focused->IsVisible() || (focused->GetID() >= ID_Net && focused->GetID() <= ID_NetLast))
+            focus.FocusCtrl(GetCtrl<Window>(ID_ChatEdit));
+    }
+    UpdateModeText();
+    UpdateCoop();
+}
+
 void dskParty::Start()
 {
+    if(coPlayer_)
+        return;
     if(!host_)
     {
         SetReady(!gameLobby_->getPlayer(localPlayerId_).isReady);
@@ -1271,6 +1304,8 @@ void dskParty::Start()
         lua_->EventPlayerReady(localPlayerId_);
     if(ordinary_)
         ApplyOpponents();
+    else if(online_)
+        FillOpenSlots();
     countdown_ = true;
     UpdateRules();
     if(online_)
@@ -1363,6 +1398,19 @@ void dskParty::ApplyOpponents()
             if(player.aiInfo.type != AI::Type::Default || player.aiInfo.level != level)
                 lobbyController_->SetPlayerState(id, PlayerState::AI, AI::Info(AI::Type::Default, level));
         }
+    }
+}
+
+void dskParty::FillOpenSlots()
+{
+    // A campaign or save has no rules drawer: a tribe nobody joined plays on as a computer player (the server starts
+    // no game with an open slot, and a saved tribe cannot be closed). Opened again if the start is refused.
+    for(unsigned id = 0; id < gameLobby_->getNumPlayers(); ++id)
+    {
+        if(gameLobby_->getPlayer(id).ps != PlayerState::Free)
+            continue;
+        closedByOpponents_.push_back({id, PlayerState::Free, AI::Info(AI::Type::Default, AI::Level::Easy)});
+        lobbyController_->SetPlayerState(id, PlayerState::AI, AI::Info(AI::Type::Default, AI::Level::Easy));
     }
 }
 
@@ -1500,7 +1548,10 @@ void dskParty::CI_PlayerDataChanged(unsigned /*playerId*/)
 {
     UpdateCards();
     if(online_)
+    {
         UpdateNetCards();
+        UpdateModeText(); // a co-player's line names its player
+    }
     UpdateRules();
 }
 
@@ -1555,6 +1606,7 @@ void dskParty::CI_PlayersSwapped(const unsigned player1, const unsigned player2)
         for(unsigned i = 0; i < gameLobby_->getNumPlayers() && i < MAX_PLAYERS; ++i)
             DeleteCtrl(ID_Net + i);
         CreateNetCards();
+        UpdateModeText();
         Layout();
     }
 }

@@ -1,5 +1,33 @@
 # Session notes
 
+## 2026-10-19 — F7e1: network campaigns/saves and co-players on the party page
+
+Work session t_mvelx8ms0n5ju. No open issues/PRs. F7e split: F7e1 (this) and F7e2 local splitscreen seats on an online
+game (roadmap item siedler-network-campaigns stays open until F7e2 + release).
+- `dskParty::IsFor`: every network game from the new menus (host or joined, co-players included) gets the party page;
+  dskGameLobby only from Classic menus now.
+- Online save: past humans' slots stay Free for joiners (local still gives them an AI); savegame AI fill only on the
+  host (before, a joiner would have sent host-only state changes). Own card locked "Saved game". dskFrontEndHost
+  allows co-players for saves too, not only campaigns.
+- Start of an online campaign/save: `FillOpenSlots` gives every Free slot a Default AI (via closedByOpponents_, so a
+  refused start reopens it). Without it the start never happens (negative control: test fails at Loading).
+- Co-player (`coPlayer_`, `BecomeCoPlayer`): page stays (no switch to the classic lobby), localPlayerId_ = leader,
+  all cards read-only, Start/Ready and co-play button hidden (also after the Rules drawer), mode line "You play
+  together with X", SetReady/Start/own-card input guarded. Chat works (server forwards member chat).
+- GameClient: Player_Id(NO_PLAYER_ID) for a non-host now asks Coop_JoinMember(COOP_LEADER_HOST) (autoCoopMember);
+  the server keeps the socket only when co-players are allowed, else its JoinMember(NO) ends in ServerFull as before.
+  Conscious decision: a full ordinary game with co-players allowed also takes the joiner as the host's co-player.
+  Against a server without that refusal message (upstream) the error reads "connection lost" — version mismatch anyway.
+Review: read-only Opus subagent (Codex off). Fixed: Start reappeared after Rules/Done for a co-player, mode line not
+refreshed on name change/swap. Accepted: a plain joiner cannot tell a campaign from a map (IsHostingCampaign is
+host-only) so its texts say "own tribe" — with no free tribe it becomes a co-player anyway.
+Tests (Debug, focused): FrontEndOnline (new FullGameThatTakesCoPlayersJoinsTheHostsTribe, co-player checks in
+RealHostTribe…/JoinedPlayer…, LanPassword…), FrontEndLoad (NetworkSaveSelection… now PastHuman: open slot, Saved
+game lock, coop allowed, Start fills the slot and loads), FrontEndParty, FrontEndCampaigns (network campaign → party),
+MenuPadRemoteLobbyCard, MenuPadCampaign: 76 cases pass. No new msgids. Not seen: real screens, second PC, Deck.
+Local test env: USER=jarvis HOME=build/homef7e TMPDIR=build/tmpf7e.
+NEXT: CI green on this commit → release 0.1.23 (CHANGELOG Unreleased has the entry). Then F7e2.
+
 ## Wochenreview 2026-10-18
 Direction: on track, but the order drifted. Week 4: 90 commits on master, Sol PRs #51–#59 integrated (F5b maps, F4
 campaigns, F10 loading, F5c scenarios, translations, F6b save previews, F8a–d online menus), F7b–F7d party page,

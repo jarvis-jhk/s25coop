@@ -27,13 +27,13 @@
 #include "desktops/dskFrontEndLan.h"
 #include "desktops/dskFrontEndMaps.h"
 #include "desktops/dskFrontEndOnline.h"
-#include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskMultiPlayer.h"
 #include "desktops/dskParty.h"
 #include "driver/KeyEvent.h"
 #include "driver/MouseCoords.h"
 #include "files.h"
+#include "helpers/format.hpp"
 #include "ingameWindows/iwControllerKeyboard.h"
 #include "ingameWindows/iwDirectIPCreate.h"
 #include "ingameWindows/iwLobbyConnect.h"
@@ -318,6 +318,48 @@ struct JoinFixture : rttr::test::LocalGameFixture, OnlineFixture
         if(ipv6)
             choose(Page::ID_Ipv6);
     }
+    /// What a co-player of `leader` sees: every card read-only, no Start or co-play button, who it plays with, chat.
+    void checkCoPlayerPage(const unsigned leader)
+    {
+        auto& party = *desktopAs<dskParty>();
+        BOOST_TEST_REQUIRE(party.IsOnline());
+        const auto lobby = GAMECLIENT.GetGameLobby();
+        for(unsigned id = 0; id < lobby->getNumPlayers(); ++id)
+            BOOST_TEST(party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + id)->IsReadOnly());
+        BOOST_TEST(!party.GetCtrl<Window>(dskParty::ID_Start)->IsVisible());
+        BOOST_TEST(!party.GetCtrl<Window>(dskParty::ID_Coop)->IsVisible());
+        // The host's rules can be looked at; closing them does not bring Start back.
+        if(auto* rules = party.GetCtrl<Window>(dskParty::ID_Rules))
+        {
+            click(*rules);
+            BOOST_TEST_REQUIRE(party.GetCtrl<Window>(dskParty::ID_RulesDone)->IsVisible());
+            click(*party.GetCtrl<Window>(dskParty::ID_RulesDone));
+            BOOST_TEST(!party.GetCtrl<Window>(dskParty::ID_Start)->IsVisible());
+            BOOST_TEST(party.GetCtrl<Window>(dskParty::ID_Net + leader)->IsVisible());
+        }
+        await([&] { return lobby->getPlayer(leader).name == "Fixture host"; });
+        frame();
+        BOOST_TEST(party.GetCtrl<ctrlText>(dskParty::ID_Mode)->GetText()
+                   == helpers::format(_("You play together with %1%"), "Fixture host"));
+        // The leader's card names its co-players, us among them.
+        await([&] {
+            return party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + leader)->GetText().find(" + ")
+                   != std::string::npos;
+        });
+        // Start belongs to the players: a co-player's does nothing, and nothing changes the leader's readiness.
+        const bool readyBefore = lobby->getPlayer(leader).isReady;
+        press(pad, PadButton::Start);
+        frame();
+        BOOST_TEST(lobby->getPlayer(leader).isReady == readyBefore);
+        BOOST_TEST(WINDOWMANAGER.GetTopMostWindow() == nullptr);
+        // The chat stays: a line typed here reaches the host.
+        type(dskParty::ID_ChatEdit, U"together");
+        WINDOWMANAGER.Msg_KeyDown(KeyEvent(KeyType::Return));
+        await([&] {
+            receiveHost();
+            return std::find(chats.begin(), chats.end(), "together") != chats.end();
+        });
+    }
     template<class F>
     void checkedJoin(F&& body)
     {
@@ -568,11 +610,51 @@ BOOST_FIXTURE_TEST_CASE(RealHostTribeMembershipUsesTheSelectedJoinPolicy, JoinFi
         choose(Page::ID_Coop);
         BOOST_TEST(page().GetCtrl<ctrlCheck>(Page::ID_Coop)->isChecked());
         choose(Page::ID_Connect);
-        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        // F7e: a co-player gets the party page too, as the player it joined.
+        await([] { return desktopAs<dskParty>() != nullptr; });
         BOOST_TEST(GAMECLIENT.IsCoopMember());
         BOOST_TEST_REQUIRE(hostSlot.has_value());
         BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
-        BOOST_TEST(GAMECLIENT.GetCoopMembers().size() == 1u);
+        await([] { return GAMECLIENT.GetCoopMembers().size() == 1u; });
+        checkCoPlayerPage(*hostSlot);
+    });
+}
+
+BOOST_FIXTURE_TEST_CASE(FullGameThatTakesCoPlayersJoinsTheHostsTribe, JoinFixture)
+{
+    checkedJoin([&] {
+        server();
+        joinHost();
+        BOOST_TEST_REQUIRE(hostSlot.has_value());
+        // Like a campaign whose mission script closed every other tribe: nobody gets a slot of their own.
+        for(unsigned id = 0; id < MAX_PLAYERS; ++id)
+        {
+            if(id != *hostSlot)
+                send(GameMessage_Player_State(static_cast<uint8_t>(id), PlayerState::Locked, AI::Info()));
+        }
+        // Co-players not allowed: the game is simply full.
+        send(GameMessage_Coop_AllowMembers(false));
+        await([&] {
+            receiveHost();
+            return !membersAllowed;
+        });
+        fill();
+        choose(Page::ID_Connect);
+        await([] { return !page().GetCtrl<ctrlConnectionProgress>(Page::ID_Connection)->IsConnecting(); });
+        BOOST_TEST(page().GetCtrl<ctrlText>(Page::ID_Status)->GetText() == ClientErrorToStr(ClientError::ServerFull));
+        BOOST_TEST(!GAMECLIENT.IsCoopMember());
+        // Allowed: the same join, without asking for it, plays the host's tribe together with it.
+        send(GameMessage_Coop_AllowMembers(true));
+        await([&] {
+            receiveHost();
+            return membersAllowed;
+        });
+        choose(Page::ID_Connect);
+        await([] { return desktopAs<dskParty>() != nullptr; });
+        BOOST_TEST(GAMECLIENT.IsCoopMember());
+        BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
+        await([] { return GAMECLIENT.GetCoopMembers().size() == 1u; });
+        checkCoPlayerPage(*hostSlot);
     });
 }
 
@@ -627,8 +709,13 @@ BOOST_FIXTURE_TEST_CASE(JoinedPlayerGetsThePartyPageWithOwnCardReadyChatAndCoPla
                    != std::string::npos);
         focus(dskParty::ID_Coop);
         press(pad, PadButton::A);
-        await([] { return GAMECLIENT.IsCoopMember() && desktopAs<dskGameLobby>() != nullptr; });
+        // F7e: the same page goes on, now as the host's co-player.
+        await([] { return GAMECLIENT.IsCoopMember(); });
+        frame();
+        BOOST_TEST(desktopAs<dskParty>() == &party);
         BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
+        checkCoPlayerPage(*hostSlot);
+        BOOST_TEST(party.GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + me)->IsReadOnly());
     });
 }
 
@@ -824,7 +911,7 @@ BOOST_FIXTURE_TEST_CASE(LanPasswordRetryAndHostTribeUseTheRealLanHandshake, Join
         type(Page::ID_Password, U"secret");
         choose(Page::ID_Coop);
         choose(Page::ID_Connect);
-        await([] { return desktopAs<dskGameLobby>() != nullptr; });
+        await([] { return desktopAs<dskParty>() != nullptr; });
         BOOST_TEST(GAMECLIENT.IsCoopMember());
         BOOST_TEST(GAMECLIENT.GetPlayerId() == *hostSlot);
     });

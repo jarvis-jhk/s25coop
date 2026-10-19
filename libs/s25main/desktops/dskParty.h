@@ -179,6 +179,10 @@ private:
     std::optional<Opponents> CurrentOpponents() const;
     /// Computer opponents on the tribes nobody sits on, just before the countdown, if the host chose them.
     void ApplyOpponents();
+    /// Online campaigns and saves: every open slot gets a computer player for the start
+    void FillOpenSlots();
+    /// Our client now plays somebody else's tribe as its co-player
+    void BecomeCoPlayer();
     /// The first rule the host may change (Done if none).
     Window* FirstRule();
     void SeatJoinedParty();
@@ -202,6 +206,8 @@ private:
     bool online_;
     /// We host the game (always so for a local one). A joined player only edits their own card and gets ready.
     bool host_;
+    /// Playing another player's tribe as its co-player (F7e)
+    bool coPlayer_ = false;
     std::unique_ptr<GameLobbyController> lobbyController_;
     std::unique_ptr<LuaInterfaceSettings> lua_;
     /// "Together" for a campaign (one human tribe) and a loaded save (shared by the party); an ordinary map with

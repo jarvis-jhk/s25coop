@@ -129,8 +129,14 @@ dependency on F1 (on-screen keyboard, addon category table and tabs, profiles) c
   network game): own card editable through GameClient commands (un-readies, as in the classic lobby), Start
   is Ready/Not Ready, rules read-only (add-ons viewable), "Hosted by …"; when the host allows co-players a
   "Play X's tribe" button joins as co-player and switches to dskGameLobby, which has the member view.
-  Still classic: network campaigns and saves we host, joining as co-player from the join form, local
-  splitscreen seats on an online game. Known: a player connecting in the instant the host presses Start can
+  Campaigns, saves and co-players (F7e1, 2026-10-19): a network campaign or save we host gets the page too (no
+  rules drawer; a save's own card is locked "Saved game", its past humans' tribes stay open for joiners). Co-players
+  are allowed by default for both. At Start every tribe still open gets a Default AI (opened again if the start is
+  refused). A co-player - joined from the form with "play together", switched with "Play X's tribe", or simply
+  joining a game that has no free tribe but takes co-players (the client then asks for the host's tribe by itself;
+  a refusal is "server full") - stays on the page as its player: every card read-only, no Start/Ready and no
+  co-play button, "You play together with X", the leader's card names it, chat and Leave stay.
+  Still classic: local splitscreen seats on an online game (F7e2). Known: a player connecting in the instant the host presses Start can
   land on a slot that is being closed and is kicked; the join line shows IPv4 only.
   Tests: `testFrontEndOnline.cpp` (NetworkPartyShows…, JoinedPlayerGetsThePartyPage…).
   Tests: `tests/s25Main/splitscreen/testFrontEndParty.cpp`, saves in `testFrontEndLoad.cpp`, maps in

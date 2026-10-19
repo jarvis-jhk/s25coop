@@ -10,7 +10,8 @@ starting the game and playing it are still upstream's mouse screens with control
 1. **New front end (M3 "Front end from scratch", [FrontEnd](doc/coop/FrontEnd.md))** is THE priority for both
    workers. Done: F1 framework, F2 title/join, F3 home, F7a seat logic (Opus); 4b on-screen keyboard, F9 options,
    F6a save browser, F5a map catalog, 3a/3b addon categories (Sol). Next (review 2026-10-11):
-   Opus F7b party page done (campaigns/scenarios/saves), F7c ordinary maps + rules drawer done, F7d online party page done (2026-10-16) → F7e network campaigns/saves + co-players on the party page.
+   Opus F7b party page done (campaigns/scenarios/saves), F7c ordinary maps + rules drawer done, F7d online party page done (2026-10-16), F7e1 network campaigns/saves + co-players on the party page done
+   (2026-10-19) → F7e2 local splitscreen seats on an online game.
    Sol F5b map browser (PR #51), F4 campaigns (PR #52), F10 loading screen (PR #53), F5c scenarios (PR #54),
    PR55 translations and F6b tactical save previews (PR #56) are integrated (2026-10-12).
    F8a–d online menus (PR57/58/59: join, LAN, Internet, network hosting, connection progress) integrated 2026-10-16.
@@ -312,9 +313,11 @@ starting the game and playing it are still upstream's mouse screens with control
       join address. F7d1 host of an ordinary map (Direct/LAN/Internet): tribe cards, ready, ping, chat, join
       line, remove a player, allow co-players; Start waits for ready and closes open slots. F7d2 joined
       players: own card, Ready, read-only rules, become a co-player.
-    - ☐ F7e network campaigns/saves hosted from the new menus and joining as a co-player on the party page
-      (member view); local splitscreen seats on an online game. Then the classic lobby is only reached from
-      Classic menus.
+    - ◐ F7e network campaigns/saves and co-players. ☑ F7e1 (2026-10-19): network campaigns/saves we host and
+      every co-player (member view) on the party page, co-players allowed for saves, open tribes get an AI at
+      Start, a join to a full game that takes co-players plays the host's tribe. ☐ F7e2 local splitscreen
+      seats on an online game (host and joined computer). Then the classic lobby is only reached from Classic
+      menus.
   - ☑ F8 online: host = F4–F6 with "open to network"; join = LAN list, direct IP, online lobby
     - ☑ F8a online entry + direct join: Home → Play online is a full-screen page (Join/LAN/Internet/Create);
       Join Game is a full-screen address/port/password form with IPv6 and host-tribe co-play (PR57, 2026-10-12).

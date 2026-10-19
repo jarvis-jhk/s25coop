@@ -17,7 +17,6 @@
 #include "desktops/dskFrontEndHost.h"
 #include "desktops/dskFrontEndMissions.h"
 #include "desktops/dskFrontEndOnline.h"
-#include "desktops/dskGameLobby.h"
 #include "desktops/dskHome.h"
 #include "desktops/dskParty.h"
 #include "desktops/dskSinglePlayer.h"
@@ -829,7 +828,12 @@ BOOST_FIXTURE_TEST_CASE(NetworkCampaignUsesTheSelectedMissionAndAllowsHostTribeC
         for(const char c : port)
             WINDOWMANAGER.Msg_KeyDown(KeyEvent(static_cast<char32_t>(c)));
         click(*form->GetCtrl<Window>(dskFrontEndHost::ID_Start));
-        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskGameLobby>() != nullptr; }));
+        // F7e: a network campaign we host gets the full-screen party page; the mission script owns the rules.
+        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskParty>() != nullptr; }));
+        BOOST_TEST(desktopAs<dskParty>()->IsOnline());
+        BOOST_TEST(!desktopAs<dskParty>()->HasRules());
+        BOOST_TEST(desktopAs<dskParty>()->GetCtrl<ctrlText>(dskParty::ID_Mode)->GetText()
+                   == "Everyone plays the campaign's tribe together.");
         BOOST_TEST(GAMECLIENT.IsHostingCampaign());
         BOOST_TEST(GAMECLIENT.GetLuaFilePath().filename() == "Mission2.lua");
         BOOST_TEST(GAMECLIENT.GetMapPath().filename() == "Mission2.SWD");

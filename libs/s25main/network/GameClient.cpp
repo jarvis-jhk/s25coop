@@ -94,6 +94,7 @@ void GameClient::ClientConfig::Clear()
     port = 0;
     isHost = false;
     coopMemberOf = 0xFF;
+    autoCoopMember = false;
 }
 
 GameClient::GameClient() : skiptogf(0), mainPlayer(0), state(ClientState::Stopped), ci(nullptr), replayMode(false) {}
@@ -131,6 +132,7 @@ bool GameClient::Connect(const std::string& server, const std::string& password,
     clientconfig.port = port;
     clientconfig.isHost = host;
     clientconfig.coopMemberOf = host ? 0xFF : coopMemberOf;
+    clientconfig.autoCoopMember = false;
 
     // Verbinden
     if(!mainPlayer.socket.Connect(server, port, use_ipv6, SETTINGS.proxy))
@@ -484,6 +486,15 @@ bool GameClient::OnGameMessage(const GameMessage_Player_Id& msg)
     // haben wir eine ungültige ID erhalten? (aka Server-Voll)
     if(msg.player == GameMessageWithPlayer::NO_PLAYER_ID)
     {
+        // s25coop: a full game that takes co-players (a campaign, a save) keeps the connection open for us; join the
+        // host's tribe then. If it does not, its refusal follows right after this message and ends in "full".
+        if(!clientconfig.isHost)
+        {
+            clientconfig.coopMemberOf = COOP_LEADER_HOST;
+            clientconfig.autoCoopMember = true;
+            mainPlayer.sendMsgAsync(new GameMessage_Coop_JoinMember(COOP_LEADER_HOST));
+            return true;
+        }
         OnError(ClientError::ServerFull);
         return true;
     }
@@ -539,7 +550,7 @@ bool GameClient::OnGameMessage(const GameMessage_Coop_JoinMember& msg)
     const bool anyLeader = clientconfig.coopMemberOf == COOP_LEADER_HOST;
     if(IsCoopMember() && msg.player == GameMessageWithPlayer::NO_PLAYER_ID)
     {
-        OnError(ClientError::CoopRefused);
+        OnError(clientconfig.autoCoopMember ? ClientError::ServerFull : ClientError::CoopRefused);
         return true;
     }
     if(!IsCoopMember() || (msg.player != clientconfig.coopMemberOf && !anyLeader))

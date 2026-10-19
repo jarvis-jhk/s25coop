@@ -246,7 +246,8 @@ void dskFrontEndHost::Start()
     }
     SETTINGS.server.ipv6 = ipv6;
     GAMECLIENT.SetHostingCampaign(campaign_.has_value());
-    if(campaign_)
+    // A campaign has one human tribe and a save is usually one too: whoever joins plays it together with the host.
+    if(campaign_ || map_->map_type == MapType::Savegame)
         GAMESERVER.SetAllowCoopMembers(true);
     GetCtrl<ctrlButton>(ID_Start)->SetEnabled(false);
     GetCtrl<ctrlConnectionProgress>(ID_Connection)->Start(type_);

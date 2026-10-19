@@ -313,7 +313,7 @@ BOOST_FIXTURE_TEST_CASE(JoinedControllersSitTogetherAndTheHostStarts, PartyFixtu
         open(2);
         auto& page = party();
         BOOST_TEST(dskParty::IsFor(ServerType::Local));
-        BOOST_TEST(!dskParty::IsFor(ServerType::LAN));
+        BOOST_TEST(dskParty::IsFor(ServerType::LAN)); // F7e: network campaigns get it too
         BOOST_TEST(page.GetSeats().IsTogether());
         BOOST_TEST_REQUIRE(page.GetSeats().size() == 4u);
         BOOST_TEST(page.GetSeats().NumTaken() == 2u);
@@ -468,7 +468,7 @@ BOOST_FIXTURE_TEST_CASE(PartyPageIsForEveryLocalHostOfTheNewMenus, PartyFixture)
     checked([&] {
         open(1);
         BOOST_TEST(dskParty::IsFor(ServerType::Local));
-        BOOST_TEST(!dskParty::IsFor(ServerType::LAN));
+        BOOST_TEST(dskParty::IsFor(ServerType::LAN)); // F7e: network campaigns get it too
         // A campaign has no rules to choose: the mission script owns them.
         BOOST_TEST(!party().HasRules());
         BOOST_TEST(party().GetCtrl<Window>(dskParty::ID_Rules) == nullptr);

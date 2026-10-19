@@ -13,6 +13,7 @@
 #include "controls/ctrlLobbyPlayerCard.h"
 #include "controls/ctrlTable.h"
 #include "controls/ctrlText.h"
+#include "controls/ctrlTextButton.h"
 #include "desktops/PlayerView.h"
 #include "desktops/dskFrontEndHost.h"
 #include "desktops/dskFrontEndLoad.h"
@@ -779,7 +780,7 @@ BOOST_FIXTURE_TEST_CASE(ExceptionalCleanupReachesTheConnectingProbeAndRestoresTh
 BOOST_FIXTURE_TEST_CASE(NetworkSaveSelectionUsesTheMaskedHostFormAndRealSavedLobby, ResumeFixture)
 {
     checked([&] {
-        saveSolo();
+        saveSolo(Slot1::PastHuman);
         joinParty(1);
         WINDOWMANAGER.Switch(dskFrontEndPage::Create(
           [] { return std::make_unique<dskFrontEndLoad>(boost::filesystem::path{}, ServerType::Direct); }));
@@ -808,16 +809,37 @@ BOOST_FIXTURE_TEST_CASE(NetworkSaveSelectionUsesTheMaskedHostFormAndRealSavedLob
         boost::filesystem::rename(backup, savedGame);
         // Reuse the port the fixture has already hosted successfully; saveSolo stopped its server.
         clickStart();
-        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskGameLobby>() != nullptr; }));
+        // F7e: a network save we host gets the full-screen party page too.
+        BOOST_TEST_REQUIRE(until([] { return desktopAs<dskParty>() != nullptr; }));
+        auto* party = desktopAs<dskParty>();
+        BOOST_TEST_REQUIRE(party->IsOnline());
         BOOST_TEST(GAMECLIENT.IsHost());
-        BOOST_TEST(GAMECLIENT.GetGameLobby()->isSavegame());
-        for(unsigned i = 1; i < savedPlayers.size(); ++i)
+        const auto lobby = GAMECLIENT.GetGameLobby();
+        BOOST_TEST(lobby->isSavegame());
+        // The past human's tribe stays open for whoever joins (a local party would give it an AI right away).
+        BOOST_TEST((lobby->getPlayer(1).ps == PlayerState::Free));
+        BOOST_TEST(party->GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + 1)->GetText()
+                   == "Open: waiting for a player");
+        for(unsigned i = 2; i < savedPlayers.size(); ++i)
         {
-            const auto& player = GAMECLIENT.GetGameLobby()->getPlayer(i);
+            const auto& player = lobby->getPlayer(i);
             BOOST_TEST((player.ps == savedPlayers[i].ps));
             BOOST_TEST((player.nation == savedPlayers[i].nation));
             BOOST_TEST(player.color == savedPlayers[i].color);
         }
+        // Whoever joins without a free tribe plays the host's saved tribe together with it; the saved values stay.
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.AreCoopMembersAllowed(); }));
+        const unsigned me = GAMECLIENT.GetPlayerId();
+        const auto& own = party->GetCtrl<ctrlLobbyPlayerCard>(dskParty::ID_Net + me)->GetModel();
+        for(unsigned row = 0; row < 3; ++row)
+            BOOST_TEST(own.GetSnapshot().lockReasons[row] == "Saved game");
+        // Start: the open tribe nobody took plays on as a computer player, and the game loads with it.
+        // Only the loading screen is bypassed: the mock data cannot draw original S2 resources.
+        GAMECLIENT.SetInterface(&ci());
+        press(pad, PadButton::Start);
+        BOOST_TEST_REQUIRE(until([] { return GAMECLIENT.GetState() == ClientState::Loading; }));
+        BOOST_TEST((lobby->getPlayer(1).ps == PlayerState::AI));
+        BOOST_TEST((lobby->getPlayer(1).aiInfo.type == AI::Type::Default));
     });
 }
 

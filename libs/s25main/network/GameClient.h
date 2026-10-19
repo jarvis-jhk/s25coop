@@ -471,6 +471,8 @@ private:
         bool isHost;
         /// Player to join as a member, 0xFF = none
         uint8_t coopMemberOf;
+        /// The game was full and we asked to play the host's tribe instead: a refusal means "full" (s25coop)
+        bool autoCoopMember = false;
     } clientconfig;
 
     MapInfo mapinfo;
