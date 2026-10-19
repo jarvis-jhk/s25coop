@@ -26,7 +26,7 @@ RealHostTribe…/JoinedPlayer…, LanPassword…), FrontEndLoad (NetworkSaveSele
 game lock, coop allowed, Start fills the slot and loads), FrontEndParty, FrontEndCampaigns (network campaign → party),
 MenuPadRemoteLobbyCard, MenuPadCampaign: 76 cases pass. No new msgids. Not seen: real screens, second PC, Deck.
 Local test env: USER=jarvis HOME=build/homef7e TMPDIR=build/tmpf7e.
-NEXT: e9e213941 failed Static analysis (bugprone-branch-clone in dskParty::UpdateModeText), fixed in 863d66fca; a continuation (~04:20 UTC) releases 0.1.23 once both are green there. Then F7e2.
+RELEASED 0.1.23 (2026-10-19, tag on cfc0aed42 after Unit tests + Static analysis green on 0d6d2f4c2): https://github.com/jarvis-jhk/s25coop/releases/tag/v0.1.23 with 3 assets. NEXT: F7e2.
 
 ## Wochenreview 2026-10-18
 Direction: on track, but the order drifted. Week 4: 90 commits on master, Sol PRs #51–#59 integrated (F5b maps, F4
