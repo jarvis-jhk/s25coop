@@ -3,7 +3,7 @@
 What changed for players, newest first. Each release's notes on GitHub are its section here,
 and the game will show the new sections after an update.
 
-## Unreleased
+## 0.1.23
 
 - Campaigns and saved games played online now use the full-screen party page too. Whoever joins plays the
   host's tribe together with them - also without ticking "play together", when the game has no free tribe
