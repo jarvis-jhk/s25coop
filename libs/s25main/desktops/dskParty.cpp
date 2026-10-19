@@ -858,14 +858,12 @@ void dskParty::UpdateModeText()
     std::string text;
     if(online_ && GAMECLIENT.IsCoopMember())
         text = helpers::format(_("You play together with %1%"), gameLobby_->getPlayer(localPlayerId_).name);
-    else if(online_ && !ordinary_ && !gameLobby_->isSavegame())
+    else if(!ordinary_ && !gameLobby_->isSavegame())
         text = _("Everyone plays the campaign's tribe together.");
     else if(online_)
         text = _("Every player has a tribe of their own.");
     else if(gameLobby_->isSavegame())
         text = _("Everyone plays the saved tribe together.");
-    else if(!ordinary_)
-        text = _("Everyone plays the campaign's tribe together.");
     else if(together_)
         text = _("Everyone plays one tribe together.");
     else
