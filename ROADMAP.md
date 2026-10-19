@@ -45,6 +45,7 @@ starting the game and playing it are still upstream's mouse screens with control
    <version>,"crash",…) and deletes it; tier 0 fallback = POST JSON to $WARPZONE_SERVER/api/v1/feedback. Stable titles,
    no personal data. Keep the existing ntfy path until the Warpzone one is proven. BLOCKED: libwarpzone 0.1.3 not
    released and /api/v1/feedback answers 404 (checked 2026-10-17) — start once both exist (needs W1 for wz_report).
+8. macOS support (Jan, 2026-10-19), after the items above — see M9 (combined roadmap: siedler-macos-support).
 
 ## M0 — A version you can install and keep updated (first!)
 
@@ -438,6 +439,34 @@ every step is finished, measured and pushed before the next.
 - ☐ 4 Difficulty levels made from the strong AI (handicaps such as reaction time, economy bonus/malus,
   attack restraint), each level measured in the arena so neighbouring levels are clearly apart.
   Old levels stay selectable for old saves and replays.
+
+## M9 — macOS support (Jan, 2026-10-19)
+
+Players on a Mac install and play s25coop like on Linux/Windows. Starts after the current priorities above.
+Starting point: upstream RttR already builds on macOS, and our Unit tests already run a macos-14 clang Debug job;
+what is missing is a shipped, tested player build.
+
+- ☐ 1 Release build: a macOS app in `coop-release.yml` on a GitHub macos runner — universal (arm64 + x86_64) or
+  two archives, as an `.app` bundle in a `.dmg`/`.zip` with its dylibs (SDL2, Boost, libsamplerate, miniupnpc…)
+  bundled and rpaths fixed (`dylibbundler`/`install_name_tool`), attached to every release beside Linux/Windows.
+- ☐ 2 Smoke test in CI on the built artifact, not the build tree: start headless/with the dummy video driver,
+  reach the main menu or run a short `coop-net`/headless campaign tick with the test S2 data, exit cleanly.
+- ☐ 3 Player docs: macOS install/start notes in README/player docs. Unsigned is fine: document the Gatekeeper
+  workaround (right-click → Open, or `xattr -dr com.apple.quarantine`), where to put the original S2 files
+  (`~/Library/Application Support/…`), and how updates arrive (the self-updater needs a macOS asset to pick).
+- ☐ 4 Fault reports and updater: the ntfy fault path and the in-game updater/changelog know the macOS asset.
+
+Known risks:
+- Graphics: RttR draws with legacy OpenGL 2.1 via SDL2. Apple deprecated OpenGL (still works up to 4.1 on Apple
+  Silicon through Metal translation); fine for now, but a future macOS may drop it — then SDL renderer/Metal port.
+- Controllers: SDL2 GameController on macOS uses GCController/IOKit; Xbox/PlayStation pads work, the Deck-specific
+  paths (Steam Input detection, Deck UI) must not trigger, and hotplug/multi-pad splitscreen needs a real test.
+- File paths: `~/Library/Application Support` vs XDG, case-insensitive (but case-preserving) APFS hides wrong-case
+  game-file names that break on Linux the other way round; the bundle's resources live in `Contents/Resources`.
+- Retina/HiDPI: window size vs drawable size (SDL_GL_GetDrawableSize) for the UI and mouse coordinates.
+- Warpzone client: libwarpzone ships Linux/Windows static builds today; a macOS (universal) build is needed before
+  W1–W3 can be enabled there, otherwise macOS builds with the Warpzone option off.
+- No Mac hardware here: everything must be provable on the CI runner; feel/controller checks come from players.
 
 ## Continuous
 
