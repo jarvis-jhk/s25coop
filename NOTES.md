@@ -26,7 +26,7 @@ RealHostTribe…/JoinedPlayer…, LanPassword…), FrontEndLoad (NetworkSaveSele
 game lock, coop allowed, Start fills the slot and loads), FrontEndParty, FrontEndCampaigns (network campaign → party),
 MenuPadRemoteLobbyCard, MenuPadCampaign: 76 cases pass. No new msgids. Not seen: real screens, second PC, Deck.
 Local test env: USER=jarvis HOME=build/homef7e TMPDIR=build/tmpf7e.
-NEXT: CI green on this commit → release 0.1.23 (CHANGELOG Unreleased has the entry). Then F7e2.
+NEXT: continuation 9c2fc23b (04:00 UTC) releases 0.1.23 once Unit tests + Static analysis are green on e9e213941. Then F7e2.
 
 ## Wochenreview 2026-10-18
 Direction: on track, but the order drifted. Week 4: 90 commits on master, Sol PRs #51–#59 integrated (F5b maps, F4
